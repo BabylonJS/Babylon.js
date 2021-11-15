@@ -1,4 +1,4 @@
-import * as MatLib from "../water";
+import * as MatLib from "../water/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../water";
+export * from "../water/index";

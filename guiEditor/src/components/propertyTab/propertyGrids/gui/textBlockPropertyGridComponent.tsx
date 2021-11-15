@@ -9,12 +9,17 @@ import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optio
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlock: TextBlock;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
+
+const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
+const fontFamilyIcon: string = require("../../../../sharedUiComponents/imgs/fontFamilyIcon.svg");
+const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
     constructor(props: ITextBlockPropertyGridComponentProps) {
@@ -35,14 +40,14 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="TEXTBLOCK" value=" " color="grey"></TextLineComponent>
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Text" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Resize to fit" target={textBlock} propertyName="resizeToFit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <OptionsLineComponent label="Wrapping" options={wrappingOptions} target={textBlock} propertyName="textWrapping" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Line spacing" target={textBlock} propertyName="lineSpacing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel={"Text"} icon={fontFamilyIcon} lockObject={this.props.lockObject} label="" target={textBlock} propertyName="text" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent iconLabel={"Resize to fit"} icon={fontFamilyIcon} label="" target={textBlock} propertyName="resizeToFit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <OptionsLineComponent iconLabel={"Wrapping"} icon={fontFamilyIcon} label="" options={wrappingOptions} target={textBlock} propertyName="textWrapping" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel={"Line spacing"} icon={fontFamilyIcon} lockObject={this.props.lockObject} label="" target={textBlock} propertyName="lineSpacing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="OUTLINE" value=" " color="grey"></TextLineComponent>
-                <FloatLineComponent lockObject={this.props.lockObject} label="Outline width" target={textBlock} propertyName="outlineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Outline color" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent iconLabel={"Outline width"} icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={textBlock} propertyName="outlineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent iconLabel={"Outline color"} icon={fillColorIcon} lockObject={this.props.lockObject} label="" target={textBlock} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
 
             </div>
         );

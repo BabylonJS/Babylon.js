@@ -2,7 +2,7 @@ import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./starfieldProceduralTexture.fragment";
 
@@ -173,4 +173,4 @@ export class StarfieldProceduralTexture extends ProceduralTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StarfieldProceduralTexture"] = StarfieldProceduralTexture;
+RegisterClass("BABYLON.StarfieldProceduralTexture", StarfieldProceduralTexture);

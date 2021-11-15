@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9577,9 +9577,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9980,9 +9980,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/classnames/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10048,9 +10048,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10066,26 +10066,8 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
-// Module
-exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        margin-top: 5px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 12px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
-// Exports
-module.exports = exports;
-
-
-/***/ }),
-
-/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
 /*!**********************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
   \**********************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10094,7 +10076,25 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 5px;\n    padding-top: 5px;\n    height: auto;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
+/*!**************************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \**************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .addComponent {\n    display: none; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10102,9 +10102,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss":
-/*!*******************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
-  \*******************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
+  \***********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10120,9 +10120,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************************/
+/*!****************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10130,7 +10130,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      .right-panel #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      .right-panel #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        .right-panel #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    .right-panel #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-mesh-bar .button img {\n        height: 40px;\n        width: 100%; }\n    .right-panel #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    .right-panel #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      .right-panel #preview-mesh-bar #color-picker-button img {\n        height: 40px;\n        width: 30px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 5px;\n        padding-bottom: 38px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    .right-panel #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    .right-panel #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-config-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-config-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      .right-panel #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      .right-panel #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      .right-panel #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      .right-panel #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      .right-panel #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      .right-panel #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      .right-panel #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        .right-panel #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    .right-panel #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-mesh-bar .button img {\n        height: 40px;\n        width: 100%; }\n    .right-panel #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    .right-panel #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      .right-panel #preview-mesh-bar #color-picker-button img {\n        height: 40px;\n        width: 30px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 5px;\n        padding-bottom: 38px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    .right-panel #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    .right-panel #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-config-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-config-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      .right-panel #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      .right-panel #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      .right-panel #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      .right-panel #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      .right-panel #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10138,9 +10138,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss":
-/*!***********************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
-  \***********************************************************************************************************************************************/
+/*!***************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
+  \***************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10156,9 +10156,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/header.scss":
-/*!*******************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
-  \*******************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
+  \***********************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10174,9 +10174,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \******************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10192,9 +10192,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10297,9 +10297,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10399,9 +10399,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10594,9 +10594,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10708,9 +10708,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11311,9 +11311,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11337,9 +11337,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11361,9 +11361,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \******************************************************************************/
+/*!********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11587,9 +11587,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11904,9 +11904,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \**************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12104,9 +12104,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \**************************************************************************/
+/*!****************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12244,9 +12244,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \***************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12584,9 +12584,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \***************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12644,9 +12644,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12742,9 +12742,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \***************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12804,9 +12804,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \***************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12853,9 +12853,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \*************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12891,9 +12891,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37915,9 +37915,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37960,9 +37960,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38153,9 +38153,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38170,9 +38170,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40094,9 +40094,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40111,9 +40111,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40472,9 +40472,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41342,9 +41342,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41359,9 +41359,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41376,9 +41376,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41574,9 +41574,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41854,9 +41854,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41929,9 +41929,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -42279,6 +42279,28 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/buttonIconDark.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/buttonIconDark.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M26.08,12.7H13.92a2,2,0,0,0-2,2V22a2,2,0,0,0,2,2h3.65V22.84H13.92a.81.81,0,0,1-.81-.81v-7.3a.81.81,0,0,1,.81-.81H26.08a.81.81,0,0,1,.81.81V22a.81.81,0,0,1-.81.81h-.45l.28.27a1.45,1.45,0,0,1,.56.91,2,2,0,0,0,1.64-2v-7.3A2,2,0,0,0,26.08,12.7Z'/%3E%3Cpath class='cls-1' d='M19.42,17.75a.62.62,0,0,0-.67-.14.63.63,0,0,0-.37.57v8.51a.6.6,0,0,0,.43.58.61.61,0,0,0,.68-.24l2-2.91,3.45.73a.61.61,0,0,0,.56-1Zm1.92,5.1a.6.6,0,0,0-.62.25l-1.13,1.63V19.64l3.6,3.6Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/canvasFitIcon.svg":
+/*!****************************************!*\
+  !*** ../public/imgs/canvasFitIcon.svg ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25.05,13.54a3,3,0,0,1,3,3v6.86a3,3,0,0,1-3,3H15a3,3,0,0,1-3-3V16.57a3,3,0,0,1,3-3Zm0,1.21H15a1.82,1.82,0,0,0-1.82,1.82v6.86A1.82,1.82,0,0,0,15,25.25h10.1a1.82,1.82,0,0,0,1.82-1.82V16.57A1.82,1.82,0,0,0,25.05,14.75Zm0,6.06a.61.61,0,0,1,.61.6v1A1.62,1.62,0,0,1,24,24H23a.61.61,0,1,1,0-1.21h1a.4.4,0,0,0,.4-.41v-1A.6.6,0,0,1,25.05,20.81Zm-10.1,0a.6.6,0,0,1,.61.6v1a.4.4,0,0,0,.4.41h1A.61.61,0,1,1,17,24H16a1.62,1.62,0,0,1-1.62-1.62v-1A.61.61,0,0,1,15,20.81ZM16,16h1a.61.61,0,0,1,.61.61.61.61,0,0,1-.53.6H16a.42.42,0,0,0-.4.33v1.09a.61.61,0,0,1-1.21.08V17.58A1.63,1.63,0,0,1,15.84,16ZM24,16a1.62,1.62,0,0,1,1.62,1.62v1a.61.61,0,0,1-.61.6.6.6,0,0,1-.61-.6v-1a.4.4,0,0,0-.4-.41H23A.61.61,0,1,1,23,16Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/canvasSizeIcon.svg":
 /*!*****************************************!*\
   !*** ../public/imgs/canvasSizeIcon.svg ***!
@@ -42298,6 +42320,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/checkboxIconDark.svg":
+/*!*******************************************!*\
+  !*** ../public/imgs/checkboxIconDark.svg ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42323,6 +42356,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/colorPickerIconDark.svg":
+/*!**********************************************!*\
+  !*** ../public/imgs/colorPickerIconDark.svg ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M13.31,15.34a8.34,8.34,0,0,1,14.25,8.34c-1.35,3.7-4.91,5.16-7.47,3.3a3.82,3.82,0,0,1-1.52-3l-.08-.81,0-.32c-.1-.76-.26-1.1-.58-1.28a1.27,1.27,0,0,0-1.3,0l-.28.12-.15.06a3.12,3.12,0,0,1-2.07.34l-.17,0-.13,0C11.49,21.29,11.15,18.2,13.31,15.34Zm.8,5.48.1,0,.11,0a1.81,1.81,0,0,0,1.17-.19l.49-.21a2.47,2.47,0,0,1,3.68,2.21l0,.37.05.44,0,.34a2.75,2.75,0,0,0,1,2.16c1.86,1.35,4.52.25,5.61-2.73a7.11,7.11,0,0,0-12.12-7.19C12.59,18.33,12.8,20.38,14.11,20.82Zm9.16-1.63a1,1,0,1,1,2-.53,1,1,0,0,1-2,.53ZM23.68,22a1,1,0,1,1,1.24.72A1,1,0,0,1,23.68,22Zm-2-5.3a1,1,0,0,1,.72-1.25,1,1,0,1,1,.53,2A1,1,0,0,1,21.66,16.74Zm0,7.35a1,1,0,0,1,.72-1.25,1,1,0,0,1,.53,2A1,1,0,0,1,21.63,24.09ZM18.78,16a1,1,0,1,1,1.25.72A1,1,0,0,1,18.78,16Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/displaygridIcon.svg":
 /*!******************************************!*\
   !*** ../public/imgs/displaygridIcon.svg ***!
@@ -42334,6 +42378,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/displaygridIconDark.svg":
+/*!**********************************************!*\
+  !*** ../public/imgs/displaygridIconDark.svg ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M17.39,20.8a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H14.58a1.81,1.81,0,0,1-1.81-1.81V22.61a1.81,1.81,0,0,1,1.81-1.81Zm8,0a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H22.61a1.81,1.81,0,0,1-1.81-1.81V22.61a1.81,1.81,0,0,1,1.81-1.81Zm-8,1.21H14.58a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V22.61A.6.6,0,0,0,17.39,22Zm8,0H22.61a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V22.61A.6.6,0,0,0,25.42,22Zm-8-9.24a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H14.58a1.81,1.81,0,0,1-1.81-1.81V14.58a1.81,1.81,0,0,1,1.81-1.81Zm8,0a1.81,1.81,0,0,1,1.81,1.81v2.81a1.81,1.81,0,0,1-1.81,1.81H22.61a1.81,1.81,0,0,1-1.81-1.81V14.58a1.81,1.81,0,0,1,1.81-1.81Zm-8,1.21H14.58a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V14.58A.6.6,0,0,0,17.39,14Zm8,0H22.61a.6.6,0,0,0-.6.6v2.81a.6.6,0,0,0,.6.6h2.81a.6.6,0,0,0,.6-.6V14.58A.6.6,0,0,0,25.42,14Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/ellipseIcon.svg":
 /*!**************************************!*\
   !*** ../public/imgs/ellipseIcon.svg ***!
@@ -42342,6 +42397,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20,13.17A6.83,6.83,0,1,0,26.83,20,6.83,6.83,0,0,0,20,13.17ZM12,20a8,8,0,1,1,8,8A8,8,0,0,1,12,20Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/ellipseIconDark.svg":
+/*!******************************************!*\
+  !*** ../public/imgs/ellipseIconDark.svg ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M20,13.17A6.83,6.83,0,1,0,26.83,20,6.83,6.83,0,0,0,20,13.17ZM12,20a8,8,0,1,1,8,8A8,8,0,0,1,12,20Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42364,6 +42430,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M12.74,15.36a2.62,2.62,0,0,1,2.62-2.62h9.28a2.62,2.62,0,0,1,2.62,2.62v9.28a2.62,2.62,0,0,1-2.62,2.62H15.36a2.62,2.62,0,0,1-2.62-2.62ZM15.36,14A1.41,1.41,0,0,0,14,15.36v1.82h3.23V14ZM14,18.39v3.22h3.23V18.39Zm4.44,0v3.22h3.22V18.39Zm4.43,0v3.22h3.23V18.39Zm-1.21,4.43H18.39v3.23h3.22Zm1.21,3.23h1.82a1.41,1.41,0,0,0,1.41-1.41V22.82H22.82Zm0-8.87h3.23V15.36A1.41,1.41,0,0,0,24.64,14H22.82ZM21.61,14H18.39v3.23h3.22ZM14,22.82v1.82a1.41,1.41,0,0,0,1.41,1.41h1.82V22.82Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/gridIconDark.svg":
+/*!***************************************!*\
+  !*** ../public/imgs/gridIconDark.svg ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M12.74,15.36a2.62,2.62,0,0,1,2.62-2.62h9.28a2.62,2.62,0,0,1,2.62,2.62v9.28a2.62,2.62,0,0,1-2.62,2.62H15.36a2.62,2.62,0,0,1-2.62-2.62ZM15.36,14A1.41,1.41,0,0,0,14,15.36v1.82h3.23V14ZM14,18.39v3.22h3.23V18.39Zm4.44,0v3.22h3.22V18.39Zm4.43,0v3.22h3.23V18.39Zm-1.21,4.43H18.39v3.23h3.22Zm1.21,3.23h1.82a1.41,1.41,0,0,0,1.41-1.41V22.82H22.82Zm0-8.87h3.23V15.36A1.41,1.41,0,0,0,24.64,14H22.82ZM21.61,14H18.39v3.23h3.22ZM14,22.82v1.82a1.41,1.41,0,0,0,1.41,1.41h1.82V22.82Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42411,14 +42488,25 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
-/***/ "../public/imgs/imageSliderIcon.svg":
-/*!******************************************!*\
-  !*** ../public/imgs/imageSliderIcon.svg ***!
-  \******************************************/
+/***/ "../public/imgs/imageIconDark.svg":
+/*!****************************************!*\
+  !*** ../public/imgs/imageIconDark.svg ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.06,14.34H13.94A3.64,3.64,0,0,0,10.3,18V22a3.64,3.64,0,0,0,3.64,3.63H26.06A3.64,3.64,0,0,0,29.7,22V18A3.64,3.64,0,0,0,26.06,14.34Zm0,10.11H13.94a2.42,2.42,0,0,1-.81-.15l1.41-1.39a3.24,3.24,0,0,0,1.45.36A3.28,3.28,0,0,0,19.26,20a3.18,3.18,0,0,0-.35-1.43l.64-.63a.54.54,0,0,1,.74,0L27,24.26A2.43,2.43,0,0,1,26.06,24.45ZM14,20a2,2,0,1,1,2,2A2,2,0,0,1,14,20Zm14.52,2a2.41,2.41,0,0,1-.41,1.34l-6.84-6.44a1.91,1.91,0,0,0-2.67,0l-.53.52a3.22,3.22,0,0,0-2-.75A3.28,3.28,0,0,0,12.72,20a3.23,3.23,0,0,0,.73,2L12,23.47A2.4,2.4,0,0,1,11.51,22V18a2.43,2.43,0,0,1,2.43-2.42H26.06A2.43,2.43,0,0,1,28.49,18Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M27.6,19.73a1.85,1.85,0,0,0-2.63,0l-4.81,4.81a2.22,2.22,0,0,0-.58,1l-.37,1.49a.89.89,0,0,0,1.08,1.07l1.49-.37a2.23,2.23,0,0,0,1-.58l4.81-4.81A1.85,1.85,0,0,0,27.6,19.73Z'/%3E%3Cpath class='cls-1' d='M18.82,20.52a.62.62,0,0,1,.79.06l1.7,1.66.86-.86-1.7-1.67-.11-.1a1.83,1.83,0,0,0-2.46.1l-4.74,4.64a1.28,1.28,0,0,1-.09-.48V14.5a1.43,1.43,0,0,1,1.43-1.43h9.37A1.43,1.43,0,0,1,25.3,14.5v4.06a2.56,2.56,0,0,1,1.22-.18V14.5a2.65,2.65,0,0,0-2.65-2.65H14.5a2.65,2.65,0,0,0-2.65,2.65v9.37a2.65,2.65,0,0,0,2.65,2.65h4l.29-1.16,0-.06H14.5a1.51,1.51,0,0,1-.48-.08l4.74-4.64Z'/%3E%3Cpath class='cls-1' d='M20,16.54a1.84,1.84,0,1,0,1.83-1.84A1.83,1.83,0,0,0,20,16.54Zm2.45,0a.62.62,0,0,1-1.23,0,.62.62,0,1,1,1.23,0Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/imageSliderIconDark.svg":
+/*!**********************************************!*\
+  !*** ../public/imgs/imageSliderIconDark.svg ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M26.06,14.34H13.94A3.64,3.64,0,0,0,10.3,18V22a3.64,3.64,0,0,0,3.64,3.63H26.06A3.64,3.64,0,0,0,29.7,22V18A3.64,3.64,0,0,0,26.06,14.34Zm0,10.11H13.94a2.42,2.42,0,0,1-.81-.15l1.41-1.39a3.24,3.24,0,0,0,1.45.36A3.28,3.28,0,0,0,19.26,20a3.18,3.18,0,0,0-.35-1.43l.64-.63a.54.54,0,0,1,.74,0L27,24.26A2.43,2.43,0,0,1,26.06,24.45ZM14,20a2,2,0,1,1,2,2A2,2,0,0,1,14,20Zm14.52,2a2.41,2.41,0,0,1-.41,1.34l-6.84-6.44a1.91,1.91,0,0,0-2.67,0l-.53.52a3.22,3.22,0,0,0-2-.75A3.28,3.28,0,0,0,12.72,20a3.23,3.23,0,0,0,.73,2L12,23.47A2.4,2.4,0,0,1,11.51,22V18a2.43,2.43,0,0,1,2.43-2.42H26.06A2.43,2.43,0,0,1,28.49,18Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42433,6 +42521,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/inputFieldIconDark.svg":
+/*!*********************************************!*\
+  !*** ../public/imgs/inputFieldIconDark.svg ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M22.43,17.17H20.61v5.66H21a.61.61,0,0,1,.61.61.61.61,0,0,1-.61.61H19a.61.61,0,0,1-.61-.61.61.61,0,0,1,.61-.61h.4V17.17H17.57v.6a.61.61,0,1,1-1.21,0V16.56A.6.6,0,0,1,17,16H23a.6.6,0,0,1,.6.61v1.21a.61.61,0,1,1-1.21,0Z'/%3E%3Cpath class='cls-1' d='M14.94,13.52a3,3,0,0,0-3,3v6.88a3,3,0,0,0,3,3H25.06a3,3,0,0,0,3-3V16.56a3,3,0,0,0-3-3Zm-1.82,3a1.81,1.81,0,0,1,1.82-1.82H25.06a1.81,1.81,0,0,1,1.82,1.82v6.88a1.81,1.81,0,0,1-1.82,1.82H14.94a1.81,1.81,0,0,1-1.82-1.82Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/keyboardIcon.svg":
 /*!***************************************!*\
   !*** ../public/imgs/keyboardIcon.svg ***!
@@ -42444,6 +42543,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/keyboardIconDark.svg":
+/*!*******************************************!*\
+  !*** ../public/imgs/keyboardIconDark.svg ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M26.31,14.3a1.83,1.83,0,0,1,1.83,1.83v7.74a1.83,1.83,0,0,1-1.83,1.83H13.69a1.83,1.83,0,0,1-1.83-1.83V16.13a1.83,1.83,0,0,1,1.83-1.83Zm0,1.22H13.69a.61.61,0,0,0-.61.61v7.74a.61.61,0,0,0,.61.61H26.31a.61.61,0,0,0,.61-.61V16.13A.61.61,0,0,0,26.31,15.52ZM15.73,22h8.55a.61.61,0,0,1,.08,1.22H15.73A.61.61,0,0,1,15.65,22Zm7.93-2.85a.82.82,0,0,1,.82.82.82.82,0,1,1-.82-.82Zm-4.88,0a.82.82,0,0,1,.82.82.82.82,0,1,1-.82-.82Zm-2.44,0a.82.82,0,0,1,.82.82.82.82,0,0,1-.82.81.81.81,0,0,1-.81-.81A.82.82,0,0,1,16.34,19.18Zm4.89,0A.82.82,0,0,1,22,20a.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,21.23,19.18Zm-6.11-2.44a.82.82,0,0,1,.81.82.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,15.12,16.74Zm2.44,0a.82.82,0,0,1,.81.82.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,17.56,16.74Zm2.44,0a.82.82,0,0,1,.81.82.81.81,0,0,1-.81.81.82.82,0,0,1-.82-.81A.82.82,0,0,1,20,16.74Zm2.44,0a.82.82,0,0,1,.81.82.81.81,0,1,1-1.62,0A.82.82,0,0,1,22.44,16.74Zm2.44,0a.82.82,0,0,1,.82.82.82.82,0,0,1-.82.81.81.81,0,0,1-.81-.81A.82.82,0,0,1,24.88,16.74Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/lineIcon.svg":
 /*!***********************************!*\
   !*** ../public/imgs/lineIcon.svg ***!
@@ -42452,6 +42562,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,20a.61.61,0,0,1,.61-.61H29.09a.61.61,0,1,1,0,1.22H10.91A.61.61,0,0,1,10.3,20Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/lineIconDark.svg":
+/*!***************************************!*\
+  !*** ../public/imgs/lineIconDark.svg ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M10.3,20a.61.61,0,0,1,.61-.61H29.09a.61.61,0,1,1,0,1.22H10.91A.61.61,0,0,1,10.3,20Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42474,6 +42595,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,11a.61.61,0,0,1,.61.61v2.83h2.83a.61.61,0,0,1,0,1.22H15.61v2.83a.61.61,0,0,1-1.22,0V15.61H11.56a.61.61,0,1,1,0-1.22h2.83V11.56A.61.61,0,0,1,15,11Z' style='fill:%23333'/%3E%3Cpath d='M7.71,10.34a2.63,2.63,0,0,1,2.63-2.63h9.32a2.63,2.63,0,0,1,2.63,2.63v9.32a2.63,2.63,0,0,1-2.63,2.63H10.34a2.63,2.63,0,0,1-2.63-2.63Zm2.63-1.41a1.41,1.41,0,0,0-1.41,1.41v9.32a1.41,1.41,0,0,0,1.41,1.41h9.32a1.41,1.41,0,0,0,1.41-1.41V10.34a1.41,1.41,0,0,0-1.41-1.41Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/moveIcon.svg":
+/*!***********************************!*\
+  !*** ../public/imgs/moveIcon.svg ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M22.64,15.2a.61.61,0,0,1-.85,0L20.6,14v3a.6.6,0,1,1-1.2,0V14L18.21,15.2a.61.61,0,0,1-.85,0,.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0l2.21,2.21A.6.6,0,0,1,22.64,15.2Z' style='fill:%23fff'/%3E%3Cpath d='M15.2,21.79a.61.61,0,0,1,0,.85.6.6,0,0,1-.86,0l-2.21-2.21a.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0,.61.61,0,0,1,0,.85L14,19.4h3a.6.6,0,1,1,0,1.2H14Z' style='fill:%23fff'/%3E%3Cpath d='M24.8,22.64a.61.61,0,0,1,0-.85L26,20.6H23a.6.6,0,1,1,0-1.2h3L24.8,18.21a.61.61,0,0,1,0-.85.6.6,0,0,1,.86,0l2.21,2.21a.6.6,0,0,1,0,.86l-2.21,2.21A.6.6,0,0,1,24.8,22.64Z' style='fill:%23fff'/%3E%3Cpath d='M22.64,24.8a.61.61,0,0,0-.85,0L20.6,26V23a.6.6,0,1,0-1.2,0v3L18.21,24.8a.61.61,0,0,0-.85,0,.6.6,0,0,0,0,.86l2.21,2.21a.6.6,0,0,0,.86,0l2.21-2.21A.6.6,0,0,0,22.64,24.8Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42510,6 +42642,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/radioButtonIconDark.svg":
+/*!**********************************************!*\
+  !*** ../public/imgs/radioButtonIconDark.svg ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M20,24.86A4.86,4.86,0,1,0,15.14,20,4.87,4.87,0,0,0,20,24.86Z'/%3E%3Cpath class='cls-1' d='M20,11.9A8.1,8.1,0,1,0,28.1,20,8.1,8.1,0,0,0,20,11.9ZM13.12,20A6.88,6.88,0,1,1,20,26.88,6.88,6.88,0,0,1,13.12,20Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/rectangleIcon.svg":
 /*!****************************************!*\
   !*** ../public/imgs/rectangleIcon.svg ***!
@@ -42518,6 +42661,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,16.36a3.64,3.64,0,0,1,3.64-3.64H26.06a3.64,3.64,0,0,1,3.64,3.64v7.28a3.64,3.64,0,0,1-3.64,3.64H13.94a3.64,3.64,0,0,1-3.64-3.64Zm3.64-2.42a2.42,2.42,0,0,0-2.43,2.42v7.28a2.42,2.42,0,0,0,2.43,2.42H26.06a2.42,2.42,0,0,0,2.43-2.42V16.36a2.42,2.42,0,0,0-2.43-2.42Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/rectangleIconDark.svg":
+/*!********************************************!*\
+  !*** ../public/imgs/rectangleIconDark.svg ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M10.3,16.36a3.64,3.64,0,0,1,3.64-3.64H26.06a3.64,3.64,0,0,1,3.64,3.64v7.28a3.64,3.64,0,0,1-3.64,3.64H13.94a3.64,3.64,0,0,1-3.64-3.64Zm3.64-2.42a2.42,2.42,0,0,0-2.43,2.42v7.28a2.42,2.42,0,0,0,2.43,2.42H26.06a2.42,2.42,0,0,0,2.43-2.42V16.36a2.42,2.42,0,0,0-2.43-2.42Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42543,6 +42697,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/scrollbarIconDark.svg":
+/*!********************************************!*\
+  !*** ../public/imgs/scrollbarIconDark.svg ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M22.25,13.18V26.91H21V13.18Zm1.16,3.34v4.19h1.22V16.52Zm.61-.61a.61.61,0,1,0,.61.61A.61.61,0,0,0,24,15.91Zm0,4.19a.61.61,0,1,0,.61.61A.61.61,0,0,0,24,20.1ZM12.74,24.64a2.62,2.62,0,0,0,2.62,2.62h9.28a2.62,2.62,0,0,0,2.62-2.62V15.36a2.62,2.62,0,0,0-2.62-2.62H15.36a2.62,2.62,0,0,0-2.62,2.62ZM14,15.36A1.41,1.41,0,0,1,15.36,14h9.28a1.41,1.41,0,0,1,1.41,1.41v9.28a1.41,1.41,0,0,1-1.41,1.41H15.36A1.41,1.41,0,0,1,14,24.64Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/sliderIcon.svg":
 /*!*************************************!*\
   !*** ../public/imgs/sliderIcon.svg ***!
@@ -42551,6 +42716,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M10.3,18a3.64,3.64,0,0,1,3.64-3.63H26.06A3.64,3.64,0,0,1,29.7,18V22a3.64,3.64,0,0,1-3.64,3.63H13.94A3.64,3.64,0,0,1,10.3,22Zm3.64-2.42A2.43,2.43,0,0,0,11.51,18V22a2.43,2.43,0,0,0,2.43,2.42H26.06A2.43,2.43,0,0,0,28.49,22V18a2.43,2.43,0,0,0-2.43-2.42Z' style='fill:%23fff'/%3E%3Ccircle cx='15.99' cy='20' r='2.64' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/sliderIconDark.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/sliderIconDark.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M10.3,18a3.64,3.64,0,0,1,3.64-3.63H26.06A3.64,3.64,0,0,1,29.7,18V22a3.64,3.64,0,0,1-3.64,3.63H13.94A3.64,3.64,0,0,1,10.3,22Zm3.64-2.42A2.43,2.43,0,0,0,11.51,18V22a2.43,2.43,0,0,0,2.43,2.42H26.06A2.43,2.43,0,0,0,28.49,22V18a2.43,2.43,0,0,0-2.43-2.42Z'/%3E%3Ccircle class='cls-1' cx='15.99' cy='20' r='2.64'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42565,6 +42741,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/stackPanelIconDark.svg":
+/*!*********************************************!*\
+  !*** ../public/imgs/stackPanelIconDark.svg ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M12.74,15.35a2.62,2.62,0,0,1,2.62-2.63h9.28a2.62,2.62,0,0,1,2.62,2.63v9.28a2.62,2.62,0,0,1-2.62,2.62H15.36a2.62,2.62,0,0,1-2.62-2.62ZM26.05,21.6V18.37H14V21.6Zm0-4.44V15.35a1.41,1.41,0,0,0-1.41-1.41H15.36A1.41,1.41,0,0,0,14,15.35v1.81ZM24.64,26a1.41,1.41,0,0,0,1.41-1.41V22.81H14v1.82A1.41,1.41,0,0,0,15.36,26Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/textBoxIcon.svg":
 /*!**************************************!*\
   !*** ../public/imgs/textBoxIcon.svg ***!
@@ -42573,6 +42760,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M14.33,14.12a.61.61,0,0,1,.6-.61H25.07a.61.61,0,0,1,.6.61v1.62a.61.61,0,1,1-1.21,0v-1H20.61V25.27h1.21a.61.61,0,0,1,.61.61.61.61,0,0,1-.61.61H18.18a.61.61,0,0,1-.61-.61.61.61,0,0,1,.61-.61h1.21V14.73H15.54v1a.61.61,0,1,1-1.21,0Z' style='fill:%23fff'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/textBoxIconDark.svg":
+/*!******************************************!*\
+  !*** ../public/imgs/textBoxIconDark.svg ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M14.33,14.12a.61.61,0,0,1,.6-.61H25.07a.61.61,0,0,1,.6.61v1.62a.61.61,0,1,1-1.21,0v-1H20.61V25.27h1.21a.61.61,0,0,1,.61.61.61.61,0,0,1-.61.61H18.18a.61.61,0,0,1-.61-.61.61.61,0,0,1,.61-.61h1.21V14.73H15.54v1a.61.61,0,1,1-1.21,0Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42634,27 +42832,43 @@ var handIcon = __webpack_require__(/*! ../../public/imgs/handIcon.svg */ "../pub
 var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../public/imgs/zoomIcon.svg");
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
+var canvasFitIcon = __webpack_require__(/*! ../../public/imgs/canvasFitIcon.svg */ "../public/imgs/canvasFitIcon.svg");
+var moveIcon = __webpack_require__(/*! ../../public/imgs/moveIcon.svg */ "../public/imgs/moveIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
     function CommandBarComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._panning = false;
+        _this._zooming = false;
+        _this._selecting = true;
+        _this._moving = false;
         props.globalState.onPanObservable.add(function () {
             _this._panning = !_this._panning;
             _this._zooming = false;
             _this._selecting = false;
+            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onSelectionButtonObservable.add(function () {
-            _this._selecting = true;
+            _this._selecting = !_this._selecting;
             _this._panning = false;
             _this._zooming = false;
+            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onZoomObservable.add(function () {
             _this._zooming = !_this._zooming;
             _this._panning = false;
             _this._selecting = false;
+            _this._moving = false;
+            _this.forceUpdate();
+        });
+        props.globalState.onMoveObservable.add(function () {
+            _this._zooming = false;
+            _this._panning = false;
+            _this._selecting = false;
+            _this._moving = !_this._moving;
             _this.forceUpdate();
         });
         props.globalState.onOutlinesObservable.add(function () {
@@ -42697,16 +42911,23 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             onClick: function () { _this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
                         }, {
                             label: "Help",
-                            onClick: function () { window.open('https://doc.babylonjs.com/divingDeeper/gui/gui', '_blank'); }
+                            onClick: function () { window.open('https://doc.babylonjs.com/toolsAndResources/tools/guiEditor', '_blank'); }
+                        },
+                        {
+                            label: "Give feedback",
+                            onClick: function () { window.open('https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578', '_blank'); }
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "Q", isActive: this._selecting, onClick: function () { if (!_this._selecting)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () { if (!_this._selecting)
                         _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "W", isActive: this._panning, onClick: function () { if (!_this._panning)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () { if (!_this._moving)
+                        _this.props.globalState.onMoveObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () { if (!_this._panning)
                         _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "E", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
                         _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "R", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () { _this.props.globalState.onFitToWindowObservable.notifyObservers(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-right" })));
     };
     return CommandBarComponent;
@@ -42952,6 +43173,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../tools */ "./tools.ts");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_5__);
+
+
 
 
 
@@ -42959,39 +43185,102 @@ __webpack_require__.r(__webpack_exports__);
 var ParentingPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParentingPropertyGridComponent, _super);
     function ParentingPropertyGridComponent(props) {
-        var _this = _super.call(this, props) || this;
-        var cellInfo = _this.props.control.parent.getChildCellInfo(_this.props.control);
-        _this._rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
-        if (isNaN(_this._rowNumber)) {
-            _this._rowNumber = 0;
-        }
-        _this._columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
-        if (isNaN(_this._columnNumber)) {
-            _this._columnNumber = 0;
-        }
-        return _this;
+        return _super.call(this, props) || this;
     }
     ParentingPropertyGridComponent.prototype.updateGridPosition = function () {
         var grid = this.props.control.parent;
         if (grid) {
-            grid.removeControl(this.props.control);
-            grid.addControl(this.props.control, this._rowNumber, this._columnNumber);
+            this._changeCell(grid, this.props.control, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_5__["Vector2"](this._rowNumber, this._columnNumber));
         }
+    };
+    ParentingPropertyGridComponent.prototype.getCellInfo = function () {
+        var cellInfo = _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].getCellInfo(this.props.control.parent, this.props.control);
+        this._rowNumber = cellInfo.x;
+        this._columnNumber = cellInfo.y;
+    };
+    ParentingPropertyGridComponent.prototype._changeCell = function (grid, draggedControl, newCell) {
+        var index = grid.children.indexOf(draggedControl);
+        grid.removeControl(draggedControl);
+        _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].reorderGrid(grid, index, draggedControl, newCell);
     };
     ParentingPropertyGridComponent.prototype.render = function () {
         var _this = this;
+        this.getCellInfo();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "GRID PARENTING", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { label: "Row #", target: this, propertyName: "_rowNumber", isInteger: true, min: 0, onChange: function (newValue) {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Row #", target: this, propertyName: "_rowNumber", isInteger: true, min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         _this.updateGridPosition();
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { label: "Column #", target: this, propertyName: "_columnNumber", isInteger: true, min: 0, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Column #", target: this, propertyName: "_columnNumber", isInteger: true, min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         _this.updateGridPosition();
                     } }))));
     };
     return ParentingPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: ButtonPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ButtonPropertyGridComponent", function() { return ButtonPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
+
+
+
+
+
+
+
+var conerRadiusIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/conerRadiusIcon.svg */ "./sharedUiComponents/imgs/conerRadiusIcon.svg");
+var clipContentsIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/clipContentsIcon.svg */ "./sharedUiComponents/imgs/clipContentsIcon.svg");
+var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
+var addImageButtonIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/addImageButtonIcon.svg */ "./sharedUiComponents/imgs/addImageButtonIcon.svg");
+var addTextButtonIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/addTextButtonIcon.svg */ "./sharedUiComponents/imgs/addTextButtonIcon.svg");
+var ButtonPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonPropertyGridComponent, _super);
+    function ButtonPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ButtonPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var rectangle = this.props.rectangle;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "BUTTON", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_6__["CommandButtonComponent"], { tooltip: "Add TextBlock", icon: addTextButtonIcon, shortcut: "", isActive: false, onClick: function () {
+                        _this.props.onAddComponent("Text");
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_6__["CommandButtonComponent"], { tooltip: "Add Image", icon: addImageButtonIcon, shortcut: "", isActive: false, onClick: function () {
+                        _this.props.onAddComponent("ButtonImage");
+                    } }))));
+    };
+    return ButtonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -43021,6 +43310,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var fillColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "./sharedUiComponents/imgs/fillColorIcon.svg");
+var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
 var CheckboxPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckboxPropertyGridComponent, _super);
     function CheckboxPropertyGridComponent(props) {
@@ -43032,8 +43323,8 @@ var CheckboxPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: checkbox, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "CHECKBOX", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Check size ratio", target: checkbox, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Checked", target: checkbox, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check size ratio", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: checkbox, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Checked", icon: fillColorIcon, label: "", target: checkbox, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return CheckboxPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43103,6 +43394,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+
+
 
 
 
@@ -43139,11 +43435,13 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._width = _this.props.control.width;
         _this._height = _this.props.control.height;
+        _this._responsive = false;
+        _this._responsive = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__["DataStorage"].ReadBoolean("Responsive", true);
         return _this;
     }
     CommonControlPropertyGridComponent.prototype._updateAlignment = function (alignment, value) {
         var control = this.props.control;
-        if (control.typeName == "TextBlock") {
+        if (control.typeName === "TextBlock" && this.props.control.resizeToFit === false) {
             this.props.control["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
         }
         else {
@@ -43152,14 +43450,24 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     CommonControlPropertyGridComponent.prototype._checkAndUpdateValues = function (propertyName, value) {
+        var _a, _b;
         //check if it contains either a px or a % sign
-        var percentage = false;
-        if (value.charAt(value.length - 1) == '%') {
+        var percentage = this._responsive;
+        var negative = value.charAt(0) === '-';
+        if (value.charAt(value.length - 1) === '%') {
             percentage = true;
         }
-        var newValue = value.split('').filter(function (item) {
-            return (!isNaN(parseInt(item)));
-        }).join('');
+        else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
+            percentage = false;
+        }
+        if (((_a = this.props.control.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "StackPanel") {
+            percentage = false;
+        }
+        var newValue = (_b = value.match(/([\d\.\,]+)/g)) === null || _b === void 0 ? void 0 : _b[0];
+        if (!newValue) {
+            newValue = '0';
+        }
+        newValue = (negative ? '-' : '') + newValue;
         newValue += percentage ? '%' : 'px';
         this.props.control[propertyName] = newValue;
         this.forceUpdate();
@@ -43169,82 +43477,82 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         var control = this.props.control;
         var horizontalAlignment = this.props.control.horizontalAlignment;
         var verticalAlignment = this.props.control.verticalAlignment;
-        if (control.typeName == "TextBlock") {
+        if (control.typeName === "TextBlock" && this.props.control.resizeToFit === false) {
             horizontalAlignment = this.props.control.textHorizontalAlignment;
             verticalAlignment = this.props.control.textVerticalAlignment;
         }
         this._width = this.props.control.width;
         this._height = this.props.control.height;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Left", icon: hAlignLeftIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT, onClick: function () { _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: hAlignCenterIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER, onClick: function () { _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Right", icon: hAlignRightIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_RIGHT, onClick: function () { _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_RIGHT); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Top", icon: vAlignTopIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: vAlignCenterIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: vAlignBottomIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Bottom", icon: vAlignBottomIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: this, propertyName: "_width", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        _this._width = newValue;
                         if (control.typeName === "Image") {
                             control.autoScale = false;
                         }
-                        ;
+                        else if (_this.props.control.typeName === "ColorPicker") {
+                            if (newValue === '0' || newValue === '-') {
+                                newValue = "1";
+                            }
+                        }
+                        _this._width = newValue;
                         _this._checkAndUpdateValues("width", _this._width.toString());
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", target: this, propertyName: "_height", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        _this._height = newValue;
                         if (control.typeName === "Image") {
                             control.autoScale = false;
                         }
-                        ;
+                        else if (_this.props.control.typeName === "ColorPicker") {
+                            if (newValue === "0" || newValue === "-") {
+                                newValue = "1";
+                            }
+                        }
+                        _this._height = newValue;
                         _this._checkAndUpdateValues("height", _this._height.toString());
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Vertical Margins", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: control, propertyName: "paddingBottom", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingBottom", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: control, propertyName: "paddingTop", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingTop", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: control, propertyName: "paddingLeft", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingLeft", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: control, propertyName: "paddingRight", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingRight", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "TRANSFORMATION", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Trasnsform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { icon: rotationIcon, label: "R", target: control, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Rotation", lockObject: this.props.lockObject, icon: rotationIcon, label: "R", target: control, decimalCount: 2, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "APPEARANCE", value: " ", color: "grey" }),
             control.color !== undefined &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        if (newValue === "") {
-                            control.color = "Transparent";
-                        }
-                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             control.background !== undefined &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        if (newValue === "") {
-                            control.background = "Transparent";
-                        }
-                    } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Alpha", icon: alphaIcon, label: "", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { lockObject: this.props.lockObject, iconLabel: "Alpha", icon: alphaIcon, label: "", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset X", icon: shadowOffsetXIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset Y", icon: shadowOffsetYIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Blur", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "FONT STYLE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Family", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "fontFamily", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Size", icon: fontSizeIcon, lockObject: this.props.lockObject, label: "", target: control, numbersOnly: true, propertyName: "fontSize", onChange: function (newValue) { return _this._checkAndUpdateValues("fontSize", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Weight", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, numbersOnly: true, propertyName: "fontWeight", onChange: function (newValue) { return _this._checkAndUpdateValues("fontWeight", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Weight", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "fontWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Style", icon: fontStyleIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "fontStyle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonControlPropertyGridComponent;
@@ -43288,6 +43596,60 @@ var ControlPropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent.tsx":
+/*!***************************************************************************************!*\
+  !*** ./components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent.tsx ***!
+  \***************************************************************************************/
+/*! exports provided: DisplayGridPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DisplayGridPropertyGridComponent", function() { return DisplayGridPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+
+
+
+
+
+
+var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
+var colorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/colorIcon.svg */ "./sharedUiComponents/imgs/colorIcon.svg");
+var conerRadiusIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/conerRadiusIcon.svg */ "./sharedUiComponents/imgs/conerRadiusIcon.svg");
+var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
+var DisplayGridPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DisplayGridPropertyGridComponent, _super);
+    function DisplayGridPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    DisplayGridPropertyGridComponent.prototype.render = function () {
+        var displayGrid = this.props.displayGrid;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: displayGrid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "DISPLAY GRID", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Size", icon: sizeIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "W", target: displayGrid, propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { min: 1, isInteger: true, lockObject: this.props.lockObject, label: "H", target: displayGrid, propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Minor Line Tickness", icon: strokeWeightIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "minorLineTickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Minor Line Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "minorLineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Major Line Tickness", icon: strokeWeightIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "majorLineTickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Major Line Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "majorLineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Major Line Frequency", icon: conerRadiusIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "majorLineFrequency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return DisplayGridPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/propertyTab/propertyGrids/gui/ellipsePropertyGridComponent.tsx":
 /*!***********************************************************************************!*\
   !*** ./components/propertyTab/propertyGrids/gui/ellipsePropertyGridComponent.tsx ***!
@@ -43324,8 +43686,8 @@ var EllipsePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: ellipse, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "ELLIPSE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { icon: clipContentsIcon, label: "", target: ellipse, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: ellipse, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "", target: ellipse, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: ellipse, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return EllipsePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43350,12 +43712,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs-gui/2D/valueAndUnit */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__);
-
-
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 
 
 
@@ -43365,77 +43722,325 @@ __webpack_require__.r(__webpack_exports__);
 var GridPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GridPropertyGridComponent, _super);
     function GridPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._removingColumn = false;
+        _this._removingRow = false;
+        _this._previousGrid = null;
+        _this._rowDefinitions = [];
+        _this._rowEditFlags = [];
+        _this._columnEditFlags = [];
+        _this._columnDefinitions = [];
+        _this._editedRow = false;
+        _this._editedColumn = false;
+        return _this;
     }
     GridPropertyGridComponent.prototype.renderRows = function () {
         var _this = this;
-        var grid = this.props.grid;
-        var rows = [];
-        for (var index = 0; index < grid.rowCount; index++) {
-            rows.push(grid.getRowDefinition(index));
-        }
-        return (rows.map(function (rd, i) {
-            var newrd = new babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__["ValueAndUnit"](rd.getValue(grid.host), rd.unit);
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider", key: "r" + i },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: _this.props.lockObject, label: "Row " + i, target: newrd, propertyName: "_value", digits: rd.unit == 1 ? 0 : 2, onChange: function (newValue) {
-                        grid.setRowDefinition(i, newValue, newrd.unit == 1 ? true : false);
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "", target: newrd, propertyName: "unit", onPropertyChangedObservable: _this.props.onPropertyChangedObservable, onValueChanged: function () {
-                        grid.setRowDefinition(i, newrd.getValue(grid.host), newrd.unit == 1 ? true : false);
+        return (this._rowDefinitions.map(function (rd, i) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "r" + i, className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "rText" + i, label: "Row " + i, value: rd, numbersOnly: true, onChange: function (newValue) {
+                        _this._rowDefinitions[i] = newValue;
+                        _this._rowEditFlags[i] = true;
+                        _this._editedRow = true;
+                        _this.forceUpdate();
                     } })));
         }));
     };
+    GridPropertyGridComponent.prototype.setRowValues = function () {
+        var grid = this.props.grid;
+        this._rowDefinitions = [];
+        this._rowEditFlags = [];
+        this._editedRow = false;
+        for (var index = 0; index < grid.rowCount; index++) {
+            var value = grid.getRowDefinition(index);
+            if (value) {
+                this._rowDefinitions.push(value.toString(grid._host, 2));
+                this._rowEditFlags.push(false);
+            }
+        }
+    };
+    GridPropertyGridComponent.prototype.setColumnValues = function () {
+        var grid = this.props.grid;
+        this._columnDefinitions = [];
+        this._columnEditFlags = [];
+        this._editedColumn = false;
+        for (var index = 0; index < grid.columnCount; index++) {
+            var value = grid.getColumnDefinition(index);
+            if (value) {
+                this._columnDefinitions.push(value.toString(grid._host, 2));
+                this._columnEditFlags.push(false);
+            }
+        }
+    };
     GridPropertyGridComponent.prototype.renderColumns = function () {
         var _this = this;
-        var grid = this.props.grid;
-        var cols = [];
-        for (var index = 0; index < grid.columnCount; index++) {
-            cols.push(grid.getColumnDefinition(index));
-        }
-        return (cols.map(function (cd, i) {
-            var newcd = new babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_7__["ValueAndUnit"](cd.getValue(grid.host), cd.unit);
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { key: "c" + i, label: "Column " + i, target: newcd, propertyName: "_value", digits: cd.unit == 1 ? 0 : 2, onChange: function (newValue) {
-                        grid.setColumnDefinition(i, newValue, newcd.unit == 1 ? true : false);
-                        _this.forceUpdate();
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "", target: newcd, propertyName: "unit", onPropertyChangedObservable: _this.props.onPropertyChangedObservable, onValueChanged: function () {
-                        grid.setColumnDefinition(i, newcd.getValue(grid.host), newcd.unit == 1 ? true : false);
+        return (this._columnDefinitions.map(function (cd, i) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "c" + i, className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "ctext" + i, label: "Column " + i, value: cd, numbersOnly: true, onChange: function (newValue) {
+                        _this._columnDefinitions[i] = newValue;
+                        _this._columnEditFlags[i] = true;
+                        _this._editedColumn = true;
                         _this.forceUpdate();
                     } })));
         }));
+    };
+    GridPropertyGridComponent.prototype.resizeRow = function () {
+        var grid = this.props.grid;
+        var total = 0;
+        var editCount = 0;
+        var percentCount = 0;
+        var rowValues = [];
+        for (var i = 0; i < this._rowDefinitions.length; ++i) {
+            var value = this._rowDefinitions[i];
+            var percent = this.checkPercentage(value);
+            if (this._rowEditFlags[i]) {
+                value = this.checkValue(value, percent);
+                if (percent) {
+                    editCount++;
+                }
+            }
+            if (percent) {
+                percentCount++;
+                var valueAsInt = parseInt(value.substring(0, value.length - 1));
+                total += valueAsInt / 100;
+                rowValues.push(valueAsInt / 100);
+            }
+            else {
+                var valueAsInt = parseInt(value.substring(0, value.length - 2));
+                rowValues.push(valueAsInt);
+            }
+        }
+        var allEdited = editCount === percentCount;
+        if (total > 1.0 || allEdited) {
+            var difference = total - 1.0;
+            var diff = Math.abs(difference);
+            for (var i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i])) {
+                    var value = rowValues[i];
+                    var weighted = diff * (value / total);
+                    rowValues[i] = difference > 0 ? value - weighted : value + weighted;
+                }
+            }
+        }
+        else if (total < 1.0) {
+            var difference = 1.0 - total;
+            for (var i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i]) && this._rowEditFlags[i]) {
+                    var value = rowValues[i];
+                    total -= value;
+                }
+            }
+            for (var i = 0; i < grid.rowCount; ++i) {
+                if (this.checkPercentage(this._rowDefinitions[i]) && !this._rowEditFlags[i]) {
+                    var value = rowValues[i];
+                    var weighted = difference * (value / total);
+                    rowValues[i] = value + weighted;
+                }
+            }
+        }
+        for (var i = 0; i < this._rowDefinitions.length; ++i) {
+            grid.setRowDefinition(i, rowValues[i], !this.checkPercentage(this._rowDefinitions[i]));
+        }
+        this.setRowValues();
+    };
+    GridPropertyGridComponent.prototype.resizeColumn = function () {
+        var grid = this.props.grid;
+        var total = 0;
+        var editCount = 0;
+        var percentCount = 0;
+        var columnValues = [];
+        for (var i = 0; i < this._columnDefinitions.length; ++i) {
+            var value = this._columnDefinitions[i];
+            var percent = this.checkPercentage(value);
+            if (this._columnEditFlags[i]) {
+                value = this.checkValue(value, percent);
+                if (percent) {
+                    editCount++;
+                }
+            }
+            if (percent) {
+                percentCount++;
+                var valueAsInt = parseInt(value.substring(0, value.length - 1));
+                total += valueAsInt / 100;
+                columnValues.push(valueAsInt / 100);
+            }
+            else {
+                var valueAsInt = parseInt(value.substring(0, value.length - 2));
+                columnValues.push(valueAsInt);
+            }
+        }
+        var allEdited = editCount === percentCount;
+        if (total > 1.0 || allEdited) {
+            var difference = total - 1.0;
+            var diff = Math.abs(difference);
+            for (var i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i])) {
+                    var value = columnValues[i];
+                    var weighted = diff * (value / total);
+                    columnValues[i] = difference > 0 ? value - weighted : value + weighted;
+                }
+            }
+        }
+        else if (total < 1.0) {
+            var difference = 1.0 - total;
+            for (var i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i]) && this._columnEditFlags[i]) {
+                    var value = columnValues[i];
+                    total -= value;
+                }
+            }
+            for (var i = 0; i < grid.columnCount; ++i) {
+                if (this.checkPercentage(this._columnDefinitions[i]) && !this._columnEditFlags[i]) {
+                    var value = columnValues[i];
+                    var weighted = difference * (value / total);
+                    columnValues[i] = value + weighted;
+                }
+            }
+        }
+        for (var i = 0; i < this._columnDefinitions.length; ++i) {
+            grid.setColumnDefinition(i, columnValues[i], !this.checkPercentage(this._columnDefinitions[i]));
+        }
+        this.setColumnValues();
+    };
+    GridPropertyGridComponent.prototype.checkValue = function (value, percent) {
+        var _a;
+        var newValue = (_a = value.match(/([0-9.,]+)/g)) === null || _a === void 0 ? void 0 : _a[0];
+        if (!newValue) {
+            newValue = '0';
+        }
+        newValue += percent ? '%' : 'px';
+        return newValue;
+    };
+    GridPropertyGridComponent.prototype.checkPercentage = function (value) {
+        var toSearch = 'px';
+        return value.substring(value.length - toSearch.length, value.length) !== toSearch;
     };
     GridPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var grid = this.props.grid;
-        var cols = [];
-        for (var index = 0; index < grid.rowCount; index++) {
-            cols.push(grid.getColumnDefinition(index));
+        if (grid !== this._previousGrid) {
+            this._removingColumn = false;
+            this._removingRow = false;
+            this._previousGrid = grid;
+            this.setRowValues();
+            this.setColumnValues();
+            this.resizeColumn();
+            this.resizeRow();
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: grid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "GRID", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "ADD ROW", onClick: function () {
-                    grid.addRowDefinition(0.5);
+                    var total = 0;
+                    var count = 0;
+                    for (var i = 0; i < grid.rowCount; ++i) {
+                        var rd = grid.getRowDefinition(i);
+                        if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
+                            total += rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
+                            count++;
+                        }
+                    }
+                    grid.addRowDefinition(total / count, false);
+                    _this.setRowValues();
+                    _this.resizeRow();
                     _this.forceUpdate();
                 } }),
-            "                ",
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE ROW", onClick: function () {
-                    grid.removeRowDefinition(grid.rowCount - 1);
+            "  ",
+            (grid.rowCount > 1 && !this._removingRow) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE ROW", onClick: function () {
+                    var hasChild = false;
+                    for (var i = 0; i < grid.columnCount; ++i) {
+                        var child = grid.cells[(grid.rowCount - 1) + ":" + i];
+                        if (child === null || child === void 0 ? void 0 : child.children.length) {
+                            hasChild = true;
+                            break;
+                        }
+                    }
+                    if (hasChild) {
+                        _this._removingRow = true;
+                    }
+                    else {
+                        grid.removeRowDefinition(grid.rowCount - 1);
+                        _this.setRowValues();
+                        _this.resizeRow();
+                    }
                     _this.forceUpdate();
                 } }),
+            this._removingRow &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?", value: " ", color: "grey" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
+                            grid.removeRowDefinition(grid.rowCount - 1);
+                            _this.setRowValues();
+                            _this.resizeRow();
+                            _this.forceUpdate();
+                            _this._removingRow = false;
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
+                            _this._removingRow = false;
+                            _this.forceUpdate();
+                        } })),
             this.renderRows(),
+            this._editedRow && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE ROW CHANGES", onClick: function () {
+                    _this.resizeRow();
+                    _this.forceUpdate();
+                } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "ADD COLUMN", onClick: function () {
-                    grid.addColumnDefinition(0.5);
+                    var total = 0;
+                    var count = 0;
+                    for (var i = 0; i < grid.columnCount; ++i) {
+                        var cd = grid.getColumnDefinition(i);
+                        if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
+                            total += cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+                            count++;
+                        }
+                    }
+                    grid.addColumnDefinition(total / count, false);
+                    _this.setColumnValues();
+                    _this.resizeColumn();
                     _this.forceUpdate();
                 } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE COLUMN", onClick: function () {
-                    grid.removeColumnDefinition(grid.columnCount - 1);
+            " ",
+            (grid.columnCount > 1 && !this._removingColumn) &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE COLUMN", onClick: function () {
+                        var hasChild = false;
+                        for (var i = 0; i < grid.rowCount; ++i) {
+                            var child = grid.cells[i + ":" + (grid.columnCount - 1)];
+                            if (child === null || child === void 0 ? void 0 : child.children.length) {
+                                hasChild = true;
+                                break;
+                            }
+                        }
+                        if (hasChild) {
+                            _this._removingColumn = true;
+                        }
+                        else {
+                            grid.removeColumnDefinition(grid.columnCount - 1);
+                            _this.setColumnValues();
+                            _this.resizeColumn();
+                        }
+                        _this.forceUpdate();
+                    } }),
+            this._removingColumn &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?", value: " ", color: "grey" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
+                            grid.removeColumnDefinition(grid.columnCount - 1);
+                            _this.setColumnValues();
+                            _this.resizeColumn();
+                            _this.forceUpdate();
+                            _this._removingColumn = false;
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
+                            _this._removingColumn = false;
+                            _this.forceUpdate();
+                        } })),
+            this.renderColumns(),
+            this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE COLUMN CHANGES", onClick: function () {
+                    _this.resizeColumn();
                     _this.forceUpdate();
-                } }),
-            this.renderColumns()));
+                } })));
     };
     return GridPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43458,10 +44063,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 
 
 
@@ -43478,15 +44083,16 @@ var ImageBasedSliderPropertyGridComponent = /** @class */ (function (_super) {
         var imageBasedSlider = this.props.imageBasedSlider;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: imageBasedSlider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "IMAGE BASED SLIDER" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display thumb", target: imageBasedSlider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Vertical", target: imageBasedSlider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb clamped", target: imageBasedSlider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar offset", target: imageBasedSlider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Thumb width", target: imageBasedSlider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Minimum", target: imageBasedSlider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Maximum", target: imageBasedSlider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Value", target: imageBasedSlider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "IMAGE BASE SLIDER", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Display thumb", target: imageBasedSlider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Vertical", target: imageBasedSlider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Thumb clamped", target: imageBasedSlider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar offset", target: imageBasedSlider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Thumb width", target: imageBasedSlider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Minimum", target: imageBasedSlider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Maximum", target: imageBasedSlider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Value", target: imageBasedSlider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ImageBasedSliderPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43526,7 +44132,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
-var verticalMarginIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/verticalMarginIcon.svg */ "./sharedUiComponents/imgs/verticalMarginIcon.svg");
+var positionIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/verticalMarginIcon.svg */ "./sharedUiComponents/imgs/verticalMarginIcon.svg");
 var ImagePropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImagePropertyGridComponent, _super);
     function ImagePropertyGridComponent(props) {
@@ -43546,19 +44152,19 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: image, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "IMAGE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Source", target: image, propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { iconLabel: "Source", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: image, propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Source Position", icon: positionIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "T", target: image, propertyName: "sourceTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: image, propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Source Size", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: image, propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "H", target: image, propertyName: "sourceHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Autoscale", target: image, propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Stretch", options: stretchOptions, target: image, propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Autoscale", icon: sizeIcon, label: "", target: image, propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { iconLabel: "Stretch", icon: sizeIcon, label: "", options: stretchOptions, target: image, propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "ANIMATION SHEET", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Cell Id", isInteger: true, target: image, propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Id", icon: sizeIcon, lockObject: this.props.lockObject, label: "", isInteger: true, target: image, propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: image, propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "H", target: image, propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -43583,11 +44189,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 
 
 
@@ -43596,6 +44203,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var fillColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "./sharedUiComponents/imgs/fillColorIcon.svg");
+var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
+var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
+var verticalMarginIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/verticalMarginIcon.svg */ "./sharedUiComponents/imgs/verticalMarginIcon.svg");
+var fontFamilyIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fontFamilyIcon.svg */ "./sharedUiComponents/imgs/fontFamilyIcon.svg");
+var alphaIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/alphaIcon.svg */ "./sharedUiComponents/imgs/alphaIcon.svg");
+var colorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/colorIcon.svg */ "./sharedUiComponents/imgs/colorIcon.svg");
 var InputTextPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputTextPropertyGridComponent, _super);
     function InputTextPropertyGridComponent(props) {
@@ -43605,20 +44220,20 @@ var InputTextPropertyGridComponent = /** @class */ (function (_super) {
         var inputText = this.props.inputText;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: inputText, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INPUTTEXT" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Text", target: inputText, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Prompt", target: inputText, propertyName: "promptMessage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Max width", target: inputText, propertyName: "maxWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Highlight color", target: inputText, propertyName: "textHighlightColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Highligher opacity", minimum: 0, maximum: 1, step: 0.01, target: inputText, propertyName: "highligherOpacity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "On focus select all", target: inputText, propertyName: "onFocusSelectAll", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Focused background", target: inputText, propertyName: "focusedBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Max width", target: inputText, propertyName: "maxWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Margin", target: inputText, propertyName: "margin", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Auto stretch width", target: inputText, propertyName: "autoStretchWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Thickness", target: inputText, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Placeholder text", target: inputText, propertyName: "placeholderText", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Placeholder color", target: inputText, propertyName: "placeholderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "INPUT TEXT", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Prompt", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "promptMessage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Max width", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "maxWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Highlight color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "textHighlightColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Highligher opacity", icon: alphaIcon, label: "", minimum: 0, maximum: 1, step: 0.01, target: inputText, propertyName: "highligherOpacity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "On focus select all", icon: verticalMarginIcon, label: "", target: inputText, propertyName: "onFocusSelectAll", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Focused background", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "focusedBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Margin", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "margin", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Auto stretch width", icon: sizeIcon, label: "", target: inputText, propertyName: "autoStretchWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { iconLabel: "Thickness", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Placeholder text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "placeholderText", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Placeholder color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "placeholderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return InputTextPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43641,15 +44256,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 
 
 
 
 
 
+var positionIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/positionIcon.svg */ "./sharedUiComponents/imgs/positionIcon.svg");
 var LinePropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LinePropertyGridComponent, _super);
     function LinePropertyGridComponent(props) {
@@ -43672,13 +44288,16 @@ var LinePropertyGridComponent = /** @class */ (function (_super) {
         var line = this.props.line;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: line, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "LINE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Line width", target: line, propertyName: "lineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "X1", target: line, propertyName: "x1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y1", target: line, propertyName: "y1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "X2", target: line, propertyName: "x2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y2", target: line, propertyName: "y2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Dash pattern", target: line, value: line.dash.join(","), onChange: function (newValue) { return _this.onDashChange(newValue); } }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "LINE", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Position 1", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: line, propertyName: "x1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: line, propertyName: "y1", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Position 2", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: line, propertyName: "x2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: line, propertyName: "y2", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Line width", icon: positionIcon, lockObject: this.props.lockObject, label: "", target: line, propertyName: "lineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Dash pattern", icon: positionIcon, lockObject: this.props.lockObject, label: "", target: line, value: line.dash.join(","), onChange: function (newValue) { return _this.onDashChange(newValue); } })));
     };
     return LinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43713,7 +44332,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
-var checkboxIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/checkboxIcon.svg */ "./sharedUiComponents/imgs/checkboxIcon.svg");
+var checkboxIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/checkboxIconDark.svg */ "./sharedUiComponents/imgs/checkboxIconDark.svg");
 var scaleIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/scaleIcon.svg */ "./sharedUiComponents/imgs/scaleIcon.svg");
 var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RadioButtonPropertyGridComponent, _super);
@@ -43726,11 +44345,11 @@ var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: radioButton, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "RADIO BUTTON", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Group", target: radioButton, propertyName: "group", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { icon: checkboxIcon, label: "", target: radioButton, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check Size Ratio", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Group", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "group", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Is Checked", icon: checkboxIcon, label: "", target: radioButton, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return RadioButtonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43776,10 +44395,10 @@ var RectanglePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { icon: clipContentsIcon, label: "", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return RectanglePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43802,15 +44421,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 
 
 
 
 
 
+var fillColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "./sharedUiComponents/imgs/fillColorIcon.svg");
+var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
+var conerRadiusIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/conerRadiusIcon.svg */ "./sharedUiComponents/imgs/conerRadiusIcon.svg");
+;
+var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
 var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScrollViewerPropertyGridComponent, _super);
     function ScrollViewerPropertyGridComponent(props) {
@@ -43820,14 +44444,18 @@ var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
         var scrollViewer = this.props.scrollViewer;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: scrollViewer, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "RECTANGLE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Thickness", target: scrollViewer, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Corner radius", target: scrollViewer, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SCROLLVIEWER" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Bar size", target: scrollViewer, propertyName: "barSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar color", target: scrollViewer, propertyName: "barColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar background", target: scrollViewer, propertyName: "barBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Wheel precision", target: scrollViewer, propertyName: "wheelPrecision", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "SCROLLVIEWER", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Wheel precision", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "wheelPrecision", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Bar size", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "barSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Bar color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "barColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Bar background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "barBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ScrollViewerPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43850,10 +44478,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 
 
 
@@ -43861,6 +44490,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
+var scaleIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/scaleIcon.svg */ "./sharedUiComponents/imgs/scaleIcon.svg");
+var horizontalMarginIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg */ "./sharedUiComponents/imgs/horizontalMarginIcon.svg");
+;
+var colorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/colorIcon.svg */ "./sharedUiComponents/imgs/colorIcon.svg");
+var vAlignCenterIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg */ "./sharedUiComponents/imgs/vAlignCenterIcon.svg");
+var clipContentsIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/clipContentsIcon.svg */ "./sharedUiComponents/imgs/clipContentsIcon.svg");
 var SliderPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderPropertyGridComponent, _super);
     function SliderPropertyGridComponent(props) {
@@ -43870,17 +44507,18 @@ var SliderPropertyGridComponent = /** @class */ (function (_super) {
         var slider = this.props.slider;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SLIDER" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Border color", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Display thumb", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb circle", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Vertical", target: slider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Thumb clamped", target: slider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar offset", target: slider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Thumb width", target: slider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Minimum", target: slider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Maximum", target: slider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Value", target: slider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "SLIDER", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_7__["Color3LineComponent"], { iconLabel: "Border color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Display thumb", icon: clipContentsIcon, label: "", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Thumb circle", icon: clipContentsIcon, label: "", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: vAlignCenterIcon, label: "", target: slider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Thumb clamped", icon: clipContentsIcon, label: "", target: slider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { iconLabel: "Bar offset", icon: clipContentsIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { iconLabel: "Thumb width", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Minimum", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Maximum", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Value", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return SliderPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43903,13 +44541,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 
 
 
 
 
+var verticalMarginIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/verticalMarginIcon.svg */ "./sharedUiComponents/imgs/verticalMarginIcon.svg");
+var clipContentsIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/clipContentsIcon.svg */ "./sharedUiComponents/imgs/clipContentsIcon.svg");
 var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StackPanelPropertyGridComponent, _super);
     function StackPanelPropertyGridComponent(props) {
@@ -43919,9 +44559,10 @@ var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
         var stackPanel = this.props.stackPanel;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: stackPanel, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "STACKPANEL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Clip children", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Vertical", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "STACKPANEL", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Clip children", icon: clipContentsIcon, label: "", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalMarginIcon, label: "", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return StackPanelPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43946,11 +44587,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 
 
 
@@ -43960,6 +44602,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var fillColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "./sharedUiComponents/imgs/fillColorIcon.svg");
+var fontFamilyIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fontFamilyIcon.svg */ "./sharedUiComponents/imgs/fontFamilyIcon.svg");
+var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
 var TextBlockPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextBlockPropertyGridComponent, _super);
     function TextBlockPropertyGridComponent(props) {
@@ -43974,14 +44620,16 @@ var TextBlockPropertyGridComponent = /** @class */ (function (_super) {
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: textBlock, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "TEXTBLOCK" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Text", target: textBlock, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Resize to fit", target: textBlock, propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "Wrapping", options: wrappingOptions, target: textBlock, propertyName: "textWrapping", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Line spacing", target: textBlock, propertyName: "lineSpacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "OUTLINE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Outline width", target: textBlock, propertyName: "outlineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Outline color", target: textBlock, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "TEXTBLOCK", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { iconLabel: "Resize to fit", icon: fontFamilyIcon, label: "", target: textBlock, propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { iconLabel: "Wrapping", icon: fontFamilyIcon, label: "", options: wrappingOptions, target: textBlock, propertyName: "textWrapping", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Line spacing", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "lineSpacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "OUTLINE", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { iconLabel: "Outline width", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "outlineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Outline color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return TextBlockPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44062,6 +44710,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ../parentingPropertyGridComponent */ "./components/parentingPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./propertyGrids/gui/displayGridPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./propertyGrids/gui/buttonPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent.tsx");
+/* harmony import */ var _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ../../guiNodeTools */ "./guiNodeTools.ts");
+
+
+
 
 
 
@@ -44100,13 +44754,28 @@ var adtIcon = __webpack_require__(/*! ../../../public/imgs/adtIcon.svg */ "../pu
 var responsiveIcon = __webpack_require__(/*! ../../../public/imgs/responsiveIcon.svg */ "../public/imgs/responsiveIcon.svg");
 var canvasSizeIcon = __webpack_require__(/*! ../../../public/imgs/canvasSizeIcon.svg */ "../public/imgs/canvasSizeIcon.svg");
 var artboardColorIcon = __webpack_require__(/*! ../../../public/imgs/artboardColorIcon.svg */ "../public/imgs/artboardColorIcon.svg");
+var rectangleIcon = __webpack_require__(/*! ../../../public/imgs/rectangleIconDark.svg */ "../public/imgs/rectangleIconDark.svg");
+var ellipseIcon = __webpack_require__(/*! ../../../public/imgs/ellipseIconDark.svg */ "../public/imgs/ellipseIconDark.svg");
+var gridIcon = __webpack_require__(/*! ../../../public/imgs/gridIconDark.svg */ "../public/imgs/gridIconDark.svg");
+var stackPanelIcon = __webpack_require__(/*! ../../../public/imgs/stackPanelIconDark.svg */ "../public/imgs/stackPanelIconDark.svg");
+var textBoxIcon = __webpack_require__(/*! ../../../public/imgs/textBoxIconDark.svg */ "../public/imgs/textBoxIconDark.svg");
+var sliderIcon = __webpack_require__(/*! ../../../public/imgs/sliderIconDark.svg */ "../public/imgs/sliderIconDark.svg");
+var buttonIcon = __webpack_require__(/*! ../../../public/imgs/buttonIconDark.svg */ "../public/imgs/buttonIconDark.svg");
+var checkboxIcon = __webpack_require__(/*! ../../../public/imgs/checkboxIconDark.svg */ "../public/imgs/checkboxIconDark.svg");
+var imageIcon = __webpack_require__(/*! ../../../public/imgs/imageIconDark.svg */ "../public/imgs/imageIconDark.svg");
+var keyboardIcon = __webpack_require__(/*! ../../../public/imgs/keyboardIconDark.svg */ "../public/imgs/keyboardIconDark.svg");
+var inputFieldIcon = __webpack_require__(/*! ../../../public/imgs/inputFieldIconDark.svg */ "../public/imgs/inputFieldIconDark.svg");
+var lineIcon = __webpack_require__(/*! ../../../public/imgs/lineIconDark.svg */ "../public/imgs/lineIconDark.svg");
+var displaygridIcon = __webpack_require__(/*! ../../../public/imgs/displaygridIconDark.svg */ "../public/imgs/displaygridIconDark.svg");
+var colorPickerIcon = __webpack_require__(/*! ../../../public/imgs/colorPickerIconDark.svg */ "../public/imgs/colorPickerIconDark.svg");
+var scrollbarIcon = __webpack_require__(/*! ../../../public/imgs/scrollbarIconDark.svg */ "../public/imgs/scrollbarIconDark.svg");
+var imageSliderIcon = __webpack_require__(/*! ../../../public/imgs/imageSliderIconDark.svg */ "../public/imgs/imageSliderIconDark.svg");
+var radioButtonIcon = __webpack_require__(/*! ../../../public/imgs/radioButtonIconDark.svg */ "../public/imgs/radioButtonIconDark.svg");
 var MAX_TEXTURE_SIZE = 16384; //2^14
 var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__["LockObject"]();
-        _this._sizeOption = 2;
         _this.saveLocally = function () {
             try {
                 var json = JSON.stringify(_this.props.globalState.guiTexture.serializeContent());
@@ -44116,50 +44785,77 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 alert("Unable to save your GUI");
             }
         };
-        _this.saveToSnippetServer = function () {
-            var adt = _this.props.globalState.guiTexture;
-            var content = JSON.stringify(adt.serializeContent());
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function () {
-                if (xmlHttp.readyState == 4) {
-                    if (xmlHttp.status == 200) {
-                        var snippet = JSON.parse(xmlHttp.responseText);
-                        var oldId = adt.snippetId;
-                        adt.snippetId = snippet.id;
-                        if (snippet.version && snippet.version != "0") {
-                            adt.snippetId += "#" + snippet.version;
+        _this.saveToSnippetServerHelper = function (content, adt) {
+            return new Promise(function (resolve, reject) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4) {
+                        if (xmlHttp.status == 200) {
+                            var snippet = JSON.parse(xmlHttp.responseText);
+                            var oldId = adt.snippetId;
+                            adt.snippetId = snippet.id;
+                            if (snippet.version && snippet.version != "0") {
+                                adt.snippetId += "#" + snippet.version;
+                            }
+                            var windowAsAny = window;
+                            if (windowAsAny.Playground && oldId) {
+                                windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                    regex: new RegExp(oldId, "g"),
+                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                                });
+                            }
+                            resolve(adt.snippetId);
                         }
-                        _this.forceUpdate();
-                        if (navigator.clipboard) {
-                            navigator.clipboard.writeText(adt.snippetId);
+                        else {
+                            reject("Unable to save your GUI");
                         }
-                        var windowAsAny = window;
-                        if (windowAsAny.Playground && oldId) {
-                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                                regex: new RegExp(oldId, "g"),
-                                replace: "parseFromSnippetAsync(\"" + adt.snippetId,
-                            });
-                        }
-                        alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
+                    }
+                };
+                xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+                xmlHttp.setRequestHeader("Content-Type", "application/json");
+                var dataToSend = {
+                    payload: JSON.stringify({
+                        gui: content,
+                    }),
+                    name: "",
+                    description: "",
+                    tags: "",
+                };
+                xmlHttp.send(JSON.stringify(dataToSend));
+            });
+        };
+        _this.saveToSnippetServer = function () { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+            var adt, content, savePromise;
+            var _this = this;
+            var _a;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
+                adt = this.props.globalState.guiTexture;
+                content = JSON.stringify(adt.serializeContent());
+                savePromise = ((_a = this.props.globalState.customSave) === null || _a === void 0 ? void 0 : _a.action) || this.saveToSnippetServerHelper;
+                savePromise(content, adt).then(function (snippetId) {
+                    adt.snippetId = snippetId;
+                    var alertMessage = "GUI saved with ID:  " + adt.snippetId;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(adt.snippetId).then(function () {
+                            alert(alertMessage + ". The ID was copied to your clipboard.");
+                        }).catch(function (err) {
+                            alert(alertMessage);
+                        });
                     }
                     else {
-                        alert("Unable to save your GUI");
+                        alert(alertMessage);
                     }
-                }
-            };
-            xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-            xmlHttp.setRequestHeader("Content-Type", "application/json");
-            var dataToSend = {
-                payload: JSON.stringify({
-                    gui: content,
-                }),
-                name: "",
-                description: "",
-                tags: "",
-            };
-            xmlHttp.send(JSON.stringify(dataToSend));
-        };
-        _this.state = { currentNode: null, textureSize: new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200) };
+                    _this.props.globalState.onBuiltObservable.notifyObservers();
+                }).catch(function (err) {
+                    alert(err);
+                });
+                this.forceUpdate();
+                return [2 /*return*/];
+            });
+        }); };
+        _this.state = { currentNode: null };
+        _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__["LockObject"]();
+        _this.props.globalState.lockObject = _this._lockObject;
         _this.props.globalState.onSaveObservable.add(function () {
             _this.save(_this.saveLocally);
         });
@@ -44186,8 +44882,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
         });
         this.props.globalState.onResizeObservable.add(function (newSize) {
-            _this.setState({ textureSize: newSize });
             _this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
+            _this.forceUpdate();
         });
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(function () {
             _this.forceUpdate();
@@ -44225,6 +44921,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     };
     PropertyTabComponent.prototype.renderProperties = function () {
+        var _this = this;
         var _a;
         var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.getClassName();
         switch (className) {
@@ -44284,9 +44981,18 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 var line = this.state.currentNode;
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
+            case "DisplayGrid": {
+                var displayGrid = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["DisplayGridPropertyGridComponent"], { displayGrid: displayGrid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+            }
             case "Button": {
-                var control = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { key: "buttonMenu", control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var button_1 = this.state.currentNode;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["ButtonPropertyGridComponent"], { key: "buttonMenu", rectangle: button_1, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, onAddComponent: function (value) {
+                        var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__["GUINodeTools"].CreateControlFromString(value);
+                        var newGuiNode = _this.props.globalState.workbench.createNewGuiNode(guiElement);
+                        button_1.addControl(newGuiNode);
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                    } });
             }
         }
         if (className !== "") {
@@ -44295,73 +45001,166 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         }
         return null;
     };
+    PropertyTabComponent.prototype.renderControlIcon = function () {
+        var _a;
+        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.getClassName();
+        switch (className) {
+            case "TextBlock": {
+                return textBoxIcon;
+            }
+            case "InputText": {
+                return inputFieldIcon;
+            }
+            case "ColorPicker": {
+                return colorPickerIcon;
+            }
+            case "Image": {
+                return imageIcon;
+            }
+            case "Slider": {
+                return sliderIcon;
+            }
+            case "ImageBasedSlider": {
+                return imageSliderIcon;
+            }
+            case "Rectangle": {
+                return rectangleIcon;
+            }
+            case "StackPanel": {
+                return stackPanelIcon;
+            }
+            case "Grid": {
+                return gridIcon;
+            }
+            case "ScrollViewer": {
+                return scrollbarIcon;
+            }
+            case "Ellipse": {
+                return ellipseIcon;
+            }
+            case "Checkbox": {
+                return checkboxIcon;
+            }
+            case "RadioButton": {
+                return radioButtonIcon;
+            }
+            case "Line": {
+                return lineIcon;
+            }
+            case "DisplayGrid": {
+                return displaygridIcon;
+            }
+            case "VirtualKeyboard": {
+                return keyboardIcon;
+            }
+            case "Button": {
+                return buttonIcon;
+            }
+        }
+        return adtIcon;
+    };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
         var _a, _b;
+        if (this.props.globalState.guiTexture == undefined)
+            return null;
+        var _sizeValues = [
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1366, 768),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1280, 800),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](3840, 2160),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1125, 2436),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1170, 2532),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1284, 2778),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1080, 2220),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1080, 2340),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1024, 1024),
+            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](2048, 2048),
+        ];
+        var _sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Web (1366)", value: 1 },
+            { label: "Web (1280)", value: 2 },
+            { label: "Web (3840)", value: 3 },
+            { label: "iPhone 8 (750)", value: 4 },
+            { label: "iPhone X, 11 (1125)", value: 5 },
+            { label: "iPhone 12 (1170)", value: 6 },
+            { label: "iPhone Pro Max (1284)", value: 7 },
+            { label: "Google Pixel 4 (1080)", value: 8 },
+            { label: "Google Pixel 5 (1080)", value: 9 },
+            { label: "Square (1024)", value: 10 },
+            { label: "Square (2048)", value: 11 },
+        ];
+        var size = this.props.globalState.guiTexture.getSize();
+        var textureSize = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height);
+        this._sizeOption = _sizeValues.findIndex(function (value) { return value.x == textureSize.x && value.y == textureSize.y; });
+        if (this._sizeOption < 0) {
+            this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
+            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", false);
+        }
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: adtIcon }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: this.renderControlIcon() }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: this.state.currentNode, propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
                 this.renderProperties(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
-                        var _a;
-                        (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
-                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
-                        if (_this.state.currentNode) {
-                            _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
-                        }
-                    } })));
+                this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
+                                var _a;
+                                (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                            } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                                if (_this.state.currentNode) {
+                                    _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
+                                }
+                            } }))));
         }
-        var sizeOptions = [
-            { label: "Web (1920)", value: 0 },
-            { label: "Phone (720)", value: 1 },
-            { label: "Square (1200)", value: 2 },
-            { label: "Custom", value: 3 }
-        ];
-        var sizeValues = [
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1200, 1200)
-        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: adtIcon }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "AdvancedDynamicTexture")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "ART BOARD", value: " ", color: "grey" }),
-                this.props.globalState.workbench.artBoardBackground !== undefined &&
+                this.props.globalState.workbench._scene !== undefined &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_27__["Color3LineComponent"], { iconLabel: "Background Color", lockObject: this._lockObject, icon: artboardColorIcon, label: "", target: this.props.globalState.workbench._scene, propertyName: "clearColor", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "CANVAS", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "RESPONSIVE", iconLabel: "A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes", icon: responsiveIcon, isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
                         _this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", value);
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
-                        _this._sizeOption = value;
-                        if (_this._sizeOption != (sizeOptions.length - 1)) {
-                            var newSize = sizeValues[_this._sizeOption];
-                            _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                        _this._sizeOption = _sizeOptions.length;
+                        if (value) {
+                            _this._sizeOption = 0;
+                            _this.props.globalState.workbench.resizeGuiTexture(_sizeValues[_this._sizeOption]);
                         }
                         _this.forceUpdate();
                     } }),
-                this._sizeOption == (sizeOptions.length - 1) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "divider" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "X", target: this.state.textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: _sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
+                            _this._sizeOption = value;
+                            if (_this._sizeOption !== (_sizeOptions.length)) {
+                                var newSize = _sizeValues[_this._sizeOption];
+                                _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            }
+                            _this.forceUpdate();
+                        } }),
+                !babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
-                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, _this.state.textureSize.y));
+                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, textureSize.y));
                                 }
                             } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "Y", target: this.state.textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                                 if (!isNaN(newvalue)) {
-                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](_this.state.textureSize.x, newvalue));
+                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](textureSize.x, newvalue));
                                 }
                             } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
@@ -44706,8 +45505,10 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 return;
                 break;
             case "Delete":
-                this.state.selectedEntity.dispose();
-                this.forceUpdate();
+                if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
+                    this.state.selectedEntity.dispose();
+                    this.forceUpdate();
+                }
                 break;
             default:
                 break;
@@ -44897,7 +45698,7 @@ var TreeItemComponent = /** @class */ (function (_super) {
         }
         var sortedItems = _tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].SortAndFilter(null, items)[0].getChildren();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, sortedItems.map(function (item) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemSelectableComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemSelectableComponent"], { mustExpand: _this.state.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, key: item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name, offset: _this.props.offset + 1, selectedEntity: _this.props.selectedEntity, entity: item, globalState: _this.props.globalState, filter: _this.props.filter }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemSelectableComponent__WEBPACK_IMPORTED_MODULE_4__["TreeItemSelectableComponent"], { extensibilityGroups: _this.props.extensibilityGroups, key: item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name, offset: _this.props.offset + 1, selectedEntity: _this.props.selectedEntity, entity: item, globalState: _this.props.globalState, filter: _this.props.filter }));
         })));
     };
     TreeItemComponent._ContextMenuUniqueIdGenerator = 0;
@@ -44977,8 +45778,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemSelectableComponent, _super);
     function TreeItemSelectableComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._wasSelected = false;
-        _this.state = { dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.entity === _this.props.selectedEntity, isExpanded: _this.props.mustExpand || _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].LookForItem(_this.props.entity, _this.props.selectedEntity) };
+        _this.state = { dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.entity === _this.props.selectedEntity };
         _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function (selection) {
             _this.setState({ isSelected: selection === _this.props.entity });
         });
@@ -44991,12 +45791,9 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         return _this;
     }
     TreeItemSelectableComponent.prototype.switchExpandedState = function () {
-        this.setState({ isExpanded: !this.state.isExpanded });
+        this.props.entity.reservedDataStore.isExpanded = !this.props.entity.reservedDataStore.isExpanded;
     };
     TreeItemSelectableComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        if (!nextState.isExpanded && this.state.isExpanded) {
-            return true;
-        }
         //if the next entity is going to be selected then we want to highlight it so update
         if (nextProps.entity === nextProps.selectedEntity) {
             nextState.isSelected = true;
@@ -45007,7 +45804,6 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         }
         if (nextProps.selectedEntity) {
             if (_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].LookForItem(nextProps.entity, nextProps.selectedEntity)) {
-                nextState.isExpanded = true;
                 return true;
             }
         }
@@ -45019,38 +45815,29 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             element.scrollIntoView(false);
         }
     };
-    TreeItemSelectableComponent.prototype.componentDidMount = function () {
-        if (this.state.isSelected) {
-            this.scrollIntoView();
-        }
-    };
     TreeItemSelectableComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
         this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
         this.props.globalState.onParentingChangeObservable.remove(this._onDraggingStartObservable);
     };
-    TreeItemSelectableComponent.prototype.componentDidUpdate = function () {
-        if (this.state.isSelected && !this._wasSelected) {
-            this.scrollIntoView();
-        }
-        this._wasSelected = false;
-    };
     TreeItemSelectableComponent.prototype.onSelect = function () {
         if (!this.props.globalState.onSelectionChangedObservable) {
             return;
         }
-        this._wasSelected = true;
         var entity = this.props.entity;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
         this.props.globalState.selectionLock = true;
     };
-    TreeItemSelectableComponent.prototype.renderChildren = function () {
+    TreeItemSelectableComponent.prototype.renderChildren = function (isExpanded) {
         var _this = this;
         var entity = this.props.entity;
-        if (!entity.getChildren && !entity.children || !this.state.isExpanded) {
+        if (!entity.getChildren && !entity.children || !isExpanded) {
             return null;
         }
         var children = _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        if (entity.typeName === "StackPanel" || entity.typeName === "VirtualKeyboard") {
+            children.reverse();
+        }
         return (children.map(function (item, i) {
             if (item.name == "Art-Board-Background") {
                 return (null);
@@ -45064,16 +45851,15 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             paddingLeft: (10 * (this.props.offset + 0.5)) - 20 + "px"
         };
         var entity = this.props.entity;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: expandedIcon, className: "icon" }) : react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: collapsedIcon, className: "icon" });
-        var children = entity.getClassName() === "MultiMaterial" ? [] : _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
-        var hasChildren = children.length > 0;
         if (!entity.reservedDataStore) {
             entity.reservedDataStore = {};
+            entity.reservedDataStore.isExpanded = true;
         }
-        entity.reservedDataStore.setExpandedState = function (value) {
-            _this.setState({ isExpanded: value });
-        };
-        entity.reservedDataStore.isExpanded = this.state.isExpanded;
+        var isExpanded = entity.reservedDataStore.isExpanded || _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].LookForItem(this.props.entity, this.props.selectedEntity);
+        entity.reservedDataStore.isExpanded = isExpanded;
+        var chevron = isExpanded ? react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: expandedIcon, className: "icon" }) : react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: collapsedIcon, className: "icon" });
+        var children = entity.getClassName() === "MultiMaterial" ? [] : _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        var hasChildren = children.length > 0;
         if (this.props.filter) {
             var lowerCaseFilter_1 = this.props.filter.toLowerCase();
             if (!entity.name || entity.name.toLowerCase().indexOf(lowerCaseFilter_1) === -1) {
@@ -45113,7 +45899,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
                 hasChildren &&
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__["ControlTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { }, isHovered: this.state.isHovered, dragOverHover: this.dragOverHover, dragOverLocation: this.state.dragOverLocation })),
-            this.renderChildren()));
+            this.renderChildren(isExpanded)));
     };
     TreeItemSelectableComponent.prototype.dragOver = function (event) {
         //check the positiions of the mouse cursor.
@@ -45180,6 +45966,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../tools */ "./tools.ts");
+
 
 
 
@@ -45222,17 +46010,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._mouseStartPointY = null;
         _this._selectedGuiNodes = [];
         _this._ctrlKeyIsPressed = false;
+        _this._altKeyIsPressed = false;
         _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
-        _this._forceSelecting = false;
+        _this._forceMoving = false;
+        _this._forceSelecting = true;
         _this._outlines = false;
-        _this._isOverGUINode = false;
-        _this._focused = false;
+        _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
+        _this._cameraMaxRadiasFactor = 16384; // 2^13
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
+            _this._altKeyIsPressed = evt.altKey;
             if (evt.shiftKey) {
                 _this._setConstraintDirection = _this._constraintDirection === ConstraintDirection.NONE;
             }
@@ -45241,14 +46032,16 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this._constraintDirection = ConstraintDirection.NONE;
             }
             if (evt.key === "Delete") {
-                if (_this._focused) {
+                if (!_this.props.globalState.lockObject.lock) {
                     _this._selectedGuiNodes.forEach(function (guiNode) {
-                        guiNode.dispose();
+                        if (guiNode !== _this.globalState.guiTexture.getChildren()[0]) {
+                            guiNode.dispose();
+                        }
                     });
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 }
             }
-            if (_this._ctrlKeyIsPressed && _this._focused) {
+            if (_this._ctrlKeyIsPressed && !_this.props.globalState.lockObject.lock) {
                 if (evt.key === "a") {
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var index_1 = 0;
@@ -45261,10 +46054,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 else if (evt.key === "c") {
                     _this.copyToClipboard();
                 }
-                else if (evt.key === "v") {
+                else if (evt.key === "v" && !_this._pasted) {
                     _this.globalState.onSelectionChangedObservable.notifyObservers(null);
                     _this.pasteFromClipboard();
+                    _this._pasted = true;
                 }
+            }
+            else if (!_this._ctrlKeyIsPressed) {
+                _this._pasted = false;
+            }
+            if (_this._forceZooming) {
+                _this._canvas.style.cursor = _this._altKeyIsPressed ? "zoom-out" : "zoom-in";
             }
         };
         _this.blurEvent = function () {
@@ -45303,29 +46103,67 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         props.globalState.onPanObservable.add(function () {
             _this._forcePanning = !_this._forcePanning;
             _this._forceSelecting = false;
+            _this._forceMoving = false;
             _this._forceZooming = false;
             if (!_this._forcePanning) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
-                _this._canvas.style.cursor = "move";
+                _this._canvas.style.cursor = "grab";
             }
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            _this.artBoardBackground.isHitTestVisible = true;
         });
-        props.globalState.onSelectionButtonObservable.add(function () {
-            _this._forceSelecting = true;
+        props.globalState.onMoveObservable.add(function () {
+            _this._forceMoving = !_this._forceMoving;
             _this._forcePanning = false;
             _this._forceZooming = false;
+            _this._forceSelecting = false;
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            if (!_this._forceSelecting) {
+                _this.updateHitTestForSelection(true);
+            }
+            if (!_this._forceMoving) {
+                _this.globalState.onSelectionButtonObservable.notifyObservers();
+            }
+            else {
+                _this._canvas.style.cursor = "move";
+            }
+            _this.artBoardBackground.isHitTestVisible = true;
+        });
+        props.globalState.onSelectionButtonObservable.add(function () {
+            _this._forceSelecting = !_this._forceSelecting;
+            _this._forcePanning = false;
+            _this._forceZooming = false;
+            _this._forceMoving = false;
             _this._canvas.style.cursor = "default";
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            if (_this._forceMoving) {
+                _this.updateHitTestForSelection(true);
+            }
+            _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
             _this._forcePanning = false;
             _this._forceSelecting = false;
+            _this._forceMoving = false;
             if (!_this._forceZooming) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
             else {
                 _this._canvas.style.cursor = "zoom-in";
+            }
+            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
+            _this.artBoardBackground.isHitTestVisible = true;
+        });
+        props.globalState.onFitToWindowObservable.add(function () {
+            _this.setCameraRadius();
+            for (var i = 0; i < 2; ++i) {
+                _this._camera.alpha = -Math.PI / 2;
+                _this._camera.beta = 0;
+                _this._camera.radius = _this._cameraRadias;
+                _this._camera.target = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
             }
         });
         props.globalState.onOutlinesObservable.add(function () {
@@ -45341,6 +46179,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // Hotkey shortcuts
         _this.props.globalState.hostDocument.addEventListener("keydown", _this.keyEvent, false);
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
+        props.globalState.onWindowResizeObservable.add(function () {
+            _this._engine.resize();
+        });
         _this.props.globalState.workbench = _this;
         return _this;
     }
@@ -45365,6 +46206,27 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    WorkbenchComponent.prototype.updateHitTest = function (guiControl, value) {
+        var _this = this;
+        guiControl.isHitTestVisible = value;
+        if (this.props.globalState.workbench.isContainer(guiControl)) {
+            guiControl.children.forEach(function (child) {
+                _this.updateHitTest(child, value);
+            });
+        }
+    };
+    WorkbenchComponent.prototype.updateHitTestForSelection = function (value) {
+        if (this._forceSelecting && !value)
+            return;
+        this.selectedGuiNodes.forEach(function (control) {
+            control.isHitTestVisible = value;
+        });
+    };
+    WorkbenchComponent.prototype.setCameraRadius = function () {
+        var size = this.props.globalState.guiTexture.getSize();
+        this._cameraRadias = size.width > size.height ? size.width : size.height;
+        this._cameraRadias += this._cameraRadias - (this._cameraRadias / 1.5);
+    };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
         if (this._selectAll) {
@@ -45386,14 +46248,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
     };
     WorkbenchComponent.prototype.CopyGUIControl = function (original) {
-        var _a;
+        var _a, _b;
         var serializationObject = {};
         original.serialize(serializationObject);
         var newControl = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(serializationObject, this.props.globalState.guiTexture);
         if (newControl) { //insert the new control into the adt or parent container
             this.props.globalState.workbench.appendBlock(newControl);
             this.props.globalState.guiTexture.removeControl(newControl);
-            (_a = original.parent) === null || _a === void 0 ? void 0 : _a.addControl(newControl);
+            if (((_a = original.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "Grid") {
+                var cell = _tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].getCellInfo(original.parent, original);
+                original.parent.addControl(newControl, cell.x, cell.y);
+            }
+            else {
+                (_b = original.parent) === null || _b === void 0 ? void 0 : _b.addControl(newControl);
+            }
             var index_3 = 1;
             while (this.props.globalState.guiTexture.getDescendants(false).filter(//search if there are any copies
             function (//search if there are any copies
@@ -45418,10 +46286,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.props.globalState.hostDocument.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument.defaultView.removeEventListener("blur", this.blurEvent);
+        this._engine.dispose();
     };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject);
+        this.globalState.guiTexture.parseContent(serializationObject, true);
         this.loadToEditor();
     };
     WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
@@ -45430,10 +46299,16 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId)];
+                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true)];
                     case 1:
                         _a.sent();
                         this.loadToEditor();
+                        if (this.props.globalState.customLoad) {
+                            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(function (err) {
+                                alert("Unable to load your GUI");
+                            });
+                        }
+                        this.globalState.onSelectionChangedObservable.notifyObservers(null);
                         return [2 /*return*/];
                 }
             });
@@ -45441,6 +46316,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.loadToEditor = function () {
         var _this = this;
+        var size = this.globalState.guiTexture.getSize();
+        this.resizeGuiTexture(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height));
         var children = this.globalState.guiTexture.getChildren();
         children[0].children.forEach(function (guiElement) {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
@@ -45455,10 +46332,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         else {
             this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
+        this._isOverGUINode = [];
     };
     WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
         var _this = this;
-        this.selectedGuiNodes.forEach(function (node) {
+        this._selectedGuiNodes.forEach(function (node) {
             if (_this._outlines) {
                 node.isHighlighted = true;
                 node.highlightLineWidth = value ? 10 : 5;
@@ -45468,6 +46346,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 node.highlightLineWidth = 10;
             }
         });
+        this.updateHitTestForSelection(value);
     };
     WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
         this._textureMesh.scaling.x = newvalue.x;
@@ -45475,6 +46354,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
         this.globalState.guiTexture.markAsDirty();
         this.globalState.onResizeObservable.notifyObservers(newvalue);
+        this.globalState.onFitToWindowObservable.notifyObservers();
     };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
@@ -45492,6 +46372,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             case "Ellipse":
             case "Grid":
             case "ScrollViewer":
+            case "Container":
+            case "VirtualKeyboard":
                 return true;
             default:
                 return false;
@@ -45499,21 +46381,34 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.createNewGuiNode = function (guiControl) {
         var _this = this;
-        this.enableEditorProperties(guiControl);
+        guiControl.highlightLineWidth = 5;
         guiControl.onPointerUpObservable.add(function (evt) {
             _this.clicked = false;
         });
         guiControl.onPointerDownObservable.add(function (evt) {
-            if (!_this.isUp)
+            if (!_this.isUp || evt.buttonIndex > 0)
                 return;
-            _this.isSelected(true, guiControl);
-            _this.isUp = false;
+            if (_this._forceSelecting) {
+                _this.isSelected(true, guiControl);
+                _this.isUp = false;
+            }
         });
         guiControl.onPointerEnterObservable.add(function (evt) {
-            _this._isOverGUINode = true;
+            if (_this._isOverGUINode.indexOf(guiControl) === -1) {
+                _this._isOverGUINode.push(guiControl);
+            }
         });
         guiControl.onPointerOutObservable.add(function (evt) {
-            _this._isOverGUINode = false;
+            var index = _this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                _this._isOverGUINode.splice(index, 1);
+            }
+        });
+        guiControl.onDisposeObservable.add(function (evt) {
+            var index = _this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                _this._isOverGUINode.splice(index, 1);
+            }
         });
         if (this.isContainer(guiControl)) {
             guiControl.children.forEach(function (child) {
@@ -45521,57 +46416,76 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             });
         }
         guiControl.isReadOnly = true;
+        guiControl.isHitTestVisible = true;
         return guiControl;
-    };
-    WorkbenchComponent.prototype.enableEditorProperties = function (guiControl) {
-        switch (guiControl.typeName) {
-            case "Button":
-                guiControl.pointerDownAnimation = function () { return null; };
-                guiControl.pointerUpAnimation = function () { return null; };
-                break;
-            case "StackPanel":
-            case "Grid":
-                guiControl.isHighlighted = true;
-                break;
-            default:
-                break;
-        }
-        guiControl.highlightLineWidth = 5;
     };
     WorkbenchComponent.prototype.parent = function (dropLocationControl) {
         var draggedControl = this.props.globalState.draggedControl;
         var draggedControlParent = draggedControl === null || draggedControl === void 0 ? void 0 : draggedControl.parent;
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
-                draggedControlParent.removeControl(draggedControl);
                 if (dropLocationControl != null) { //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER) {
+                        draggedControlParent.removeControl(draggedControl);
                         dropLocationControl.addControl(draggedControl);
+                        var stackPanel = dropLocationControl.typeName === "StackPanel" || dropLocationControl.typeName === "VirtualKeyboard";
+                        if (stackPanel) {
+                            this._convertToPixels(draggedControl, dropLocationControl);
+                        }
                     }
                     else if (dropLocationControl.parent) { //dropping inside the controls parent container
                         if (dropLocationControl.parent.typeName != "Grid") {
+                            draggedControlParent.removeControl(draggedControl);
                             var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            index = this._adjustParentingIndex(index); //adjusting index to be before or after based on where the control is over
+                            var reversed = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
+                            index = this._adjustParentingIndex(index, reversed); //adjusting index to be before or after based on where the control is over
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
+                            if (reversed) {
+                                this._convertToPixels(draggedControl, draggedControl.parent);
+                            }
                         }
-                        else { //special case for grid
+                        else if (dropLocationControl.parent === draggedControlParent) { //special case for grid
+                            this._reorderGrid(dropLocationControl.parent, draggedControl, dropLocationControl);
+                        }
+                        else {
+                            draggedControlParent.removeControl(draggedControl);
                             dropLocationControl.parent.addControl(draggedControl);
+                            this._reorderGrid(dropLocationControl.parent, draggedControl, dropLocationControl);
                         }
                     }
                     else {
+                        draggedControlParent.removeControl(draggedControl);
                         this.props.globalState.guiTexture.addControl(draggedControl);
                     }
                 }
                 else {
                     //starting at index 1 because of object "Art-Board-Background" must be at index 0
+                    draggedControlParent.removeControl(draggedControl);
                     draggedControlParent.children.splice(1, 0, draggedControl);
                     draggedControl.parent = draggedControlParent;
                 }
             }
         }
         this.globalState.draggedControl = null;
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    };
+    WorkbenchComponent.prototype._convertToPixels = function (draggedControl, parent) {
+        var width = draggedControl.widthInPixels + "px";
+        var height = draggedControl.heightInPixels + "px";
+        if (draggedControl.width !== width || draggedControl.height !== height) {
+            draggedControl.width = width;
+            draggedControl.height = height;
+            alert("Warning: Parenting to stack panel will convert control to pixel value");
+        }
+    };
+    WorkbenchComponent.prototype._reorderGrid = function (grid, draggedControl, dropLocationControl) {
+        var cellInfo = _tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].getCellInfo(grid, draggedControl);
+        grid.removeControl(draggedControl);
+        var index = grid.children.indexOf(dropLocationControl);
+        index = this._adjustParentingIndex(index);
+        _tools__WEBPACK_IMPORTED_MODULE_5__["Tools"].reorderGrid(grid, index, draggedControl, cellInfo);
     };
     WorkbenchComponent.prototype._isNotChildInsert = function (control, draggedControl) {
         while (control === null || control === void 0 ? void 0 : control.parent) {
@@ -45582,13 +46496,14 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }
         return true;
     };
-    WorkbenchComponent.prototype._adjustParentingIndex = function (index) {
+    WorkbenchComponent.prototype._adjustParentingIndex = function (index, reversed) {
+        if (reversed === void 0) { reversed = false; }
         switch (this.props.globalState.draggedControlDirection) {
             case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].ABOVE:
-                return index + 1;
+                return reversed ? index : index + 1;
             case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].BELOW:
             case _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER:
-                return index;
+                return reversed ? index + 1 : index;
         }
         return index;
     };
@@ -45634,9 +46549,14 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     ratioX = cell.widthInPixels;
                     ratioY = cell.heightInPixels;
                 }
+                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                    var thickness = guiControl.parent.thickness * 2;
+                    ratioX = guiControl.parent._currentMeasure.width - thickness;
+                    ratioY = guiControl.parent._currentMeasure.height - thickness;
+                }
                 else {
-                    ratioX = guiControl.parent.widthInPixels;
-                    ratioY = guiControl.parent.heightInPixels;
+                    ratioX = guiControl.parent._currentMeasure.width;
+                    ratioY = guiControl.parent._currentMeasure.height;
                 }
             }
             var left = (guiControl.leftInPixels * 100) / ratioX;
@@ -45682,12 +46602,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
-        if (!this._isOverGUINode) {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        if ((this._isOverGUINode.length === 0) && !evt.button) {
+            if (this._forceSelecting) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            }
+            return;
         }
         var pos = this.getGroundPosition();
-        this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-        this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        if (pos === null && this._forceSelecting && !evt.button) {
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        }
+        if (this._forceMoving) {
+            this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
+            this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+        }
     };
     WorkbenchComponent.prototype.onUp = function (evt) {
         var _a;
@@ -45703,16 +46631,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var canvas = document.getElementById("workbench-canvas");
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
-        var engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
+        this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
         // Create our first scene.
-        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](engine);
+        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
         var clearColor = 204 / 255.0;
         this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
-        var camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, 1024, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
         var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
         light.intensity = 0.9;
         var textureSize = 1024;
-        this._textureMesh = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Mesh"].CreateGround("GuiCanvas", 1, 1, 1, this._scene);
+        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
@@ -45723,15 +46650,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.artBoardBackground.background = "white";
         this.artBoardBackground.thickness = 0;
         this.globalState.guiTexture.addControl(this.artBoardBackground);
-        this.addControls(this._scene, camera);
+        this.setCameraRadius();
+        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
+        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
+        this.addControls(this._scene, this._camera);
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
+        this._scene.doNotHandleCursors = true;
         // Watch for browser/canvas resize events
         window.addEventListener("resize", function () {
-            engine.resize();
+            _this._engine.resize();
         });
-        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Please note: This editor is still a work in progress. You may submit feedback to msDestiny14 on GitHub.");
-        engine.runRenderLoop(function () { _this._scene.render(); });
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
+        this._engine.runRenderLoop(function () { _this._scene.render(); });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
     ;
     //Add map-like controls to an ArcRotate camera
@@ -45740,7 +46672,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _a;
         camera.inertia = 0.7;
         camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = 2500;
+        camera.upperRadiusLimit = this._cameraMaxRadiasFactor;
         camera.upperBetaLimit = Math.PI / 2 - 0.1;
         camera.angularSensibilityX = camera.angularSensibilityY = 500;
         var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y);
@@ -45765,9 +46697,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.zooming(delta, scene, camera, plane, inertialPanning);
         };
         var zoomFnMouse = function (p, e) {
-            var newPos = _this.getPosition(scene, camera, plane);
-            var deltaVector = initialPos.subtract(newPos);
-            _this.zooming(deltaVector.x > 0 ? -10 : 10, scene, camera, plane, inertialPanning);
+            _this.zooming(_this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
         };
         var removeObservers = function () {
             scene.onPointerObservable.removeCallback(panningFn);
@@ -45795,24 +46725,33 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
-                case "q": //select
-                case "Q":
+                case "s": //select
+                case "S":
                     if (!_this._forceSelecting)
                         _this.globalState.onSelectionButtonObservable.notifyObservers();
                     break;
-                case "w": //pan
-                case "W":
+                case "p": //pan
+                case "P":
                     if (!_this._forcePanning)
                         _this.globalState.onPanObservable.notifyObservers();
                     break;
-                case "e": //zoom
-                case "E":
+                case "z": //zoom
+                case "Z":
                     if (!_this._forceZooming)
                         _this.globalState.onZoomObservable.notifyObservers();
                     break;
-                case "r": //outlines
-                case "R":
+                case "g": //outlines
+                case "G":
                     _this.globalState.onOutlinesObservable.notifyObservers();
+                    break;
+                case "m": //move
+                case "M":
+                    if (!_this._forceMoving)
+                        _this.globalState.onMoveObservable.notifyObservers();
+                    break;
+                case "f": //fit to window
+                case "F":
+                    _this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
                 default:
                     break;
@@ -45900,7 +46839,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); }, ref: this._rootContainer, onFocus: function () { _this._focused = true; }, onBlur: function () { _this._focused = false; } }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); }, ref: this._rootContainer }));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -45951,6 +46890,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+
 
 
 
@@ -45977,8 +46918,10 @@ var GlobalState = /** @class */ (function () {
         this.blockKeyboardEvents = false;
         this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onFitToWindowObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPanObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionButtonObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -45989,7 +46932,10 @@ var GlobalState = /** @class */ (function () {
         this.onPropertyGridUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
+        this.isSaving = false;
+        this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
@@ -46059,6 +47005,7 @@ var GUIEditor = /** @class */ (function () {
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument;
         globalState.customSave = options.customSave;
+        globalState.customLoad = options.customLoad;
         globalState.hostWindow = hostElement.ownerDocument.defaultView;
         var graphEditor = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_workbenchEditor__WEBPACK_IMPORTED_MODULE_3__["WorkbenchEditor"], {
             globalState: globalState,
@@ -46165,7 +47112,7 @@ var GUINodeTools = /** @class */ (function () {
             case "Rectangle":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Rectangle"]("Rectangle");
                 element.color = "#cccccc";
-                element.background = "Transparent";
+                element.background = "transparent";
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
@@ -46189,7 +47136,7 @@ var GUINodeTools = /** @class */ (function () {
                 element.isPointerBlocker = true;
                 return element;
             case "ImageButton":
-                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Button"].CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
+                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Button"].CreateImageButton("Button", "Click Me", GUINodeTools.ImageControlDefaultUrl);
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
@@ -46197,15 +47144,22 @@ var GUINodeTools = /** @class */ (function () {
                 element.height = "40px";
                 return element;
             case "VirtualKeyboard":
-                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"].CreateDefaultLayout();
+                element = babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["VirtualKeyboard"].CreateDefaultLayout("VirtualKeyboard");
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
-                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Image"]("Image", "https://playground.babylonjs.com/textures/grass.png");
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Image"]("Image", GUINodeTools.ImageControlDefaultUrl);
                 element.width = "512px";
                 element.height = "512px";
                 element.autoScale = true;
-                element.color = "Transparent";
+                element.color = "transparent";
+                element.isPointerBlocker = true;
+                return element;
+            case "ButtonImage":
+                element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Image"]("Image", GUINodeTools.ImageControlDefaultUrl);
+                element.width = "100%";
+                element.height = "100%";
+                element.color = "transparent";
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":
@@ -46231,8 +47185,8 @@ var GUINodeTools = /** @class */ (function () {
             case "Grid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
                 element.isHighlighted = true;
-                element.addColumnDefinition(0.5);
-                element.addRowDefinition(0.5);
+                element.addColumnDefinition(1.0, false);
+                element.addRowDefinition(1.0, false);
                 element.isPointerBlocker = true;
                 return element;
             case "DisplayGrid":
@@ -46241,7 +47195,7 @@ var GUINodeTools = /** @class */ (function () {
             case "StackPanel":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]("StackPanel");
                 element.isHighlighted = true;
-                element.width = "160%";
+                element.width = "100%";
                 element.height = "100%";
                 return element;
             case "ScrollViewer":
@@ -46279,6 +47233,7 @@ var GUINodeTools = /** @class */ (function () {
                 return element;
         }
     };
+    GUINodeTools.ImageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
     return GUINodeTools;
 }());
 
@@ -46793,6 +47748,28 @@ var HexColor = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/addImageButtonIcon.svg":
+/*!********************************************************!*\
+  !*** ./sharedUiComponents/imgs/addImageButtonIcon.svg ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M18.74,15.43a4.47,4.47,0,1,1-4.48,4.47A4.47,4.47,0,0,1,18.74,15.43Zm0,1.62h-.08a.41.41,0,0,0-.32.32v2.11H16.22a.41.41,0,0,0-.32.32V20a.4.4,0,0,0,.32.33h2.11v2.11a.4.4,0,0,0,.33.33h.14a.4.4,0,0,0,.33-.33V20.3h2.11a.4.4,0,0,0,.33-.33v-.15a.4.4,0,0,0-.33-.32H19.14V17.38a.4.4,0,0,0-.33-.32Zm-2-8.57a1.84,1.84,0,1,0,1.84,1.84A1.83,1.83,0,0,0,16.77,8.48Zm0,2.45a.61.61,0,0,1-.61-.61.62.62,0,1,1,1.23,0A.61.61,0,0,1,16.77,10.93Zm-3.51,9a5.44,5.44,0,0,1,.07-.82H9.44A1.28,1.28,0,0,1,9,19l4.8-4.69a.62.62,0,0,1,.79.06l1.07,1.05a5.36,5.36,0,0,1,1.13-.61l-1.34-1.31-.11-.1a1.83,1.83,0,0,0-2.46.1L8.1,18.13A1.28,1.28,0,0,1,8,17.65V8.28A1.43,1.43,0,0,1,9.44,6.85h9.37a1.43,1.43,0,0,1,1.43,1.43v6.36a5.27,5.27,0,0,1,1.22.52V8.28a2.65,2.65,0,0,0-2.65-2.65H9.44A2.65,2.65,0,0,0,6.79,8.28v9.37A2.65,2.65,0,0,0,9.44,20.3h3.85C13.28,20.17,13.26,20,13.26,19.9Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/addTextButtonIcon.svg":
+/*!*******************************************************!*\
+  !*** ./sharedUiComponents/imgs/addTextButtonIcon.svg ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M18.23,14.57a4.48,4.48,0,1,1-4.47,4.48A4.48,4.48,0,0,1,18.23,14.57Zm0,1.63h-.07a.4.4,0,0,0-.33.32v2.11H15.71a.41.41,0,0,0-.32.32v.15a.42.42,0,0,0,.32.33h2.11v2.11a.4.4,0,0,0,.33.33h.14a.4.4,0,0,0,.33-.33V19.45h2.11a.42.42,0,0,0,.32-.33V19a.41.41,0,0,0-.32-.32H18.64V16.53a.4.4,0,0,0-.33-.32Zm-5.47,2.85a5.44,5.44,0,0,1,.82-2.88V7.7h3.85v1a.61.61,0,0,0,1.22,0V7.09A.61.61,0,0,0,18,6.48H7.91a.61.61,0,0,0-.61.61V8.71a.61.61,0,1,0,1.21,0v-1h3.85V18.24H11.15a.61.61,0,1,0,0,1.21h1.63C12.77,19.32,12.76,19.18,12.76,19.05Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/alphaIcon.svg":
 /*!***********************************************!*\
   !*** ./sharedUiComponents/imgs/alphaIcon.svg ***!
@@ -46804,14 +47781,14 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
-/***/ "./sharedUiComponents/imgs/checkboxIcon.svg":
-/*!**************************************************!*\
-  !*** ./sharedUiComponents/imgs/checkboxIcon.svg ***!
-  \**************************************************/
+/***/ "./sharedUiComponents/imgs/checkboxIconDark.svg":
+/*!******************************************************!*\
+  !*** ./sharedUiComponents/imgs/checkboxIconDark.svg ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23333'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47234,31 +48211,71 @@ var Color3LineComponent = /** @class */ (function (_super) {
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { isExpanded: false, color: _this.props.target[_this.props.propertyName].clone() };
+        var typeName = typeof (_this.props.target[_this.props.propertyName]);
+        if (typeName === "string") {
+            var colorConverted = _this.convertToColor3(_this.props.target[_this.props.propertyName]);
+            _this.state = { isExpanded: false, color: colorConverted, colorText: _this.props.target[_this.props.propertyName] };
+        }
+        else {
+            _this.state = { isExpanded: false, color: _this.props.target[_this.props.propertyName].clone(), colorText: _this.props.target[_this.props.propertyName].toHexString() };
+        }
         if (props.isLinear) {
             _this.state.color.toGammaSpaceToRef(_this.state.color);
         }
         props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
+        _this._colorPickerOpen = false;
         return _this;
     }
+    Color3LineComponent.prototype.convertToColor3 = function (color) {
+        if (color === "" || color === "transparent") {
+            return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color4"](0, 0, 0, 0);
+        }
+        if (color.substring(0, 1) !== "#" || color.length !== 7) {
+            var d = document.createElement("div");
+            d.style.color = color;
+            document.body.append(d);
+            var rgb = window.getComputedStyle(d).color;
+            document.body.removeChild(d);
+            var rgbArray = rgb.substring(4, rgb.length - 1)
+                .replace(/ /g, '')
+                .split(',');
+            return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"](parseInt(rgbArray[0]) / 255, parseInt(rgbArray[1]) / 255, parseInt(rgbArray[2]) / 255);
+        }
+        return babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"].FromHexString(color);
+    };
     Color3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState = this.props.isLinear ? nextProps.target[nextProps.propertyName].toGammaSpace() : nextProps.target[nextProps.propertyName];
+        var isString = typeof (this.props.target[this.props.propertyName]) === "string";
+        var currentState = isString ? this.convertToColor3(nextProps.target[nextProps.propertyName]) :
+            this.props.isLinear ? nextProps.target[nextProps.propertyName].toGammaSpace() : nextProps.target[nextProps.propertyName];
         if (!currentState.equals(nextState.color) || this._localChange) {
             nextState.color = currentState.clone();
+            nextState.colorText = isString ? nextProps.target[nextProps.propertyName] : nextProps.target[nextProps.propertyName].toHexString();
             this._localChange = false;
             return true;
         }
         return false;
     };
-    Color3LineComponent.prototype.setPropertyValue = function (newColor) {
-        this.props.target[this.props.propertyName] = newColor;
-        if (this.props.isLinear) {
-            this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+    Color3LineComponent.prototype.setPropertyValue = function (newColor, newColorText) {
+        var isString = typeof (this.props.target[this.props.propertyName]) === "string";
+        if (isString) {
+            this.props.target[this.props.propertyName] = newColorText;
+        }
+        else {
+            this.props.target[this.props.propertyName] = newColor;
+            if (this.props.isLinear) {
+                this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+            }
         }
     };
     Color3LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
-        var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"].FromHexString(newValue);
+        var newColor = this.convertToColor3(newValue);
+        if (this._colorPickerOpen && this.props.icon) {
+            var savedColor = this.convertToColor3(this._colorStringSaved);
+            if (savedColor.equals(newColor)) {
+                newValue = this._colorStringSaved;
+            }
+        }
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
@@ -47267,8 +48284,11 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 initialValue: this.state.color,
             });
         }
-        this.setPropertyValue(newColor);
-        this.setState({ color: newColor });
+        this.setPropertyValue(newColor, newValue);
+        this.setState({ color: newColor, colorText: newValue });
+        if (this.props.onValueChange) {
+            this.props.onValueChange(newValue);
+        }
     };
     Color3LineComponent.prototype.switchExpandState = function () {
         this._localChange = true;
@@ -47289,24 +48309,27 @@ var Color3LineComponent = /** @class */ (function (_super) {
         this._localChange = true;
         var store = this.state.color.clone();
         this.state.color.r = value;
-        this.setPropertyValue(this.state.color);
-        this.setState({ color: this.state.color });
+        var hex = this.state.color.toHexString();
+        this.setPropertyValue(this.state.color, hex);
+        this.setState({ color: this.state.color, colorText: hex });
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.updateStateG = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
         this.state.color.g = value;
-        this.setPropertyValue(this.state.color);
-        this.setState({ color: this.state.color });
+        var hex = this.state.color.toHexString();
+        this.setPropertyValue(this.state.color, hex);
+        this.setState({ color: this.state.color, colorText: hex });
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.updateStateB = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
         this.state.color.b = value;
-        this.setPropertyValue(this.state.color);
-        this.setState({ color: this.state.color });
+        var hex = this.state.color.toHexString();
+        this.setPropertyValue(this.state.color, hex);
+        this.setState({ color: this.state.color, colorText: hex });
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.copyToClipboard = function () {
@@ -47328,17 +48351,24 @@ var Color3LineComponent = /** @class */ (function (_super) {
     Color3LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
-        this._colorString = this.state.color.toHexString();
+        this._colorString = this.state.colorText;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
                 this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.state.color, onColorChanged: function (color) {
+                            if (!_this._colorPickerOpen) {
+                                _this._colorStringSaved = _this._colorString;
+                            }
+                            _this._colorPickerOpen = true;
                             _this.onChange(color);
                         } })),
                 (this.props.icon && this.props.lockObject) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) { return _this.convert(newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) {
+                            _this._colorPickerOpen = false;
+                            _this.convert(newValue);
+                        }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
@@ -47455,17 +48485,6 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3Ecopy%3C/title%3E%3Cg id='UI_Elements' data-name='UI Elements'%3E%3Cpath class='cls-1' d='M24,14.89H22.76l-3-3H12.43V26.59h4.26v3h11.5V19Zm.3,1.71,2.14,2.13H24.34Zm-10.91,9V12.93h5.93l2,2H16.69v10.7Zm4.26,3V15.89h5.65v3.84h3.85v8.83Z'/%3E%3C/g%3E%3C/svg%3E"
-
-/***/ }),
-
-/***/ "./sharedUiComponents/lines/downArrow.svg":
-/*!************************************************!*\
-  !*** ./sharedUiComponents/lines/downArrow.svg ***!
-  \************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg' width='17' height='17'%3E %3Cpath d='M4.21967 8.46967C4.51256 8.17678 4.98744 8.17678 5.28033 8.46967L12 15.1893L18.7197 8.46967C19.0126 8.17678 19.4874 8.17678 19.7803 8.46967C20.0732 8.76256 20.0732 9.23744 19.7803 9.53033L12.5303 16.7803C12.2374 17.0732 11.7626 17.0732 11.4697 16.7803L4.21967 9.53033C3.92678 9.23744 3.92678 8.76256 4.21967 8.46967Z' fill='white' /%3E %3C/svg%3E"
 
 /***/ }),
 
@@ -47652,88 +48671,6 @@ var FloatLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } })));
     };
     return FloatLineComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./sharedUiComponents/lines/lineContainerComponent.tsx":
-/*!*************************************************************!*\
-  !*** ./sharedUiComponents/lines/lineContainerComponent.tsx ***!
-  \*************************************************************/
-/*! exports provided: LineContainerComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LineContainerComponent", function() { return LineContainerComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__);
-
-
-
-var downArrow = __webpack_require__(/*! ./downArrow.svg */ "./sharedUiComponents/lines/downArrow.svg");
-var LineContainerComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
-    function LineContainerComponent(props) {
-        var _this = _super.call(this, props) || this;
-        var initialState = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
-        _this.state = { isExpanded: initialState, isHighlighted: false };
-        return _this;
-    }
-    LineContainerComponent.prototype.switchExpandedState = function () {
-        var newState = !this.state.isExpanded;
-        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean(this.props.title, newState);
-        this.setState({ isExpanded: newState });
-    };
-    LineContainerComponent.prototype.renderHeader = function () {
-        var _this = this;
-        var className = this.state.isExpanded ? "collapse" : "collapse closed";
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header", onClick: function () { return _this.switchExpandedState(); } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title" }, this.props.title),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", title: this.props.title, src: downArrow }))));
-    };
-    LineContainerComponent.prototype.componentDidMount = function () {
-        var _this = this;
-        if (!this.props.selection) {
-            return;
-        }
-        if (this.props.selection.selectedLineContainerTitles.length === 0 && this.props.selection.selectedLineContainerTitlesNoFocus.length === 0) {
-            return;
-        }
-        if (this.props.selection.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
-            setTimeout(function () {
-                _this.props.selection.selectedLineContainerTitles = [];
-            });
-            this.setState({ isExpanded: true, isHighlighted: true });
-            window.setTimeout(function () {
-                _this.setState({ isHighlighted: false });
-            }, 5000);
-        }
-        else if (this.props.selection.selectedLineContainerTitlesNoFocus.indexOf(this.props.title) > -1) {
-            this.setState({ isExpanded: true, isHighlighted: false });
-        }
-        else {
-            this.setState({ isExpanded: false });
-        }
-    };
-    LineContainerComponent.prototype.render = function () {
-        if (!this.state.isExpanded) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-content" }, this.renderHeader())));
-        }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-content" },
-                this.renderHeader(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "") })));
-    };
-    return LineContainerComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -48084,7 +49021,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             (!this.props.icon || this.props.label != "") &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
                 }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),
@@ -48153,24 +49090,24 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     };
     TextInputLineComponent.prototype.updateValue = function (value) {
         if (this.props.numbersOnly) {
-            var checkValue = value;
-            if (value[0] === "-") {
-                checkValue = value.substr(1);
-            }
-            if (/[^0-9\.\p\x\%]/g.test(checkValue)) {
+            if (/[^0-9\.\p\x\%\-]/g.test(value)) {
                 return;
             }
             if (!value) {
                 value = "0";
             }
+            //Removing starting zero if there is a number of a minus after it. 
+            if (value.search(/0+[0-9\-]/g) === 0) {
+                value = value.substr(1);
+            }
         }
         this._localChange = true;
         var store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName];
         this.setState({ value: value });
-        this.raiseOnPropertyChanged(value, store);
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
         }
+        this.raiseOnPropertyChanged(value, store);
     };
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
@@ -48378,18 +49315,22 @@ var LockObject = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Tools", function() { return Tools; });
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+
 var Tools = /** @class */ (function () {
     function Tools() {
     }
-    Tools.LookForItem = function (item, selectedEntity) {
-        if (item === selectedEntity) {
+    Tools.LookForItem = function (item, selectedEntity, firstIteration) {
+        if (firstIteration === void 0) { firstIteration = true; }
+        if (!firstIteration && item === selectedEntity) {
             return true;
         }
         var children = item.getChildren ? item.getChildren() : item.children;
-        if (children && item.getClassName() !== "MultiMaterial") {
+        if (children) {
             for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
                 var child = children_1[_i];
-                if (Tools.LookForItem(child, selectedEntity)) {
+                if (Tools.LookForItem(child, selectedEntity, false)) {
                     return true;
                 }
             }
@@ -48421,6 +49362,33 @@ var Tools = /** @class */ (function () {
             finalArray.push.apply(finalArray, parent.reservedDataStore.detachedChildren);
         }
         return finalArray.reverse();
+    };
+    Tools.getCellInfo = function (grid, control) {
+        var cellInfo = grid.getChildCellInfo(control);
+        var rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+        if (isNaN(rowNumber)) {
+            rowNumber = 0;
+        }
+        var columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+        if (isNaN(columnNumber)) {
+            columnNumber = 0;
+        }
+        return new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](rowNumber, columnNumber);
+    };
+    Tools.reorderGrid = function (grid, index, control, cell) {
+        var tags = [];
+        var controls = [];
+        var length = grid.children.length;
+        for (var i = index; i < length; ++i) {
+            var control_1 = grid.children[index];
+            controls.push(control_1);
+            tags.push(Tools.getCellInfo(grid, control_1));
+            grid.removeControl(control_1);
+        }
+        grid.addControl(control, cell.x, cell.y);
+        for (var i = 0; i < controls.length; ++i) {
+            grid.addControl(controls[i], tags[i].x, tags[i].y);
+        }
     };
     return Tools;
 }());
@@ -48481,7 +49449,6 @@ var lineIcon = __webpack_require__(/*! ../public/imgs/lineIcon.svg */ "../public
 var displaygridIcon = __webpack_require__(/*! ../public/imgs/displaygridIcon.svg */ "../public/imgs/displaygridIcon.svg");
 var colorPickerIcon = __webpack_require__(/*! ../public/imgs/colorPickerIcon.svg */ "../public/imgs/colorPickerIcon.svg");
 var scrollbarIcon = __webpack_require__(/*! ../public/imgs/scrollbarIcon.svg */ "../public/imgs/scrollbarIcon.svg");
-var imageSliderIcon = __webpack_require__(/*! ../public/imgs/imageSliderIcon.svg */ "../public/imgs/imageSliderIcon.svg");
 var radioButtonIcon = __webpack_require__(/*! ../public/imgs/radioButtonIcon.svg */ "../public/imgs/radioButtonIcon.svg");
 var WorkbenchEditor = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WorkbenchEditor, _super);
@@ -48584,9 +49551,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         return _this;
     }
     WorkbenchEditor.prototype.componentDidMount = function () {
-        if (this.props.globalState.hostDocument) {
-            this._workbenchCanvas = this.refs["workbenchCanvas"];
-        }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
         }
@@ -48632,17 +49596,10 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         }
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
         this._startX = evt.clientX;
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
     };
     WorkbenchEditor.prototype.buildColumnLayout = function () {
         return this._leftWidth + "px 4px " + this._toolBarIconSize + "px calc(100% - " + (this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth) + "px) 4px " + this._rightWidth + "px";
-    };
-    WorkbenchEditor.prototype.emitNewBlock = function (event) {
-        var data = event.dataTransfer.getData("babylonjs-gui-node");
-        var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_6__["GUINodeTools"].CreateControlFromString(data);
-        var newGuiNode = this._workbenchCanvas.appendBlock(guiElement);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-        this.forceUpdate();
     };
     WorkbenchEditor.prototype.render = function () {
         var _this = this;
@@ -48659,7 +49616,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                     _this.props.globalState.blockKeyboardEvents = false;
                 } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__["SceneExplorerComponent"], { globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__["SceneExplorerComponent"], { globalState: this.props.globalState, noExpand: true }),
                 this.createToolbar(),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState })),
@@ -48675,53 +49632,9 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var _this = this;
         this._items = [
             {
-                label: "Image",
-                icon: imageIcon,
-                onClick: function () { _this.onCreate("Image"); }
-            }, {
-                label: "TextButton",
-                icon: buttonIcon,
-                onClick: function () { _this.onCreate("TextButton"); }
-            },
-            {
-                label: "Slider",
-                icon: sliderIcon,
-                onClick: function () { _this.onCreate("Slider"); }
-            },
-            {
-                label: "ColorPicker",
-                icon: colorPickerIcon,
-                onClick: function () { _this.onCreate("ColorPicker"); }
-            },
-            {
-                label: "ImageButton",
-                icon: buttonIcon,
-                onClick: function () { _this.onCreate("ImageButton"); }
-            },
-            {
-                label: "Checkbox",
-                icon: checkboxIcon,
-                onClick: function () { _this.onCreate("Checkbox"); }
-            },
-            {
-                label: "VirtualKeyboard",
-                icon: keyboardIcon,
-                onClick: function () { _this.onCreate("VirtualKeyboard"); }
-            },
-            {
-                label: "DisplayGrid",
-                icon: displaygridIcon,
-                onClick: function () { _this.onCreate("DisplayGrid"); }
-            },
-            {
-                label: "Grid",
-                icon: gridIcon,
-                onClick: function () { _this.onCreate("Grid"); }
-            },
-            {
-                label: "StackPanel",
-                icon: stackPanelIcon,
-                onClick: function () { _this.onCreate("StackPanel"); }
+                label: "Rectangle",
+                icon: rectangleIcon,
+                onClick: function () { _this.onCreate("Rectangle"); }
             },
             {
                 label: "Ellipse",
@@ -48729,14 +49642,24 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 onClick: function () { _this.onCreate("Ellipse"); }
             },
             {
+                label: "StackPanel",
+                icon: stackPanelIcon,
+                onClick: function () { _this.onCreate("StackPanel"); }
+            },
+            {
+                label: "Grid",
+                icon: gridIcon,
+                onClick: function () { _this.onCreate("Grid"); }
+            },
+            {
+                label: "ScrollViewer",
+                icon: scrollbarIcon,
+                onClick: function () { _this.onCreate("ScrollViewer"); }
+            },
+            {
                 label: "Line",
                 icon: lineIcon,
                 onClick: function () { _this.onCreate("Line"); }
-            },
-            {
-                label: "Rectangle",
-                icon: rectangleIcon,
-                onClick: function () { _this.onCreate("Rectangle"); }
             },
             {
                 label: "Text",
@@ -48754,19 +49677,44 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 onClick: function () { _this.onCreate("InputPassword"); }
             },
             {
-                label: "ScrollViewer",
-                icon: scrollbarIcon,
-                onClick: function () { _this.onCreate("ScrollViewer"); }
+                label: "Image",
+                icon: imageIcon,
+                onClick: function () { _this.onCreate("Image"); }
             },
             {
-                label: "ImageBasedSlider",
-                icon: imageSliderIcon,
-                onClick: function () { _this.onCreate("ImageBasedSlider"); }
+                label: "DisplayGrid",
+                icon: displaygridIcon,
+                onClick: function () { _this.onCreate("DisplayGrid"); }
+            },
+            {
+                label: "TextButton",
+                icon: buttonIcon,
+                onClick: function () { _this.onCreate("TextButton"); }
+            },
+            {
+                label: "Checkbox",
+                icon: checkboxIcon,
+                onClick: function () { _this.onCreate("Checkbox"); }
             },
             {
                 label: "RadioButton",
                 icon: radioButtonIcon,
                 onClick: function () { _this.onCreate("RadioButton"); }
+            },
+            {
+                label: "Slider",
+                icon: sliderIcon,
+                onClick: function () { _this.onCreate("Slider"); }
+            },
+            {
+                label: "VirtualKeyboard",
+                icon: keyboardIcon,
+                onClick: function () { _this.onCreate("VirtualKeyboard"); }
+            },
+            {
+                label: "ColorPicker",
+                icon: colorPickerIcon,
+                onClick: function () { _this.onCreate("ColorPicker"); }
             }
         ];
     };
@@ -48779,27 +49727,29 @@ var WorkbenchEditor = /** @class */ (function (_super) {
     WorkbenchEditor.prototype.createToolbar = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "toolbarGrab" }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-content sub1" }, this._items.map(function (m) {
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label" + (m.isActive ? " active" : ""), key: m.label, onClick: function () {
-                        if (!m.onClick) {
-                            _this.forceUpdate();
-                            return;
-                        }
-                        if (!m.subItems) {
-                            m.onClick();
-                        }
-                    }, title: m.label },
-                    !m.icon &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label-text" }, (m.isActive ? "> " : "") + m.label),
-                    m.icon &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon })),
-                    m.onCheck &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "toolbar-label-check", onChange: function (evt) {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "toolbarGrab" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blackLine" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-content sub1" }, this._items.map(function (m) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label" + (m.isActive ? " active" : ""), key: m.label, onClick: function () {
+                            if (!m.onClick) {
                                 _this.forceUpdate();
-                                m.onCheck(evt.target.checked);
-                            }, checked: false })));
-            })))));
+                                return;
+                            }
+                            if (!m.subItems) {
+                                m.onClick();
+                            }
+                        }, title: m.label },
+                        !m.icon &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label-text" }, (m.isActive ? "> " : "") + m.label),
+                        m.icon &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon" },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon })),
+                        m.onCheck &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "toolbar-label-check", onChange: function (evt) {
+                                    _this.forceUpdate();
+                                    m.onCheck(evt.target.checked);
+                                }, checked: false })));
+                })))));
     };
     return WorkbenchEditor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

@@ -14,7 +14,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./lava.fragment";
 import "./lava.vertex";
@@ -83,6 +83,7 @@ class LavaMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public UNLIT = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -160,11 +161,11 @@ export class LavaMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new LavaMaterialDefines();
         }
 
-        var defines = <LavaMaterialDefines>subMesh._materialDefines;
+        var defines = <LavaMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -295,7 +296,7 @@ export class LavaMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <LavaMaterialDefines>subMesh._materialDefines;
+        var defines = <LavaMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -436,4 +437,4 @@ export class LavaMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LavaMaterial"] = LavaMaterial;
+RegisterClass("BABYLON.LavaMaterial", LavaMaterial);

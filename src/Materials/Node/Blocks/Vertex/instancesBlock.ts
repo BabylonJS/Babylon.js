@@ -7,7 +7,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { SubMesh } from '../../../../Meshes/subMesh';
 
 /**
@@ -190,4 +190,4 @@ export class InstancesBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.InstancesBlock"] = InstancesBlock;
+RegisterClass("BABYLON.InstancesBlock", InstancesBlock);

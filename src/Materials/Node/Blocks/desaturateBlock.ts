@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 /**
  * Block used to desaturate a color
  */
@@ -68,4 +68,4 @@ export class DesaturateBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.DesaturateBlock"] = DesaturateBlock;
+RegisterClass("BABYLON.DesaturateBlock", DesaturateBlock);

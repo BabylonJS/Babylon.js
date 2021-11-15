@@ -3,7 +3,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
@@ -388,4 +388,4 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.RefractionBlock"] = RefractionBlock;
+RegisterClass("BABYLON.RefractionBlock", RefractionBlock);

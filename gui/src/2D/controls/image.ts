@@ -4,7 +4,7 @@ import { Tools } from "babylonjs/Misc/tools";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
 import { Engine } from "babylonjs/Engines/engine";
 import { ICanvas, ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
@@ -621,6 +621,7 @@ export class Image extends Control {
      * Gets or sets the cell width to use when animation sheet is enabled
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     get cellWidth(): number {
         return this._cellWidth;
     }
@@ -637,6 +638,7 @@ export class Image extends Control {
      * Gets or sets the cell height to use when animation sheet is enabled
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     get cellHeight(): number {
         return this._cellHeight;
     }
@@ -653,6 +655,7 @@ export class Image extends Control {
      * Gets or sets the cell id to use (this will turn on the animation sheet mode)
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
+    @serialize()
     get cellId(): number {
         return this._cellId;
     }
@@ -900,4 +903,4 @@ export class Image extends Control {
     /** NINE_PATCH */
     public static readonly STRETCH_NINE_PATCH = 4;
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Image"] = Image;
+RegisterClass("BABYLON.GUI.Image", Image);

@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 /**
  * Block used to get negative version of a value (i.e. x * -1)
  */
@@ -54,4 +54,4 @@ export class NegateBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.NegateBlock"] = NegateBlock;
+RegisterClass("BABYLON.NegateBlock", NegateBlock);

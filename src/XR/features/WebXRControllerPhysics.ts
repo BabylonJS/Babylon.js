@@ -5,7 +5,7 @@ import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRInput } from "../webXRInput";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
@@ -118,7 +118,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     private _createPhysicsImpostor(xrController: WebXRInputSource) {
         const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
         const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
-        const impostorMesh = SphereBuilder.CreateSphere("impostor-mesh-" + xrController.uniqueId, {
+        const impostorMesh = CreateSphere("impostor-mesh-" + xrController.uniqueId, {
             diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
             diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
             diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
@@ -232,7 +232,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                 impostorSize: 0.3,
             };
             const impostorSize = params.impostorSize || 0.3;
-            this._headsetMesh = SphereBuilder.CreateSphere("headset-mesh", {
+            this._headsetMesh = CreateSphere("headset-mesh", {
                 diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
                 diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
                 diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,

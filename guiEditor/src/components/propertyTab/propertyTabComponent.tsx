@@ -49,6 +49,9 @@ import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInput
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+import { Button } from "babylonjs-gui/2D/controls/button";
+import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
+import { GUINodeTools } from "../../guiNodeTools";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -80,19 +83,20 @@ interface IPropertyTabComponentProps {
 
 interface IPropertyTabComponentState {
     currentNode: Nullable<Control>;
-    textureSize: Vector2;
 }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
-    private _lockObject = new LockObject();
-    private _sizeOption: number = 2;
+    private _lockObject: LockObject;
+    private _sizeOption: number;
+
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null, textureSize: new Vector2(1200, 1200) };
-
+        this.state = { currentNode: null };
+        this._lockObject = new LockObject();
+        this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
             this.save(this.saveLocally);
         });
@@ -121,8 +125,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
-            this.setState({ textureSize: newSize });
             this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
+            this.forceUpdate();
         });
 
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
@@ -171,59 +175,73 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
     }
 
-    saveToSnippetServer = () => {
+    saveToSnippetServerHelper = (content: string, adt: AdvancedDynamicTexture): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = () => {
+                if (xmlHttp.readyState == 4) {
+                    if (xmlHttp.status == 200) {
+                        const snippet = JSON.parse(xmlHttp.responseText);
+                        const oldId = adt.snippetId;
+                        adt.snippetId = snippet.id;
+                        if (snippet.version && snippet.version != "0") {
+                            adt.snippetId += "#" + snippet.version;
+                        }
+                        const windowAsAny = window as any;
+                        if (windowAsAny.Playground && oldId) {
+                            windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                                regex: new RegExp(oldId, "g"),
+                                replace: `parseFromSnippetAsync("${adt.snippetId}`,
+                            });
+                        }
+                        resolve(adt.snippetId);
+                    } else {
+                        reject("Unable to save your GUI");
+                    }
+                }
+            };
+
+            xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            const dataToSend = {
+                payload: JSON.stringify({
+                    gui: content,
+                }),
+                name: "",
+                description: "",
+                tags: "",
+            };
+            xmlHttp.send(JSON.stringify(dataToSend));
+        });
+    }
+
+
+    saveToSnippetServer = async () => {
         const adt = this.props.globalState.guiTexture;
         const content = JSON.stringify(adt.serializeContent());
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState == 4) {
-                if (xmlHttp.status == 200) {
-                    const snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = adt.snippetId;
-                    adt.snippetId = snippet.id;
-                    if (snippet.version && snippet.version != "0") {
-                        adt.snippetId += "#" + snippet.version;
-                    }
-                    this.forceUpdate();
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(adt.snippetId);
-                    }
-
-                    const windowAsAny = window as any;
-
-                    if (windowAsAny.Playground && oldId) {
-                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: `parseFromSnippetAsync("${adt.snippetId}`,
-                        });
-                    }
-
-                    alert("GUI saved with ID: " + adt.snippetId + " (please note that the id was also saved to your clipboard)");
-                } else {
-                    alert("Unable to save your GUI");
-                }
-            }
-        };
-
-        xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-
-        const dataToSend = {
-            payload: JSON.stringify({
-                gui: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-
-        xmlHttp.send(JSON.stringify(dataToSend));
+        const savePromise = this.props.globalState.customSave?.action || this.saveToSnippetServerHelper;
+        savePromise(content, adt).then((snippetId: string) => {
+            adt.snippetId = snippetId;
+            const alertMessage = `GUI saved with ID:  ${adt.snippetId}`;
+            if (navigator.clipboard) {                
+                navigator.clipboard.writeText(adt.snippetId).then(() => {
+                    alert(`${alertMessage}. The ID was copied to your clipboard.`);
+                }).catch((err: any) => {
+                    alert(alertMessage);
+                })
+            } else {
+                alert(alertMessage);
+            }   
+            this.props.globalState.onBuiltObservable.notifyObservers();
+        }).catch((err: any) => {
+            alert(err);
+        })
+        this.forceUpdate();
     }
 
     loadFromSnippet() {
         const snippedId = window.prompt("Please enter the snippet ID to use");
-
         if (!snippedId) {
             return;
         }
@@ -288,14 +306,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Line": {
                 const line = this.state.currentNode as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
-            } 
-            case "Line": {
+            }
+            case "DisplayGrid": {
                 const displayGrid = this.state.currentNode as DisplayGrid;
                 return <DisplayGridPropertyGridComponent displayGrid={displayGrid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Button": {
-                const control = this.state.currentNode as Control;
-                return <ControlPropertyGridComponent key="buttonMenu" control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                const button = this.state.currentNode as Button;
+                return <ButtonPropertyGridComponent key="buttonMenu" rectangle={button} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                onAddComponent={ (value) => { 
+                    const guiElement = GUINodeTools.CreateControlFromString(value);
+                    const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
+                    button.addControl(newGuiNode);
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                }} />;
             }
         }
 
@@ -365,8 +389,45 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return adtIcon;
     }
 
-
     render() {
+
+        if(this.props.globalState.guiTexture == undefined) return null;
+        const _sizeValues = [
+            new Vector2(1920, 1080),
+            new Vector2(1366, 768),
+            new Vector2(1280, 800),
+            new Vector2(3840, 2160),
+            new Vector2(750, 1334),
+            new Vector2(1125, 2436),
+            new Vector2(1170, 2532),
+            new Vector2(1284, 2778),
+            new Vector2(1080, 2220),
+            new Vector2(1080, 2340),
+            new Vector2(1024, 1024),
+            new Vector2(2048, 2048),
+        ];
+        const _sizeOptions = [
+            { label: "Web (1920)", value: 0 },
+            { label: "Web (1366)", value: 1 },
+            { label: "Web (1280)", value: 2 },
+            { label: "Web (3840)", value: 3 },
+            { label: "iPhone 8 (750)", value: 4 },
+            { label: "iPhone X, 11 (1125)", value: 5 },
+            { label: "iPhone 12 (1170)", value: 6 },
+            { label: "iPhone Pro Max (1284)", value: 7 },
+            { label: "Google Pixel 4 (1080)", value: 8 },
+            { label: "Google Pixel 5 (1080)", value: 9 },
+            { label: "Square (1024)", value: 10 },
+            { label: "Square (2048)", value: 11 },
+        ];
+
+        const size = this.props.globalState.guiTexture.getSize();
+        let textureSize = new Vector2(size.width, size.height);
+        this._sizeOption = _sizeValues.findIndex((value) => value.x == textureSize.x && value.y == textureSize.y);
+        if(this._sizeOption < 0) {
+            this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
+            DataStorage.WriteBoolean("Responsive", false);
+        }
 
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
@@ -378,39 +439,32 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         </div>
                     </div>
                     {this.renderProperties()}
-                    <hr className="ge" />
                     {
                         this.state.currentNode?.parent?.typeName === "Grid" &&
                         <ParentingPropertyGridComponent control={this.state.currentNode} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} lockObject={this._lockObject}></ParentingPropertyGridComponent>
                     }
-                    <ButtonLineComponent
-                        label="DELETE ELEMENT"
-                        onClick={() => {
-                            this.state.currentNode?.dispose();
-                            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        }}
-                    />
-                    <ButtonLineComponent
-                        label="COPY ELEMENT"
-                        onClick={() => {
-                            if (this.state.currentNode) {
-                                this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                            }
-                        }}
-                    />
+                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] &&
+                        <>
+                            <hr className="ge" />
+                            <ButtonLineComponent
+                                label="DELETE ELEMENT"
+                                onClick={() => {
+                                    this.state.currentNode?.dispose();
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                                }}
+                            />
+                            <ButtonLineComponent
+                                label="COPY ELEMENT"
+                                onClick={() => {
+                                    if (this.state.currentNode) {
+                                        this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
+                                    }
+                                }}
+                            />
+                        </>}
                 </div>
             );
         }
-
-        const sizeOptions = [
-            { label: "Web (1920)", value: 0 },
-            { label: "Phone (720)", value: 1 },
-            { label: "Square (1200)", value: 2 },
-            { label: "Custom", value: 3 }];
-        const sizeValues = [
-            new Vector2(1920, 1080),
-            new Vector2(750, 1334),
-            new Vector2(1200, 1200)];
 
         return (
             <div id="ge-propertyTab">
@@ -421,7 +475,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {
-                        this.props.globalState.workbench.artBoardBackground !== undefined &&
+                        this.props.globalState.workbench._scene !== undefined &&
                         <Color3LineComponent iconLabel={"Background Color"} lockObject={this._lockObject} icon={artboardColorIcon} label="" target={this.props.globalState.workbench._scene} propertyName="clearColor" onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                     }
                     <hr className="ge" />
@@ -434,52 +488,60 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onSelect={(value: boolean) => {
                             this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                             DataStorage.WriteBoolean("Responsive", value);
-                        }}
-                    />
-                    <OptionsLineComponent
-                        label=""
-                        iconLabel="Size"
-                        options={sizeOptions}
-                        icon={canvasSizeIcon}
-                        target={this}
-                        propertyName={"_sizeOption"}
-                        noDirectUpdate={true}
-                        onSelect={(value: any) => {
-                            this._sizeOption = value;
-                            if (this._sizeOption != (sizeOptions.length - 1)) {
-                                const newSize = sizeValues[this._sizeOption];
-                                this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            this._sizeOption = _sizeOptions.length;
+                            if (value) {
+                                this._sizeOption = 0;
+                                this.props.globalState.workbench.resizeGuiTexture(_sizeValues[this._sizeOption]);
                             }
                             this.forceUpdate();
                         }}
                     />
-                    {this._sizeOption == (sizeOptions.length - 1) &&
-                        <div className="divider">
+                    {DataStorage.ReadBoolean("Responsive", true) &&
+                        <OptionsLineComponent
+                            label=""
+                            iconLabel="Size"
+                            options={_sizeOptions}
+                            icon={canvasSizeIcon}
+                            target={this}
+                            propertyName={"_sizeOption"}
+                            noDirectUpdate={true}
+                            onSelect={(value: any) => {
+                                this._sizeOption = value;
+                                if (this._sizeOption !== (_sizeOptions.length)) {
+                                    const newSize = _sizeValues[this._sizeOption];
+
+                                    this.props.globalState.workbench.resizeGuiTexture(newSize);
+                                }
+                                this.forceUpdate();
+                            }}
+                        />}
+                    {!DataStorage.ReadBoolean("Responsive", true) &&
+                        <div className="ge-divider">
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
-                                label="X"
-                                target={this.state.textureSize}
+                                label="W"
+                                target={textureSize}
                                 propertyName="x"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, this.state.textureSize.y));
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, textureSize.y));
                                     }
                                 }} ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
-                                label="Y"
-                                target={this.state.textureSize}
+                                label="H"
+                                target={textureSize}
                                 propertyName="y"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(this.state.textureSize.x, newvalue));
+                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(textureSize.x, newvalue));
                                     }
                                 }}
                             ></FloatLineComponent>

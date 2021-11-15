@@ -1,6 +1,7 @@
 import { StorageBuffer } from "../../Buffers/storageBuffer";
 import { IComputeContext } from "../../Compute/IComputeContext";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { TextureSampler } from "../../Materials/Textures/textureSampler";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
 import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader";
@@ -23,7 +24,6 @@ export class WebGPUComputeContext implements IComputeContext {
         if (!bindingsMapping) {
             throw new Error("WebGPUComputeContext.getBindGroups: bindingsMapping is required until browsers support reflection for wgsl shaders!");
         }
-        // TODO WEBGPU: add a cache for bind groups?
         if (this._bindGroups.length === 0) {
             const bindGroupEntriesExist = this._bindGroupEntries.length > 0;
             for (const key in bindings) {
@@ -41,6 +41,20 @@ export class WebGPUComputeContext implements IComputeContext {
                 }
 
                 switch (type) {
+                    case ComputeBindingType.Sampler: {
+                        const sampler = object as TextureSampler;
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            entries[indexInGroupEntries].resource = this._cacheSampler.getSampler(sampler);
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
+                            entries.push({
+                                binding: index,
+                                resource: this._cacheSampler.getSampler(sampler),
+                            });
+                        }
+                        break;
+                    }
+
                     case ComputeBindingType.Texture:
                     case ComputeBindingType.TextureWithoutSampler: {
                         const texture = object as BaseTexture;
@@ -69,7 +83,7 @@ export class WebGPUComputeContext implements IComputeContext {
                     case ComputeBindingType.StorageTexture: {
                         const texture = object as BaseTexture;
                         const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
-                        if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.Storage) === 0) {
+                        if ((hardwareTexture.textureAdditionalUsages & WebGPUConstants.TextureUsage.StorageBinding) === 0) {
                             Logger.Error(`computeDispatch: The texture (name=${texture.name}, uniqueId=${texture.uniqueId}) is not a storage texture!`, 50);
                         }
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {

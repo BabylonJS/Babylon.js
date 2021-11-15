@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../nodeMaterial';
 import { InputBlock } from './Input/inputBlock';
 
@@ -74,4 +74,4 @@ export class Rotate2dBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Rotate2dBlock"] = Rotate2dBlock;
+RegisterClass("BABYLON.Rotate2dBlock", Rotate2dBlock);

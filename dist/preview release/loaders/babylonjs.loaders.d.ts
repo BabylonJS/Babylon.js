@@ -1884,6 +1884,33 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Experimental Spec](https://github.com/KhronosGroup/glTF/pull/1994)
+     */
+    export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadEmissiveProperties;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
      */
@@ -2304,6 +2331,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
         loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
+        private _isMesh;
         private _loadBufferLOD;
         /**
          * Gets an array of LOD properties from lowest to highest.

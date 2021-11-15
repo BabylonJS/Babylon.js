@@ -63,7 +63,6 @@ export class TransformNode extends Node {
 
     @serializeAsVector3("scaling")
     protected _scaling = Vector3.One();
-    protected _isDirty = false;
     private _transformToBoneReferal: Nullable<TransformNode> = null;
     private _currentParentWhenAttachingToBone: Nullable<Node>;
     private _isAbsoluteSynced = false;
@@ -345,17 +344,6 @@ export class TransformNode extends Node {
         cache.localMatrixUpdated = false;
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
-    }
-
-    /**
-    * Flag the transform node as dirty (Forcing it to update everything)
-    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-    * @returns this transform node
-    */
-    public markAsDirty(property: string): TransformNode {
-        this._currentRenderId = Number.MAX_VALUE;
-        this._isDirty = true;
-        return this;
     }
 
     /**
@@ -641,7 +629,7 @@ export class TransformNode extends Node {
     /**
      * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
      * localAxis is expressed in the mesh local space.
-     * result is computed in the Wordl space from the mesh World matrix.
+     * result is computed in the World space from the mesh World matrix.
      * @param localAxis axis to rotate
      * @param result the resulting transformnode
      * @returns this TransformNode.
@@ -740,13 +728,31 @@ export class TransformNode extends Node {
     }
 
     /**
+    * Flag the transform node as dirty (Forcing it to update everything)
+    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+    * @returns this  node
+    */
+     public markAsDirty(property?: string): Node {
+        // We need to explicitely update the children
+        // as the scene.evaluateActiveMeshes will not poll the transform nodes
+        if (this._children) {
+            for (let child of this._children)
+            {
+                child.markAsDirty(property);
+            }
+        }
+        return super.markAsDirty(property);
+     }
+
+    /**
      * Defines the passed node as the parent of the current node.
      * The node will remain exactly where it is and its position / rotation will be updated accordingly
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns this TransformNode.
      */
-    public setParent(node: Nullable<Node>): TransformNode {
+    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false): TransformNode {
         if (!node && !this.parent) {
             return this;
         }
@@ -757,7 +763,7 @@ export class TransformNode extends Node {
 
         if (!node) {
             this.computeWorldMatrix(true);
-            this.getWorldMatrix().decompose(scale, quatRotation, position);
+            this.getWorldMatrix().decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
         } else {
             var diffMatrix = TmpVectors.Matrix[0];
             var invParentMatrix = TmpVectors.Matrix[1];
@@ -767,7 +773,7 @@ export class TransformNode extends Node {
 
             node.getWorldMatrix().invertToRef(invParentMatrix);
             this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
-            diffMatrix.decompose(scale, quatRotation, position);
+            diffMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
         }
 
         if (this.rotationQuaternion) {
@@ -1029,7 +1035,7 @@ export class TransformNode extends Node {
         cache.infiniteDistance = this.infiniteDistance;
 
         this._currentRenderId = currentRenderId;
-        this._childUpdateId++;
+        this._childUpdateId += 1;
         this._isDirty = false;
         this._position._isDirty = false;
         this._rotation._isDirty = false;
@@ -1319,10 +1325,11 @@ export class TransformNode extends Node {
     public serialize(currentSerializationObject?: any): any {
         let serializationObject = SerializationHelper.Serialize(this, currentSerializationObject);
         serializationObject.type = this.getClassName();
+        serializationObject.uniqueId = this.uniqueId;
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
@@ -1331,7 +1338,7 @@ export class TransformNode extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         return serializationObject;

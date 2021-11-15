@@ -4,7 +4,7 @@ import { Color4 } from '../Maths/math.color';
 import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
-import { DiscBuilder } from "../Meshes/Builders/discBuilder";
+import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
@@ -211,7 +211,7 @@ export class SolidParticleSystem implements IDisposable {
             return this.mesh;
         }
         if (this.nbParticles === 0 && !this.mesh) {
-            var triangle = DiscBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
+            var triangle = CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
             this.addShape(triangle, 1);
             triangle.dispose();
         }
@@ -1274,12 +1274,27 @@ export class SolidParticleSystem implements IDisposable {
         // if the VBO must be updated
         if (update) {
             if (this._computeParticleColor) {
-                mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                const vb = mesh.getVertexBuffer(VertexBuffer.ColorKind);
+                if (vb && !mesh.isPickable) {
+                    vb.updateDirectly(colors32, 0);
+                } else {
+                    mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                }
             }
             if (this._computeParticleTexture) {
-                mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                const vb = mesh.getVertexBuffer(VertexBuffer.UVKind);
+                if (vb && !mesh.isPickable) {
+                    vb.updateDirectly(uvs32, 0);
+                } else {
+                    mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                }
             }
-            mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+            const vbp = mesh.getVertexBuffer(VertexBuffer.PositionKind);
+            if (vbp && !mesh.isPickable) {
+                vbp.updateDirectly(positions32, 0);
+            } else {
+                mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+            }
             if (!mesh.areNormalsFrozen || mesh.isFacetDataEnabled) {
                 if (this._computeParticleVertex || mesh.isFacetDataEnabled) {
                     // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
@@ -1290,7 +1305,12 @@ export class SolidParticleSystem implements IDisposable {
                     }
                 }
                 if (!mesh.areNormalsFrozen) {
-                    mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
+                    const vb = mesh.getVertexBuffer(VertexBuffer.NormalKind);
+                    if (vb && !mesh.isPickable) {
+                        vb.updateDirectly(normals32, 0);
+                    } else {
+                        mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
+                    }
                 }
             }
             if (this._depthSort && this._depthSortParticles) {
@@ -1370,7 +1390,7 @@ export class SolidParticleSystem implements IDisposable {
     public pickedParticle(pickingInfo: PickingInfo): Nullable<{ idx: number, faceId: number }> {
         if (pickingInfo.hit) {
             const subMesh = pickingInfo.subMeshId;
-            const faceId = pickingInfo.faceId;
+            const faceId = pickingInfo.faceId - this.mesh.subMeshes[subMesh].indexStart / 3;
             const picked = this.pickedBySubMesh;
             if (picked[subMesh] && picked[subMesh][faceId]) {
                 return picked[subMesh][faceId];

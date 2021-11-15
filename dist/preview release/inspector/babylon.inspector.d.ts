@@ -528,6 +528,7 @@ declare module INSPECTOR {
         onClose: (window: Window) => void;
         onResize?: () => void;
         onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
     }
     export class PopupComponent extends React.Component<IPopupComponentProps, {
         isComponentMounted: boolean;
@@ -794,6 +795,7 @@ declare module INSPECTOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -903,25 +905,31 @@ declare module INSPECTOR {
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: BABYLON.Color3): void;
+        setPropertyValue(newColor: BABYLON.Color3 | BABYLON.Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
         render(): JSX.Element;
     }
@@ -1019,6 +1027,7 @@ declare module INSPECTOR {
         inTangent?: number;
         outTangent?: number;
         lockedTangent: boolean;
+        interpolation?: BABYLON.AnimationKeyInterpolation;
     }
     export class Curve {
         static readonly SampleRate: number;
@@ -1032,11 +1041,14 @@ declare module INSPECTOR {
         setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
-        gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
+        getPathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         updateLockedTangentMode(keyIndex: number, enabled: boolean): void;
-        getInControlPoint(keyIndex: number): number;
-        getOutControlPoint(keyIndex: number): number;
+        updateInterpolationMode(keyIndex: number, interpolationMode: BABYLON.AnimationKeyInterpolation): void;
+        getInControlPoint(keyIndex: number): number | undefined;
+        getOutControlPoint(keyIndex: number): number | undefined;
+        hasDefinedOutTangent(keyIndex: number): boolean;
         evaluateOutTangent(keyIndex: number): number;
+        hasDefinedInTangent(keyIndex: number): boolean;
         evaluateInTangent(keyIndex: number): number;
         storeDefaultInTangent(keyIndex: number): void;
         storeDefaultOutTangent(keyIndex: number): void;
@@ -1088,6 +1100,8 @@ declare module INSPECTOR {
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onStepTangentRequiredObserver;
+        private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
@@ -1111,6 +1125,7 @@ declare module INSPECTOR {
         private _unifyTangent;
         private _flattenTangent;
         private _linearTangent;
+        private _stepTangent;
         private _select;
         private _onPointerDown;
         private _extractSlope;
@@ -1140,11 +1155,14 @@ declare module INSPECTOR {
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        clipLength: number;
         referenceMinFrame: number;
         referenceMaxFrame: number;
+        focusedInput: boolean;
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
+        onSelectAllKeys: BABYLON.Observable<void>;
         onActiveKeyFrameChanged: BABYLON.Observable<number>;
         onFrameSet: BABYLON.Observable<number>;
         onFrameManuallyEntered: BABYLON.Observable<number>;
@@ -1158,6 +1176,7 @@ declare module INSPECTOR {
         onLinearTangentRequired: BABYLON.Observable<void>;
         onBreakTangentRequired: BABYLON.Observable<void>;
         onUnifyTangentRequired: BABYLON.Observable<void>;
+        onStepTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -1169,6 +1188,12 @@ declare module INSPECTOR {
         onAnimationsLoaded: BABYLON.Observable<void>;
         onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
         onEditAnimationUIClosed: BABYLON.Observable<void>;
+        onClipLengthIncreased: BABYLON.Observable<number>;
+        onClipLengthDecreased: BABYLON.Observable<number>;
+        onInterpolationModeSet: BABYLON.Observable<{
+            keyId: number;
+            value: BABYLON.AnimationKeyInterpolation;
+        }>;
         onSelectToActivated: BABYLON.Observable<{
             from: number;
             to: number;
@@ -1185,6 +1210,35 @@ declare module INSPECTOR {
         getActiveChannel(animation: BABYLON.Animation): string;
         resetAllActiveChannels(): void;
         getAnimationSortIndex(animation: BABYLON.Animation): number;
+        getPrevKey(): BABYLON.Nullable<number>;
+        getNextKey(): BABYLON.Nullable<number>;
+    }
+}
+declare module INSPECTOR {
+    interface ITextInputComponentProps {
+        globalState: GlobalState;
+        context: Context;
+        id?: string;
+        className?: string;
+        tooltip?: string;
+        value: string;
+        isNumber?: boolean;
+        complement?: string;
+        onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
+    }
+    interface ITextInputComponentState {
+        value: string;
+        isFocused: boolean;
+    }
+    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
+        private _lastKnownGoodValue;
+        constructor(props: ITextInputComponentProps);
+        private _onChange;
+        private _onBlur;
+        private _onFocus;
+        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
+        private _onKeyPress;
+        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
@@ -1221,6 +1275,8 @@ declare module INSPECTOR {
         private _onPrevKey;
         private _onRewind;
         private _onForward;
+        private _onPrevFrame;
+        private _onNextFrame;
         private _onNextKey;
         private _onEndKey;
         private _onStop;
@@ -1261,12 +1317,16 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IBottomBarComponentState {
+        clipLength: string;
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         private _onAnimationsLoadedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onClipLengthIncreasedObserver;
+        private _onClipLengthDecreasedObserver;
         constructor(props: IBottomBarComponentProps);
-        private _renderMaxFrame;
+        private _changeClipLength;
+        private _getKeyAtFrame;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -1286,32 +1346,6 @@ declare module INSPECTOR {
     }
     export class ActionButtonComponent extends React.Component<IActionButtonComponentProps, IActionButtonComponentState> {
         constructor(props: IActionButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ITextInputComponentProps {
-        globalState: GlobalState;
-        context: Context;
-        id?: string;
-        className?: string;
-        tooltip?: string;
-        value: string;
-        isNumber?: boolean;
-        complement?: string;
-        onValueAsNumberChanged?: (value: number) => void;
-    }
-    interface ITextInputComponentState {
-        value: string;
-        isFocused: boolean;
-    }
-    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
-        private _lastKnownGoodValue;
-        constructor(props: ITextInputComponentProps);
-        private _onChange;
-        private _onBlur;
-        private _onFocus;
-        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
         render(): JSX.Element;
     }
 }
@@ -1369,6 +1403,7 @@ declare module INSPECTOR {
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onInterpolationModeSetObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
         componentDidUpdate(): boolean;
@@ -1488,7 +1523,9 @@ declare module INSPECTOR {
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1547,6 +1584,7 @@ declare module INSPECTOR {
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         private _onEditAnimationRequiredObserver;
         private _onEditAnimationUIClosedObserver;
+        private _onDeleteAnimationObserver;
         constructor(props: IAnimationListComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
@@ -1674,7 +1712,7 @@ declare module INSPECTOR {
         constructor(props: IAnimationCurveEditorComponentProps);
         onCloseAnimationCurveEditor(window: Window | null): void;
         shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState): boolean;
-        private _onKeyUp;
+        private _onKeyDown;
         render(): JSX.Element;
     }
 }
@@ -1703,6 +1741,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        componentDidUpdate(prevProps: IAnimationGridComponentProps): void;
         render(): JSX.Element;
     }
 }
@@ -1951,8 +1990,7 @@ declare module INSPECTOR {
         private _originalTexture;
         /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
-        /** The internal texture representation of the original texture */
-        private _originalInternalTexture;
+        private _originalTextureProperties;
         /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;
@@ -3497,6 +3535,7 @@ declare module INSPECTOR {
         private _reflectorHostname;
         private _reflectorPort;
         private _reflector;
+        private _envOptions;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;

@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";
 import "../Shaders/kernelBlur.vertex";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, serializeAsVector2, SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -285,4 +285,4 @@ export class BlurPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.BlurPostProcess"] = BlurPostProcess;
+RegisterClass("BABYLON.BlurPostProcess", BlurPostProcess);

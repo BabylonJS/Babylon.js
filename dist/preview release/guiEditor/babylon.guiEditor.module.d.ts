@@ -19,6 +19,18 @@ declare module "babylonjs-gui-editor/components/log/logComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/tools" {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Grid } from "babylonjs-gui/2D/controls/grid";
+    import { Vector2 } from "babylonjs/Maths/math";
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any, firstIteration?: boolean): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+        static getCellInfo(grid: Grid, control: Control): Vector2;
+        static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2): void;
+    }
+}
 declare module "babylonjs-gui-editor/diagram/workbench" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -51,23 +63,32 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         _scene: Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _altKeyIsPressed;
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _focused;
         private _clipboard;
         private _selectAll;
+        private _camera;
+        private _cameraRadias;
+        private _cameraMaxRadiasFactor;
+        private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
+        private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
         CopyGUIControl(original: Control): void;
@@ -83,8 +104,9 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
-        enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _convertToPixels;
+        private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
@@ -115,6 +137,17 @@ declare module "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent" {
         allowNullValue?: boolean;
     }
 }
+declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
+    }
+}
 declare module "babylonjs-gui-editor/globalState" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
@@ -126,6 +159,7 @@ declare module "babylonjs-gui-editor/globalState" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -156,8 +190,10 @@ declare module "babylonjs-gui-editor/globalState" {
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         onZoomObservable: Observable<void>;
+        onFitToWindowObservable: Observable<void>;
         onPanObservable: Observable<void>;
         onSelectionButtonObservable: Observable<void>;
+        onMoveObservable: Observable<void>;
         onLoadObservable: Observable<File>;
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
@@ -168,12 +204,19 @@ declare module "babylonjs-gui-editor/globalState" {
         onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
         onDraggingStartObservable: Observable<void>;
+        onWindowResizeObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        isSaving: boolean;
+        lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
+        };
+        customLoad?: {
+            label: string;
+            action: (data: string) => Promise<string>;
         };
         constructor();
     }
@@ -274,17 +317,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/stringTools" {
         static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -330,6 +362,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponen
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ISliderLineComponentProps {
         label: string;
         target?: any;
@@ -346,6 +379,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponen
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -405,167 +439,6 @@ declare module "babylonjs-gui-editor/components/commandButtonComponent" {
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { Control } from "babylonjs-gui/2D/controls/control";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    interface ICommonControlPropertyGridComponentProps {
-        control: Control;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-        private _width;
-        private _height;
-        constructor(props: ICommonControlPropertyGridComponentProps);
-        private _updateAlignment;
-        private _checkAndUpdateValues;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
-    import * as React from "react";
-    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-    interface ISliderPropertyGridComponentProps {
-        slider: Slider;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
-        constructor(props: ISliderPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/linePropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { Line } from "babylonjs-gui/2D/controls/line";
-    interface ILinePropertyGridComponentProps {
-        line: Line;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
-        constructor(props: ILinePropertyGridComponentProps);
-        onDashChange(value: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/radioButtonPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
-    interface IRadioButtonPropertyGridComponentProps {
-        radioButton: RadioButton;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
-        constructor(props: IRadioButtonPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
-    export const Null_Value: number;
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: IInspectableOptions[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/textBlockPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    interface ITextBlockPropertyGridComponentProps {
-        textBlock: TextBlock;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
-        constructor(props: ITextBlockPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/inputTextPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { InputText } from "babylonjs-gui/2D/controls/inputText";
-    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
-    interface IInputTextPropertyGridComponentProps {
-        inputText: InputText;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
-        constructor(props: IInputTextPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -702,7 +575,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/color3LineComponen
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { Color3 } from 'babylonjs/Maths/math.color';
+    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
     import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     export interface IColor3LineComponentProps {
         label: string;
@@ -713,26 +586,168 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/color3LineComponen
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: Color3;
+        color: Color3 | Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: Color3;
+            color: Color3 | Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: Color3): void;
+        setPropertyValue(newColor: Color3 | Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Color3): void;
+        raiseOnPropertyChanged(previousValue: Color3 | Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
+        private _responsive;
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        private _updateAlignment;
+        private _checkAndUpdateValues;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/linePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { Line } from "babylonjs-gui/2D/controls/line";
+    interface ILinePropertyGridComponentProps {
+        line: Line;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
+        constructor(props: ILinePropertyGridComponentProps);
+        onDashChange(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/radioButtonPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+    interface IRadioButtonPropertyGridComponentProps {
+        radioButton: RadioButton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
+        constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/optionsLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
+    export const Null_Value: number;
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: IInspectableOptions[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+        icon?: string;
+        iconLabel?: string;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/textBlockPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface ITextBlockPropertyGridComponentProps {
+        textBlock: TextBlock;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
+        constructor(props: ITextBlockPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/inputTextPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { InputText } from "babylonjs-gui/2D/controls/inputText";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    interface IInputTextPropertyGridComponentProps {
+        inputText: InputText;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
+        constructor(props: IInputTextPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -829,8 +844,23 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
+        resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -911,50 +941,45 @@ declare module "babylonjs-gui-editor/components/parentingPropertyGridComponent" 
     }
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
-        _columnNumber: number;
-        _rowNumber: number;
+        private _columnNumber;
+        private _rowNumber;
         updateGridPosition(): void;
+        getCellInfo(): void;
+        private _changeCell;
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent" {
     import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Nullable } from "babylonjs/types";
-    import { Control } from "babylonjs-gui/2D/controls/control";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
-    interface IPropertyTabComponentProps {
-        globalState: GlobalState;
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
+    interface IDisplayGridPropertyGridComponentProps {
+        displayGrid: DisplayGrid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
-    interface IPropertyTabComponentState {
-        currentNode: Nullable<Control>;
-        textureSize: Vector2;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
-        private _onBuiltObserver;
-        private _timerIntervalId;
-        private _lockObject;
-        private _sizeOption;
-        constructor(props: IPropertyTabComponentProps);
-        componentDidMount(): void;
-        componentWillUnmount(): void;
-        load(file: File): void;
-        save(saveCallback: () => void): void;
-        saveLocally: () => void;
-        saveToSnippetServer: () => void;
-        loadFromSnippet(): void;
-        renderProperties(): JSX.Element | null;
+    export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
+        constructor(props: IDisplayGridPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/portal" {
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent" {
     import * as React from "react";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    interface IPortalProps {
-        globalState: GlobalState;
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    interface IButtonPropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onAddComponent: (newComponent: string) => void;
     }
-    export class Portal extends React.Component<IPortalProps> {
-        render(): React.ReactPortal;
+    export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
+        constructor(props: IButtonPropertyGridComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/guiNodeTools" {
@@ -973,7 +998,49 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
     import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static ImageControlDefaultUrl: string;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    import { Nullable } from "babylonjs/types";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    interface IPropertyTabComponentProps {
+        globalState: GlobalState;
+    }
+    interface IPropertyTabComponentState {
+        currentNode: Nullable<Control>;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
+        private _onBuiltObserver;
+        private _timerIntervalId;
+        private _lockObject;
+        private _sizeOption;
+        constructor(props: IPropertyTabComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        load(file: File): void;
+        save(saveCallback: () => void): void;
+        saveLocally: () => void;
+        saveToSnippetServerHelper: (content: string, adt: AdvancedDynamicTexture) => Promise<string>;
+        saveToSnippetServer: () => Promise<void>;
+        loadFromSnippet(): void;
+        renderProperties(): JSX.Element | null;
+        renderControlIcon(): string;
+        render(): JSX.Element | null;
+    }
+}
+declare module "babylonjs-gui-editor/portal" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    interface IPortalProps {
+        globalState: GlobalState;
+    }
+    export class Portal extends React.Component<IPortalProps> {
+        render(): React.ReactPortal;
     }
 }
 declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
@@ -988,13 +1055,6 @@ declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
-    }
-}
-declare module "babylonjs-gui-editor/tools" {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemLabelComponent" {
@@ -1068,12 +1128,10 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         filter: Nullable<string>;
     }
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
-        isExpanded: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
     }> {
-        private _wasSelected;
         dragOverHover: boolean;
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
@@ -1081,15 +1139,12 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
-            isExpanded: boolean;
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
-        componentDidMount(): void;
         componentWillUnmount(): void;
-        componentDidUpdate(): void;
         onSelect(): void;
-        renderChildren(): (JSX.Element | null)[] | null;
+        renderChildren(isExpanded: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;
@@ -1218,6 +1273,7 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -1234,7 +1290,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         showPreviewPopUp: boolean;
     }
     export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private _workbenchCanvas;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
@@ -1251,7 +1306,6 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
@@ -1285,10 +1339,14 @@ declare module "babylonjs-gui-editor/guiEditor" {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        customLoad: {
+            label: string;
+            action: (data: string) => Promise<string>;
+        } | undefined;
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
         };
         currentSnippetToken?: string;
         customLoadObservable?: Observable<any>;
@@ -1334,6 +1392,32 @@ declare module "babylonjs-gui-editor/nodeLocationInfo" {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer" {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/lineContainerComponent" {
+    import * as React from "react";
+    import { ISelectedLineContainer } from "babylonjs-gui-editor/sharedUiComponents/lines/iSelectedLineContainer";
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/draggableLineComponent" {
@@ -2121,6 +2205,15 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any, firstIteration?: boolean): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+        static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
+        static reorderGrid(grid: Grid, index: number, control: Control, cell: BABYLON.Vector2): void;
+    }
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -2141,23 +2234,32 @@ declare module GUIEDITOR {
         _scene: BABYLON.Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
+        private _altKeyIsPressed;
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
+        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _focused;
         private _clipboard;
         private _selectAll;
+        private _camera;
+        private _cameraRadias;
+        private _cameraMaxRadiasFactor;
+        private _pasted;
+        private _engine;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
         constructor(props: IWorkbenchComponentProps);
         keyEvent: (evt: KeyboardEvent) => void;
+        private updateHitTest;
+        private updateHitTestForSelection;
+        private setCameraRadius;
         private copyToClipboard;
         private pasteFromClipboard;
         CopyGUIControl(original: Control): void;
@@ -2173,8 +2275,9 @@ declare module GUIEDITOR {
         appendBlock(guiElement: Control): Control;
         isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
-        enableEditorProperties(guiControl: Control): void;
         private parent;
+        private _convertToPixels;
+        private _reorderGrid;
         private _isNotChildInsert;
         private _adjustParentingIndex;
         isSelected(value: boolean, guiNode: Control): void;
@@ -2203,6 +2306,17 @@ declare module GUIEDITOR {
         value: any;
         initialValue: any;
         allowNullValue?: boolean;
+    }
+}
+declare module GUIEDITOR {
+    /**
+     * Class used to provide lock mechanism
+     */
+    export class LockObject {
+        /**
+         * Gets or set if the lock is engaged
+         */
+        lock: boolean;
     }
 }
 declare module GUIEDITOR {
@@ -2236,8 +2350,10 @@ declare module GUIEDITOR {
         workbench: WorkbenchComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
+        onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
+        onMoveObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
@@ -2248,12 +2364,19 @@ declare module GUIEDITOR {
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
+        onWindowResizeObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        isSaving: boolean;
+        lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
+        };
+        customLoad?: {
+            label: string;
+            action: (data: string) => Promise<string>;
         };
         constructor();
     }
@@ -2349,17 +2472,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    /**
-     * Class used to provide lock mechanism
-     */
-    export class LockObject {
-        /**
-         * Gets or set if the lock is engaged
-         */
-        lock: boolean;
-    }
-}
-declare module GUIEDITOR {
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -2413,6 +2525,7 @@ declare module GUIEDITOR {
         margin?: boolean;
         icon?: string;
         iconLabel?: string;
+        lockObject?: LockObject;
     }
     export class SliderLineComponent extends React.Component<ISliderLineComponentProps, {
         value: number;
@@ -2467,131 +2580,6 @@ declare module GUIEDITOR {
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ICommonControlPropertyGridComponentProps {
-        control: Control;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-        private _width;
-        private _height;
-        constructor(props: ICommonControlPropertyGridComponentProps);
-        private _updateAlignment;
-        private _checkAndUpdateValues;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export interface ISelectedLineContainer {
-        selectedLineContainerTitles: Array<string>;
-        selectedLineContainerTitlesNoFocus: Array<string>;
-    }
-}
-declare module GUIEDITOR {
-    interface ILineContainerComponentProps {
-        selection?: ISelectedLineContainer;
-        title: string;
-        children: any[] | any;
-        closed?: boolean;
-    }
-    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
-        isExpanded: boolean;
-        isHighlighted: boolean;
-    }> {
-        constructor(props: ILineContainerComponentProps);
-        switchExpandedState(): void;
-        renderHeader(): JSX.Element;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ISliderPropertyGridComponentProps {
-        slider: Slider;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
-        constructor(props: ISliderPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ILinePropertyGridComponentProps {
-        line: Line;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
-        constructor(props: ILinePropertyGridComponentProps);
-        onDashChange(value: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IRadioButtonPropertyGridComponentProps {
-        radioButton: RadioButton;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
-        constructor(props: IRadioButtonPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export const Null_Value: number;
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: BABYLON.IInspectableOptions[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITextBlockPropertyGridComponentProps {
-        textBlock: TextBlock;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
-        constructor(props: ITextBlockPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IInputTextPropertyGridComponentProps {
-        inputText: InputText;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
-        constructor(props: IInputTextPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2727,26 +2715,134 @@ declare module GUIEDITOR {
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: BABYLON.Color3): void;
+        setPropertyValue(newColor: BABYLON.Color3 | BABYLON.Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
+        private _responsive;
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        private _updateAlignment;
+        private _checkAndUpdateValues;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ILinePropertyGridComponentProps {
+        line: Line;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
+        constructor(props: ILinePropertyGridComponentProps);
+        onDashChange(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IRadioButtonPropertyGridComponentProps {
+        radioButton: RadioButton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
+        constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export const Null_Value: number;
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: BABYLON.IInspectableOptions[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+        icon?: string;
+        iconLabel?: string;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ITextBlockPropertyGridComponentProps {
+        textBlock: TextBlock;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
+        constructor(props: ITextBlockPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IInputTextPropertyGridComponentProps {
+        inputText: InputText;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
+        constructor(props: IInputTextPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2813,8 +2909,23 @@ declare module GUIEDITOR {
     }
     export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
         constructor(props: IGridPropertyGridComponentProps);
+        private _removingColumn;
+        private _removingRow;
+        private _previousGrid;
+        private _rowDefinitions;
+        private _rowEditFlags;
+        private _columnEditFlags;
+        private _columnDefinitions;
+        private _editedRow;
+        private _editedColumn;
         renderRows(): JSX.Element[];
+        setRowValues(): void;
+        setColumnValues(): void;
         renderColumns(): JSX.Element[];
+        resizeRow(): void;
+        resizeColumn(): void;
+        checkValue(value: string, percent: boolean): string;
+        checkPercentage(value: string): boolean;
         render(): JSX.Element;
     }
 }
@@ -2870,10 +2981,41 @@ declare module GUIEDITOR {
     }
     export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
         constructor(props: IParentingPropertyGridComponentProps);
-        _columnNumber: number;
-        _rowNumber: number;
+        private _columnNumber;
+        private _rowNumber;
         updateGridPosition(): void;
+        getCellInfo(): void;
+        private _changeCell;
         render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IDisplayGridPropertyGridComponentProps {
+        displayGrid: DisplayGrid;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
+        constructor(props: IDisplayGridPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IButtonPropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onAddComponent: (newComponent: string) => void;
+    }
+    export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
+        constructor(props: IButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export class GUINodeTools {
+        static ImageControlDefaultUrl: string;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -2882,7 +3024,6 @@ declare module GUIEDITOR {
     }
     interface IPropertyTabComponentState {
         currentNode: BABYLON.Nullable<Control>;
-        textureSize: BABYLON.Vector2;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
@@ -2895,10 +3036,12 @@ declare module GUIEDITOR {
         load(file: File): void;
         save(saveCallback: () => void): void;
         saveLocally: () => void;
-        saveToSnippetServer: () => void;
+        saveToSnippetServerHelper: (content: string, adt: AdvancedDynamicTexture) => Promise<string>;
+        saveToSnippetServer: () => Promise<void>;
         loadFromSnippet(): void;
         renderProperties(): JSX.Element | null;
-        render(): JSX.Element;
+        renderControlIcon(): string;
+        render(): JSX.Element | null;
     }
 }
 declare module GUIEDITOR {
@@ -2907,11 +3050,6 @@ declare module GUIEDITOR {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module GUIEDITOR {
-    export class GUINodeTools {
-        static CreateControlFromString(data: string): Rectangle | Line | Grid | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -2924,13 +3062,6 @@ declare module GUIEDITOR {
     }> {
         constructor(props: IMessageDialogComponentProps);
         render(): JSX.Element | null;
-    }
-}
-declare module GUIEDITOR {
-    export class Tools {
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module GUIEDITOR {
@@ -2993,12 +3124,10 @@ declare module GUIEDITOR {
         filter: BABYLON.Nullable<string>;
     }
     export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
-        isExpanded: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
     }> {
-        private _wasSelected;
         dragOverHover: boolean;
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
@@ -3006,15 +3135,12 @@ declare module GUIEDITOR {
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
-            isExpanded: boolean;
             isSelected: boolean;
         }): boolean;
         scrollIntoView(): void;
-        componentDidMount(): void;
         componentWillUnmount(): void;
-        componentDidUpdate(): void;
         onSelect(): void;
-        renderChildren(): (JSX.Element | null)[] | null;
+        renderChildren(isExpanded: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;
@@ -3130,6 +3256,7 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
+        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -3144,7 +3271,6 @@ declare module GUIEDITOR {
         showPreviewPopUp: boolean;
     }
     export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private _workbenchCanvas;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
@@ -3161,7 +3287,6 @@ declare module GUIEDITOR {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
@@ -3194,10 +3319,14 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        customLoad: {
+            label: string;
+            action: (data: string) => Promise<string>;
+        } | undefined;
         hostElement?: HTMLElement;
         customSave?: {
             label: string;
-            action: (data: string) => Promise<void>;
+            action: (data: string) => Promise<string>;
         };
         currentSnippetToken?: string;
         customLoadObservable?: BABYLON.Observable<any>;
@@ -3240,6 +3369,30 @@ declare module GUIEDITOR {
         map?: {
             [key: number]: number;
         };
+    }
+}
+declare module GUIEDITOR {
+    export interface ISelectedLineContainer {
+        selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
+    }
+}
+declare module GUIEDITOR {
+    interface ILineContainerComponentProps {
+        selection?: ISelectedLineContainer;
+        title: string;
+        children: any[] | any;
+        closed?: boolean;
+    }
+    export class LineContainerComponent extends React.Component<ILineContainerComponentProps, {
+        isExpanded: boolean;
+        isHighlighted: boolean;
+    }> {
+        constructor(props: ILineContainerComponentProps);
+        switchExpandedState(): void;
+        renderHeader(): JSX.Element;
+        componentDidMount(): void;
+        render(): JSX.Element;
     }
 }
 declare module GUIEDITOR {

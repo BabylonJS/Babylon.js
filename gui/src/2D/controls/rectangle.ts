@@ -1,6 +1,6 @@
 import { Container } from "./container";
 import { Measure } from "../measure";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
@@ -53,6 +53,24 @@ export class Rectangle extends Container {
 
     protected _getTypeName(): string {
         return "Rectangle";
+    }
+
+    /** @hidden */
+    protected _computeAdditionnalOffsetX() {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
+    }
+
+    /** @hidden */
+    protected _computeAdditionnalOffsetY() {
+        if (this._cornerRadius) {
+            // Take in account the aliasing
+            return 1;
+        }
+        return 0;
     }
 
     protected _localDraw(context: ICanvasRenderingContext): void {
@@ -138,4 +156,4 @@ export class Rectangle extends Container {
         }
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Rectangle"] = Rectangle;
+RegisterClass("BABYLON.GUI.Rectangle", Rectangle);

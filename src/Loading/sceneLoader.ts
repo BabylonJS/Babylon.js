@@ -14,11 +14,11 @@ import { Constants } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
-import { FileTools, LoadFileError } from '../Misc/fileTools';
+import { IsBase64DataUrl, LoadFileError } from '../Misc/fileTools';
 import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
-import { StringTools } from '../Misc/stringTools';
+import { StartsWith } from '../Misc/stringTools';
 
 /**
  * Type used for the success callback of ImportMesh
@@ -448,7 +448,20 @@ export class SceneLoader {
         return null;
     }
 
-    private static _LoadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+    private static _FormatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
+        let errorMessage = "Unable to load from " + fileInfo.url;
+
+        if (message) {
+            errorMessage += `: ${message}`;
+        }
+        else if (exception) {
+            errorMessage += `: ${exception}`;
+        }
+
+        return errorMessage;
+    }
+
+    private static _LoadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message?: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
         const registeredPlugin = pluginExtension ? SceneLoader._GetPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._GetPluginForDirectLoad(fileInfo.url) : SceneLoader._GetPluginForFilename(fileInfo.url));
 
@@ -468,7 +481,7 @@ export class SceneLoader {
 
         // Check if we have a direct load url. If the plugin is registered to handle
         // it or it's not a base64 data url, then pass it through the direct load path.
-        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url) || !FileTools.IsBase64DataUrl(fileInfo.url)))) {
+        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url) || !IsBase64DataUrl(fileInfo.url)))) {
             if (plugin.directLoad) {
                 const result = plugin.directLoad(scene, directLoad);
                 if (result.then) {
@@ -520,7 +533,7 @@ export class SceneLoader {
             }
 
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-                onError(request?.statusText || exception?.message || "Unknown error", exception);
+                onError(request?.statusText, exception);
             };
 
             const fileOrUrl = fileInfo.file || fileInfo.url;
@@ -571,7 +584,7 @@ export class SceneLoader {
             name = sceneFile.name;
             file = sceneFile;
         }
-        else if (typeof sceneFilename === "string" && StringTools.StartsWith(sceneFilename, "data:")) {
+        else if (typeof sceneFilename === "string" && StartsWith(sceneFilename, "data:")) {
             url = sceneFilename;
             name = "";
         }
@@ -667,11 +680,11 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        var errorHandler = (message: string, exception?: any) => {
-            let errorMessage = "Unable to import meshes from " + fileInfo.url + ": " + message;
+        var errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, exception);
+                onError(scene, errorMessage, new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
@@ -839,10 +852,11 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        var errorHandler = (message: Nullable<string>, exception?: any) => {
-            let errorMessage = "Unable to load from " + fileInfo.url + (message ? ": " + message : "");
+        var errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
+
             if (onError) {
-                onError(scene, errorMessage, exception);
+                onError(scene, errorMessage, new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
@@ -950,15 +964,11 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        var errorHandler = (message: Nullable<string>, exception?: any) => {
-            let errorMessage = "Unable to load assets from " + fileInfo.url + (message ? ": " + message : "");
-
-            if (exception && exception.message) {
-                errorMessage += ` (${exception.message})`;
-            }
+        var errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, exception);
+                onError(scene, errorMessage, new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?

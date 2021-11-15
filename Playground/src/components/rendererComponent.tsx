@@ -110,7 +110,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
-        const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+        const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
         switch (configuredEngine) {
             case "WebGPU":

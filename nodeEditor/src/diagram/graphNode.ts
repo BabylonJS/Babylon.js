@@ -33,12 +33,12 @@ export class GraphNode {
     private _gridAlignedX = 0;
     private _gridAlignedY = 0;
     private _mouseStartPointX: Nullable<number> = null;
-    private _mouseStartPointY: Nullable<number> = null
+    private _mouseStartPointY: Nullable<number> = null;
     private _globalState: GlobalState;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
-    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
     private _ownerCanvas: GraphCanvasComponent;
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
@@ -179,7 +179,7 @@ export class GraphNode {
     public constructor(public block: NodeMaterialBlock, globalState: GlobalState) {
         this._globalState = globalState;
 
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(node => {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((node) => {
             if (node === this) {
                 this._visual.classList.add("selected");
             } else {
@@ -187,15 +187,18 @@ export class GraphNode {
                     if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
                         this._visual.classList.remove("selected");
                     }
-                })
+                });
             }
         });
 
-        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
+        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add((block) => {
+            if (block !== this.block) {
+                return;
+            }
             this.refresh();
         });
 
-        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
+        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this._visual.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left ||
                 rect1.left > rect2.right ||
@@ -205,8 +208,8 @@ export class GraphNode {
             this.isSelected = overlap;
         });
 
-        this._onFrameCreatedObserver = this._globalState.onFrameCreatedObservable.add(frame => {
-            if (this._ownerCanvas.frames.some(f => f.nodes.indexOf(this) !== -1)) {
+        this._onFrameCreatedObserver = this._globalState.onFrameCreatedObservable.add((frame) => {
+            if (this._ownerCanvas.frames.some((f) => f.nodes.indexOf(this) !== -1)) {
                 return;
             }
 
@@ -256,7 +259,7 @@ export class GraphNode {
     }
 
     public getLinksForConnectionPoint(point: NodeMaterialConnectionPoint) {
-        return this._links.filter(link => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
+        return this._links.filter((link) => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
     }
 
     private _refreshFrames() {
@@ -286,8 +289,9 @@ export class GraphNode {
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
             let additionalClass = this._displayManager.getHeaderClass(this.block);
             this._header.classList.value = "header";
+            this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
-                this._header.classList.add(additionalClass);
+                this._headerContainer.classList.add(additionalClass);
             }
         } else {
             this._header.innerHTML = this.block.name;
@@ -302,14 +306,14 @@ export class GraphNode {
         }
 
         if (this.enclosingFrameId !== -1) {
-            let index = this._ownerCanvas.frames.findIndex(frame => frame.id === this.enclosingFrameId);
+            let index = this._ownerCanvas.frames.findIndex((frame) => frame.id === this.enclosingFrameId);
             if (index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
                 this._ownerCanvas.frames[index].redrawFramePorts();
             }
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
-        
+
         if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
             this._promotionWarning.classList.add("visible");
         } else {
@@ -397,7 +401,6 @@ export class GraphNode {
         // Display manager
         let displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
 
-
         if (displayManagerClass) {
             this._displayManager = new displayManagerClass();
         }
@@ -406,9 +409,9 @@ export class GraphNode {
         this._visual = root.ownerDocument!.createElement("div");
         this._visual.classList.add("visual");
 
-        this._visual.addEventListener("pointerdown", evt => this._onDown(evt));
-        this._visual.addEventListener("pointerup", evt => this._onUp(evt));
-        this._visual.addEventListener("pointermove", evt => this._onMove(evt));
+        this._visual.addEventListener("pointerdown", (evt) => this._onDown(evt));
+        this._visual.addEventListener("pointerup", (evt) => this._onUp(evt));
+        this._visual.addEventListener("pointermove", (evt) => this._onMove(evt));
 
         this._headerContainer = root.ownerDocument!.createElement("div");
         this._headerContainer.classList.add("header-container");
@@ -424,7 +427,11 @@ export class GraphNode {
         const img = root.ownerDocument!.createElement("img");
         img.src = triangle;
         this._promotionWarning.appendChild(img);
-        this._headerContainer.appendChild(this._promotionWarning);
+        this._visual.appendChild(this._promotionWarning);
+
+        var selectionBorder = root.ownerDocument!.createElement("div");
+        selectionBorder.classList.add("selection-border");
+        this._visual.appendChild(selectionBorder);
 
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add("connections");
@@ -441,10 +448,6 @@ export class GraphNode {
         this._content = root.ownerDocument!.createElement("div");
         this._content.classList.add("content");
         this._visual.appendChild(this._content);
-
-        var selectionBorder = root.ownerDocument!.createElement("div");
-        selectionBorder.classList.add("selection-border");
-        this._visual.appendChild(selectionBorder);
 
         root.appendChild(this._visual);
 

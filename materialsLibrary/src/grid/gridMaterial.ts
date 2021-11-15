@@ -11,7 +11,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./grid.fragment";
 import "./grid.vertex";
@@ -26,6 +26,7 @@ class GridMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public THIN_INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -121,11 +122,11 @@ export class GridMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new GridMaterialDefines();
         }
 
-        var defines = <GridMaterialDefines>subMesh._materialDefines;
+        var defines = <GridMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -208,7 +209,7 @@ export class GridMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <GridMaterialDefines>subMesh._materialDefines;
+        var defines = <GridMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -280,4 +281,4 @@ export class GridMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GridMaterial"] = GridMaterial;
+RegisterClass("BABYLON.GridMaterial", GridMaterial);

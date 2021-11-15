@@ -16,6 +16,8 @@ import { Constants } from "../Engines/constants";
 import "../Meshes/Builders/planeBuilder";
 import "../Meshes/Builders/boxBuilder";
 import { Plane } from '../Maths/math.plane';
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
 
 /**
  * Represents the different options available during the creation of
@@ -534,7 +536,7 @@ export class EnvironmentHelper {
      */
     private _setupGround(sceneSize: ISceneSize): void {
         if (!this._ground || this._ground.isDisposed()) {
-            this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
+            this._ground = CreatePlane("BackgroundPlane", { size: sceneSize.groundSize }, this._scene);
             this._ground.rotation.x = Math.PI / 2; // Face up by default.
             this._ground.parent = this._rootMesh;
             this._ground.onDisposeObservable.add(() => { this._ground = null; });
@@ -642,7 +644,7 @@ export class EnvironmentHelper {
      */
     private _setupSkybox(sceneSize: ISceneSize): void {
         if (!this._skybox || this._skybox.isDisposed()) {
-            this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, Mesh.BACKSIDE);
+            this._skybox = CreateBox("BackgroundSkybox", { size: sceneSize.skyboxSize, sideOrientation: Mesh.BACKSIDE }, this._scene);
             this._skybox.onDisposeObservable.add(() => { this._skybox = null; });
         }
         this._skybox.parent = this._rootMesh;

@@ -29,6 +29,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
     private _engine: Engine;
+    private _usingSafari: boolean = Tools.IsSafari();
 
     private _keyboardDownEvent = (evt: any) => { };
     private _keyboardUpEvent = (evt: any) => { };
@@ -42,7 +43,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _wheelEventName: string;
 
     private _mouseId = -1;
-    private _isUsingFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
+    private _isUsingFirefox = navigator && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number> = [];
@@ -312,7 +313,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         deviceEvent.deviceType = DeviceType.Keyboard;
                         deviceEvent.deviceSlot = 0;
                         deviceEvent.inputIndex = i;
-                        deviceEvent.currentState = 1;
+                        deviceEvent.currentState = 0;
                         deviceEvent.previousState = 1;
                         this.onInputChangedObservable.notifyObservers(deviceEvent);
                     }
@@ -361,14 +362,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 // The browser might use a move event in case
                 // of simultaneous mouse buttons click for instance. So
                 // in this case we stil need to propagate it.
-                let fireFakeMove = true;
                 if (previousHorizontal !== evt.clientX) {
                     deviceEvent.inputIndex = PointerInput.Horizontal;
                     deviceEvent.previousState = previousHorizontal;
                     deviceEvent.currentState = pointer[PointerInput.Horizontal];
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
-                    fireFakeMove = false;
                 }
                 if (previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Vertical;
@@ -376,7 +375,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     deviceEvent.currentState = pointer[PointerInput.Vertical];
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
-                    fireFakeMove = false;
                 }
                 if (pointer[PointerInput.DeltaHorizontal] !== 0) {
                     deviceEvent.inputIndex = PointerInput.DeltaHorizontal;
@@ -384,7 +382,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     deviceEvent.currentState = pointer[PointerInput.DeltaHorizontal];
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
-                    fireFakeMove = false;
                 }
                 if (pointer[PointerInput.DeltaVertical] !== 0) {
                     deviceEvent.inputIndex = PointerInput.DeltaVertical;
@@ -392,18 +389,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     deviceEvent.currentState = pointer[PointerInput.DeltaVertical];
 
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
-                    fireFakeMove = false;
                 }
                 // Lets Propagate the event for move with same position.
-                if (fireFakeMove && evt.button !== -1) {
-                    deviceEvent.inputIndex = PointerInput.FakeMove;
-                    deviceEvent.previousState = 0;
-                    deviceEvent.currentState = 0;
-                    // The pointer buttons in PointerInput are in the same order as they are used for the MouseEvent button property, just offset by 2.
-                    // eg. PointerInput.LeftClick = 2 vs MouseEvent.button = Left Click = 0
-                    // Because of this, we need to offset our indices by two when storing in our inputs array.
+                if (!this._usingSafari && evt.button !== -1) {
+                    deviceEvent.inputIndex = evt.button + 2;
+                    deviceEvent.previousState = pointer[evt.button + 2];
                     pointer[evt.button + 2] = (pointer[evt.button + 2] ? 0 : 1); // Reverse state of button if evt.button has value
-
+                    deviceEvent.currentState = pointer[evt.button + 2];
                     this.onInputChangedObservable.notifyObservers(deviceEvent);
                 }
             }
@@ -443,12 +435,22 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
 
                     if (!document.pointerLockElement) {
-                        this._elementToAttachTo.setPointerCapture(this._mouseId);
+                        try {
+                            this._elementToAttachTo.setPointerCapture(this._mouseId);
+                        }
+                        catch (e) {
+                            // DO NOTHING
+                        }
                     }
                 }
                 else { // Touch; Since touches are dynamically assigned, only set capture if we have an id
                     if (evt.pointerId && !document.pointerLockElement) {
-                        this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                        try {
+                            this._elementToAttachTo.setPointerCapture(evt.pointerId);
+                        }
+                        catch (e) {
+                            // DO NOTHING
+                        }
                     }
                 }
 

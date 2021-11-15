@@ -4,7 +4,7 @@ import { Color3 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { SceneComponentConstants } from "../sceneComponent";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 import { Constants } from "../Engines/constants";
 
 /**
@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("PrePassRendererSceneComponent");
+        throw _WarnImport("PrePassRendererSceneComponent");
     }
 
     private _ssDiffusionS: number[] = [];
@@ -81,7 +81,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      */
     public readonly texturesRequired: number[] = [
         Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-        Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+        Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
         Constants.PREPASS_COLOR_TEXTURE_TYPE,
         Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
     ];

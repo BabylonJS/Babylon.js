@@ -8,7 +8,7 @@ import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/circleOfConfusion.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize } from '../Misc/decorators';
 
 /**
@@ -85,4 +85,4 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.CircleOfConfusionPostProcess"] = CircleOfConfusionPostProcess;
+RegisterClass("BABYLON.CircleOfConfusionPostProcess", CircleOfConfusionPostProcess);

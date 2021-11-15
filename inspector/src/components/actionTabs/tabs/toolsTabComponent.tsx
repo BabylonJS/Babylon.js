@@ -33,7 +33,12 @@ import { IndentedTextLineComponent } from "../../../sharedUiComponents/lines/ind
 import { TextInputLineComponent } from "../../../sharedUiComponents/lines/textInputLineComponent";
 import { LockObject } from "../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 
-const GIF = require("gif.js.optimized")
+const GIF = require("gif.js.optimized");
+
+const envExportImageTypes = [
+    { label: "PNG", value: 0, imageType: "image/png" },
+    { label: "WebP", value: 1, imageType: "image/webp" },
+];
 
 export class ToolsTabComponent extends PaneComponent {
     private _lockObject = new LockObject();
@@ -49,6 +54,7 @@ export class ToolsTabComponent extends PaneComponent {
     private _reflectorHostname: string = "localhost";
     private _reflectorPort: number = 1234;
     private _reflector: Reflector;
+    private _envOptions = { imageTypeIndex: 0, imageQuality: 0.8 };
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -251,7 +257,12 @@ export class ToolsTabComponent extends PaneComponent {
 
     createEnvTexture() {
         const scene = this.props.scene;
-        EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture)
+        EnvironmentTextureTools.CreateEnvTextureAsync(
+            scene.environmentTexture as CubeTexture,
+            {
+                imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
+                imageQuality: this._envOptions.imageQuality
+            })
             .then((buffer: ArrayBuffer) => {
                 var blob = new Blob([buffer], { type: "octet/stream" });
                 Tools.Download(blob, "environment.env");
@@ -382,7 +393,16 @@ export class ToolsTabComponent extends PaneComponent {
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                             {
                                 !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
-                                <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                                <>
+                                    <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                                    <OptionsLineComponent label="Image type" options={envExportImageTypes} target={this._envOptions} propertyName="imageTypeIndex" onSelect={() => {
+                                        this.forceUpdate();
+                                    }} />
+                                    {
+                                        this._envOptions.imageTypeIndex > 0 &&
+                                        <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
+                                    }
+                                </>
                             }
                         </>
                     }

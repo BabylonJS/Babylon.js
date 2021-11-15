@@ -207,11 +207,19 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.blendMode = blendMode;
     }
 
+    private _disableDepthWrite: boolean = false;
     /** Disables writing to the depth buffer when rendering the sprites.
      *  It can be handy to disable depth writing when using textures without alpha channel
      *  and setting some specific blend modes.
     */
-    public disableDepthWrite: boolean = false;
+    public get disableDepthWrite() {
+        return this._disableDepthWrite;
+    }
+
+    public set disableDepthWrite(value: boolean) {
+        this._disableDepthWrite = value;
+        this._spriteRenderer.disableDepthWrite = value;
+    }
 
     private _spriteRenderer: SpriteRenderer;
     /** Associative array from JSON sprite data file */

@@ -1,9 +1,9 @@
 import { SerializationHelper } from "../../Misc/decorators";
-import { EnvironmentTextureTools } from "../../Misc/environmentTextureTools";
+import { _UpdateRGBDAsync as UpdateRGBDAsyncEnvTools } from "../../Misc/environmentTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
-import { InternalTexture, InternalTextureSource } from "./internalTexture";
+import { InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
@@ -56,7 +56,7 @@ export class RawCubeTexture extends CubeTexture {
      * @returns a promise that resolves when the operation is complete
      */
     public updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial> = null, lodScale: number = 0.8, lodOffset: number = 0): Promise<void> {
-        return RawCubeTexture._UpdateRGBDAsync(this._texture!, data, sphericalPolynomial, lodScale, lodOffset);
+        return UpdateRGBDAsyncEnvTools(this._texture!, data, sphericalPolynomial, lodScale, lodOffset).then(() => {});
     }
 
     /**
@@ -77,18 +77,5 @@ export class RawCubeTexture extends CubeTexture {
 
             return texture;
         }, this);
-    }
-
-    /** @hidden */
-    public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
-        internalTexture._source = InternalTextureSource.CubeRawRGBD;
-        internalTexture._bufferViewArrayArray = data;
-        internalTexture._lodGenerationScale = lodScale;
-        internalTexture._lodGenerationOffset = lodOffset;
-        internalTexture._sphericalPolynomial = sphericalPolynomial;
-
-        return EnvironmentTextureTools.UploadLevelsAsync(internalTexture, data).then(() => {
-            internalTexture.isReady = true;
-        });
     }
 }

@@ -4,7 +4,7 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
-import { _DevTools } from "../Misc/devTools";
+import { _WarnImport } from "../Misc/devTools";
 import { Color4 } from "../Maths/math.color";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -24,7 +24,7 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 export class PrePassRenderer {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _DevTools.WarnImport("PrePassRendererSceneComponent");
+        throw _WarnImport("PrePassRendererSceneComponent");
     };
 
     /**
@@ -113,7 +113,7 @@ export class PrePassRenderer {
             name: "prePass_Normal",
         },
         {
-            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
             name: "prePass_Albedo",
         },
@@ -151,6 +151,7 @@ export class PrePassRenderer {
         } else {
             this._currentTarget = this.defaultRT;
         }
+        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**
@@ -226,7 +227,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
-        this._setRenderTarget(null);
+        this._currentTarget = this.defaultRT;
     }
 
     /**
@@ -495,7 +496,7 @@ export class PrePassRenderer {
         }
 
         for (let i = 0; i < this.renderTargets.length; i++) {
-            if (this.mrtCount !== previousMrtCount) {
+            if (this.mrtCount !== previousMrtCount || this.renderTargets[i].count !== this.mrtCount) {
                 this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 
@@ -691,6 +692,11 @@ export class PrePassRenderer {
         this._disable();
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+
+        if (this._scene._depthPeelingRenderer && this._scene.useOrderIndependentTransparency) {
+            this._scene._depthPeelingRenderer.setPrePassRenderer(this);
+            enablePrePass = true;
+        }
 
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {

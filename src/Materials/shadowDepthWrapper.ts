@@ -3,13 +3,13 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SubMesh } from "../Meshes/subMesh";
 import { Material } from "./material";
-import { _TypeStore } from "../Misc/typeStore";
 import { Effect, IEffectCreationOptions } from './effect';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
-import { GUID } from '../Misc/guid';
+import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
+import { Engine } from "../Engines/engine";
 
 /**
  * Options to be used when creating a shadow depth material
@@ -57,8 +57,8 @@ export class ShadowDepthWrapper {
     private _options?: IIOptionShadowDepthMaterial;
     private _baseMaterial: Material;
     private _onEffectCreatedObserver: Nullable<Observer<{ effect: Effect, subMesh: Nullable<SubMesh> }>>;
-    private _subMeshToEffect: Map<Nullable<SubMesh>, Effect>;
-    private _subMeshToDepthWrapper: MapMap<Nullable<SubMesh>, ShadowGenerator, { drawWrapper: { [name: string]: Nullable<DrawWrapper> }, mainDrawWrapper: DrawWrapper, depthDefines: string, token: string }>; // key is (subMesh + shadowGenerator)
+    private _subMeshToEffect: Map<Nullable<SubMesh>, [Effect, number]>;
+    private _subMeshToDepthWrapper: MapMap<Nullable<SubMesh>, ShadowGenerator, { drawWrapper: Array<Nullable<DrawWrapper>>, mainDrawWrapper: DrawWrapper, depthDefines: string, token: string }>; // key is (subMesh + shadowGenerator)
     private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
 
     /** Gets the standalone status of the wrapper */
@@ -82,7 +82,7 @@ export class ShadowDepthWrapper {
      */
     constructor(baseMaterial: Material, scene: Scene, options?: IIOptionShadowDepthMaterial) {
         this._baseMaterial = baseMaterial;
-        this._scene = scene;
+        this._scene = scene ?? Engine.LastCreatedScene;
         this._options = options;
 
         this._subMeshToEffect = new Map();
@@ -110,7 +110,7 @@ export class ShadowDepthWrapper {
                 );
             }
 
-            this._subMeshToEffect.set(params.subMesh, params.effect);
+            this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
             this._subMeshToDepthWrapper.mm.delete(params.subMesh); // trigger a depth effect recreation
         });
     }
@@ -119,17 +119,17 @@ export class ShadowDepthWrapper {
      * Gets the effect to use to generate the depth map
      * @param subMesh subMesh to get the effect for
      * @param shadowGenerator shadow generator to get the effect for
-     * @param nameForDrawWrapper Name of the draw wrapper to retrieve the effect from
+     * @param passIdForDrawWrapper Id of the pass for which the effect from the draw wrapper must be retrieved from
      * @returns the effect to use to generate the depth map for the subMesh + shadow generator specified
      */
-    public getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator, nameForDrawWrapper: string): Nullable<DrawWrapper> {
+    public getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator, passIdForDrawWrapper: number): Nullable<DrawWrapper> {
         const entry = this._subMeshToDepthWrapper.mm.get(subMesh)?.get(shadowGenerator);
         if (!entry) {
             return null;
         }
-        let drawWrapper = entry.drawWrapper[nameForDrawWrapper];
+        let drawWrapper = entry.drawWrapper[passIdForDrawWrapper];
         if (!drawWrapper) {
-            drawWrapper = entry.drawWrapper[nameForDrawWrapper] = new DrawWrapper(this._scene.getEngine());
+            drawWrapper = entry.drawWrapper[passIdForDrawWrapper] = new DrawWrapper(this._scene.getEngine());
             drawWrapper.setEffect(entry.mainDrawWrapper.effect, entry.mainDrawWrapper.defines);
         }
 
@@ -142,10 +142,10 @@ export class ShadowDepthWrapper {
      * @param defines the list of defines to take into account when checking the effect
      * @param shadowGenerator combined with subMesh, it defines the effect to check
      * @param useInstances specifies that instances should be used
-     * @param nameForDrawWrapper Name to use to create the draw wrapper
+     * @param passIdForDrawWrapper Id of the pass for which the draw wrapper should be created
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean, nameForDrawWrapper: string): boolean {
+    public isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean, passIdForDrawWrapper: number): boolean {
         if (this.standalone) {
             // will ensure the effect is (re)created for the base material
             if (!this._baseMaterial.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances)) {
@@ -153,7 +153,7 @@ export class ShadowDepthWrapper {
             }
         }
 
-        return this._makeEffect(subMesh, defines, shadowGenerator, nameForDrawWrapper)?.isReady() ?? false;
+        return this._makeEffect(subMesh, defines, shadowGenerator, passIdForDrawWrapper)?.isReady() ?? false;
     }
 
     /**
@@ -171,26 +171,28 @@ export class ShadowDepthWrapper {
         }
     }
 
-    private _makeEffect(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, nameForDrawWrapper: string): Nullable<Effect> {
+    private _makeEffect(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, passIdForDrawWrapper: number): Nullable<Effect> {
         const engine = this._scene.getEngine();
-        const origEffect = this._subMeshToEffect.get(subMesh);
+        const origEffectAndRenderPassId = this._subMeshToEffect.get(subMesh);
 
-        if (!origEffect) {
+        if (!origEffectAndRenderPassId) {
             return null;
         }
+
+        const [origEffect, origRenderPassId] = origEffectAndRenderPassId;
 
         let params = this._subMeshToDepthWrapper.get(subMesh, shadowGenerator);
         if (!params) {
             const mainDrawWrapper = new DrawWrapper(engine);
-            mainDrawWrapper.defines = subMesh._materialDefines;
+            mainDrawWrapper.defines = subMesh._getDrawWrapper(origRenderPassId)?.defines ?? null;
 
             params = {
-                drawWrapper: {},
+                drawWrapper: [],
                 mainDrawWrapper,
                 depthDefines: "",
-                token: GUID.RandomId()
+                token: RandomGUID()
             };
-            params.drawWrapper[nameForDrawWrapper] = mainDrawWrapper;
+            params.drawWrapper[passIdForDrawWrapper] = mainDrawWrapper;
             this._subMeshToDepthWrapper.set(subMesh, shadowGenerator, params);
         }
 
@@ -268,9 +270,9 @@ export class ShadowDepthWrapper {
             indexParameters: origEffect.getIndexParameters(),
         }, engine);
 
-        for (const name in params.drawWrapper) {
-            if (name !== nameForDrawWrapper) {
-                params.drawWrapper[name]?.setEffect(params.mainDrawWrapper.effect, params.mainDrawWrapper.defines);
+        for (let id = 0; id < params.drawWrapper.length; ++id) {
+            if (id !== passIdForDrawWrapper) {
+                params.drawWrapper[id]?.setEffect(params.mainDrawWrapper.effect, params.mainDrawWrapper.defines);
             }
         }
         return params.mainDrawWrapper.effect;

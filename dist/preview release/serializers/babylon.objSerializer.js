@@ -328,8 +328,8 @@ var OBJExport = /** @class */ (function () {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _OBJ__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../OBJ */ "./OBJ/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _OBJ__WEBPACK_IMPORTED_MODULE_0__["OBJExport"]; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _OBJ_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../OBJ/index */ "./OBJ/index.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _OBJ_index__WEBPACK_IMPORTED_MODULE_0__["OBJExport"]; });
 
 
 /**
@@ -338,8 +338,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
 if (typeof globalObject !== "undefined") {
-    for (var serializer in _OBJ__WEBPACK_IMPORTED_MODULE_0__) {
-        globalObject.BABYLON[serializer] = _OBJ__WEBPACK_IMPORTED_MODULE_0__[serializer];
+    for (var serializer in _OBJ_index__WEBPACK_IMPORTED_MODULE_0__) {
+        globalObject.BABYLON[serializer] = _OBJ_index__WEBPACK_IMPORTED_MODULE_0__[serializer];
     }
 }
 

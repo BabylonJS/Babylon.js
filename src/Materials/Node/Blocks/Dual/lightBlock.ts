@@ -12,7 +12,7 @@ import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
@@ -263,7 +263,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         // Fragment
-        state.sharedData.bindableBlocks.push(this);
+        state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
 
         let comments = `//${this.name}`;
@@ -352,4 +352,4 @@ export class LightBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LightBlock"] = LightBlock;
+RegisterClass("BABYLON.LightBlock", LightBlock);

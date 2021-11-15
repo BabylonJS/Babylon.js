@@ -3,7 +3,7 @@ import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
 import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
-import { DomManagement } from '../../Misc/domManagement';
+import { IsWindowObjectExist } from '../../Misc/domManagement';
 import { WebVROptions } from '../../Cameras/VR/webVRCamera';
 
 /**
@@ -244,7 +244,7 @@ Engine.prototype.disableVR = function () {
             .catch(() => this._onVRFullScreenTriggered());
     }
 
-    if (DomManagement.IsWindowObjectExist()) {
+    if (IsWindowObjectExist()) {
         window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
         window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
 
@@ -285,7 +285,7 @@ Engine.prototype._connectVREvents = function (canvas?: HTMLCanvasElement, docume
         document.exitPointerLock();
     };
 
-    if (DomManagement.IsWindowObjectExist()) {
+    if (IsWindowObjectExist()) {
         let hostWindow = this.getHostWindow()!;
         hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
         hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);

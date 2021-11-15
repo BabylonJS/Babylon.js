@@ -9,7 +9,7 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import '../Rendering/geometryBufferRendererSceneComponent';
 import "../Shaders/screenSpaceCurvature.fragment";
 import { EngineStore } from '../Engines/engineStore';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -97,4 +97,4 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ScreenSpaceCurvaturePostProcess"] = ScreenSpaceCurvaturePostProcess;
+RegisterClass("BABYLON.ScreenSpaceCurvaturePostProcess", ScreenSpaceCurvaturePostProcess);

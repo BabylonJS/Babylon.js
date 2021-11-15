@@ -7,7 +7,7 @@ import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
-import { GUID } from '../../Misc/guid';
+import { RandomGUID } from '../../Misc/guid';
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -363,13 +363,15 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public get uid(): string {
         if (!this._uid) {
-            this._uid = GUID.RandomId();
+            this._uid = RandomGUID();
         }
         return this._uid;
     }
 
     /** @hidden */
     public _prefiltered: boolean = false;
+    /** @hidden */
+    public _forceSerialize: boolean = false;
 
     /**
      * Return a string representation of the texture.
@@ -546,7 +548,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return null;
         }
 
-        const correctedUseSRGBBuffer = !!useSRGBBuffer && engine._caps.supportSRGBBuffers && (engine.webGLVersion > 1 || engine.isWebGPU || noMipmap);
+        const correctedUseSRGBBuffer = engine._getUseSRGBBuffer(!!useSRGBBuffer,  noMipmap);
 
         var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {

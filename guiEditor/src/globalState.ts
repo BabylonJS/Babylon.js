@@ -9,6 +9,7 @@ import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent"
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
+import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
 
 export enum DragOverLocation {
     ABOVE = 0,
@@ -42,8 +43,10 @@ export class GlobalState {
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     onZoomObservable = new Observable<void>();
+    onFitToWindowObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
     onSelectionButtonObservable = new Observable<void>();
+    onMoveObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
@@ -54,11 +57,15 @@ export class GlobalState {
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
     onDraggingEndObservable = new Observable<void>();
     onDraggingStartObservable = new Observable<void>();
+    onWindowResizeObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
+    isSaving = false;
+    public lockObject = new LockObject();
     storeEditorData: (serializationObject: any) => void;
 
-    customSave?: { label: string; action: (data: string) => Promise<void> };
+    customSave?: { label: string; action: (data: string) => Promise<string> };
+    customLoad?: { label: string; action: (data: string) => Promise<string> };
     public constructor() {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 

@@ -181,6 +181,10 @@ export interface IParticleSystem {
      */
     endSpriteCellID: number;
     /**
+     * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+     */
+    spriteCellLoop: boolean;
+    /**
      * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
      */
     spriteCellWidth: number;

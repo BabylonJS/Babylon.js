@@ -4,7 +4,7 @@ import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IP
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 import { PhysicsRaycastResult } from "./physicsRaycastResult";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 
 /**
  * Class used to control physics engine
@@ -30,7 +30,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @returns The default physics plugin
      */
     public static DefaultPluginFactory(): IPhysicsEnginePlugin {
-        throw _DevTools.WarnImport("CannonJSPlugin");
+        throw _WarnImport("CannonJSPlugin");
     }
 
     /**

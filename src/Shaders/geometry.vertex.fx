@@ -1,6 +1,7 @@
 precision highp float;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -53,11 +54,6 @@ varying vec3 vPositionW;
 
 #ifdef VELOCITY
 uniform mat4 previousViewProjection;
-#ifdef BONES_VELOCITY_ENABLED
-#if NUM_BONE_INFLUENCERS > 0
-uniform mat4 mPreviousBones[BonesPerMesh];
-#endif
-#endif
 
 varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
@@ -83,6 +79,7 @@ void main(void)
 	#endif
 
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	#ifdef BUMP

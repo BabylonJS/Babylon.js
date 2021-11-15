@@ -161,9 +161,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         var srcElement = <HTMLElement>(e.srcElement || e.target);
 
         // Mouse down.
-        if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
+        if (p.type === PointerEventTypes.POINTERDOWN) {
             try {
-                srcElement.setPointerCapture(e.pointerId);
+                srcElement?.setPointerCapture(e.pointerId);
             } catch (e) {
                 // Nothing to do with the error. Execution continues.
             }
@@ -186,9 +186,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             }
         } else
             // Mouse up.
-            if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+            if (p.type === PointerEventTypes.POINTERUP) {
                 try {
-                    srcElement.releasePointerCapture(e.pointerId);
+                    srcElement?.releasePointerCapture(e.pointerId);
                 } catch (e) {
                     // Nothing to do with the error. Execution continues.
                 }

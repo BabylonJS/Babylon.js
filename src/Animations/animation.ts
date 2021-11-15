@@ -6,7 +6,7 @@ import { Scalar } from "../Maths/math.scalar";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
 import { AnimationRange } from './animationRange';
 import { AnimationEvent } from './animationEvent';
@@ -154,7 +154,7 @@ export class Animation {
     /**
      * Create and start an animation on a node
      * @param name defines the name of the global animation that will be run on all nodes
-     * @param node defines the root node where the animation will take place
+     * @param target defines the target where the animation will take place
      * @param targetProperty defines property to animate
      * @param framePerSecond defines the number of frame per second yo use
      * @param totalFrame defines the number of frames in total
@@ -163,11 +163,12 @@ export class Animation {
      * @param loopMode defines which loop mode you want to use (off by default)
      * @param easingFunction defines the easing function to use (linear by default)
      * @param onAnimationEnd defines the callback to call when animation end
+     * @param scene defines the hosting scene
      * @returns the animatable created for this animation
      */
-    public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+    public static CreateAndStartAnimation(name: string, target: any, targetProperty: string,
         framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
+        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void, scene?: Scene): Nullable<Animatable> {
 
         var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
@@ -175,7 +176,15 @@ export class Animation {
             return null;
         }
 
-        return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        if (target.getScene) {
+            scene = target.getScene();
+        }
+
+        if (!scene) {
+            return null;
+        }
+
+        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
     }
 
     /**
@@ -791,6 +800,19 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color3 cubically
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+    public color3InterpolateFunctionWithTangents(startValue: Color3, outTangent: Color3, endValue: Color3, inTangent: Color3, gradient: number): Color3 {
+        return Color3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }
+
+    /**
      * Interpolates a Color4 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
@@ -799,6 +821,19 @@ export class Animation {
      */
     public color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4 {
         return Color4.Lerp(startValue, endValue, gradient);
+    }
+
+    /**
+     * Interpolates a Color4 cubically
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+     public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
+        return Color4.Hermite(startValue, outTangent, endValue, inTangent, gradient);
     }
 
     /**
@@ -853,11 +888,14 @@ export class Animation {
                 state.key = key;
                 var startKey = keys[key];
                 var startValue = this._getKeyValue(startKey.value);
-                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
-                    return startValue;
-                }
-
                 var endValue = this._getKeyValue(endKey.value);
+                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
+                    if (endKey.frame > currentFrame) {
+                        return startValue;
+                    } else {
+                        return endValue;
+                    }
+                }
 
                 var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
                 var frameDelta = endKey.frame - startKey.frame;
@@ -926,21 +964,23 @@ export class Animation {
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
+                        var color3Value = useTangent ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient);
+                                return color3Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                                return color3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Color4
                     case Animation.ANIMATIONTYPE_COLOR4:
+                        var color4Value = useTangent ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color4InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.color4InterpolateFunction(startValue, endValue, gradient);
+                                return color4Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color4InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                                return color4Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
@@ -1181,8 +1221,8 @@ export class Animation {
 
         for (index = 0; index < parsedAnimation.keys.length; index++) {
             var key = parsedAnimation.keys[index];
-            var inTangent: any;
-            var outTangent: any;
+            let inTangent: any = undefined;
+            let outTangent: any = undefined;
 
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
@@ -1214,13 +1254,31 @@ export class Animation {
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     data = Color3.FromArray(key.values);
+                    if (key.values[3]) {
+                        inTangent = Color3.FromArray(key.values[3]);
+                    }
+                    if (key.values[4]) {
+                        outTangent = Color3.FromArray(key.values[4]);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
                     data = Color4.FromArray(key.values);
+                    if (key.values[4]) {
+                        inTangent = Color4.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        outTangent = Color4.FromArray(key.values[5]);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:
                     data = Vector3.FromArray(key.values);
+                    if (key.values[3]) {
+                        inTangent = Vector3.FromArray(key.values[3]);
+                    }
+                    if (key.values[4]) {
+                        outTangent = Vector3.FromArray(key.values[4]);
+                    }
                     break;
             }
 
@@ -1343,5 +1401,5 @@ export class Animation {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
+RegisterClass("BABYLON.Animation", Animation);
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

@@ -1,5 +1,5 @@
 import { Logger } from './logger';
-import { _TypeStore } from './typeStore';
+import { GetClass } from './typeStore';
 
 /**
  * Class used to enable instantiation of objects by class name
@@ -21,7 +21,7 @@ export class InstantiationTools {
             return this.RegisteredExternalClasses[className];
         }
 
-        const internalClass = _TypeStore.GetClass(className);
+        const internalClass = GetClass(className);
         if (internalClass) {
             return internalClass;
         }

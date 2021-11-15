@@ -4,7 +4,7 @@ import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 export class CustomShaderStructure {
 
@@ -64,7 +64,7 @@ export class CustomMaterial extends StandardMaterial {
     public FragmentShader: string;
     public VertexShader: string;
 
-    public AttachAfterBind(mesh: Mesh, effect: Effect) {
+    public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
             for (let el in this._newUniformInstances) {
                 const ea = el.toString().split('-');
@@ -287,4 +287,4 @@ export class CustomMaterial extends StandardMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.CustomMaterial"] = CustomMaterial;
+RegisterClass("BABYLON.CustomMaterial", CustomMaterial);

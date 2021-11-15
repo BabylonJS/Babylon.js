@@ -327,8 +327,11 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
     } else if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
         rgbaData = new Uint16Array(width * height * 4);
         val1 = 15360; // 15360 is the encoding of 1 in half float
-    } else {
+    } else if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER) {
         rgbaData = new Uint32Array(width * height * 4);
+    }
+     else {
+        rgbaData = new Uint8Array(width * height * 4);
     }
 
     // Convert each pixel.

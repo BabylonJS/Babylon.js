@@ -474,6 +474,8 @@ export class InstancedMesh extends AbstractMesh {
 
         result.computeWorldMatrix(true);
 
+        this.onClonedObservable.notifyObservers(result);
+
         return result;
     }
 
@@ -599,8 +601,10 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
 
             if (value.toArray) {
                 value.toArray(data, offset);
-            } else {
+            } else if (value.copyToArray) {
                 value.copyToArray(data, offset);
+            } else {
+                 data[offset] = value;
             }
 
             offset += stride;
@@ -613,8 +617,10 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
 
             if (value.toArray) {
                 value.toArray(data, offset);
-            } else {
+            } else if (value.copyToArray) {
                 value.copyToArray(data, offset);
+            } else {
+                 data[offset] = value;
             }
 
             offset += stride;

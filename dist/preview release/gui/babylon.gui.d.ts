@@ -342,9 +342,9 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-    * Class used to create texture to support 2D GUI elements
-    * @see https://doc.babylonjs.com/how_to/gui
-    */
+     * Class used to create texture to support 2D GUI elements
+     * @see https://doc.babylonjs.com/how_to/gui
+     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
         /** Define the Uurl to load snippets */
         static SnippetUrl: string;
@@ -402,139 +402,152 @@ declare module BABYLON.GUI {
         /** Gets the number of render calls made the last time the ADT has been rendered */
         get numRenderCalls(): number;
         /**
-        * Define type to string to ensure compatibility across browsers
-        * Safari doesn't support DataTransfer constructor
-        */
+         * Define type to string to ensure compatibility across browsers
+         * Safari doesn't support DataTransfer constructor
+         */
         private _clipboardData;
         /**
-        * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
-        */
+         * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
+         */
         onClipboardObservable: BABYLON.Observable<BABYLON.ClipboardInfo>;
         /**
-        * BABYLON.Observable event triggered each time a pointer down is intercepted by a control
-        */
+         * BABYLON.Observable event triggered each time a pointer down is intercepted by a control
+         */
         onControlPickedObservable: BABYLON.Observable<Control>;
         /**
-        * BABYLON.Observable event triggered before layout is evaluated
-        */
+         * BABYLON.Observable event triggered before layout is evaluated
+         */
         onBeginLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * BABYLON.Observable event triggered after the layout was evaluated
-        */
+         * BABYLON.Observable event triggered after the layout was evaluated
+         */
         onEndLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * BABYLON.Observable event triggered before the texture is rendered
-        */
+         * BABYLON.Observable event triggered before the texture is rendered
+         */
         onBeginRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * BABYLON.Observable event triggered after the texture was rendered
-        */
+         * BABYLON.Observable event triggered after the texture was rendered
+         */
         onEndRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * Gets or sets a boolean defining if alpha is stored as premultiplied
-        */
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
         premulAlpha: boolean;
         /**
          * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
          */
         applyYInversionOnUpdate: boolean;
         /**
-        * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
-        * Useful when you want more antialiasing
-        */
+         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+         * Useful when you want more antialiasing
+         */
         get renderScale(): number;
         set renderScale(value: number);
         /** Gets or sets the background color */
         get background(): string;
         set background(value: string);
         /**
-        * Gets or sets the ideal width used to design controls.
-        * The GUI will then rescale everything accordingly
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets the ideal width used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get idealWidth(): number;
         set idealWidth(value: number);
         /**
-        * Gets or sets the ideal height used to design controls.
-        * The GUI will then rescale everything accordingly
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets the ideal height used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get idealHeight(): number;
         set idealHeight(value: number);
         /**
-        * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get useSmallestIdeal(): boolean;
         set useSmallestIdeal(value: boolean);
         /**
-        * Gets or sets a boolean indicating if adaptive scaling must be used
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets a boolean indicating if adaptive scaling must be used
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
         /**
          * Gets the ratio used when in "ideal mode"
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
          * */
         get idealRatio(): number;
         /**
-        * Gets the underlying layer used to render the texture when in fullscreen mode
-        */
+         * Gets the underlying layer used to render the texture when in fullscreen mode
+         */
         get layer(): BABYLON.Nullable<BABYLON.Layer>;
         /**
-        * Gets the root container control
-        */
+         * Gets the root container control
+         */
         get rootContainer(): Container;
         /**
-        * Returns an array containing the root container.
-        * This is mostly used to let the Inspector introspects the ADT
-        * @returns an array containing the rootContainer
-        */
+         * Returns an array containing the root container.
+         * This is mostly used to let the Inspector introspects the ADT
+         * @returns an array containing the rootContainer
+         */
         getChildren(): Array<Container>;
         /**
-        * Will return all controls that are inside this texture
-        * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-        * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-        * @return all child controls
-        */
+         * Will return all controls that are inside this texture
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @return all child controls
+         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
-        * Gets or sets the current focused control
-        */
+         * Will return all controls with the given type name
+         * @param typeName defines the type name to search for
+         * @returns an array of all controls found
+         */
+        getControlsByType(typeName: string): Control[];
+        /**
+         * Will return the first control with the given name
+         * @param name defines the name to search for
+         * @return the first control found or null
+         */
+        getControlByName(name: string): BABYLON.Nullable<Control>;
+        private _getControlByKey;
+        /**
+         * Gets or sets the current focused control
+         */
         get focusedControl(): BABYLON.Nullable<IFocusableControl>;
         set focusedControl(control: BABYLON.Nullable<IFocusableControl>);
         /**
-        * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
-        */
+         * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+         */
         get isForeground(): boolean;
         set isForeground(value: boolean);
         /**
-        * Gets or set information about clipboardData
-        */
+         * Gets or set information about clipboardData
+         */
         get clipboardData(): string;
         set clipboardData(value: string);
         /**
-       * Creates a new AdvancedDynamicTexture
-       * @param name defines the name of the texture
-       * @param width defines the width of the texture
-       * @param height defines the height of the texture
-       * @param scene defines the hosting scene
-       * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-       * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-       * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
-       */
+         * Creates a new AdvancedDynamicTexture
+         * @param name defines the name of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+         * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         */
         constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
-        * Get the current class name of the texture useful for serialization or dynamic coding.
-        * @returns "AdvancedDynamicTexture"
-        */
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "AdvancedDynamicTexture"
+         */
         getClassName(): string;
         /**
-        * Function used to execute a function on all controls
-        * @param func defines the function to execute
-        * @param container defines the container where controls belong. If null the root container will be used
-        */
+         * Function used to execute a function on all controls
+         * @param func defines the function to execute
+         * @param container defines the container where controls belong. If null the root container will be used
+         */
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         private _useInvalidateRectOptimization;
         /**
@@ -552,47 +565,55 @@ declare module BABYLON.GUI {
          */
         invalidateRect(invalidMinX: number, invalidMinY: number, invalidMaxX: number, invalidMaxY: number): void;
         /**
-        * Marks the texture as dirty forcing a complete update
-        */
+         * Marks the texture as dirty forcing a complete update
+         */
         markAsDirty(): void;
         /**
-        * Helper function used to create a new style
-        * @returns a new style
-        * @see https://doc.babylonjs.com/how_to/gui#styles
-        */
+         * Helper function used to create a new style
+         * @returns a new style
+         * @see https://doc.babylonjs.com/how_to/gui#styles
+         */
         createStyle(): Style;
         /**
-        * Adds a new control to the root container
-        * @param control defines the control to add
-        * @returns the current texture
-        */
+         * Adds a new control to the root container
+         * @param control defines the control to add
+         * @returns the current texture
+         */
         addControl(control: Control): AdvancedDynamicTexture;
         /**
-        * Removes a control from the root container
-        * @param control defines the control to remove
-        * @returns the current texture
-        */
+         * Removes a control from the root container
+         * @param control defines the control to remove
+         * @returns the current texture
+         */
         removeControl(control: Control): AdvancedDynamicTexture;
         /**
-        * Release all resources
-        */
+         * Moves overlapped controls towards a position where it is not overlapping anymore.
+         * Please note that this method alters linkOffsetXInPixels and linkOffsetYInPixels.
+         * @param overlapGroup the overlap group which will be processed or undefined to process all overlap groups
+         * @param deltaStep the step size (speed) to reach the target non overlapping position (default 0.1)
+         * @param repelFactor how much is the control repelled by other controls
+         */
+        moveToNonOverlappedPosition(overlapGroup?: number | Control[], deltaStep?: number, repelFactor?: number): void;
+        /**
+         * Release all resources
+         */
         dispose(): void;
         private _onResize;
         /** @hidden */
         _getGlobalViewport(): BABYLON.Viewport;
         /**
-        * Get screen coordinates for a vector3
-        * @param position defines the position to project
-        * @param worldMatrix defines the world matrix to use
-        * @returns the projected position
-        */
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position
+         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
         /**
-        * Get screen coordinates for a vector3
-        * @param position defines the position to project
-        * @param worldMatrix defines the world matrix to use
-        * @returns the projected position with Z
-        */
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position with Z
+         */
         getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
@@ -617,23 +638,23 @@ declare module BABYLON.GUI {
         /** @hidden */
         private onClipboardPaste;
         /**
-        * Register the clipboard Events onto the canvas
-        */
+         * Register the clipboard Events onto the canvas
+         */
         registerClipboardEvents(): void;
         /**
          * Unregister the clipboard Events from the canvas
          */
         unRegisterClipboardEvents(): void;
         /**
-        * Connect the texture to a hosting mesh to enable interactions
-        * @param mesh defines the mesh to attach to
-        * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
-        */
+         * Connect the texture to a hosting mesh to enable interactions
+         * @param mesh defines the mesh to attach to
+         * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+         */
         attachToMesh(mesh: BABYLON.AbstractMesh, supportPointerMove?: boolean): void;
         /**
-        * Move the focus to a specific control
-        * @param control defines the control which will receive the focus
-        */
+         * Move the focus to a specific control
+         * @param control defines the control which will receive the focus
+         */
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
         private _attachToOnPointerOut;
@@ -646,14 +667,30 @@ declare module BABYLON.GUI {
         /**
          * Recreate the content of the ADT from a JSON object
          * @param serializedObject define the JSON serialized object to restore from
+         * @param scaleToSize defines whether to scale to texture to the saved size
          */
-        parseContent(serializedObject: any): void;
+        parseContent(serializedObject: any, scaleToSize?: boolean): void;
         /**
          * Recreate the content of the ADT from a snippet saved by the GUI editor
          * @param snippetId defines the snippet to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
          * @returns a promise that will resolve on success
          */
-        parseFromSnippetAsync(snippetId: string): Promise<void>;
+        parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
+        /**
+         * Recreate the content of the ADT from a url json
+         * @param url defines the url to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
+         * @returns a promise that will resolve on success
+         */
+        parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
+        /**
+         * Compares two rectangle based controls for pixel overlap
+         * @param control1 The first control to compare
+         * @param control2 The second control to compare
+         * @returns true if overlaps, otherwise false
+         */
+        private static _Overlaps;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -676,17 +713,17 @@ declare module BABYLON.GUI {
          */
         static CreateForMeshTexture(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
-        * Creates a new AdvancedDynamicTexture in fullscreen mode.
-        * In this mode the texture will rely on a layer for its rendering.
-        * This allows it to be treated like any other layer.
-        * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
-        * LayerMask is set through advancedTexture.layer.layerMask
-        * @param name defines name for the texture
-        * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-        * @param scene defines the hosting scene
-        * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
-        * @returns a new AdvancedDynamicTexture
-        */
+         * Creates a new AdvancedDynamicTexture in fullscreen mode.
+         * In this mode the texture will rely on a layer for its rendering.
+         * This allows it to be treated like any other layer.
+         * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
+         * LayerMask is set through advancedTexture.layer.layerMask
+         * @param name defines name for the texture
+         * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
+         * @param scene defines the hosting scene
+         * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @returns a new AdvancedDynamicTexture
+         */
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
     }
 }
@@ -857,36 +894,36 @@ declare module BABYLON.GUI {
          */
         getClassName(): string;
         /**
-        * An event triggered when pointer wheel is scrolled
-        */
+         * An event triggered when pointer wheel is scrolled
+         */
         onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer moves over the control.
-        */
+         * An event triggered when the pointer moves over the control.
+         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer moves out of the control.
-        */
+         * An event triggered when the pointer moves out of the control.
+         */
         onPointerOutObservable: BABYLON.Observable<Control>;
         /**
-        * An event triggered when the pointer taps the control
-        */
+         * An event triggered when the pointer taps the control
+         */
         onPointerDownObservable: BABYLON.Observable<Vector2WithInfo>;
         /**
-        * An event triggered when pointer up
-        */
+         * An event triggered when pointer up
+         */
         onPointerUpObservable: BABYLON.Observable<Vector2WithInfo>;
         /**
-        * An event triggered when a control is clicked on
-        */
+         * An event triggered when a control is clicked on
+         */
         onPointerClickObservable: BABYLON.Observable<Vector2WithInfo>;
         /**
-        * An event triggered when pointer enters the control
-        */
+         * An event triggered when pointer enters the control
+         */
         onPointerEnterObservable: BABYLON.Observable<Control>;
         /**
-        * An event triggered when the control is marked as dirty
-        */
+         * An event triggered when the control is marked as dirty
+         */
         onDirtyObservable: BABYLON.Observable<Control>;
         /**
          * An event triggered before drawing the control
@@ -897,8 +934,8 @@ declare module BABYLON.GUI {
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
         /**
-        * An event triggered when the control has been disposed
-        */
+         * An event triggered when the control has been disposed
+         */
         onDisposeObservable: BABYLON.Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
@@ -935,27 +972,27 @@ declare module BABYLON.GUI {
         set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get scaleX(): number;
         set scaleX(value: number);
         /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get scaleY(): number;
         set scaleY(value: number);
         /** Gets or sets the rotation angle (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get rotation(): number;
         set rotation(value: number);
         /** Gets or sets the transformation center on Y axis (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get transformCenterY(): number;
         set transformCenterY(value: number);
         /** Gets or sets the transformation center on X axis (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get transformCenterX(): number;
         set transformCenterX(value: number);
         /**
@@ -1153,6 +1190,17 @@ declare module BABYLON.GUI {
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
+         * Gets/sets the overlap group of the control.
+         * Controls with overlapGroup set to a number can be deoverlapped.
+         * Controls with overlapGroup set to undefined are not deoverlapped.
+         * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+         */
+        overlapGroup?: number;
+        /**
+         * Gets/sets the deoverlap movement multiplier
+         */
+        overlapDeltaMultiplier?: number;
+        /**
          * Creates a new control
          * @param name defines the name of the control
          */
@@ -1221,13 +1269,13 @@ declare module BABYLON.GUI {
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
         /**
-        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
-        * @param { string | number} paddingTop - The value of the top padding.
-        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
-        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
-        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
-        */
+         * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+         * @param { string | number} paddingTop - The value of the top padding.
+         * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+         * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+         * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
         setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
         /**
          * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
@@ -1250,6 +1298,10 @@ declare module BABYLON.GUI {
         _flagDescendantsAsMatrixDirty(): void;
         /** @hidden */
         _intersectsRect(rect: Measure): boolean;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): number;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): number;
         /** @hidden */
         protected invalidateRect(): void;
         /** @hidden */
@@ -1518,6 +1570,10 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @hidden */
+        protected _computeAdditionnalOffsetX(): 1 | 0;
+        /** @hidden */
+        protected _computeAdditionnalOffsetY(): 1 | 0;
         protected _localDraw(context: BABYLON.ICanvasRenderingContext): void;
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         private _drawRoundedRect;
@@ -2456,6 +2512,13 @@ declare module BABYLON.GUI {
         _renderHighlightSpecific(context: BABYLON.ICanvasRenderingContext): void;
         /** Releases associated resources */
         dispose(): void;
+        /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -3512,16 +3575,6 @@ declare module BABYLON.GUI {
          * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
          */
         delegatePickingToChildren: boolean;
-        private _image;
-        /**
-         * Returns the ToggleButton's image control if it exists
-         */
-        get image(): BABYLON.Nullable<Image>;
-        private _textBlock;
-        /**
-         * Returns the ToggleButton's child TextBlock control if it exists
-         */
-        get textBlock(): BABYLON.Nullable<TextBlock>;
         private _group;
         /** Gets or sets group name this toggle button belongs to */
         get group(): string;
@@ -3636,6 +3689,13 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
+        /**
+        * Serializes the current control
+        * @param serializationObject defined the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
     }
 }
 declare module BABYLON.GUI {
@@ -5444,14 +5504,848 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderBarPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderBarVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render Slider Bar material with MRDL
+     */
+    export class MRDLSliderBarMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static BLUE_GRADIENT_TEXTURE_URL: string;
+        private _blueGradientTexture;
+        /**
+         * Gets or sets the corner Radius on the slider bar.
+         */
+        radius: number;
+        /**
+         * Gets or sets the Bevel Front on the slider bar.
+         */
+        bevelFront: number;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider bar.
+         */
+        bevelFrontStretch: number;
+        /**
+         * Gets or sets the Bevel Back on the slider bar.
+         */
+        bevelBack: number;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider bar.
+         */
+        bevelBackStretch: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        bulgeEnabled: boolean;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        bulgeHeight: number;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        bulgeRadius: number;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        sunIntensity: number;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        sunTheta: number;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        sunPhi: number;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        indirectDiffuse: number;
+        /**
+         * Gets or sets the base albedo.
+         */
+        albedo: BABYLON.Color4;
+        /**
+         * Gets or sets the Specular value.
+         */
+        specular: number;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        shininess: number;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        sharpness: number;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        subsurface: number;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        leftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the right gradient color.
+         */
+        rightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the reflection value.
+         */
+        reflection: number;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        frontReflect: number;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        edgeReflect: number;
+        /**
+         * Gets or sets the power value.
+         */
+        power: number;
+        /**
+         * Gets or sets the sky color.
+         */
+        skyColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon color.
+         */
+        horizonColor: BABYLON.Color4;
+        /**
+         * Gets or sets the ground color.
+         */
+        groundColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon power value.
+         */
+        horizonPower: number;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        width: number;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        fuzz: number;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        minFuzz: number;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        clipFade: number;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        hueShift: number;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        saturationShift: number;
+        /**
+         * Gets or sets the value shift.
+         */
+        valueShift: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        blobNearSize: number;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition2: BABYLON.Vector3;
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        blobFade2: number;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        blobTexture: BABYLON.Texture;
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        leftIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        rightIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        leftIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        rightIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        decalScaleXY: BABYLON.Vector2;
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        decalFrontOnly: boolean;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        rimIntensity: number;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        rimHueShift: number;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        rimSaturationShift: number;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        rimValueShift: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * @hidden
+         */
+        useGlobalLeftIndex: number;
+        /**
+         * @hidden
+         */
+        useGlobalRightIndex: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalRightIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globaRightIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftIndexMiddlePosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightIndexMiddlePosition: BABYLON.Vector4;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLSliderBarMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MRDLSliderBarMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderThumbPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlSliderThumbVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render Slider Thumb material with MRDL
+     */
+    export class MRDLSliderThumbMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static BLUE_GRADIENT_TEXTURE_URL: string;
+        private _blueGradientTexture;
+        /**
+         * Gets or sets the corner Radius on the slider thumb.
+         */
+        radius: number;
+        /**
+         * Gets or sets the Bevel Front on the slider thumb.
+         */
+        bevelFront: number;
+        /**
+         * Gets or sets the Bevel Front Stretch on the slider thumb.
+         */
+        bevelFrontStretch: number;
+        /**
+         * Gets or sets the Bevel Back on the slider thumb.
+         */
+        bevelBack: number;
+        /**
+         * Gets or sets the Bevel Back Stretch on the slider thumb.
+         */
+        bevelBackStretch: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /**
+         * Gets or sets whether Bulge is enabled.
+         * Default is false.
+         */
+        bulgeEnabled: boolean;
+        /**
+         * Gets or sets the Bulge Height.
+         */
+        bulgeHeight: number;
+        /**
+         * Gets or sets the Bulge Radius.
+         */
+        bulgeRadius: number;
+        /**
+         * Gets or sets the Sun Intensity.
+         */
+        sunIntensity: number;
+        /**
+         * Gets or sets the Sun Theta.
+         */
+        sunTheta: number;
+        /**
+         * Gets or sets the Sun Phi.
+         */
+        sunPhi: number;
+        /**
+         * Gets or sets the Indirect Diffuse.
+         */
+        indirectDiffuse: number;
+        /**
+         * Gets or sets the base albedo.
+         */
+        albedo: BABYLON.Color4;
+        /**
+         * Gets or sets the Specular value.
+         */
+        specular: number;
+        /**
+         * Gets or sets the Shininess value.
+         */
+        shininess: number;
+        /**
+         * Gets or sets the Sharpness value.
+         */
+        sharpness: number;
+        /**
+         * Gets or sets the Subsurface value.
+         */
+        subsurface: number;
+        /**
+         * Gets or sets the left gradient color.
+         */
+        leftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the right gradient color.
+         */
+        rightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the reflection value.
+         */
+        reflection: number;
+        /**
+         * Gets or sets the front reflect value.
+         */
+        frontReflect: number;
+        /**
+         * Gets or sets the edge reflect value.
+         */
+        edgeReflect: number;
+        /**
+         * Gets or sets the power value.
+         */
+        power: number;
+        /**
+         * Gets or sets the sky color.
+         */
+        skyColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon color.
+         */
+        horizonColor: BABYLON.Color4;
+        /**
+         * Gets or sets the ground color.
+         */
+        groundColor: BABYLON.Color4;
+        /**
+         * Gets or sets the horizon power value.
+         */
+        horizonPower: number;
+        /**
+         * Gets or sets the finger occlusion width value.
+         */
+        width: number;
+        /**
+         * Gets or sets the finger occlusion fuzz value.
+         */
+        fuzz: number;
+        /**
+         * Gets or sets the minimum finger occlusion fuzz value.
+         */
+        minFuzz: number;
+        /**
+         * Gets or sets the finger occlusion clip fade value.
+         */
+        clipFade: number;
+        /**
+         * Gets or sets the hue shift value.
+         */
+        hueShift: number;
+        /**
+         * Gets or sets the saturation shift value.
+         */
+        saturationShift: number;
+        /**
+         * Gets or sets the value shift.
+         */
+        valueShift: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the intensity of the hover glow effect.
+         */
+        blobIntensity: number;
+        /**
+         * Gets or sets the near size of the hover glow effect.
+         */
+        blobNearSize: number;
+        /**
+        * Gets or sets the far size of the hover glow effect.
+        */
+        blobFarSize: number;
+        /**
+         * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+         */
+        blobNearDistance: number;
+        /**
+         * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+         */
+        blobFarDistance: number;
+        /**
+         * Gets or sets the length of the hover glow effect fade.
+         */
+        blobFadeLength: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+         */
+        blobPulse: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+         */
+        blobFade: number;
+        /**
+         * Gets or sets the position of the hover glow effect.
+         */
+        blobPosition2: BABYLON.Vector3;
+        /**
+         * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+         */
+        blobNearSize2: number;
+        /**
+         * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+         */
+        blobPulse2: number;
+        /**
+         * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+         */
+        blobFade2: number;
+        /**
+         * Gets or sets the texture of the hover glow effect.
+         */
+        blobTexture: BABYLON.Texture;
+        /**
+         * Gets or sets the finger position for left index.
+         */
+        leftIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index.
+         */
+        rightIndexPosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for left index middle position.
+         */
+        leftIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the finger position for right index middle position.
+         */
+        rightIndexMiddlePosition: BABYLON.Vector3;
+        /**
+         * Gets or sets the Decal Scle for XY.
+         */
+        decalScaleXY: BABYLON.Vector2;
+        /**
+         * Gets or sets decalFrontOnly
+         * Default is true
+         */
+        decalFrontOnly: boolean;
+        /**
+         * Gets or sets the Rim Light intensity.
+         */
+        rimIntensity: number;
+        /**
+         * Gets or sets the Rim Light hue shift value.
+         */
+        rimHueShift: number;
+        /**
+         * Gets or sets the Rim Light saturation shift value.
+         */
+        rimSaturationShift: number;
+        /**
+         * Gets or sets the Rim Light value shift.
+         */
+        rimValueShift: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * @hidden
+         */
+        useGlobalLeftIndex: number;
+        /**
+         * @hidden
+         */
+        useGlobalRightIndex: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalRightIndexTipProximity: number;
+        /**
+         * @hidden
+         */
+        globalLeftIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globaRightIndexTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightThumbTipPosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalLeftIndexMiddlePosition: BABYLON.Vector4;
+        /**
+         * @hidden
+         */
+        globalRightIndexMiddlePosition: BABYLON.Vector4;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLSliderThumbMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MRDLSliderThumbMaterial;
+    }
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlBackplatePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /** @hidden */
+    export var mrdlBackplateVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to render backplate material with MRDL
+     */
+    export class MRDLBackplateMaterial extends BABYLON.PushMaterial {
+        /**
+         * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
+         */
+        static IRIDESCENT_MAP_TEXTURE_URL: string;
+        private _iridescentMapTexture;
+        /**
+        * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
+        */
+        radius: number;
+        /**
+         * Gets or sets the line width of the backplate.
+         */
+        lineWidth: number;
+        /**
+         * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+         * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
+         */
+        absoluteSizes: boolean;
+        /** @hidden */
+        _filterWidth: number;
+        /**
+         * Gets or sets the base color of the backplate.
+         */
+        baseColor: BABYLON.Color4;
+        /**
+         * Gets or sets the line color of the backplate.
+         */
+        lineColor: BABYLON.Color4;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusTopRight: number;
+        /**
+        * Gets or sets the top left Radii Multiplier.
+        */
+        radiusBottomLeft: number;
+        /**
+         * Gets or sets the top left Radii Multiplier.
+         */
+        radiusBottomRight: number;
+        /** @hidden */
+        _rate: number;
+        /**
+         * Gets or sets the color of the highlights on the backplate line.
+         */
+        highlightColor: BABYLON.Color4;
+        /**
+         * Gets or sets the width of the highlights on the backplate line.
+         */
+        highlightWidth: number;
+        /** @hidden */
+        _highlightTransform: BABYLON.Vector4;
+        /** @hidden */
+        _highlight: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect.
+         */
+        iridescenceIntensity: number;
+        /**
+         * Gets or sets the intensity of the iridescence effect on the backplate edges.
+         */
+        iridescenceEdgeIntensity: number;
+        /**
+         * Gets or sets the Tint of the iridescence effect on the backplate.
+         */
+        iridescenceTint: BABYLON.Color4;
+        /** @hidden */
+        _angle: number;
+        /**
+         * Gets or sets the opacity of the backplate (0.0 - 1.0).
+         */
+        fadeOut: number;
+        /** @hidden */
+        _reflected: boolean;
+        /** @hidden */
+        _frequency: number;
+        /** @hidden */
+        _verticalOffset: number;
+        /**
+         * Gets or sets the gradient color effect on the backplate.
+         */
+        gradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the top left gradient color effect on the backplate.
+         */
+        topLeftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the top right gradient color effect on the backplate.
+         */
+        topRightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the bottom left gradient color effect on the backplate.
+         */
+        bottomLeftGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the bottom right gradient color effect on the backplate.
+         */
+        bottomRightGradientColor: BABYLON.Color4;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgeWidth: number;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgePower: number;
+        /**
+         * Gets or sets the edge width of the backplate.
+         */
+        edgeLineGradientBlend: number;
+        constructor(name: string, scene: BABYLON.Scene);
+        needAlphaBlending(): boolean;
+        needAlphaTesting(): boolean;
+        getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
+        isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
+        /**
+         * Get the list of animatables in the material.
+         * @returns the list of animatables object used in the material
+         */
+        getAnimatables(): BABYLON.IAnimatable[];
+        dispose(forceDisposeEffect?: boolean): void;
+        clone(name: string): MRDLBackplateMaterial;
+        serialize(): any;
+        getClassName(): string;
+        static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): MRDLBackplateMaterial;
+    }
+}
+declare module BABYLON.GUI {
     /**
      * Class used to create a slider in 3D
      */
     export class Slider3D extends Control3D {
+        /**
+         * Base Url for the models.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the 8x4 model.
+         */
+        static MODEL_FILENAME: string;
+        private _sliderBackplate;
+        private _sliderBackplateMaterial;
         private _sliderBarMaterial;
         private _sliderThumbMaterial;
         private _sliderThumb;
         private _sliderBar;
+        private _sliderBackplateVisible;
         private _minimum;
         private _maximum;
         private _value;
@@ -5461,8 +6355,9 @@ declare module BABYLON.GUI {
         /**
          * Creates a new slider
          * @param name defines the control name
+         * @param sliderBackplateVisible defines if the control has a backplate, default is false
          */
-        constructor(name?: string);
+        constructor(name?: string, sliderBackplateVisible?: boolean);
         /**
          * Gets the mesh used to render this control
          */
@@ -5484,11 +6379,15 @@ declare module BABYLON.GUI {
         /**
          * Gets the slider bar material used by this control
          */
-        get sliderBarMaterial(): BABYLON.StandardMaterial;
+        get sliderBarMaterial(): MRDLSliderBarMaterial;
         /**
          * Gets the slider thumb material used by this control
          */
-        get sliderThumbMaterial(): BABYLON.StandardMaterial;
+        get sliderThumbMaterial(): MRDLSliderThumbMaterial;
+        /**
+         * Gets the slider backplate material used by this control
+         */
+        get sliderBackplateMaterial(): MRDLBackplateMaterial;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
         private _createBehavior;
@@ -5631,4 +6530,10 @@ declare module BABYLON.GUI {
          */
         dispose(): void;
     }
+}
+declare module BABYLON.GUI {
+    /**
+     * This is here for backwards compatibility with 4.2
+     */
+    // export { FluentMaterial } from "babylonjs-gui/3D/materials/fluent/fluentMaterial";
 }

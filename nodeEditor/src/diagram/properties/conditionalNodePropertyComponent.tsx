@@ -36,7 +36,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
                 <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">  
                     <OptionsLineComponent label="Condition" options={conditionOptions} target={conditionBlock} propertyName="condition" onSelect={(value: any) => {
-                        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                         this.forceUpdate();
                     }} />                  

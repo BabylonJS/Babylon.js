@@ -4,7 +4,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../measure';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
@@ -187,4 +187,4 @@ export class Checkbox extends Control {
         return panel;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Checkbox"] = Checkbox;
+RegisterClass("BABYLON.GUI.Checkbox", Checkbox);

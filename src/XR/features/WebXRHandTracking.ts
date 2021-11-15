@@ -18,7 +18,7 @@ import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
 import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
 import { Engine } from "../../Engines/engine";
-import { IcoSphereBuilder } from "../../Meshes/Builders/icoSphereBuilder";
+import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 
@@ -99,6 +99,16 @@ export interface IWebXRHandTrackingOptions {
         customRigMappings?: {
             right: XRHandMeshRigMapping;
             left: XRHandMeshRigMapping;
+        },
+
+        /**
+         * Override the colors of the hand meshes.
+         */
+        customColors?: {
+            base?: Color3;
+            fresnel?: Color3;
+            fingerColor?: Color3;
+            tipFresnel?: Color3;
         }
     };
 }
@@ -509,7 +519,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
-            const originalMesh = featureOptions.jointMeshes?.sourceMesh || IcoSphereBuilder.CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
+            const originalMesh = featureOptions.jointMeshes?.sourceMesh || CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
             originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
             for (let i = 0; i < handJointReferenceArray.length; ++i) {
                 let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
@@ -540,7 +550,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         return { left: meshes.left, right: meshes.right };
     }
 
-    private static _generateDefaultHandMeshesAsync(scene: Scene): Promise<{ left: AbstractMesh, right: AbstractMesh }> {
+    private static _generateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh, right: AbstractMesh }> {
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
 
@@ -564,6 +574,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 fresnel: Color3.FromInts(149, 102, 229),
                 fingerColor: Color3.FromInts(177, 130, 255),
                 tipFresnel: Color3.FromInts(220, 200, 255),
+                ...options?.handMeshes?.customColors
             };
 
             const handNodes = {
@@ -755,7 +766,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
-            WebXRHandTracking._generateDefaultHandMeshesAsync(Engine.LastCreatedScene!).then((defaultHandMeshes) => {
+            WebXRHandTracking._generateDefaultHandMeshesAsync(Engine.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {
                     left: WebXRHandTracking._generateDefaultHandMeshRigMapping("left"),

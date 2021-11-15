@@ -121,6 +121,10 @@ export class WebXRFeatureName {
      */
     public static readonly MOVEMENT = "xr-controller-movement";
     /**
+     * The name of the light estimation feature
+     */
+    public static readonly LIGHT_ESTIMATION = "xr-light-estimation";
+    /**
      * The name of the eye tracking feature
      */
     public static readonly EYE_TRACKING = "xr-eye-tracking";

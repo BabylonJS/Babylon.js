@@ -25,7 +25,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
 import "../Shaders/default.fragment";
@@ -38,7 +38,9 @@ import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.de
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
-export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
+export class StandardMaterialDefines extends MaterialDefines
+    implements IImageProcessingConfigurationDefines,
+    IMaterialDetailMapDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -50,6 +52,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public DETAIL = false;
     public DETAILDIRECTUV = 0;
     public DETAIL_NORMALBLENDMETHOD = 0;
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public OPACITY = false;
@@ -142,8 +145,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS = false;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
-    public PREPASS_ALBEDO = false;
-    public PREPASS_ALBEDO_INDEX = -1;
+    public PREPASS_ALBEDO_SQRT = false;
+    public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
@@ -173,7 +176,11 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
     public MULTIVIEW = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -744,6 +751,8 @@ export class StandardMaterial extends PushMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
+        this.buildUniformLayout();
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
         this.prePassConfiguration = new PrePassConfiguration();
@@ -864,12 +873,12 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new StandardMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -883,7 +892,11 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+
+        // Order independant transparency
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1218,6 +1231,7 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
             var shaderName = "default";
 
@@ -1234,7 +1248,8 @@ export class StandardMaterial extends PushMaterial {
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets", "oitDepthSampler",
+                "oitFrontColorSampler"];
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -1300,7 +1315,6 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines, this._materialContext);
-                    this.buildUniformLayout();
                 }
             }
         }
@@ -1372,7 +1386,7 @@ export class StandardMaterial extends PushMaterial {
      * Unbinds the material from the mesh
      */
     public unbind(): void {
-        if (this._activeEffect) {
+        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
             let needFlag = false;
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._activeEffect.setTexture("reflection2DSampler", null);
@@ -1401,7 +1415,7 @@ export class StandardMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -1607,6 +1621,11 @@ export class StandardMaterial extends PushMaterial {
                 }
             }
 
+            // OIT with depth peeling
+            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                this.getScene().depthPeelingRenderer!.bind(effect);
+            }
+
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
 
             // Clip plane
@@ -1614,6 +1633,9 @@ export class StandardMaterial extends PushMaterial {
 
             // Colors
             this.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            ubo.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {
@@ -1633,6 +1655,10 @@ export class StandardMaterial extends PushMaterial {
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
                 MaterialHelper.BindMorphTargetParameters(mesh, effect);
+            }
+
+            if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
+                mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);
             }
 
             // Log. depth
@@ -1792,7 +1818,11 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return this.detailMap.hasTexture(texture);
+        if (this.detailMap.hasTexture(texture)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1989,7 +2019,7 @@ export class StandardMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StandardMaterial"] = StandardMaterial;
+RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 
 Scene.DefaultMaterialFactory = (scene: Scene) => {
     return new StandardMaterial("default material", scene);

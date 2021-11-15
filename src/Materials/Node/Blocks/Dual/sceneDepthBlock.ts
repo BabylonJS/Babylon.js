@@ -4,7 +4,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { BaseTexture } from '../../../Textures/baseTexture';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
@@ -227,4 +227,4 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SceneDepthBlock"] = SceneDepthBlock;
+RegisterClass("BABYLON.SceneDepthBlock", SceneDepthBlock);

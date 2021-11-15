@@ -14,7 +14,7 @@ export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyT
     render() {
         return (
             <MatrixLineComponent globalState={this.props.globalState} label="Value" target={this.props.inputBlock} propertyName="value" onChange={() => {
-                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
             }}
             mode={this.props.inputBlock.matrixMode}
             onModeChange={mode => {

@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { InputBlock } from '../Input/inputBlock';
@@ -286,4 +286,4 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PerturbNormalBlock"] = PerturbNormalBlock;
+RegisterClass("BABYLON.PerturbNormalBlock", PerturbNormalBlock);

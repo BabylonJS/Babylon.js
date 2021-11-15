@@ -7,7 +7,7 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/chromaticAberration.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Scene = import("../scene").Scene;
@@ -99,4 +99,4 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ChromaticAberrationPostProcess"] = ChromaticAberrationPostProcess;
+RegisterClass("BABYLON.ChromaticAberrationPostProcess", ChromaticAberrationPostProcess);

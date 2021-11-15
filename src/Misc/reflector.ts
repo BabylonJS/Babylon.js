@@ -1,7 +1,7 @@
 import { Scene } from "../scene";
 import { Logger } from "./logger";
 import { SceneSerializer } from "./sceneSerializer";
-import { StringTools } from "./stringTools";
+import { StartsWith } from "./stringTools";
 
 /**
  * Class used to connect with the reflector zone of the sandbox via the reflector bridge
@@ -27,7 +27,7 @@ export class Reflector {
 
         this._webSocket.onmessage = (event) => {
             const message: string = event.data;
-            if (StringTools.StartsWith(message, Reflector.SERVER_PREFIX)) {
+            if (StartsWith(message, Reflector.SERVER_PREFIX)) {
                 const serverMessage = message.substr(Reflector.SERVER_PREFIX.length);
                 Logger.Log(`[Reflector] Received server message: ${serverMessage.substr(0, 64)}`);
                 this._handleServerMessage(serverMessage);

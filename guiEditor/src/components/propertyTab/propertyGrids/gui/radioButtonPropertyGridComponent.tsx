@@ -10,7 +10,7 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
-const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkboxIcon.svg");
+const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkboxIconDark.svg");
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
 
 interface IRadioButtonPropertyGridComponentProps {
@@ -32,11 +32,11 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr/>
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
-                <div className="divider">
+                <div className="ge-divider">
                 <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <FloatLineComponent iconLabel="Check Size Ratio" icon={scaleIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <TextInputLineComponent lockObject={this.props.lockObject} label="Group" target={radioButton} propertyName="group" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent iconLabel="Group" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="group" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <CheckBoxLineComponent iconLabel="Is Checked" icon={checkboxIcon} label="" target={radioButton} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );

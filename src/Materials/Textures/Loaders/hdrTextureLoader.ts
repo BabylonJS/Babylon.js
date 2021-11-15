@@ -3,7 +3,7 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 import { Constants } from "../../../Engines/constants";
 
 /**
@@ -22,7 +22,7 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return StringTools.EndsWith(extension, ".hdr");
+        return EndsWith(extension, ".hdr");
     }
 
     /**

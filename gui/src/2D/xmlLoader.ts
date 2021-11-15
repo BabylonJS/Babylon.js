@@ -1,4 +1,4 @@
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { GetClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 
 /**
@@ -55,14 +55,14 @@ export class XmlLoader {
 
     private _getClassAttribute(attributeName: string): any {
         const attribute = attributeName.split(".");
-        const className = _TypeStore.GetClass("BABYLON.GUI." + attribute[0]);
+        const className = GetClass("BABYLON.GUI." + attribute[0]);
         return className[attribute[1]];
     }
 
     private _createGuiElement(node: any, parent: any, linkParent: boolean = true): void {
 
         try {
-            let className = _TypeStore.GetClass("BABYLON.GUI." + node.nodeName);
+            let className = GetClass("BABYLON.GUI." + node.nodeName);
             let guiNode = new className();
 
             if (parent && linkParent) {

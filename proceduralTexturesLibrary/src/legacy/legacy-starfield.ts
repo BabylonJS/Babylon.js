@@ -1,4 +1,4 @@
-import * as proceduralTexture from "../starfield";
+import * as proceduralTexture from "../starfield/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../starfield";
+export * from "../starfield/index";

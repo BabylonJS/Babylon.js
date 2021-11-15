@@ -7,7 +7,7 @@ import { Skeleton } from "../Bones/skeleton";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
-import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
+import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Material } from '../Materials/material';
 import { ShaderMaterial } from '../Materials/shaderMaterial';
@@ -18,8 +18,8 @@ import { Effect } from '../Materials/effect';
 import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from './ISkeletonViewer';
 import { Observer } from '../Misc/observable';
 
-import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
-import { ShapeBuilder } from '../Meshes/Builders/shapeBuilder';
+import { CreateSphere } from '../Meshes/Builders/sphereBuilder';
+import { ExtrudeShapeCustom } from '../Meshes/Builders/shapeBuilder';
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -64,6 +64,7 @@ export class SkeletonViewer {
             attribute vec4 matricesIndices;
             attribute vec4 matricesWeights;
         #endif
+        #include<bakedVertexAnimationDeclaration>
 
         #include<instancesDeclaration>
 
@@ -82,6 +83,7 @@ export class SkeletonViewer {
 
             #include<instancesVertex>
             #include<bonesVertex>
+            #include<bakedVertexAnimation>
 
             vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 
@@ -204,6 +206,7 @@ export class SkeletonViewer {
                 attribute vec4 matricesIndices;
                 attribute vec4 matricesWeights;
             #endif
+            #include<bakedVertexAnimationDeclaration>
             #include<instancesDeclaration>
 
             varying vec3 vColor;
@@ -213,6 +216,7 @@ export class SkeletonViewer {
 
                 #include<instancesVertex>
                 #include<bonesVertex>
+                #include<bakedVertexAnimation>
 
                 vec3 color = vec3(0.);
                 bool first = true;
@@ -579,7 +583,7 @@ export class SkeletonViewer {
         }
 
         this._getAbsoluteBindPoseToRef(bone.getParent(), matrix);
-        bone.getBindPose().multiplyToRef(matrix, matrix);
+        bone.getBaseMatrix().multiplyToRef(matrix, matrix);
         return;
     }
 
@@ -633,7 +637,7 @@ export class SkeletonViewer {
 
                 bone.children.forEach((bc, i) => {
                     let childAbsoluteBindPoseTransform: Matrix = new Matrix();
-                    bc.getBindPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
+                    bc.getBaseMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     let childPoint = new Vector3();
                     childAbsoluteBindPoseTransform.decompose(undefined, undefined, childPoint);
                     let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
@@ -653,7 +657,7 @@ export class SkeletonViewer {
 
                     let up0 = up.scale(midStep);
 
-                    let spur = ShapeBuilder.ExtrudeShapeCustom('skeletonViewer',
+                    let spur = ExtrudeShapeCustom('skeletonViewer',
                         {
                             shape: [
                                 new Vector3(1, -1, 0),
@@ -705,7 +709,7 @@ export class SkeletonViewer {
 
                 let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
 
-                let sphere = SphereBuilder.CreateSphere('skeletonViewer', {
+                let sphere = CreateSphere('skeletonViewer', {
                     segments: 6,
                     diameter: sphereBaseSize,
                     updatable: true
@@ -805,7 +809,7 @@ export class SkeletonViewer {
             this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
             boneAbsoluteBindPoseTransform.decompose(undefined, undefined, boneOrigin);
 
-            let m = bone.getBindPose().getRotationMatrix();
+            let m = bone.getBaseMatrix().getRotationMatrix();
 
             let boneAxisX = Vector3.TransformCoordinates(new Vector3(0 + size, 0, 0), m);
             let boneAxisY = Vector3.TransformCoordinates(new Vector3(0, 0 + size, 0), m);
@@ -827,7 +831,7 @@ export class SkeletonViewer {
             }
         }
 
-        this._localAxes = LinesBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+        this._localAxes = CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
         this._localAxes.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
         this._localAxes.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
         this._localAxes.skeleton = this.skeleton;
@@ -858,10 +862,10 @@ export class SkeletonViewer {
 
         if (targetScene) {
             if (!this._debugMesh) {
-                this._debugMesh = LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
+                this._debugMesh = CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
                 this._debugMesh.renderingGroupId = this.renderingGroupId;
             } else {
-                LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
+                CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
             }
             this._debugMesh.position.copyFrom(this.mesh.position);
             this._debugMesh.color = this.color;

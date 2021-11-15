@@ -5,7 +5,7 @@ import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 /**
@@ -265,4 +265,4 @@ export class Button extends Rectangle {
         return result;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Button"] = Button;
+RegisterClass("BABYLON.GUI.Button", Button);

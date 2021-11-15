@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
 
@@ -32,6 +32,8 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         this.registerInput("jitter", NodeMaterialBlockConnectionPointTypes.Float);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerOutput("x", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("y", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -63,6 +65,20 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Gets the x component
+     */
+     public get x(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the y component
+     */
+     public get y(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -70,7 +86,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (!this._outputs[0].hasEndpoints) {
+        if (!this.output.hasEndpoints && !this.x.hasEndpoints && !this.y.hasEndpoints) {
             return;
         }
 
@@ -227,8 +243,22 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `}\r\n\r\n`;
 
         state._emitFunction('worley3D', functionString, '// Worley3D');
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\r\n`;
 
+        const tempVariable = state._getFreeVariableName("worleyTemp");
+
+        state.compilationString += `vec2 ${tempVariable} = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\r\n`;
+
+        if (this.output.hasEndpoints) {
+            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempVariable};\r\n`;
+        }
+
+        if (this.x.hasEndpoints) {
+            state.compilationString += this._declareOutput(this.x, state) + ` = ${tempVariable}.x;\r\n`;
+        }
+
+        if (this.y.hasEndpoints) {
+            state.compilationString += this._declareOutput(this.y, state) + ` = ${tempVariable}.y;\r\n`;
+        }
         return this;
     }
     /**
@@ -259,4 +289,4 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.WorleyNoise3DBlock"] = WorleyNoise3DBlock;
+RegisterClass("BABYLON.WorleyNoise3DBlock", WorleyNoise3DBlock);

@@ -200,7 +200,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
                 {
                     sortedItems.map((item: { uniqueId: React.Key | null | undefined; name: React.Key | null | undefined; }) => {
                         return (
-                            <TreeItemSelectableComponent mustExpand={this.state.mustExpand} extensibilityGroups={this.props.extensibilityGroups}
+                            <TreeItemSelectableComponent extensibilityGroups={this.props.extensibilityGroups}
                                 key={item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name}
                                 offset={this.props.offset + 1} selectedEntity={this.props.selectedEntity} entity={item}
                                 globalState={this.props.globalState} filter={this.props.filter} />

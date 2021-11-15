@@ -18,7 +18,7 @@ import { DirectionalLight } from "../../../Lights/directionalLight";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
 
@@ -1001,6 +1001,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var resolution = new Vector2(0, 0);
 
         // Lens flare
+        this.lensFlarePostProcess.externalTextureSamplerBinding = true;
         this.lensFlarePostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", this._bloomEnabled ? this.blurHPostProcesses[0] : this.originalPostProcess);
             effect.setTexture("lensColorSampler", this.lensColorTexture);
@@ -1253,4 +1254,4 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public static LuminanceSteps: number = 6;
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StandardRenderingPipeline"] = StandardRenderingPipeline;
+RegisterClass("BABYLON.StandardRenderingPipeline", StandardRenderingPipeline);

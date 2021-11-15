@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 
 /**
  * Block used for the particle ramp gradient section
@@ -94,4 +94,4 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ParticleRampGradientBlock"] = ParticleRampGradientBlock;
+RegisterClass("BABYLON.ParticleRampGradientBlock", ParticleRampGradientBlock);

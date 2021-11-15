@@ -57,9 +57,9 @@
                     var hemisphericLight = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 
                     // Create meshes
-                    var sphere = BABYLON.Mesh.CreateSphere("sphere", 48, 30.0, scene);
+                    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { segments: 48, diameter: 30.0 }, scene);
 
-                    var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+                    var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
                     var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
                     skyboxMaterial.backFaceCulling = false;
                     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("/Playground/textures/TropicalSunnyDay", scene);

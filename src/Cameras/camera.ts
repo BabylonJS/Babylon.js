@@ -11,8 +11,8 @@ import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from '../Misc/typeStore';
-import { _DevTools } from '../Misc/devTools';
+import { GetClass } from '../Misc/typeStore';
+import { _WarnImport } from '../Misc/devTools';
 import { Viewport } from '../Maths/math.viewport';
 import { Frustum } from '../Maths/math.frustum';
 import { Plane } from '../Maths/math.plane';
@@ -31,7 +31,7 @@ declare type Ray = import("../Culling/ray").Ray;
 export class Camera extends Node {
     /** @hidden */
     public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
-        throw _DevTools.WarnImport("UniversalCamera");
+        throw _WarnImport("UniversalCamera");
     }
 
     /**
@@ -319,6 +319,11 @@ export class Camera extends Node {
      */
     public rigParent?: Camera;
 
+    /**
+     * Render pass id used by the camera to render into the main framebuffer
+     */
+    public renderPassId: number;
+
     /** @hidden */
     public _cameraRigParams: any;
     /** @hidden */
@@ -370,6 +375,7 @@ export class Camera extends Node {
         }
 
         this.position = position;
+        this.renderPassId = this.getScene().getEngine().createRenderPassId(`Camera ${name}`);
     }
 
     /**
@@ -940,7 +946,7 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -952,7 +958,7 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -1020,6 +1026,8 @@ export class Camera extends Node {
 
         // Active Meshes
         this._activeMeshes.dispose();
+
+        this.getScene().getEngine().releaseRenderPassId(this.renderPassId);
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
@@ -1122,46 +1130,14 @@ export class Camera extends Node {
             }
         }
 
-        switch (this.cameraRigMode) {
-            case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-                Camera._setStereoscopicAnaglyphRigMode(this);
-                break;
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-            case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-                Camera._setStereoscopicRigMode(this);
-                break;
-            case Camera.RIG_MODE_VR:
-                Camera._setVRRigMode(this, rigParams);
-                break;
-            case Camera.RIG_MODE_WEBVR:
-                Camera._setWebVRRigMode(this, rigParams);
-                break;
-        }
+        this._setRigMode(rigParams);
 
         this._cascadePostProcessesToRigCams();
         this.update();
     }
 
-    /** @hidden */
-    public static _setStereoscopicRigMode(camera: Camera) {
-        throw "Import Cameras/RigModes/stereoscopicRigMode before using stereoscopic rig mode";
-    }
-
-    /** @hidden */
-    public static _setStereoscopicAnaglyphRigMode(camera: Camera) {
-        throw "Import Cameras/RigModes/stereoscopicAnaglyphRigMode before using stereoscopic anaglyph rig mode";
-    }
-
-    /** @hidden */
-    public static _setVRRigMode(camera: Camera, rigParams: any) {
-        throw "Import Cameras/RigModes/vrRigMode before using VR rig mode";
-    }
-
-    /** @hidden */
-    public static _setWebVRRigMode(camera: Camera, rigParams: any) {
-        throw "Import Cameras/RigModes/WebVRRigMode before using Web VR rig mode";
+    protected _setRigMode(rigParams: any) {
+        // no-op
     }
 
     /** @hidden */
@@ -1245,13 +1221,14 @@ export class Camera extends Node {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getClassName();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         if (this.inputs) {
@@ -1260,6 +1237,8 @@ export class Camera extends Node {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
+
+        serializationObject.isEnabled = this.isEnabled();
 
         return serializationObject;
     }
@@ -1272,6 +1251,9 @@ export class Camera extends Node {
     public clone(name: string): Camera {
         const camera = SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
         camera.name = name;
+
+        this.onClonedObservable.notifyObservers(camera);
+
         return camera;
     }
 
@@ -1387,7 +1369,7 @@ export class Camera extends Node {
         if (parsedCamera.animations) {
             for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                 var parsedAnimation = parsedCamera.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     camera.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -1397,6 +1379,11 @@ export class Camera extends Node {
 
         if (parsedCamera.autoAnimate) {
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedCamera.isEnabled !== undefined) {
+            camera.setEnabled(parsedCamera.isEnabled);
         }
 
         return camera;

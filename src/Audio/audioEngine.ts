@@ -5,7 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { Engine } from "../Engines/engine";
 import { IAudioEngine } from './Interfaces/IAudioEngine';
-import { DomManagement } from "../Misc/domManagement";
+import { IsWindowObjectExist } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
 Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => { return new AudioEngine(hostElement, audioContext, audioDestination); };
@@ -98,7 +98,7 @@ export class AudioEngine implements IAudioEngine {
      * @param audioDestination defines the audio destination node to be used by audio engine
      */
     constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext> = null, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null) {
-        if (!DomManagement.IsWindowObjectExist()) {
+        if (!IsWindowObjectExist()) {
             return;
         }
         if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {

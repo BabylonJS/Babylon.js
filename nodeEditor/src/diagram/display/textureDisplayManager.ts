@@ -33,11 +33,14 @@ export class TextureDisplayManager implements IDisplayManager {
 
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");
-            if (block instanceof TextureBlock || block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
+            if (block instanceof TextureBlock) {
                 contentArea.classList.add("regular-texture-block");
             }
             if (block instanceof ReflectionBlock) {
                 contentArea.classList.add("reflection-block");
+            }
+            if (block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
+                contentArea.classList.add("reduced-texture-block");
             }
 
             this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");

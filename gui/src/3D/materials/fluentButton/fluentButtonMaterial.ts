@@ -13,7 +13,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
 import { Constants } from "babylonjs/Engines/constants";
@@ -297,11 +297,11 @@ export class FluentButtonMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new FluentButtonMaterialDefines();
         }
 
-        var defines = <FluentButtonMaterialDefines>subMesh._materialDefines;
+        var defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -446,7 +446,7 @@ export class FluentButtonMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <FluentButtonMaterialDefines>subMesh._materialDefines;
+        var defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -569,4 +569,4 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GUI.FluentButtonMaterial"] = FluentButtonMaterial;
+RegisterClass("BABYLON.GUI.FluentButtonMaterial", FluentButtonMaterial);

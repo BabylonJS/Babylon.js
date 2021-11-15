@@ -481,21 +481,18 @@ export class InputManager {
      * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
      */
     public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
-        let scene = this._scene;
+        const scene = this._scene;
+        const engine = scene.getEngine();
 
         if (!elementToAttachTo) {
-            elementToAttachTo = scene.getEngine().getInputElement();
-        }
-
-        if (!elementToAttachTo) {
-            return;
+            elementToAttachTo = engine.getInputElement();
         }
 
         if (this._alreadyAttached) {
             this.detachControl();
         }
-        this._alreadyAttachedTo = elementToAttachTo;
-        let engine = scene.getEngine();
+
+        if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
 
         if (!this._deviceInputSystem) {
             this._deviceInputSystem = DeviceInputSystem.Create(engine);
@@ -678,7 +675,7 @@ export class InputManager {
             }
 
             // Meshes
-            var pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerMovePredicate, false, scene.cameraToUseForPointers);
+            var pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerMovePredicate, false, scene.cameraToUseForPointers, scene.pointerMoveTrianglePredicate);
 
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
@@ -778,7 +775,7 @@ export class InputManager {
                     }
                 }
 
-                if (!this._pointerCaptures[evt.pointerId]) {
+                if (!this._pointerCaptures[evt.pointerId] && evt.buttons > 0) {
                     return;
                 }
 
@@ -881,8 +878,7 @@ export class InputManager {
                         eventData.inputIndex === PointerInput.Horizontal ||
                         eventData.inputIndex === PointerInput.Vertical ||
                         eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical ||
-                        eventData.inputIndex === PointerInput.FakeMove
+                        eventData.inputIndex === PointerInput.DeltaVertical
                     ) {
                         this._onPointerMove(evt as IPointerEvent);
                     } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
@@ -899,18 +895,17 @@ export class InputManager {
      * Detaches all event handlers
      */
     public detachControl() {
-        if (!this._alreadyAttachedTo || !this._alreadyAttached) {
-            return;
+        if (this._alreadyAttached) {
+
+            this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
+
+            // Cursor
+            if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {
+                this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
+            }
+
+            this._alreadyAttached = false;
         }
-
-        this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
-
-        // Cursor
-        if (!this._scene.doNotHandleCursors) {
-            this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
-        }
-
-        this._alreadyAttached = false;
     }
 
     /**

@@ -87,7 +87,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     processInputBlockUpdate(ib: InputBlock) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers(ib);
 
         if (ib.isConstant) {
             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
@@ -435,6 +435,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />
                         <ButtonLineComponent label="Export shaders" onClick={() => {
+                            this.props.globalState.nodeMaterial.build();
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
                         }} />
                         {

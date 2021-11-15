@@ -5,7 +5,7 @@ import { Engine } from "../Engines/engine";
 import { Camera } from "../Cameras/camera";
 
 import "../Shaders/colorCorrection.fragment";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { SerializationHelper, serialize } from '../Misc/decorators';
 import { Nullable } from '../types';
 
@@ -71,4 +71,4 @@ export class ColorCorrectionPostProcess extends PostProcess {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ColorCorrectionPostProcess"] = ColorCorrectionPostProcess;
+RegisterClass("BABYLON.ColorCorrectionPostProcess", ColorCorrectionPostProcess);
