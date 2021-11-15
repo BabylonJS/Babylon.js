@@ -44,6 +44,7 @@ class CellMaterialDefines extends MaterialDefines {
     public CELLBASIC = true;
     public DEPTHPREPASS = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public CLAMPFINALCOLOR = true;
 
     constructor() {
         super();

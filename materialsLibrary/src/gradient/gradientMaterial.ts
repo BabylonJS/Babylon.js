@@ -40,6 +40,7 @@ class GradientMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public CLAMPFINALCOLOR = true;
 
     constructor() {
         super();

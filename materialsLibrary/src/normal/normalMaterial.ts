@@ -81,6 +81,7 @@ class NormalMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public LIGHTING = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public CLAMPFINALCOLOR = true;
 
     constructor() {
         super();
