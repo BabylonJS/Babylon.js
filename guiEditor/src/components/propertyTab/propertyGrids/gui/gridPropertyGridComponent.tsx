@@ -10,7 +10,13 @@ import { Nullable } from "babylonjs/types";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 
-const vAlignBottomIcon: string = require("../../../../sharedUiComponents/imgs/vAlignBottomIcon.svg");
+const gridColumnIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg");
+const gridRowIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg"); //needs change
+const confirmGridElementDark: string = require("../../../../sharedUiComponents/imgs/confirmGridElementDark.svg");
+const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/deleteGridElementDark.svg");
+const addGridElementDark: string = require("../../../../sharedUiComponents/imgs/addGridElementDark.svg");
+const cancelGridElementDark: string = require("../../../../sharedUiComponents/imgs/cancelGridElementDark.svg");
+
 
 interface IGridPropertyGridComponentProps {
     grid: Grid,
@@ -36,8 +42,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._rowDefinitions.map((rd, i) => {
                 return (
-                    <div key={`r${i}`} className="ge-divider">
-                        <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label="" icon={vAlignBottomIcon} iconLabel={`Row ${i}`} value={rd} numbersOnly={true}
+                    <div key={`r${i}`} className="ge-grids">
+                        <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label="" icon={gridColumnIconDark} iconLabel={`Row ${i}`} value={rd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._rowDefinitions[i] = newValue;
                                 this._rowEditFlags[i] = true;
@@ -84,7 +90,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             this._columnDefinitions.map((cd, i) => {
                 return (
                     <div key={`c${i}`} className="ge-grids">
-                        <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label="" icon={vAlignBottomIcon} iconLabel={`Column ${i}`} value={cd} numbersOnly={true}
+                        <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label="" icon={gridRowIconDark} iconLabel={`Column ${i}`} value={cd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._columnDefinitions[i] = newValue;
                                 this._columnEditFlags[i] = true;
@@ -261,7 +267,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 }
                 <div className="ge-gridLine">
                     <div className="ge-divider">
-                        <CommandButtonComponent tooltip="Add Row" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                        <CommandButtonComponent tooltip="Add Row" icon={addGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let total = 0;
                                 let count = 0;
@@ -277,7 +283,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.resizeRow();
                                 this.forceUpdate();
                             }}
-                        />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                        />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={deleteGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.columnCount; ++i) {
@@ -299,7 +305,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.forceUpdate();
                             }}
                         />}
-                        {this._editedRow && <CommandButtonComponent tooltip="Recalculate Row Changes" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                        {this._editedRow && <CommandButtonComponent tooltip="Recalculate Row Changes" icon={confirmGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 this.resizeRow();
                                 this.forceUpdate();
@@ -331,7 +337,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
                 }
                 <div className="ge-divider">
-                    <CommandButtonComponent tooltip="Add Column" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                    <CommandButtonComponent tooltip="Add Column" icon={addGridElementDark} shortcut="" isActive={false}
                         onClick={() => {
                             let total = 0;
                             let count = 0;
@@ -348,7 +354,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             this.forceUpdate();
                         }}
                     /> {(grid.columnCount > 1 && !this._removingColumn) &&
-                        <CommandButtonComponent tooltip="Remove Column" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                        <CommandButtonComponent tooltip="Remove Column" icon={deleteGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.rowCount; ++i) {
@@ -370,7 +376,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.forceUpdate();
                             }}
                         />}
-                    {this._editedColumn && <CommandButtonComponent tooltip="Recalculate Column Changes" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                    {this._editedColumn && <CommandButtonComponent tooltip="Recalculate Column Changes" icon={confirmGridElementDark} shortcut="" isActive={false}
                         onClick={() => {
                             this.resizeColumn();
                             this.forceUpdate();
