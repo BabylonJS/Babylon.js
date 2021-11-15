@@ -596,7 +596,7 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialSystemValues.DeltaTime:
                     effect.setFloat(variableName, scene.deltaTime / 1000.0);
-                case NodeMaterialSystemValues.CameraPosition:
+                case NodeMaterialSystemValues.CameraParameters:
                     if (scene.activeCamera) {
                         effect.setFloat4(variableName, scene.getEngine().hasOriginBottomLeft ? -1 : 1, scene.activeCamera.minZ, scene.activeCamera.maxZ, 1 / scene.activeCamera.maxZ);
                     }
