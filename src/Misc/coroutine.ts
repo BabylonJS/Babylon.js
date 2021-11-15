@@ -26,7 +26,7 @@ export type Coroutine<T> = CoroutineBase<void, T>;
 export type AsyncCoroutine<T> = CoroutineBase<void | Promise<void>, T>;
 
 // A CoroutineStep<T> represents a single step of a coroutine, and is an IteratorResult as returned from Coroutine<T>.next().
-type CoroutineStep<T> = IteratorResult<void, T>;
+export type CoroutineStep<T> = IteratorResult<void, T>;
 
 // A CoroutineScheduler<T> is responsible for scheduling the call to Coroutine<T>.next and invokes the success or error callback after next is called.
 export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
