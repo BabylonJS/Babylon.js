@@ -81,12 +81,12 @@ export class GUI3DManager implements IDisposable {
 
     /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public get useRealisticScaling() {
-        return this.controlScaling === 0.32;
+        return this.controlScaling === 0.032;
     }
 
     /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public set useRealisticScaling(newValue: boolean) {
-        this.controlScaling = newValue ? 0.32 : 1;
+        this.controlScaling = newValue ? 0.032 : 1;
     }
 
     /**
