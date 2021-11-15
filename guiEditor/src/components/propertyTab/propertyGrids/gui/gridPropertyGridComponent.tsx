@@ -83,7 +83,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._columnDefinitions.map((cd, i) => {
                 return (
-                    <div key={`c${i}`} className="ge-divider">
+                    <div key={`c${i}`} className="ge-grids">
                         <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label="" icon={vAlignBottomIcon} iconLabel={`Column ${i}`} value={cd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._columnDefinitions[i] = newValue;
@@ -259,71 +259,72 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 {
                     this.renderRows()
                 }
-                <div className="ge-divider">
-                    <CommandButtonComponent tooltip="Add Row" icon={vAlignBottomIcon} shortcut="" isActive={false}
-                        onClick={() => {
-                            let total = 0;
-                            let count = 0;
-                            for (let i = 0; i < grid.rowCount; ++i) {
-                                let rd = grid.getRowDefinition(i);
-                                if (rd?.isPercentage) {
-                                    total += rd?.getValue(grid.host);
-                                    count++;
+                <div className="ge-gridLine">
+                    <div className="ge-divider">
+                        <CommandButtonComponent tooltip="Add Row" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                            onClick={() => {
+                                let total = 0;
+                                let count = 0;
+                                for (let i = 0; i < grid.rowCount; ++i) {
+                                    let rd = grid.getRowDefinition(i);
+                                    if (rd?.isPercentage) {
+                                        total += rd?.getValue(grid.host);
+                                        count++;
+                                    }
                                 }
-                            }
-                            grid.addRowDefinition(total / count, false);
-                            this.setRowValues();
-                            this.resizeRow();
-                            this.forceUpdate();
-                        }}
-                    />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={vAlignBottomIcon} shortcut="" isActive={false}
-                        onClick={() => {
-                            let hasChild = false;
-                            for (let i = 0; i < grid.columnCount; ++i) {
-                                const child = grid.cells[(grid.rowCount - 1) + ":" + i];
-                                if (child?.children.length) {
-                                    hasChild = true;
-                                    break;
-                                }
-                            }
-
-                            if (hasChild) {
-                                this._removingRow = true;
-                            }
-                            else {
-                                grid.removeRowDefinition(grid.rowCount - 1);
+                                grid.addRowDefinition(total / count, false);
                                 this.setRowValues();
                                 this.resizeRow();
-                            }
-                            this.forceUpdate();
-                        }}
-                    />}
-                    {this._removingRow &&
-                        <>
-                            <TextLineComponent tooltip="" label="This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?" value=" " color="grey"></TextLineComponent>
-                            <ButtonLineComponent
-                                label="REMOVE"
-                                onClick={() => {
+                                this.forceUpdate();
+                            }}
+                        />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                            onClick={() => {
+                                let hasChild = false;
+                                for (let i = 0; i < grid.columnCount; ++i) {
+                                    const child = grid.cells[(grid.rowCount - 1) + ":" + i];
+                                    if (child?.children.length) {
+                                        hasChild = true;
+                                        break;
+                                    }
+                                }
+
+                                if (hasChild) {
+                                    this._removingRow = true;
+                                }
+                                else {
                                     grid.removeRowDefinition(grid.rowCount - 1);
                                     this.setRowValues();
                                     this.resizeRow();
-                                    this.forceUpdate();
-                                    this._removingRow = false;
-                                }}
-                            />
-                            <ButtonLineComponent
-                                label="CANCEL"
-                                onClick={() => {
-                                    this._removingRow = false;
-                                    this.forceUpdate();
-                                }}
-                            /></>}                 {this._editedRow && <ButtonLineComponent
-                                label="RECALCULATE ROW CHANGES"
-                                onClick={() => {
-                                    this.resizeRow();
-                                    this.forceUpdate();
-                                }}
-                            />}</div>
+                                }
+                                this.forceUpdate();
+                            }}
+                        />}
+                        {this._editedRow && <CommandButtonComponent tooltip="Recalculate Row Changes" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                            onClick={() => {
+                                this.resizeRow();
+                                this.forceUpdate();
+                            }}
+                        />}</div></div>
+                {this._removingRow &&
+                    <>
+                        <TextLineComponent tooltip="" label="This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?" value=" " color="grey"></TextLineComponent>
+                        <ButtonLineComponent
+                            label="REMOVE"
+                            onClick={() => {
+                                grid.removeRowDefinition(grid.rowCount - 1);
+                                this.setRowValues();
+                                this.resizeRow();
+                                this.forceUpdate();
+                                this._removingRow = false;
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="CANCEL"
+                            onClick={() => {
+                                this._removingRow = false;
+                                this.forceUpdate();
+                            }}
+                        /></>}
                 <hr className="ge" />
                 {
                     this.renderColumns()
@@ -369,32 +370,33 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.forceUpdate();
                             }}
                         />}
-                    {this._removingColumn &&
-                        <>
-                            <TextLineComponent tooltip="" label="This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?" value=" " color="grey"></TextLineComponent>
-                            <ButtonLineComponent
-                                label="REMOVE"
-                                onClick={() => {
-                                    grid.removeColumnDefinition(grid.columnCount - 1);
-                                    this.setColumnValues();
-                                    this.resizeColumn();
-                                    this.forceUpdate();
-                                    this._removingColumn = false;
-                                }}
-                            />
-                            <ButtonLineComponent
-                                label="CANCEL"
-                                onClick={() => {
-                                    this._removingColumn = false;
-                                    this.forceUpdate();
-                                }}
-                            /></>}                {this._editedColumn && <ButtonLineComponent
-                                label="RECALCULATE COLUMN CHANGES"
-                                onClick={() => {
-                                    this.resizeColumn();
-                                    this.forceUpdate();
-                                }}
-                            />} </div>
+                    {this._editedColumn && <CommandButtonComponent tooltip="Recalculate Column Changes" icon={vAlignBottomIcon} shortcut="" isActive={false}
+                        onClick={() => {
+                            this.resizeColumn();
+                            this.forceUpdate();
+                        }}
+                    />} </div>
+                {this._removingColumn &&
+                    <>
+                        <TextLineComponent tooltip="" label="This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?" value=" " color="grey"></TextLineComponent>
+                        <ButtonLineComponent
+                            label="REMOVE"
+                            onClick={() => {
+                                grid.removeColumnDefinition(grid.columnCount - 1);
+                                this.setColumnValues();
+                                this.resizeColumn();
+                                this.forceUpdate();
+                                this._removingColumn = false;
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="CANCEL"
+                            onClick={() => {
+                                this._removingColumn = false;
+                                this.forceUpdate();
+                            }}
+                        /></>}
+
             </div>
         );
     }

@@ -177,6 +177,15 @@ hr.ge {
         grid-template-columns: auto auto auto auto auto auto;
     }
 
+    .ge-grids {
+        display: grid;
+        background-color: #c2c2c2;
+        margin-top: 5px;
+        filter: invert(1);
+        grid-template-columns: auto auto auto auto auto auto;
+    }
+
+
     .textInputLine {
         user-select: none;
         padding-left: $line-padding-left;
