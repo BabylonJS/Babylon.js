@@ -762,16 +762,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
 
-        let nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
-        await nodeMaterial.loadAsync("GUIEditorNodeMaterial.json").then(() => {
-            nodeMaterial.build(true);
-            this._textureMesh.material = nodeMaterial;
-            if (nodeMaterial) {
-                let block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
-                block.texture = this.globalState.guiTexture;
-            }
-        });
-    
+        const nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
+        await nodeMaterial.loadAsync("GUIEditorNodeMaterial.json");
+
+        nodeMaterial.build(true);
+        this._textureMesh.material = nodeMaterial;
+        if (nodeMaterial) {
+            const block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
+            block.texture = this.globalState.guiTexture;
+        }
+        
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
