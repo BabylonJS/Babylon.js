@@ -31,10 +31,10 @@ export type AsyncCoroutine<T> = CoroutineBase<void | Promise<void>, T>;
 type CoroutineStep<T> = IteratorResult<void, T>;
 
 // A CoroutineScheduler<T> is responsible for scheduling the call to Coroutine<T>.next and invokes the success or error callback after next is called.
-type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
 
 // The inline scheduler simply steps the coroutine synchronously. This is useful for running a coroutine synchronously, and also as a helper function for other schedulers.
-function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
+export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
     try {
         const step = coroutine.next();
 
@@ -64,7 +64,7 @@ function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult
 
 // The yielding scheduler steps the coroutine synchronously until the specified time interval has elapsed, then yields control so other operations can be performed.
 // A single instance of a yielding scheduler could be shared across multiple coroutines to yield when their collective work exceeds the threshold.
-function createYieldingScheduler<T>(yieldAfterMS = 25): CoroutineScheduler<T> {
+export function createYieldingScheduler<T>(yieldAfterMS = 25) {
     let start: number | undefined;
     return (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         if (start === undefined) {
@@ -89,7 +89,7 @@ function createYieldingScheduler<T>(yieldAfterMS = 25): CoroutineScheduler<T> {
 }
 
 // Runs the specified coroutine with the specified scheduler. The success or error callback will be invoked when the coroutine finishes.
-function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal) {
+export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal) {
     function resume() {
         if (!abortSignal || !abortSignal.aborted) {
             scheduler(coroutine,
@@ -114,6 +114,24 @@ function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineSched
     resume();
 }
 
+export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: AbortSignal): T {
+    // Run the coroutine with the inline scheduler, storing the returned value, or re-throwing the error (since the error callback will be called synchronously by the inline scheduler).
+    let result: T | undefined;
+    runCoroutine(coroutine, inlineScheduler, (r: T) => result = r, (e: any) => { throw e; }, abortSignal);
+
+    // Synchronously return the result of the coroutine.
+    return result!;
+}
+
+export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
+    // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
+    const result = new Deferred<T>();
+    runCoroutine(coroutine, scheduler, (r: T) => result.resolve(r), (e: any) => result.reject(e), abortSignal);
+
+    // Return the promise that will be resolved when the coroutine finishes.
+    return result.promise;
+}
+
 // This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
 type ExtractCoroutineReturnType<T> = T extends AsyncCoroutine<infer TReturn> ? TReturn : never;
 
@@ -125,15 +143,8 @@ type ExtractCoroutineReturnType<T> = T extends AsyncCoroutine<infer TReturn> ? T
  */
 export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> {
     return (...params: Parameters<TCoroutineFactory>): ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
-        // Create the coroutine from the factory function.
-        const coroutine = coroutineFactory(...params);
-
-        // Run the coroutine with the inline scheduler, storing the returned value, or re-throwing the error (since the error callback will be called synchronously by the inline scheduler).
-        let result: TReturn | undefined;
-        runCoroutine(coroutine, inlineScheduler, (r: TReturn) => result = r, (e: any) => { throw e; }, abortSignal);
-
-        // Synchronously return the result of the coroutine.
-        return result as ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>; // TODO: How can we remove this cast?
+        // Run the coroutine synchronously.
+        return runCoroutineSync(coroutineFactory(...params), abortSignal) as ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>; // TODO: How can we remove this cast?
     };
 }
 
@@ -143,17 +154,9 @@ export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: 
  * @param coroutineFactory A function that returns a Coroutine<T>.
  * @returns A function that runs the coroutine asynchronously.
  */
-export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<TReturn>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
+export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<TReturn>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<TReturn>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
     return (...params: Parameters<TCoroutineFactory>): Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> => {
-        // Create the coroutine from the factory function.
-        const coroutine = coroutineFactory(...params);
-
-        // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
-        const result = new Deferred<TReturn>();
-        const scheduler = createYieldingScheduler<TReturn>();
-        runCoroutine(coroutine, scheduler, (r: TReturn) => result.resolve(r), (e: any) => result.reject(e), abortSignal);
-
-        // Return the promise that will be resolved when the coroutine finishes.
-        return result.promise as Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>; // TODO: How can I remove this cast?
+        // Run the coroutine asynchronously.
+        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>; // TODO: How can I remove this cast?
     };
 }

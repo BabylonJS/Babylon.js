@@ -3,7 +3,7 @@ import { Tools, AsyncLoop } from "../Misc/tools";
 import { IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
-import { Coroutine, makeSyncFunction, makeAsyncFunction } from "../Misc/coroutine";
+import { Coroutine, makeSyncFunction, makeAsyncFunction, createYieldingScheduler } from "../Misc/coroutine";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
@@ -4275,7 +4275,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public static readonly MergeMeshes = makeSyncFunction(Mesh._MergeMeshesCoroutine);
-    public static readonly MergeMeshesAsync = makeAsyncFunction(Mesh._MergeMeshesCoroutine);
+    public static readonly MergeMeshesAsync = makeAsyncFunction(Mesh._MergeMeshesCoroutine, createYieldingScheduler());
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
