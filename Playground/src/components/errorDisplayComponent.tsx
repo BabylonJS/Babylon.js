@@ -42,7 +42,6 @@ export class ErrorDisplayComponent extends React.Component<IErrorDisplayComponen
     }
 
     public render() {
-        console.log(this.state.error);
         if (!this.state.error) {
             return null;
         }
