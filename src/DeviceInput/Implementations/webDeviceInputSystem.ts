@@ -521,10 +521,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.previousState = previousButton;
                 deviceEvent.currentState = pointer[evt.button + 2];
 
-                if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
+                if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture?.(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
                 }
-                else if (evt.pointerId && this._elementToAttachTo.hasPointerCapture(evt.pointerId)) {
+                else if (evt.pointerId && this._elementToAttachTo.hasPointerCapture?.(evt.pointerId)) {
                     this._elementToAttachTo.releasePointerCapture(evt.pointerId);
                 }
 
@@ -572,7 +572,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
 
-                if (this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture(this._mouseId)) {
+                if (this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture?.(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
                 }
 
@@ -601,7 +601,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     const deviceSlot = +deviceSlotKey;
                     const pointerId = this._activeTouchIds[deviceSlot];
 
-                    if (this._elementToAttachTo.hasPointerCapture(pointerId)) {
+                    if (this._elementToAttachTo.hasPointerCapture?.(pointerId)) {
                         this._elementToAttachTo.releasePointerCapture(pointerId);
                     }
 
