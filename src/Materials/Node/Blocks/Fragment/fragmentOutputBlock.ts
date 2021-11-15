@@ -8,8 +8,11 @@ import { Scene } from '../../../../scene';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterialDefines } from '../../nodeMaterial';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { MaterialHelper } from "../../../materialHelper";
 
 declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
+declare type Effect = import("../../../effect").Effect;
+declare type Mesh = import("../../../../Meshes/mesh").Mesh;
 
 /**
  * Block used to output the final color
@@ -41,12 +44,25 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public convertToLinearSpace = false;
 
+    /** Gets or sets a boolean indicating if logarithmic depth should be used */
+    @editableInPropertyPage("Use logarithmic depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public useLogarithmicDepth = false;
+
     /**
      * Gets the current class name
      * @returns the class name
      */
     public getClassName() {
         return "FragmentOutputBlock";
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+     public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("logarithmicDepthConstant");
+        state._excludeVariableName("vFragmentDepth");
     }
 
     /**
@@ -75,6 +91,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
     }
 
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+        if (this.useLogarithmicDepth && mesh) {
+            MaterialHelper.BindLogDepth(undefined, effect, mesh.getScene());
+        }
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -84,7 +106,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
-
+        if (this.useLogarithmicDepth) {
+            state._emitUniformFromString("logarithmicDepthConstant", "float");
+            state._emitVaryingFromString("vFragmentDepth", "float");
+            state.sharedData.bindableBlocks.push(this);
+        }
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
 
@@ -121,6 +147,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.compilationString += `gl_FragColor = toGammaSpace(gl_FragColor);\r\n`;
         state.compilationString += `#endif\r\n`;
 
+        if (this.useLogarithmicDepth) {
+            state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\r\n`;
+        }
+
         return this;
     }
 
@@ -128,6 +158,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         var codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
+        codeString += `${this._codeVariableName}.useLogarithmicDepth = ${this.useLogarithmicDepth};\r\n`;
 
         return codeString;
     }
@@ -137,6 +168,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
+        serializationObject.useLogarithmicDepth = this.useLogarithmicDepth;
 
         return serializationObject;
     }
@@ -146,6 +178,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = serializationObject.convertToLinearSpace;
+        this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
     }
 }
 
