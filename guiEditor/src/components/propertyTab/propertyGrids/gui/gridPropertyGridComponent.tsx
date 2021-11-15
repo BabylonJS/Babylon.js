@@ -5,7 +5,6 @@ import { CommonControlPropertyGridComponent } from "../gui/commonControlProperty
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { Nullable } from "babylonjs/types";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
@@ -13,7 +12,7 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 const gridColumnIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg");
 const gridRowIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg"); //needs change
 const confirmGridElementDark: string = require("../../../../sharedUiComponents/imgs/confirmGridElementDark.svg");
-const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/deleteGridElementDark.svg");
+const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/subtractGridElementDark.svg");
 const addGridElementDark: string = require("../../../../sharedUiComponents/imgs/addGridElementDark.svg");
 const cancelGridElementDark: string = require("../../../../sharedUiComponents/imgs/cancelGridElementDark.svg");
 
@@ -42,7 +41,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._rowDefinitions.map((rd, i) => {
                 return (
-                    <div key={`r${i}`} className="ge-grids">
+                    <div key={`r${i}`} className={this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
                         <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label="" icon={gridColumnIconDark} iconLabel={`Row ${i}`} value={rd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._rowDefinitions[i] = newValue;
@@ -89,7 +88,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._columnDefinitions.map((cd, i) => {
                 return (
-                    <div key={`c${i}`} className="ge-grids">
+                    <div key={`c${i}`} className={this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
                         <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label="" icon={gridRowIconDark} iconLabel={`Column ${i}`} value={cd} numbersOnly={true}
                             onChange={(newValue) => {
                                 this._columnDefinitions[i] = newValue;
@@ -295,13 +294,9 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 }
 
                                 if (hasChild) {
-                                    this._removingRow = true;
+                                   
                                 }
-                                else {
-                                    grid.removeRowDefinition(grid.rowCount - 1);
-                                    this.setRowValues();
-                                    this.resizeRow();
-                                }
+                                this._removingRow = true;
                                 this.forceUpdate();
                             }}
                         />}
@@ -310,12 +305,10 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.resizeRow();
                                 this.forceUpdate();
                             }}
-                        />}</div></div>
+                        />}
                 {this._removingRow &&
                     <>
-                        <TextLineComponent tooltip="" label="This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?" value=" " color="grey"></TextLineComponent>
-                        <ButtonLineComponent
-                            label="REMOVE"
+                        <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 grid.removeRowDefinition(grid.rowCount - 1);
                                 this.setRowValues();
@@ -324,13 +317,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this._removingRow = false;
                             }}
                         />
-                        <ButtonLineComponent
-                            label="CANCEL"
+                        <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 this._removingRow = false;
                                 this.forceUpdate();
                             }}
-                        /></>}
+                        /></>}</div></div>
+                        {this._removingRow && <><TextLineComponent tooltip="" label="This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?" value=" " color="grey"></TextLineComponent></>}
                 <hr className="ge" />
                 {
                     this.renderColumns()
@@ -384,9 +377,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     />} </div>
                 {this._removingColumn &&
                     <>
-                        <TextLineComponent tooltip="" label="This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?" value=" " color="grey"></TextLineComponent>
-                        <ButtonLineComponent
-                            label="REMOVE"
+                        
+                        <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 grid.removeColumnDefinition(grid.columnCount - 1);
                                 this.setColumnValues();
@@ -395,14 +387,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this._removingColumn = false;
                             }}
                         />
-                        <ButtonLineComponent
-                            label="CANCEL"
+                        <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 this._removingColumn = false;
                                 this.forceUpdate();
                             }}
                         /></>}
-
+                {this._removingColumn && <>
+                    <TextLineComponent tooltip="" label="This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?" value=" " color="grey"></TextLineComponent></>}
             </div>
         );
     }
