@@ -30,7 +30,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     /**
      * Scale for the buttons added to the menu
      */
-    protected static MENU_BUTTON_SCALE: number = 0.32;
+    protected static MENU_BUTTON_SCALE: number = 1;
 
     /**
      * Gets or sets the margin size of the backplate in button size units.
