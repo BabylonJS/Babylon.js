@@ -149,19 +149,21 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
         "SceneDepthBlock": "The scene depth buffer",
         "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
-        "EqualBlock": "Return a value if two operands are equals", 
-        "NotEqualBlock": "Return a value if two operands are not equals", 
-        "LessThanBlock": "Return a value if an operand is smaller than a second operand", 
-        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand", 
-        "GreaterThanBlock": "Return a value if an operand is greater than a second operand", 
-        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand", 
-        "XorBlock": "Return a value if (a xor b) > 0", 
-        "OrBlock": "Return a value if (a or b) > 0", 
+        "EqualBlock": "Return a value if two operands are equals",
+        "NotEqualBlock": "Return a value if two operands are not equals",
+        "LessThanBlock": "Return a value if an operand is smaller than a second operand",
+        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand",
+        "GreaterThanBlock": "Return a value if an operand is greater than a second operand",
+        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand",
+        "XorBlock": "Return a value if (a xor b) > 0",
+        "OrBlock": "Return a value if (a or b) > 0",
         "AndBlock": "Return a value if (a and b) > 0",
         "ImageSourceBlock": "Centralize texture access for TextureBlocks",
-        "CloudBlock": "Generate Fractal Brownian Motion Clouds"
+        "CloudBlock": "Generate Fractal Brownian Motion Clouds",
+        "VoronoiNoiseBlock": "Generate Voronoi Noise",
+        "ScreenSpaceBlock": "Convert a Vector3 or a Vector4 into screen space"
     };
-    
+
     private _customFrameList: {[key: string]: string};
 
     constructor(props: INodeListComponentProps) {
@@ -170,7 +172,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         this.state = { filter: "" };
 
         let frameJson = localStorage.getItem("Custom-Frame-List");
-        if(frameJson) {
+        if (frameJson) {
             this._customFrameList = JSON.parse(frameJson);
         }
 
@@ -204,8 +206,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
             let frameJson = localStorage.getItem("Custom-Frame-List");
             let frameList:  {[key: string]: string} = {};
-            if(frameJson) {
-                frameList = JSON.parse(frameJson); 
+            if (frameJson) {
+                frameList = JSON.parse(frameJson);
             }
             frameList[frameName] = frameToolTip;
             localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
@@ -217,23 +219,23 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
     removeItem(value : string) : void {
         let frameJson = localStorage.getItem("Custom-Frame-List");
-            if(frameJson) {
+            if (frameJson) {
                 let frameList = JSON.parse(frameJson);
                 delete frameList[value];
                 localStorage.removeItem(value);
                 localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
                 this._customFrameList = frameList;
                 this.forceUpdate();
-            }        
+            }
     }
 
     render() {
 
         let customFrameNames: string[] = [];
-        for(let frame in this._customFrameList){
+        for (let frame in this._customFrameList) {
             customFrameNames.push(frame);
         }
-        
+
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
@@ -245,10 +247,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
-            Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],
+            Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", "ScreenSpaceBlock"],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
-            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock"],
+            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
@@ -274,15 +276,15 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];  
-                delete allBlocks["Particle"];              
+                delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
                 delete allBlocks["PostProcess"];
                 delete allBlocks["PBR"];
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];            
+                delete allBlocks["PostProcess"];
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
@@ -297,22 +299,22 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
-                if(key === "Custom_Frames") {
+                if (key === "Custom_Frames") {
                     return <DraggableLineWithButtonComponent key={block} data={block} tooltip={this._customFrameList[block] || ""} iconImage={deleteButton} iconTitle="Delete"
-                    onIconClick={ value => this.removeItem(value)}/>;
+                    onIconClick={ (value) => this.removeItem(value)}/>;
                 }
                 return <DraggableLineComponent key={block} data={block} tooltip={ NodeListComponent._Tooltips[block] || ""}/>;
 
             });
 
-            if(key === "Custom_Frames") {
+            if (key === "Custom_Frames") {
                 let line =  <LineWithFileButtonComponent key="add..."title={"Add Custom Frame"} closed={false}
                 label="Add..." uploadName={'custom-frame-upload'} iconImage={addButton} accept=".json" onIconClick={(file) => {
                     this.loadCustomFrame(file);
                 }}/>;
                 blockList.push(line);
-            }         
-            if(blockList.length) {
+            }
+            if (blockList.length) {
                 blockMenu.push(
                     <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
                         {blockList}

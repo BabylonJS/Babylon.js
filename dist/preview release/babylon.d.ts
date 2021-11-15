@@ -45160,11 +45160,9 @@ declare module BABYLON {
          */
         static DecodeBase64(uri: string): ArrayBuffer;
         /**
-         * Gets the absolute url.
-         * @param url the input url
-         * @return the absolute url
+         * Function used to get the absolute url. Override for custom implementation.
          */
-        static GetAbsoluteUrl(url: string): string;
+        static GetAbsoluteUrl: (url: string) => string;
         /**
          * No log
          */
@@ -45570,7 +45568,7 @@ declare module BABYLON {
          */
         readonly onInputChangedObservable: Observable<IDeviceEvent>;
         private _nativeInput;
-        constructor(nativeInput: INativeInput);
+        constructor(nativeInput?: INativeInput);
         /**
          * Configures events to work with an engine's active element
          */
@@ -45593,6 +45591,11 @@ declare module BABYLON {
          * Dispose of all the observables
          */
         dispose(): void;
+        /**
+         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
+         * @returns Object with dummy functions
+         */
+        private _createDummyNativeInput;
     }
 }
 declare module BABYLON {
@@ -73944,6 +73947,10 @@ declare module BABYLON {
         set boundingBoxSize(value: Vector3);
         get boundingBoxSize(): Vector3;
         /**
+         * Observable triggered once the texture has been loaded.
+         */
+        onLoadObservable: Observable<HDRCubeTexture>;
+        /**
          * Instantiates an HDRTexture from the following parameters.
          *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
@@ -73976,6 +73983,10 @@ declare module BABYLON {
          * @param value Define the reflection matrix to set
          */
         setReflectionTextureMatrix(value: Matrix): void;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
         /**
          * Parses a JSON representation of an HDR Texture in order to create the texture
          * @param parsedTexture Define the JSON representation
@@ -77696,6 +77707,14 @@ declare module BABYLON {
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         /**
          * Exposes the properties to the UI?
@@ -78714,6 +78733,83 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * block used to Generate a Voronoi Noise Pattern
+     */
+    export class VoronoiNoiseBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new VoronoiNoiseBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the seed input component
+         */
+        get seed(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the offset input component
+        */
+        get offset(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the density input component
+        */
+        get density(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+        */
+        get cells(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to transform a vector3 or a vector4 into screen space
+     */
+    export class ScreenSpaceBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ScreenSpaceBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input
+         */
+        get vector(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the worldViewProjection transform input
+         */
+        get worldViewProjection(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x output component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y output component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
