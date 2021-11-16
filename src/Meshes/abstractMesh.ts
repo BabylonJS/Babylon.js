@@ -464,6 +464,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
 
+        this.resetDrawCache();
         this._unBindEffect();
     }
 
