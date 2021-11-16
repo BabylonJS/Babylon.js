@@ -49,6 +49,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this._rowDefinitions[i] = newValue;
                                 this._rowEditFlags[i] = true;
                                 this._editedRow = true;
+                                this._removingRow = false;
+                                this._rowChild = false;
                                 this.forceUpdate();
                             }} />
                     </div>
@@ -96,6 +98,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this._columnDefinitions[i] = newValue;
                                 this._columnEditFlags[i] = true;
                                 this._editedColumn = true;
+                                this._removingColumn = false;
+                                this._columnChild = false;
                                 this.forceUpdate();
                             }} />
                     </div>
@@ -287,8 +291,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     }
                                 }
                                 grid.addRowDefinition(total / count, false);
-                                this.setRowValues();
-                                this.resizeRow();
+                                this.resetValues();
                                 this.forceUpdate();
                             }}
                         />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={deleteGridElementDark} shortcut="" isActive={false}
@@ -360,8 +363,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 }
                             }
                             grid.addColumnDefinition(total / count, false);
-                            this.setColumnValues();
-                            this.resizeColumn();
+                            this.resetValues();
                             this.forceUpdate();
                         }}
                     /> {(grid.columnCount > 1 && !this._removingColumn) &&
