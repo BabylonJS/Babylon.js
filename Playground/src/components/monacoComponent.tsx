@@ -1,6 +1,6 @@
 import * as React from "react";
-import { MonacoManager } from '../tools/monacoManager';
-import { GlobalState } from '../globalState';
+import { MonacoManager } from "../tools/monacoManager";
+import { GlobalState } from "../globalState";
 
 require("../scss/monaco.scss");
 
@@ -11,7 +11,7 @@ interface IMonacoComponentProps {
 }
 export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     private _monacoManager: MonacoManager;
-    
+
     public constructor(props: IMonacoComponentProps) {
         super(props);
 
@@ -28,17 +28,13 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
             }
         });
     }
-    
-    componentDidMount() {        
-        let hostElement = this.props.refObject.current!;  
+
+    componentDidMount() {
+        let hostElement = this.props.refObject.current!;
         this._monacoManager.setupMonacoAsync(hostElement, true);
     }
 
     public render() {
-
-        return (
-            <div id="monacoHost" ref={this.props.refObject} className={this.props.className}>               
-            </div>   
-        )
+        return <div id="monacoHost" ref={this.props.refObject} className={this.props.className}></div>;
     }
 }

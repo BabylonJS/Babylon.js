@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { Tools } from 'babylonjs/Misc/tools';
-import { FloatLineComponent } from './floatLineComponent';
+import { Tools } from "babylonjs/Misc/tools";
+import { FloatLineComponent } from "./floatLineComponent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ISliderLineComponentProps {
@@ -15,12 +15,12 @@ interface ISliderLineComponentProps {
     directValue?: number;
     useEuler?: boolean;
     onChange?: (value: number) => void;
-    onInput?: (value: number) => void;    
+    onInput?: (value: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     decimalCount?: number;
     margin?: boolean;
-    icon? : string;
-    iconLabel? : string;
+    icon?: string;
+    iconLabel?: string;
     lockObject?: LockObject;
 }
 
@@ -31,8 +31,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
         if (this.props.directValue !== undefined) {
             this.state = {
-                value: this.props.directValue
-            }
+                value: this.props.directValue,
+            };
         } else {
             let value = this.props.target![this.props.propertyName!];
 
@@ -76,7 +76,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     object: this.props.target,
                     property: this.props.propertyName!,
                     value: newValue,
-                    initialValue: this.state.value
+                    initialValue: this.state.value,
                 });
             }
 
@@ -110,26 +110,44 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     }
 
     render() {
-
         return (
             <div className="sliderLine">
-                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
-                {(!this.props.icon || this.props.label != "") &&
-                    <div className={this.props.margin ? "label withMargins" : "label"}  title={this.props.label}>
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                {(!this.props.icon || this.props.label != "") && (
+                    <div className={this.props.margin ? "label withMargins" : "label"} title={this.props.label}>
                         {this.props.label}
                     </div>
-                }
-                <FloatLineComponent lockObject={this.props.lockObject} isInteger={this.props.decimalCount === 0} smallUI={true} label="" target={this.state} digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount} propertyName="value" min={this.props.minimum} max={this.props.maximum}
-                    onEnter={ () => { 
-                        var changed = this.prepareDataToRead(this.state.value); this.onChange(changed);
-                    }
-                } 
-                onChange={evt => {var changed = this.prepareDataToRead(this.state.value); this.onChange(changed)}} > 
-                </FloatLineComponent>
+                )}
+                <FloatLineComponent
+                    lockObject={this.props.lockObject}
+                    isInteger={this.props.decimalCount === 0}
+                    smallUI={true}
+                    label=""
+                    target={this.state}
+                    digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount}
+                    propertyName="value"
+                    min={this.props.minimum}
+                    max={this.props.maximum}
+                    onEnter={() => {
+                        var changed = this.prepareDataToRead(this.state.value);
+                        this.onChange(changed);
+                    }}
+                    onChange={(evt) => {
+                        var changed = this.prepareDataToRead(this.state.value);
+                        this.onChange(changed);
+                    }}
+                ></FloatLineComponent>
                 <div className="slider">
-                    <input className="range" type="range" step={this.props.step} min={this.prepareDataToRead(this.props.minimum)} max={this.prepareDataToRead(this.props.maximum)} value={this.prepareDataToRead(this.state.value)}
-                        onInput={evt => this.onInput((evt.target as HTMLInputElement).value)}
-                        onChange={evt => this.onChange(evt.target.value)} />
+                    <input
+                        className="range"
+                        type="range"
+                        step={this.props.step}
+                        min={this.prepareDataToRead(this.props.minimum)}
+                        max={this.prepareDataToRead(this.props.maximum)}
+                        value={this.prepareDataToRead(this.state.value)}
+                        onInput={(evt) => this.onInput((evt.target as HTMLInputElement).value)}
+                        onChange={(evt) => this.onChange(evt.target.value)}
+                    />
                 </div>
             </div>
         );

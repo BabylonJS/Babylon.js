@@ -24,14 +24,11 @@ interface IAnimationGroupGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-export class AnimationGroupGridComponent extends React.Component<
-    IAnimationGroupGridComponentProps,
-    { playButtonText: string; currentFrame: number }
-> {
+export class AnimationGroupGridComponent extends React.Component<IAnimationGroupGridComponentProps, { playButtonText: string; currentFrame: number }> {
     private _onAnimationGroupPlayObserver: Nullable<Observer<AnimationGroup>>;
     private _onAnimationGroupPauseObserver: Nullable<Observer<AnimationGroup>>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private timelineRef: React.RefObject<SliderLineComponent>;    
+    private timelineRef: React.RefObject<SliderLineComponent>;
     private _animationCurveEditorContext: Context;
 
     constructor(props: IAnimationGroupGridComponentProps) {
@@ -136,12 +133,12 @@ export class AnimationGroupGridComponent extends React.Component<
 
         if (!this._animationCurveEditorContext) {
             this._animationCurveEditorContext = new Context();
-            this._animationCurveEditorContext.title = animationGroup.name || "";            
+            this._animationCurveEditorContext.title = animationGroup.name || "";
             this._animationCurveEditorContext.animations = animationGroup.targetedAnimations;
             this._animationCurveEditorContext.scene = this.props.scene;
             this._animationCurveEditorContext.useTargetAnimations = true;
             this._animationCurveEditorContext.rootAnimationGroup = animationGroup;
-        }            
+        }
 
         return (
             <div className="pane">
@@ -177,11 +174,8 @@ export class AnimationGroupGridComponent extends React.Component<
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="INFOS">
-                    <TextLineComponent
-                        label="Animation count"
-                        value={animationGroup.targetedAnimations.length.toString()}
-                    />
-                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext}/>
+                    <TextLineComponent label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
+                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />
                     <TextLineComponent label="From" value={animationGroup.from.toFixed(2)} />
                     <TextLineComponent label="To" value={animationGroup.to.toFixed(2)} />
                     <TextLineComponent label="Unique ID" value={animationGroup.uniqueId.toString()} />

@@ -55719,23 +55719,124 @@ var NodeListComponent = /** @class */ (function (_super) {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock", "ImageSourceBlock"],
+            Inputs: [
+                "Float",
+                "Vector2",
+                "Vector3",
+                "Vector4",
+                "Color3",
+                "Color4",
+                "TextureBlock",
+                "ReflectionTextureBlock",
+                "TimeBlock",
+                "DeltaTimeBlock",
+                "FragCoordBlock",
+                "ScreenSizeBlock",
+                "ImageSourceBlock",
+            ],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
-            Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
-            Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", "ScreenSpaceBlock"],
-            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
+            Math__Standard: [
+                "AddBlock",
+                "DivideBlock",
+                "MaxBlock",
+                "MinBlock",
+                "ModBlock",
+                "MultiplyBlock",
+                "NegateBlock",
+                "OneMinusBlock",
+                "ReciprocalBlock",
+                "ScaleBlock",
+                "SignBlock",
+                "SqrtBlock",
+                "SubtractBlock",
+            ],
+            Math__Scientific: [
+                "AbsBlock",
+                "ArcCosBlock",
+                "ArcSinBlock",
+                "ArcTanBlock",
+                "ArcTan2Block",
+                "CosBlock",
+                "DegreesToRadiansBlock",
+                "ExpBlock",
+                "Exp2Block",
+                "FractBlock",
+                "LogBlock",
+                "PowBlock",
+                "RadiansToDegreesBlock",
+                "SawToothWaveBlock",
+                "SinBlock",
+                "SquareWaveBlock",
+                "TanBlock",
+                "TriangleWaveBlock",
+            ],
+            Math__Vector: [
+                "CrossBlock",
+                "DerivativeBlock",
+                "DistanceBlock",
+                "DotBlock",
+                "FresnelBlock",
+                "LengthBlock",
+                "ReflectBlock",
+                "RefractBlock",
+                "Rotate2dBlock",
+                "TransformBlock",
+                "ScreenSpaceBlock",
+            ],
+            Matrices: [
+                "Matrix",
+                "WorldMatrixBlock",
+                "WorldViewMatrixBlock",
+                "WorldViewProjectionMatrixBlock",
+                "ViewMatrixBlock",
+                "ViewProjectionMatrixBlock",
+                "ProjectionMatrixBlock",
+                "MatrixBuilderBlock",
+            ],
+            Mesh: [
+                "InstancesBlock",
+                "PositionBlock",
+                "UVBlock",
+                "ColorBlock",
+                "NormalBlock",
+                "PerturbNormalBlock",
+                "NormalBlendBlock",
+                "TangentBlock",
+                "MatrixIndicesBlock",
+                "MatrixWeightsBlock",
+                "WorldPositionBlock",
+                "WorldNormalBlock",
+                "WorldTangentBlock",
+                "FrontFacingBlock",
+            ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
+            Particle: [
+                "ParticleBlendMultiplyBlock",
+                "ParticleColorBlock",
+                "ParticlePositionWorldBlock",
+                "ParticleRampGradientBlock",
+                "ParticleTextureBlock",
+                "ParticleTextureMaskBlock",
+                "ParticleUVBlock",
+            ],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "CameraParametersBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
+            Scene: [
+                "FogBlock",
+                "CameraPositionBlock",
+                "CameraParametersBlock",
+                "FogColorBlock",
+                "ImageProcessingBlock",
+                "LightBlock",
+                "LightInformationBlock",
+                "ViewDirectionBlock",
+                "SceneDepthBlock",
+            ],
         };
         switch (this.props.globalState.mode) {
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
@@ -55771,18 +55872,19 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Create node menu
         var blockMenu = [];
         for (var key in allBlocks) {
-            var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
+            var blockList = allBlocks[key]
+                .filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
                 .sort(function (a, b) { return a.localeCompare(b); })
                 .map(function (block, i) {
                 if (key === "Custom_Frames") {
-                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customFrameList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeItem(value); } });
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customFrameList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeItem(value); } }));
                 }
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: NodeListComponent._Tooltips[block] || "" });
             });
             if (key === "Custom_Frames") {
-                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
+                var line = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: "custom-frame-upload", iconImage: addButton, accept: ".json", onIconClick: function (file) {
                         _this.loadCustomFrame(file);
-                    } });
+                    } }));
                 blockList.push(line);
             }
             if (blockList.length) {
@@ -55793,151 +55895,151 @@ var NodeListComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onFocus: function () { return (_this.props.globalState.blockKeyboardEvents = true); }, onBlur: function (evt) {
                                 _this.props.globalState.blockKeyboardEvents = false;
                             }, onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
     };
     NodeListComponent._Tooltips = {
-        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
-        "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
-        "AddBlock": "Adds the left and right inputs of the same type together",
-        "DistanceBlock": "Provides a distance vector based on the left and right input vectors",
-        "DivideBlock": "Divides the left input by the right input of the same type",
-        "LengthBlock": "Outputs the length of an input vector",
-        "MaxBlock": "Outputs the largest value between the left and right inputs of the same type",
-        "MinBlock": "Outputs the smallest value between the left and right inputs of the same type",
-        "MultiplyBlock": "Multiplies the left and right inputs of the same type together",
-        "NegateBlock": "Multiplies the input by -1",
-        "OneMinusBlock": "Subtracts each channel of the input value from 1 (1 - input)",
-        "RandomNumberBlock": "Provides a random number based on an input seed",
-        "ReciprocalBlock": "Quotient of 1 divided by the input",
-        "ScaleBlock": "Multiplies the input channels by a float factor",
-        "SubtractBlock": "Subtracts the right input from the left input of the same type",
-        "GradientBlock": "Returns the color in the gradient represented by the target value of the input",
-        "PosterizeBlock": "Reduces the number of values in each channel to the number in the corresponding channel of steps",
-        "ReplaceColorBlock": "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
-        "ColorMergerBlock": "Combines float input channels into a color",
-        "ColorSplitterBlock": "Separates color input channels into individual floats",
-        "VectorMergerBlock": "Combines up to four input floats into a vector",
-        "VectorSplitterBlock": "Separates vectors input channels into individual floats",
-        "Color3": "A color made up of red, green, and blue channel values",
-        "Color4": "A color made up of red, green, blue, and alpha channel values",
-        "DeltaTimeBlock": "A float representing the time that has passed since the last frame was rendered",
-        "Float": "A floating point number representing a value with a fractional component",
-        "TextureBlock": "A node for reading a linked or embedded texture file",
-        "TimeBlock": "A float value that represents the time that has passed since the scene was loaded",
-        "Vector2": "a vector composed of X and Y channels",
-        "Vector3": "a vector composed of X, Y, and Z channels",
-        "Vector4": "a vector composed of X, Y, Z, and W channels",
-        "LerpBlock": "Outputs a value that is a mix of the left and right inputs based on the target value",
-        "NLerpBlock": "Outputs a value that is a mix of the left and right inputs based on the target's normalized value",
-        "SmoothStepBlock": "Outputs a value based on a the input value's position on a curve between the two edge values",
-        "StepBlock": "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
-        "Matrix": "A 4x4 table of related values",
-        "ProjectionMatrixBlock": "A matrix to remap points in 3D space to 2D plane relative to the screen",
-        "ViewMatrixBlock": "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
-        "ViewProjectionMatrixBlock": "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
-        "WorldMatrixBlock": "A matrix to remap points in 3D local space to 3D world space",
-        "WorldViewProjectionMatrixBlock": "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
-        "ColorBlock": "Outputs the RGBA color of each vertex in the mesh",
-        "InstancesBlock": "Provides the world matrix for each instance to apply this material to all instances",
-        "MatrixIndicesBlock": "A Vector4 representing the vertex to bone skinning assignments",
-        "MatrixWeightsBlock": "A Vector4 representing the vertex to bone skinning weights",
-        "NormalBlock": "A Vector3 representing the normal of each vertex of the attached mesh",
-        "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
-        "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
-        "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
-        "WorldNormal": "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
-        "WorldTangent": "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
-        "PerturbNormalBlock": "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
-        "NormalBlend": "Outputs the result of blending two normal maps together using a per-channel screen",
-        "WorldPosition": "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
-        "DiscardBlock": "A final node that will not output a pixel below the cutoff value",
-        "FragmentOutputBlock": "A mandatory final node for outputing the color of each pixel",
-        "VertexOutputBlock": "A mandatory final node for outputing the position of each vertex",
-        "ClampBlock": "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
-        "NormalizeBlock": "Remaps the length of a vector or color to 1",
-        "RemapBlock": "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
-        "CeilingBlock": "Outputs fractional values as the next higher whole number",
-        "FloorBlock": "Outputs fractional values as the next lower whole number",
-        "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
-        "ModBlock": "Outputs the value of one parameter modulo another",
-        "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
-        "CameraParametersBlock": "Outputs a Vector4 containing (-1 for webGL and 1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
-        "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
-        "FogColorBlock": "The system value for fog color pulled from the scene",
-        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
-        "LightBlock": "Outputs diffuse and specular contributions from one or more scene lights",
-        "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
-        "ReflectionTextureBlock": "Creates a reflection from the input texture",
-        "ViewDirectionBlock": "Outputs the direction vector of where the camera is aimed",
-        "AbsBlock": "Outputs the absolute value of the input value",
-        "ArcCosBlock": "Outputs the inverse of the cosine value based on the input value",
-        "ArcSinBlock": "Outputs the inverse of the sine value based on the input value",
-        "ArcTan2Block": "Outputs the inverse of the tangent value based on the input value",
-        "ArcTanBlock": "Outputs the inverse of the tangent value based on the input value",
-        "CosBlock": "Outputs the cosine value based on the input value",
-        "DegreesToRadiansBlock": "Converts the input degrees value to radians",
-        "Exp2Block": "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
-        "ExpBlock": "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
-        "FractBlock": "Outputs only the fractional value of a floating point number",
-        "LogBlock": "The logarithmic value based on the input value",
-        "PowBlock": "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
-        "RadiansToDegreesBlock": "Converts the input radians value to degrees",
-        "SawToothWaveBlock": "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
-        "SignBlock": "returns 1 if the input is positive, 0 if input is equal to 0, or -1 if the input is negative",
-        "SinBlock": "Outputs the the sine value based on the input value",
-        "SqrtBlock": "Outputs the the square root of the input value",
-        "SquareWaveBlock": "Outputs a stepped pattern value between -1 and 1 based on the input value",
-        "TanBlock": "Outputs the the tangent value based on the input value",
-        "TriangleWaveBlock": "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
-        "CrossBlock": "Outputs a vector that is perpendicular to two input vectors",
-        "DotBlock": "Outputs the cos of the angle between two vectors",
-        "FresnelBlock": "Outputs the grazing angle of the surface of the mesh, relative to a camera influenced by the bias and power inputs",
-        "TransformBlock": "Transforms a input vector based on the input matrix",
-        "DerivativeBlock": "FRAGMENT SHADER ONLY. Provides the rate of change for an input on a given axis (x,y).",
-        "DesaturateBlock": "Convert a color input into a grayscale representation.",
-        "WorldViewMatrixBlock": "A matrix to remap points in 3D local space to 3D world space, and ending in 2D camera space.",
-        "FrontFacingBlock": "Returns 1 if a mesh triangle faces the normal direction and 0 if it does not.",
-        "SimplexPerlin3DBlock": "Creates a type of gradient noise with few directional artifacts.",
-        "WorleyNoise3DBlock": "Creates a random pattern resembling cells.",
-        "ReflectBlock": "Outputs the direction of the input vector reflected across the surface normal.",
-        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.",
-        "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
-        "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
-        "SheenBlock": "PBR Sheen block",
-        "AnisotropyBlock": "PBR Anisotropy block",
-        "ReflectionBlock": "PBR Reflection block",
-        "ClearCoatBlock": "PBR ClearCoat block",
-        "RefractionBlock": "PBR Refraction block",
-        "SubSurfaceBlock": "PBR SubSurface block",
-        "ScreenPositionBlock": "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
-        "CurrentScreenBlock": "The screen buffer used as input for the post process",
-        "ParticleUVBlock": "The particle uv texture coordinate",
-        "ParticleTextureBlock": "The particle texture",
-        "ParticleColorBlock": "The particle color",
-        "ParticleTextureMaskBlock": "The particle texture mask",
-        "ParticleRampGradientBlock": "The particle ramp gradient block",
-        "ParticleBlendMultiplyBlock": "The particle blend multiply block",
-        "ParticlePositionWorldBlock": "The world position of the particle",
-        "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
-        "ScreenSizeBlock": "The size (in pixels) of the screen window",
-        "SceneDepthBlock": "The scene depth buffer",
-        "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
-        "EqualBlock": "Return a value if two operands are equals",
-        "NotEqualBlock": "Return a value if two operands are not equals",
-        "LessThanBlock": "Return a value if an operand is smaller than a second operand",
-        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand",
-        "GreaterThanBlock": "Return a value if an operand is greater than a second operand",
-        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand",
-        "XorBlock": "Return a value if (a xor b) > 0",
-        "OrBlock": "Return a value if (a or b) > 0",
-        "AndBlock": "Return a value if (a and b) > 0",
-        "ImageSourceBlock": "Centralize texture access for TextureBlocks",
-        "CloudBlock": "Generate Fractal Brownian Motion Clouds",
-        "VoronoiNoiseBlock": "Generate Voronoi Noise",
-        "ScreenSpaceBlock": "Convert a Vector3 or a Vector4 into screen space"
+        BonesBlock: "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
+        MorphTargetsBlock: "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
+        AddBlock: "Adds the left and right inputs of the same type together",
+        DistanceBlock: "Provides a distance vector based on the left and right input vectors",
+        DivideBlock: "Divides the left input by the right input of the same type",
+        LengthBlock: "Outputs the length of an input vector",
+        MaxBlock: "Outputs the largest value between the left and right inputs of the same type",
+        MinBlock: "Outputs the smallest value between the left and right inputs of the same type",
+        MultiplyBlock: "Multiplies the left and right inputs of the same type together",
+        NegateBlock: "Multiplies the input by -1",
+        OneMinusBlock: "Subtracts each channel of the input value from 1 (1 - input)",
+        RandomNumberBlock: "Provides a random number based on an input seed",
+        ReciprocalBlock: "Quotient of 1 divided by the input",
+        ScaleBlock: "Multiplies the input channels by a float factor",
+        SubtractBlock: "Subtracts the right input from the left input of the same type",
+        GradientBlock: "Returns the color in the gradient represented by the target value of the input",
+        PosterizeBlock: "Reduces the number of values in each channel to the number in the corresponding channel of steps",
+        ReplaceColorBlock: "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
+        ColorMergerBlock: "Combines float input channels into a color",
+        ColorSplitterBlock: "Separates color input channels into individual floats",
+        VectorMergerBlock: "Combines up to four input floats into a vector",
+        VectorSplitterBlock: "Separates vectors input channels into individual floats",
+        Color3: "A color made up of red, green, and blue channel values",
+        Color4: "A color made up of red, green, blue, and alpha channel values",
+        DeltaTimeBlock: "A float representing the time that has passed since the last frame was rendered",
+        Float: "A floating point number representing a value with a fractional component",
+        TextureBlock: "A node for reading a linked or embedded texture file",
+        TimeBlock: "A float value that represents the time that has passed since the scene was loaded",
+        Vector2: "a vector composed of X and Y channels",
+        Vector3: "a vector composed of X, Y, and Z channels",
+        Vector4: "a vector composed of X, Y, Z, and W channels",
+        LerpBlock: "Outputs a value that is a mix of the left and right inputs based on the target value",
+        NLerpBlock: "Outputs a value that is a mix of the left and right inputs based on the target's normalized value",
+        SmoothStepBlock: "Outputs a value based on a the input value's position on a curve between the two edge values",
+        StepBlock: "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
+        Matrix: "A 4x4 table of related values",
+        ProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the screen",
+        ViewMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
+        ViewProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
+        WorldMatrixBlock: "A matrix to remap points in 3D local space to 3D world space",
+        WorldViewProjectionMatrixBlock: "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
+        ColorBlock: "Outputs the RGBA color of each vertex in the mesh",
+        InstancesBlock: "Provides the world matrix for each instance to apply this material to all instances",
+        MatrixIndicesBlock: "A Vector4 representing the vertex to bone skinning assignments",
+        MatrixWeightsBlock: "A Vector4 representing the vertex to bone skinning weights",
+        NormalBlock: "A Vector3 representing the normal of each vertex of the attached mesh",
+        PositionBlock: "A Vector3 representing the position of each vertex of the attached mesh",
+        TangentBlock: "A Vector3 representing the tangent of each vertex of the attached mesh",
+        UVBlock: "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
+        WorldNormal: "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
+        WorldTangent: "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
+        PerturbNormalBlock: "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
+        NormalBlend: "Outputs the result of blending two normal maps together using a per-channel screen",
+        WorldPosition: "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
+        DiscardBlock: "A final node that will not output a pixel below the cutoff value",
+        FragmentOutputBlock: "A mandatory final node for outputing the color of each pixel",
+        VertexOutputBlock: "A mandatory final node for outputing the position of each vertex",
+        ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
+        NormalizeBlock: "Remaps the length of a vector or color to 1",
+        RemapBlock: "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
+        CeilingBlock: "Outputs fractional values as the next higher whole number",
+        FloorBlock: "Outputs fractional values as the next lower whole number",
+        RoundBlock: "Outputs fractional values rounded to the nearest whole number",
+        ModBlock: "Outputs the value of one parameter modulo another",
+        CameraPositionBlock: "Outputs a Vector3 position of the active scene camera",
+        CameraParametersBlock: "Outputs a Vector4 containing (-1 for webGL and 1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
+        FogBlock: "Applies fog to the scene with an increasing opacity based on distance from the camera",
+        FogColorBlock: "The system value for fog color pulled from the scene",
+        ImageProcessingBlock: "Provides access to all of the Babylon image processing properties",
+        LightBlock: "Outputs diffuse and specular contributions from one or more scene lights",
+        LightInformationBlock: "Provides the direction, color and intensity of a selected light based on its world position",
+        ReflectionTextureBlock: "Creates a reflection from the input texture",
+        ViewDirectionBlock: "Outputs the direction vector of where the camera is aimed",
+        AbsBlock: "Outputs the absolute value of the input value",
+        ArcCosBlock: "Outputs the inverse of the cosine value based on the input value",
+        ArcSinBlock: "Outputs the inverse of the sine value based on the input value",
+        ArcTan2Block: "Outputs the inverse of the tangent value based on the input value",
+        ArcTanBlock: "Outputs the inverse of the tangent value based on the input value",
+        CosBlock: "Outputs the cosine value based on the input value",
+        DegreesToRadiansBlock: "Converts the input degrees value to radians",
+        Exp2Block: "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
+        ExpBlock: "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
+        FractBlock: "Outputs only the fractional value of a floating point number",
+        LogBlock: "The logarithmic value based on the input value",
+        PowBlock: "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
+        RadiansToDegreesBlock: "Converts the input radians value to degrees",
+        SawToothWaveBlock: "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
+        SignBlock: "returns 1 if the input is positive, 0 if input is equal to 0, or -1 if the input is negative",
+        SinBlock: "Outputs the the sine value based on the input value",
+        SqrtBlock: "Outputs the the square root of the input value",
+        SquareWaveBlock: "Outputs a stepped pattern value between -1 and 1 based on the input value",
+        TanBlock: "Outputs the the tangent value based on the input value",
+        TriangleWaveBlock: "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
+        CrossBlock: "Outputs a vector that is perpendicular to two input vectors",
+        DotBlock: "Outputs the cos of the angle between two vectors",
+        FresnelBlock: "Outputs the grazing angle of the surface of the mesh, relative to a camera influenced by the bias and power inputs",
+        TransformBlock: "Transforms a input vector based on the input matrix",
+        DerivativeBlock: "FRAGMENT SHADER ONLY. Provides the rate of change for an input on a given axis (x,y).",
+        DesaturateBlock: "Convert a color input into a grayscale representation.",
+        WorldViewMatrixBlock: "A matrix to remap points in 3D local space to 3D world space, and ending in 2D camera space.",
+        FrontFacingBlock: "Returns 1 if a mesh triangle faces the normal direction and 0 if it does not.",
+        SimplexPerlin3DBlock: "Creates a type of gradient noise with few directional artifacts.",
+        WorleyNoise3DBlock: "Creates a random pattern resembling cells.",
+        ReflectBlock: "Outputs the direction of the input vector reflected across the surface normal.",
+        RefractBlock: "Outputs a direction simulating a deflection of the input vector.",
+        Rotate2dBlock: "Rotates UV coordinates around the W axis.",
+        PBRMetallicRoughnessBlock: "PBR metallic/roughness material",
+        SheenBlock: "PBR Sheen block",
+        AnisotropyBlock: "PBR Anisotropy block",
+        ReflectionBlock: "PBR Reflection block",
+        ClearCoatBlock: "PBR ClearCoat block",
+        RefractionBlock: "PBR Refraction block",
+        SubSurfaceBlock: "PBR SubSurface block",
+        ScreenPositionBlock: "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
+        CurrentScreenBlock: "The screen buffer used as input for the post process",
+        ParticleUVBlock: "The particle uv texture coordinate",
+        ParticleTextureBlock: "The particle texture",
+        ParticleColorBlock: "The particle color",
+        ParticleTextureMaskBlock: "The particle texture mask",
+        ParticleRampGradientBlock: "The particle ramp gradient block",
+        ParticleBlendMultiplyBlock: "The particle blend multiply block",
+        ParticlePositionWorldBlock: "The world position of the particle",
+        FragCoordBlock: "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
+        ScreenSizeBlock: "The size (in pixels) of the screen window",
+        SceneDepthBlock: "The scene depth buffer",
+        MatrixBuilderBlock: "Converts 4 Vector4 into a matrix",
+        EqualBlock: "Return a value if two operands are equals",
+        NotEqualBlock: "Return a value if two operands are not equals",
+        LessThanBlock: "Return a value if an operand is smaller than a second operand",
+        LessOrEqualBlock: "Return a value if an operand is smaller or equal to a second operand",
+        GreaterThanBlock: "Return a value if an operand is greater than a second operand",
+        GreaterOrEqualBlock: "Return a value if an operand is greater or equal to a second operand",
+        XorBlock: "Return a value if (a xor b) > 0",
+        OrBlock: "Return a value if (a or b) > 0",
+        AndBlock: "Return a value if (a and b) > 0",
+        ImageSourceBlock: "Centralize texture access for TextureBlocks",
+        CloudBlock: "Generate Fractal Brownian Motion Clouds",
+        VoronoiNoiseBlock: "Generate Voronoi Noise",
+        ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56022,12 +56124,11 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
-            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar", className: "extended" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: this.props.globalState, propertyName: "particleSystemBlendMode", noDirectUpdate: true, onSelect: function (value) {
-                            _this.changeParticleSystemBlendMode(value);
-                        } })),
-            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar", className: "extended" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: this.props.globalState, propertyName: "particleSystemBlendMode", noDirectUpdate: true, onSelect: function (value) {
+                        _this.changeParticleSystemBlendMode(value);
+                    } }))),
+            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: doubleSided, alt: "" })),
@@ -56053,7 +56154,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onLightUpdated.notifyObservers();
                             _this.forceUpdate();
                         }, className: "button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "") },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" }))))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" })))))));
     };
     return PreviewAreaComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56646,7 +56747,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             { label: "Plane", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Plane },
             { label: "Shader ball", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].ShaderBall },
             { label: "Sphere", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Sphere },
-            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 }
+            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 },
         ];
         var particleTypeOptions = [
             { label: "Default", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].DefaultParticleSystem },
@@ -56655,20 +56756,22 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             { label: "Fire", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Fire },
             { label: "Rain", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Rain },
             { label: "Smoke", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Smoke },
-            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 }
+            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 },
         ];
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
-                label: "Custom", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom
+                label: "Custom",
+                value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom,
             });
             particleTypeOptions.splice(0, 0, {
-                label: "Custom", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom
+                label: "Custom",
+                value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom,
             });
         }
         var options = this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle ? particleTypeOptions : meshTypeOptions;
         var accept = this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            (this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material || this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            (this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material || this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: options, target: this.props.globalState, propertyName: "previewType", noDirectUpdate: true, onSelect: function (value) {
                         var _a;
                         if (value !== _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1) {
@@ -56679,15 +56782,14 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
                         }
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
-                        display: "none"
+                        display: "none",
                     }, title: "Preview with a custom mesh" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: accept }))),
-            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "", id: "color-picker-image" }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } }))),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: accept })))),
+            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "", id: "color-picker-image" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: popUpIcon, alt: "" }))));
     };
@@ -56881,16 +56983,13 @@ var InputsPropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         switch (block.type) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Float:
-                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                var cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
-                    block.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
-                                _this.processInputBlockUpdate(block);
-                            } }),
-                    !block.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
-                    !block.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+                    block.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
+                            _this.processInputBlockUpdate(block);
+                        } })),
+                    !block.isBoolean && cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } })),
+                    !block.isBoolean && !cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } }))));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color4:
@@ -57317,16 +57416,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         switch (block.type) {
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
-                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                var cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
-                    block.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
-                                _this.processInputBlockUpdate(block);
-                            } }),
-                    !block.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_17__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
-                    !block.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+                    block.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
+                            _this.processInputBlockUpdate(block);
+                        } })),
+                    !block.isBoolean && cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_17__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } })),
+                    !block.isBoolean && !cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } }))));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_16__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color4:
@@ -57368,10 +57464,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
-        this.props.globalState.customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(function () {
+        this.props.globalState
+            .customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState))
+            .then(function () {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
             _this.setState({ uploadInProgress: false });
-        }).catch(function (err) {
+        })
+            .catch(function (err) {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
             _this.setState({ uploadInProgress: false });
         });
@@ -57398,7 +57497,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                             regex: new RegExp(oldId, "g"),
-                            replace: material.snippetId
+                            replace: material.snippetId,
                         });
                     }
                     _this.props.globalState.hostDocument.defaultView.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
@@ -57412,11 +57511,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         xmlHttp.setRequestHeader("Content-Type", "application/json");
         var dataToSend = {
             payload: JSON.stringify({
-                nodeMaterial: json
+                nodeMaterial: json,
             }),
             name: "",
             description: "",
-            tags: ""
+            tags: "",
         };
         xmlHttp.send(JSON.stringify(dataToSend));
     };
@@ -57429,12 +57528,14 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedId, scene, "", material).then(function () {
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedId, scene, "", material)
+            .then(function () {
             material.build();
             if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
                 _this.props.globalState.onResetRequiredObservable.notifyObservers();
             }
-        }).catch(function (err) {
+        })
+            .catch(function (err) {
             _this.props.globalState.hostDocument.defaultView.alert("Unable to load your node material: " + err);
         });
     };
@@ -57445,7 +57546,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         if (this.props.globalState.mode === value) {
             return false;
         }
-        if (!force && !this.props.globalState.hostDocument.defaultView.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+        if (!force && !this.props.globalState.hostDocument.defaultView.confirm("Are your sure? You will lose your current changes (if any) if they are not saved!")) {
             (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
             return false;
         }
@@ -57494,13 +57595,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 ((_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.renderProperties()) || ((_b = this.state.currentNodePort) === null || _b === void 0 ? void 0 : _b.node.renderProperties())));
         }
         if (this.state.currentFrameNodePort && this.state.currentFrame) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_frameNodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_14__["FrameNodePortPropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame, frameNodePort: this.state.currentFrameNodePort }));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_frameNodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_14__["FrameNodePortPropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame, frameNodePort: this.state.currentFrameNodePort });
         }
         if (this.state.currentNodePort) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_nodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_15__["NodePortPropertyTabComponent"], { globalState: this.props.globalState, nodePort: this.state.currentNodePort }));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_nodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_15__["NodePortPropertyTabComponent"], { globalState: this.props.globalState, nodePort: this.state.currentNodePort });
         }
         if (this.state.currentFrame) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame }));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame });
         }
         var gridSize = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
         var modeList = [
@@ -57517,7 +57618,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__["OptionsLineComponent"], { ref: this._modeSelect, label: "Mode", target: this, getSelection: function (target) { return _this.props.globalState.mode; }, options: modeList, onSelect: function (value) { return _this.changeMode(value); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open("https://doc.babylonjs.com/how_to/node_material", "_blank"); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_26__["TextInputLineComponent"], { label: "Comment", multilines: true, value: this.props.globalState.nodeMaterial.comment, target: this.props.globalState.nodeMaterial, propertyName: "comment", globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             switch (_this.props.globalState.mode) {
@@ -57568,19 +57669,16 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.nodeMaterial.build();
                             _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                         } }),
-                    this.props.globalState.customSave &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, isDisabled: this.state.uploadInProgress, onClick: function () {
-                                _this.customSave();
-                            } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: 'frame-upload', onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
-                !this.props.globalState.customSave &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
-                        this.props.globalState.nodeMaterial.snippetId &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Snippet ID", value: this.props.globalState.nodeMaterial.snippetId }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
-                                _this.saveToSnippetServer();
-                            } })),
+                    this.props.globalState.customSave && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, isDisabled: this.state.uploadInProgress, onClick: function () {
+                            _this.customSave();
+                        } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: "frame-upload", onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
+                !this.props.globalState.customSave && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
+                    this.props.globalState.nodeMaterial.snippetId && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Snippet ID", value: this.props.globalState.nodeMaterial.snippetId }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
+                            _this.saveToSnippetServer();
+                        } }))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_27__["InputsPropertyTabComponent"], { globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() }))));
     };
     return PropertyTabComponent;
@@ -58817,7 +58915,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 id: node.id,
                 type: "node",
                 width: node.width,
-                height: node.height
+                height: node.height,
             });
         });
         this._frames.forEach(function (frame) {
@@ -58825,7 +58923,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 id: frame.id,
                 type: "frame",
                 width: frame.element.clientWidth,
-                height: frame.element.clientHeight
+                height: frame.element.clientHeight,
             });
         });
         this._nodes.forEach(function (node) {
@@ -58980,8 +59078,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._selectionBox.classList.add("selection-box");
             this._selectionContainer.appendChild(this._selectionBox);
             var rootRect = this.canvasContainer.getBoundingClientRect();
-            this._selectionStartX = (evt.pageX - rootRect.left);
-            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._selectionStartX = evt.pageX - rootRect.left;
+            this._selectionStartY = evt.pageY - rootRect.top;
             this._selectionBox.style.left = this._selectionStartX / this.zoom + "px";
             this._selectionBox.style.top = this._selectionStartY / this.zoom + "px";
             this._selectionBox.style.width = "0px";
@@ -58994,8 +59092,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._frameCandidate.classList.add("frame-box");
             this._frameContainer.appendChild(this._frameCandidate);
             var rootRect = this.canvasContainer.getBoundingClientRect();
-            this._selectionStartX = (evt.pageX - rootRect.left);
-            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._selectionStartX = evt.pageX - rootRect.left;
+            this._selectionStartY = evt.pageY - rootRect.top;
             this._frameCandidate.style.left = this._selectionStartX / this.zoom + "px";
             this._frameCandidate.style.top = this._selectionStartY / this.zoom + "px";
             this._frameCandidate.style.width = "0px";
@@ -59025,14 +59123,16 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 this.processCandidatePort();
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
             }
-            else { // is a click event on NodePort
-                if (this._candidateLink.portA instanceof _frameNodePort__WEBPACK_IMPORTED_MODULE_8__["FrameNodePort"]) { //only on Frame Node Ports
+            else {
+                // is a click event on NodePort
+                if (this._candidateLink.portA instanceof _frameNodePort__WEBPACK_IMPORTED_MODULE_8__["FrameNodePort"]) {
+                    //only on Frame Node Ports
                     var port_1 = this._candidateLink.portA;
                     var frame = this.frames.find(function (frame) { return frame.id === port_1.parentFrameId; });
                     if (frame) {
                         var data = {
                             frame: frame,
-                            port: port_1
+                            port: port_1,
                         };
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
                     }
@@ -59155,7 +59255,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var y_1 = nodeA.y;
             emittedBlock.inputs.forEach(function (connection) {
                 if (connection.connectedPoint) {
-                    var existingNodes = _this.nodes.filter(function (n) { return n.block === connection.connectedPoint.ownerBlock; });
+                    var existingNodes = _this.nodes.filter(function (n) {
+                        return n.block === connection.connectedPoint.ownerBlock;
+                    });
                     var connectedNode = existingNodes[0];
                     if (connectedNode.x === 0 && connectedNode.y === 0) {
                         connectedNode.x = x_1;
@@ -59189,7 +59291,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Check compatibility
         var isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         var compatibilityState = pointA.checkCompatibilityState(pointB);
-        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible && !(pointA instanceof babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"])) {
+        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) &&
+            compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible &&
+            !(pointA instanceof babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"])) {
             compatibilityState = pointB.checkCompatibilityState(pointA);
         }
         if (compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible) {
@@ -59227,7 +59331,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 link.dispose(false);
             });
         }
-        if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
+        if (pointB.ownerBlock.inputsAreExclusive) {
+            // Disconnect all inputs if block has exclusive inputs
             pointB.ownerBlock.inputs.forEach(function (i) {
                 var links = nodeB.getLinksForConnectionPoint(i);
                 if (!linksToNotifyForDispose) {
@@ -61685,7 +61790,7 @@ var ConditionalPropertyTabComponent = /** @class */ (function (_super) {
             { label: "GreaterOrEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].GreaterOrEqual },
             { label: "Xor", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Xor },
             { label: "Or", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Or },
-            { label: "And", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].And }
+            { label: "And", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].And },
         ];
         conditionOptions.sort(function (a, b) {
             return a.label.localeCompare(b.label);
@@ -61736,7 +61841,7 @@ var FrameNodePortPropertyTabComponent = /** @class */ (function (_super) {
     function FrameNodePortPropertyTabComponent(props) {
         var _this_1 = _super.call(this, props) || this;
         _this_1.state = {
-            port: _this_1.props.frameNodePort
+            port: _this_1.props.frameNodePort,
         };
         var _this = _this_1;
         _this_1._onSelectionChangedObserver = _this_1.props.globalState.onSelectionChangedObservable.add(function (selection) {
@@ -61766,12 +61871,12 @@ var FrameNodePortPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Name", propertyName: "portName", target: this.props.frameNodePort }),
-                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Top && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Up", onClick: function () {
+                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Top && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Up", onClick: function () {
                             _this_1.props.frame.moveFramePortUp(_this_1.props.frameNodePort);
-                        } }),
-                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Bottom && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Down", onClick: function () {
+                        } })),
+                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Bottom && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Down", onClick: function () {
                             _this_1.props.frame.moveFramePortDown(_this_1.props.frameNodePort);
-                        } })))));
+                        } }))))));
     };
     return FrameNodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61840,14 +61945,12 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.frame }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { globalState: this.props.globalState, label: "Color", target: this.props.frame, propertyName: "color" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.frame }),
-                    !this.props.frame.isCollapsed &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
-                                _this.props.frame.isCollapsed = true;
-                            } }),
-                    this.props.frame.isCollapsed &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Expand", onClick: function () {
-                                _this.props.frame.isCollapsed = false;
-                            } }),
+                    !this.props.frame.isCollapsed && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
+                            _this.props.frame.isCollapsed = true;
+                        } })),
+                    this.props.frame.isCollapsed && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Expand", onClick: function () {
+                            _this.props.frame.isCollapsed = false;
+                        } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Export", onClick: function () {
                             _this.props.frame.export();
                         } })),
@@ -61924,22 +62027,19 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
-                (!this.props.block.isInput || !this.props.block.isAttribute) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); }, validator: function (newName) {
-                            if (!_this.props.block.validateBlockName(newName)) {
-                                _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"" + newName + "\" is a reserved name, please choose another");
-                                return false;
-                            }
-                            return true;
-                        } }),
-                (this.props.block._originalTargetIsNeutral) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function () {
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                (!this.props.block._originalTargetIsNeutral) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
+                (!this.props.block.isInput || !this.props.block.isAttribute) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); }, validator: function (newName) {
+                        if (!_this.props.block.validateBlockName(newName)) {
+                            _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"" + newName + "\" is a reserved name, please choose another");
+                            return false;
+                        }
+                        return true;
+                    } })),
+                this.props.block._originalTargetIsNeutral && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function () {
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                !this.props.block._originalTargetIsNeutral && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.block.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); } }))));
     };
@@ -61968,7 +62068,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var block = this.props.block, propStore = block._propStore;
         if (!propStore) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null);
         }
         var componentList = {}, groups = [];
         var _loop_1 = function (propertyName, displayName, type, groupName, options) {
@@ -61984,7 +62084,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
                     break;
                 }
                 case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["PropertyTypeForEdition"].Float: {
-                    var cantDisplaySlider = (isNaN(options.min) || isNaN(options.max) || options.min === options.max);
+                    var cantDisplaySlider = isNaN(options.min) || isNaN(options.max) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.block, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
                     }
@@ -62012,9 +62112,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
             var _a = propStore_1[_i], propertyName = _a.propertyName, displayName = _a.displayName, type = _a.type, groupName = _a.groupName, options = _a.options;
             _loop_1(propertyName, displayName, type, groupName, options);
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, groups.map(function (group) {
-            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: group }, componentList[group]);
-        })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, groups.map(function (group) { return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: group }, componentList[group])); })));
     };
     return GenericPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -62222,8 +62320,10 @@ var GradientStepComponent = /** @class */ (function (_super) {
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onPointerUp: function (evt) { return _this.onPointerUp(); }, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-copy", onClick: function () { if (_this.props.onCopy)
-                    _this.props.onCopy(); }, title: "Copy Step" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-copy", onClick: function () {
+                    if (_this.props.onCopy)
+                        _this.props.onCopy();
+                }, title: "Copy Step" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", src: copyIcon })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-delete", onClick: function () { return _this.props.onDelete(); }, title: "Delete Step" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", src: deleteButton }))));
@@ -62295,8 +62395,8 @@ var ImageSourcePropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     ImageSourcePropertyTabComponent.prototype._generateRandomForCache = function () {
-        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
-            var r = Math.random() * 10 | 0;
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, function (c) {
+            var r = (Math.random() * 10) | 0;
             return r.toString();
         });
     };
@@ -62382,63 +62482,49 @@ var ImageSourcePropertyTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
-                texture && texture.updateSamplingMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
-                            texture.updateSamplingMode(value);
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } })),
+                texture && texture.updateSamplingMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                        texture.updateSamplingMode(value);
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
                         _this.imageSourceBlock.texture = null;
                         _this.updateAfterTextureLoad();
                     } }),
-                this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
-                !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
-                !this.state.isEmbedded && url &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
+                this.state.isEmbedded && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                !this.state.isEmbedded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } })),
+                !this.state.isEmbedded && url && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } })),
+                texture && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block })));
     };
     return ImageSourcePropertyTabComponent;
@@ -62521,51 +62607,46 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
         var inputBlock = this.props.block;
         switch (inputBlock.type) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Float: {
-                var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
+                var cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Is boolean", target: inputBlock, propertyName: "isBoolean" }),
-                    inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Value", isSelected: function () {
-                                return inputBlock.value === 1;
-                            }, onSelect: function (value) {
-                                inputBlock.value = value ? 1 : 0;
+                    inputBlock.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Value", isSelected: function () {
+                            return inputBlock.value === 1;
+                        }, onSelect: function (value) {
+                            inputBlock.value = value ? 1 : 0;
+                            if (inputBlock.isConstant) {
+                                _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } })),
+                    !inputBlock.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                            if (inputBlock.value < inputBlock.min) {
+                                inputBlock.value = inputBlock.min;
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
-                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            } }),
-                    !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
-                                if (inputBlock.value < inputBlock.min) {
-                                    inputBlock.value = inputBlock.min;
-                                    if (inputBlock.isConstant) {
-                                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                                    }
-                                }
-                                _this.forceUpdate();
-                            } }),
-                    !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
-                                if (inputBlock.value > inputBlock.max) {
-                                    inputBlock.value = inputBlock.max;
-                                    if (inputBlock.isConstant) {
-                                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                                    }
-                                }
-                                _this.forceUpdate();
-                            } }),
-                    !inputBlock.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
-                    !inputBlock.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", globalState: this.props.globalState, target: inputBlock, propertyName: "value", step: Math.abs(inputBlock.max - inputBlock.min) / 100.0, minimum: Math.min(inputBlock.min, inputBlock.max), maximum: inputBlock.max, onChange: function () {
+                            }
+                            _this.forceUpdate();
+                        } })),
+                    !inputBlock.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                            if (inputBlock.value > inputBlock.max) {
+                                inputBlock.value = inputBlock.max;
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
-                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            } })));
+                            }
+                            _this.forceUpdate();
+                        } })),
+                    !inputBlock.isBoolean && cantDisplaySlider && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
+                    !inputBlock.isBoolean && !cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", globalState: this.props.globalState, target: inputBlock, propertyName: "value", step: Math.abs(inputBlock.max - inputBlock.min) / 100.0, minimum: Math.min(inputBlock.min, inputBlock.max), maximum: inputBlock.max, onChange: function () {
+                            if (inputBlock.isConstant) {
+                                _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }))));
             }
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector2PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector2PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["Color3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
@@ -62585,11 +62666,11 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } })));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
         }
         return null;
     };
@@ -62609,9 +62690,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                     { label: "None", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None },
                     { label: "Time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].Time },
                 ];
-                systemValuesOptions = [
-                    { label: "Delta time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].DeltaTime }
-                ];
+                systemValuesOptions = [{ label: "Delta time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].DeltaTime }];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 systemValuesOptions = [
@@ -62620,18 +62699,14 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                     { label: "World x View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].WorldViewProjection },
                     { label: "View", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].View },
                     { label: "View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].ViewProjection },
-                    { label: "Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].Projection }
+                    { label: "Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].Projection },
                 ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                systemValuesOptions = [
-                    { label: "Fog color", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].FogColor }
-                ];
+                systemValuesOptions = [{ label: "Fog color", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].FogColor }];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                attributeOptions = [
-                    { label: "color", value: "color" }
-                ];
+                attributeOptions = [{ label: "color", value: "color" }];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 attributeOptions = [
@@ -62644,9 +62719,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                systemValuesOptions = [
-                    { label: "Camera position", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraPosition }
-                ];
+                systemValuesOptions = [{ label: "Camera position", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraPosition }];
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
@@ -62656,16 +62729,12 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
-                    { label: "matricesWeights", value: "matricesWeights" }
+                    { label: "matricesWeights", value: "matricesWeights" },
                 ];
-                systemValuesOptions = [
-                    { label: "Camera parameters", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraParameters }
-                ];
+                systemValuesOptions = [{ label: "Camera parameters", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraParameters }];
                 break;
         }
-        var modeOptions = [
-            { label: "User-defined", value: 0 }
-        ];
+        var modeOptions = [{ label: "User-defined", value: 0 }];
         if (attributeOptions.length > 0) {
             modeOptions.push({ label: "Mesh attribute", value: 1 });
         }
@@ -62675,45 +62744,43 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
         var typeOptions = [
             { label: "None", value: 0 },
             { label: "Visible in the inspector", value: 1 },
-            { label: "Constant", value: 2 }
+            { label: "Constant", value: 2 },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__["LineContainerComponent"], { title: "PROPERTIES" },
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
-                            if (block.visibleInInspector) {
-                                return 1;
-                            }
-                            if (block.isConstant) {
-                                return 2;
-                            }
-                            return 0;
-                        }, onSelect: function (value) {
-                            switch (value) {
-                                case 0:
-                                    inputBlock.visibleInInspector = false;
-                                    inputBlock.isConstant = false;
-                                    break;
-                                case 1:
-                                    inputBlock.visibleInInspector = true;
-                                    inputBlock.isConstant = false;
-                                    break;
-                                case 2:
-                                    inputBlock.visibleInInspector = false;
-                                    inputBlock.isConstant = true;
-                                    break;
-                            }
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.visibleInInspector &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Group", propertyName: "groupInInspector", target: this.props.block, onChange: function () {
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
+                        if (block.visibleInInspector) {
+                            return 1;
+                        }
+                        if (block.isConstant) {
+                            return 2;
+                        }
+                        return 0;
+                    }, onSelect: function (value) {
+                        switch (value) {
+                            case 0:
+                                inputBlock.visibleInInspector = false;
+                                inputBlock.isConstant = false;
+                                break;
+                            case 1:
+                                inputBlock.visibleInInspector = true;
+                                inputBlock.isConstant = false;
+                                break;
+                            case 2:
+                                inputBlock.visibleInInspector = false;
+                                inputBlock.isConstant = true;
+                                break;
+                        }
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.visibleInInspector && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Group", propertyName: "groupInInspector", target: this.props.block, onChange: function () {
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
                             return 1;
@@ -62740,30 +62807,25 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
-                inputBlock.isAttribute &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Attribute", valuesAreStrings: true, options: attributeOptions, target: inputBlock, propertyName: "name", onSelect: function (value) {
-                            inputBlock.setAsAttribute(value);
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.isUniform && animationOptions.length > 0 &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
-                    this.renderValue(this.props.globalState),
-                inputBlock.isUniform && inputBlock.isSystemValue &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
-                            inputBlock.setAsSystemValue(value);
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Visible on frame", target: this.props.block, propertyName: "visibleOnFrame" }))));
+                inputBlock.isAttribute && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Attribute", valuesAreStrings: true, options: attributeOptions, target: inputBlock, propertyName: "name", onSelect: function (value) {
+                        inputBlock.setAsAttribute(value);
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.isUniform && animationOptions.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None && this.renderValue(this.props.globalState),
+                inputBlock.isUniform && inputBlock.isSystemValue && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
+                        inputBlock.setAsSystemValue(value);
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Visible on frame", target: this.props.block, propertyName: "visibleOnFrame" })))));
     };
     return InputPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -62913,11 +62975,9 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
     };
     NodePortPropertyTabComponent.prototype.render = function () {
         var _this = this;
-        var info = this.props.nodePort.hasLabel() ?
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })) :
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "This node is a constant input node and cannot be exposed to the frame.", value: " " });
+        var info = this.props.nodePort.hasLabel() ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            this.props.nodePort.hasLabel() && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort })),
+            this.props.nodePort.node.enclosingFrameId !== -1 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))) : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "This node is a constant input node and cannot be exposed to the frame.", value: " " }));
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
@@ -62999,8 +63059,8 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
-        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
-            var r = Math.random() * 10 | 0;
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, function (c) {
+            var r = (Math.random() * 10) | 0;
             return r.toString();
         });
     };
@@ -63026,7 +63086,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         if (!texture) {
             if (!this.state.loadAsCubeTexture) {
-                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"] || this.props.globalState.mode === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialModes"].PostProcess);
+                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] ||
+                    this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] ||
+                    this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"] ||
+                    this.props.globalState.mode === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialModes"].PostProcess);
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
             }
@@ -63098,31 +63161,40 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var showIsInGammaSpace = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"];
         var reflectionModeOptions = [
             {
-                label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
+                label: "Cubic",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE,
             },
             {
-                label: "Equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE
+                label: "Equirectangular",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE,
             },
             {
-                label: "Explicit", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EXPLICIT_MODE
+                label: "Explicit",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EXPLICIT_MODE,
             },
             {
-                label: "Fixed equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MODE
+                label: "Fixed equirectangular",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MODE,
             },
             {
-                label: "Fixed mirrored equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE
+                label: "Fixed mirrored equirectangular",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE,
             },
             {
-                label: "Planar", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PLANAR_MODE
+                label: "Planar",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PLANAR_MODE,
             },
             {
-                label: "Projection", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PROJECTION_MODE
+                label: "Projection",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PROJECTION_MODE,
             },
             {
-                label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SKYBOX_MODE
+                label: "Skybox",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SKYBOX_MODE,
             },
             {
-                label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE
+                label: "Spherical",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE,
             },
         ];
         var samplingMode = [
@@ -63145,90 +63217,69 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                     } }),
-                !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && showIsInGammaSpace &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
+                !isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                !isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && showIsInGammaSpace && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Disable multiplying by level", propertyName: "disableLevelMultiplication", target: this.props.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
-                texture && texture.updateSamplingMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
-                            texture.updateSamplingMode(value);
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
-                            texture.coordinatesMode = value;
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } })),
-            !this.textureBlock.hasImageSource &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
-                            _this.setState({ isEmbedded: value });
-                            _this.textureBlock.texture = null;
-                            _this.updateAfterTextureLoad();
-                        } }),
-                    isInReflectionMode &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
-                    isInReflectionMode && this.state.loadAsCubeTexture &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } }),
-                    this.state.isEmbedded &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
-                    !this.state.isEmbedded &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
-                    !this.state.isEmbedded && url &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
-                    texture &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
+                texture && texture.updateSamplingMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                        texture.updateSamplingMode(value);
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
+                        texture.coordinatesMode = value;
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } }))),
+            !this.textureBlock.hasImageSource && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+                        _this.setState({ isEmbedded: value });
+                        _this.textureBlock.texture = null;
+                        _this.updateAfterTextureLoad();
+                    } }),
+                isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } })),
+                isInReflectionMode && this.state.loadAsCubeTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } })),
+                this.state.isEmbedded && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                !this.state.isEmbedded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } })),
+                !this.state.isEmbedded && url && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } })),
+                texture && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_11__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block })));
     };
     return TexturePropertyTabComponent;
@@ -63337,7 +63388,7 @@ var TrigonometryPropertyTabComponent = /** @class */ (function (_super) {
             { label: "Fract", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Fract },
             { label: "Sign", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Sign },
             { label: "Radians to degrees", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Degrees },
-            { label: "Degrees to radians", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Radians }
+            { label: "Degrees to radians", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Radians },
         ];
         operationOptions.sort(function (a, b) {
             return a.label.localeCompare(b.label);
@@ -63629,10 +63680,10 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._mouseLocationY = 0;
         _this.handlePopUp = function () {
             _this.setState({
-                showPreviewPopUp: true
+                showPreviewPopUp: true,
             });
             _this.createPopUp();
-            _this.props.globalState.hostWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
+            _this.props.globalState.hostWindow.addEventListener("beforeunload", _this.handleClosingPopUp);
         };
         _this.handleClosingPopUp = function () {
             if (_this._previewManager) {
@@ -63640,7 +63691,7 @@ var GraphEditor = /** @class */ (function (_super) {
             }
             _this._popUpWindow.close();
             _this.setState({
-                showPreviewPopUp: false
+                showPreviewPopUp: false,
             }, function () { return _this.initiatePreviewArea(); });
         };
         _this.initiatePreviewArea = function (canvas) {
@@ -63660,8 +63711,8 @@ var GraphEditor = /** @class */ (function (_super) {
             var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ embedHostWidth: "100%" }, userOptions);
             var popUpWindow = _this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
             if (popUpWindow) {
-                popUpWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
-                var parentControl = popUpWindow.document.getElementById('node-editor-graph-root');
+                popUpWindow.addEventListener("beforeunload", _this.handleClosingPopUp);
+                var parentControl = popUpWindow.document.getElementById("node-editor-graph-root");
                 _this.createPreviewMeshControlHost(options, parentControl);
                 _this.createPreviewHost(options, parentControl);
                 if (parentControl) {
@@ -63677,11 +63728,11 @@ var GraphEditor = /** @class */ (function (_super) {
                 width: width,
                 height: height,
                 top: (_this.props.globalState.hostWindow.innerHeight - width) / 2 + window.screenY,
-                left: (_this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX
+                left: (_this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX,
             };
             var windowCreationOptions = Object.keys(windowCreationOptionsList)
-                .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
-                .join(',');
+                .map(function (key) { return key + "=" + windowCreationOptionsList[key]; })
+                .join(",");
             var popupWindow = _this.props.globalState.hostWindow.open("", title, windowCreationOptions);
             if (!popupWindow) {
                 return null;
@@ -63699,8 +63750,8 @@ var GraphEditor = /** @class */ (function (_super) {
             parentControl.style.padding = "0";
             parentControl.style.display = "grid";
             parentControl.style.gridTemplateRows = "40px auto";
-            parentControl.id = 'node-editor-graph-root';
-            parentControl.className = 'right-panel popup';
+            parentControl.id = "node-editor-graph-root";
+            parentControl.className = "right-panel popup";
             popupWindow.document.body.appendChild(parentControl);
             _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__["Popup"]._CopyStyles(_this.props.globalState.hostWindow.document, parentDocument);
             _this[windowVariableName] = popupWindow;
@@ -63716,7 +63767,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 parentControl.appendChild(host);
                 var PreviewMeshControlComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_10__["PreviewMeshControlComponent"], {
                     globalState: _this.props.globalState,
-                    togglePreviewAreaComponent: _this.handlePopUp
+                    togglePreviewAreaComponent: _this.handlePopUp,
                 });
                 react_dom__WEBPACK_IMPORTED_MODULE_15__["render"](PreviewMeshControlComponentHost, host);
             }
@@ -63730,7 +63781,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 host.style.height = "100%";
                 host.style.overflow = "hidden";
                 host.style.display = "grid";
-                host.style.gridRow = '2';
+                host.style.gridRow = "2";
                 host.style.gridTemplateRows = "auto 40px";
                 host.style.gridTemplateRows = "calc(100% - 40px) 40px";
                 parentControl.appendChild(host);
@@ -63742,7 +63793,7 @@ var GraphEditor = /** @class */ (function (_super) {
             if (_this._previewHost) {
                 var PreviewAreaComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewAreaComponent"], {
                     globalState: _this.props.globalState,
-                    width: 200
+                    width: 200,
                 });
                 react_dom__WEBPACK_IMPORTED_MODULE_15__["render"](PreviewAreaComponentHost, _this._previewHost);
             }
@@ -63757,17 +63808,17 @@ var GraphEditor = /** @class */ (function (_super) {
             if (previewConfigBar) {
                 previewConfigBar.style.gridRow = "2";
             }
-            var newWindowButton = document.getElementById('preview-new-window');
+            var newWindowButton = document.getElementById("preview-new-window");
             if (newWindowButton) {
-                newWindowButton.style.display = 'none';
+                newWindowButton.style.display = "none";
             }
-            var previewMeshBar = document.getElementById('preview-mesh-bar');
+            var previewMeshBar = document.getElementById("preview-mesh-bar");
             if (previewMeshBar) {
                 previewMeshBar.style.gridTemplateColumns = "auto 1fr 40px 40px";
             }
         };
         _this.state = {
-            showPreviewPopUp: false
+            showPreviewPopUp: false,
         };
         _this.props.globalState.onRebuildRequiredObservable.add(function (autoConfigure) {
             if (_this.props.globalState.nodeMaterial) {
@@ -63783,7 +63834,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.props.globalState.onImportFrameObservable.add(function (source) {
             var frameData = source.editorData.frames[0];
             // create new graph nodes for only blocks from frame (last blocks added)
-            _this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach(function (block) {
+            _this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach(function (block) {
                 _this.createNodeFromObject(block);
             });
             _this._graphCanvas.addFrame(frameData);
@@ -63799,7 +63850,8 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._graphCanvas.findNodeFromBlock(block);
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) { // Delete
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) {
+                // Delete
                 var selectedItems = _this._graphCanvas.selectedNodes;
                 for (var _i = 0, selectedItems_1 = selectedItems; _i < selectedItems_1.length; _i++) {
                     var selectedItem = selectedItems_1[_i];
@@ -63842,7 +63894,8 @@ var GraphEditor = /** @class */ (function (_super) {
             if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
                 return;
             }
-            if (evt.key === "c" || evt.key === "C") { // Copy
+            if (evt.key === "c" || evt.key === "C") {
+                // Copy
                 _this._copiedNodes = [];
                 _this._copiedFrame = null;
                 if (_this._graphCanvas.selectedFrame) {
@@ -63860,7 +63913,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 }
                 _this._copiedNodes = selectedItems.slice(0);
             }
-            else if (evt.key === "v" || evt.key === "V") { // Paste
+            else if (evt.key === "v" || evt.key === "V") {
+                // Paste
                 var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
                 var zoomLevel = _this._graphCanvas.zoom;
                 var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
@@ -64082,7 +64136,7 @@ var GraphEditor = /** @class */ (function (_super) {
         this._graphCanvas._isLoading = true; // Will help loading large graphes
         if (editorData instanceof Array) {
             editorData = {
-                locations: editorData
+                locations: editorData,
             };
         }
         // setup the diagram model
@@ -64250,7 +64304,9 @@ var GraphEditor = /** @class */ (function (_super) {
         x -= this.NodeWidth + 150;
         block.inputs.forEach(function (connection) {
             if (connection.connectedPoint) {
-                var existingNodes = _this._graphCanvas.nodes.filter(function (n) { return n.block === connection.connectedPoint.ownerBlock; });
+                var existingNodes = _this._graphCanvas.nodes.filter(function (n) {
+                    return n.block === connection.connectedPoint.ownerBlock;
+                });
                 var connectedNode = existingNodes[0];
                 if (connectedNode.x === 0 && connectedNode.y === 0) {
                     connectedNode.x = x / _this._graphCanvas.zoom;
@@ -64266,7 +64322,7 @@ var GraphEditor = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_4__["Portal"], { globalState: this.props.globalState },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "node-editor-graph-root", style: {
-                    gridTemplateColumns: this.buildColumnLayout()
+                    gridTemplateColumns: this.buildColumnLayout(),
                 }, onMouseMove: function (evt) {
                     _this._mouseLocationX = evt.pageX;
                     _this._mouseLocationY = evt.pageY;
@@ -64666,7 +64722,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
                     object: this.props.target,
                     property: this.props.propertyName,
                     value: !this.state.isSelected,
-                    initialValue: this.state.isSelected
+                    initialValue: this.state.isSelected,
                 });
             }
             this.props.target[this.props.propertyName] = !this.state.isSelected;
@@ -64682,7 +64738,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? " disabled" : "") }))));
     };
     CheckBoxLineComponent._UniqueIdSeed = 0;
     return CheckBoxLineComponent;
@@ -64743,7 +64799,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
         this.props.target[this.props.propertyName] = newColor;
@@ -64767,7 +64823,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Color3LineComponent.prototype.updateStateR = function (value) {
@@ -64798,7 +64854,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.copyToClipboard = function () {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
@@ -64807,7 +64863,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
         }
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     };
     Color3LineComponent.prototype.render = function () {
@@ -64824,11 +64880,10 @@ var Color3LineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, alt: "" }))),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } })))));
     };
     return Color3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -64890,7 +64945,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
         this.props.target[this.props.propertyName] = newColor;
@@ -64914,7 +64969,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Color4LineComponent.prototype.updateStateR = function (value) {
@@ -64954,7 +65009,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
         this.raiseOnPropertyChanged(store);
     };
     Color4LineComponent.prototype.copyToClipboard = function () {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
@@ -64963,7 +65018,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
         }
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     };
     Color4LineComponent.prototype.render = function () {
@@ -64980,12 +65035,11 @@ var Color4LineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, alt: "" }))),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "a", value: this.state.color.a, onChange: function (value) { return _this.updateStateA(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "a", value: this.state.color.a, onChange: function (value) { return _this.updateStateA(value); } })))));
     };
     return Color4LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65035,9 +65089,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var result = nextProps.value.toHexString() !== this.props.value.toHexString()
-            || nextState.hex !== this.state.hex
-            || nextState.pickerEnabled !== this.state.pickerEnabled;
+        var result = nextProps.value.toHexString() !== this.props.value.toHexString() || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
         if (nextProps.value.toHexString() !== this.props.value.toHexString()) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
@@ -65060,15 +65112,14 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setPickerState(true); } }),
-            this.state.pickerEnabled &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
-                                var hex = color.toHexString();
-                                _this.setState({ hex: hex, color: color });
-                                _this.props.onColorChanged(hex);
-                            } })))));
+            this.state.pickerEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
+                            var hex = color.toHexString();
+                            _this.setState({ hex: hex, color: color });
+                            _this.props.onColorChanged(hex);
+                        } }))))));
     };
     return ColorPickerLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65147,7 +65198,9 @@ var DraggableLineWithButtonComponent = /** @class */ (function (_super) {
                 event.dataTransfer.setData("babylonjs-material-node", _this.props.data);
             } },
             this.props.data.substr(0, this.props.data.length - 6),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", onClick: function () { _this.props.onIconClick(_this.props.data); }, title: this.props.iconTitle },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", onClick: function () {
+                    _this.props.onIconClick(_this.props.data);
+                }, title: this.props.iconTitle },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", title: this.props.iconTitle, src: this.props.iconImage }))));
     };
     return DraggableLineWithButtonComponent;
@@ -65238,7 +65291,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
+        var newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -65263,7 +65316,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     FloatLineComponent.prototype.updateValue = function (valueString) {
@@ -65283,10 +65336,10 @@ var FloatLineComponent = /** @class */ (function (_super) {
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && valueAsNumber > this.props.max) {
             valueAsNumber = this.props.max;
         }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && valueAsNumber < this.props.min) {
             valueAsNumber = this.props.min;
         }
         this.props.target[this.props.propertyName] = valueAsNumber;
@@ -65507,7 +65560,7 @@ var MatrixLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     MatrixLineComponent.prototype.updateMatrix = function () {
@@ -65562,15 +65615,13 @@ var MatrixLineComponent = /** @class */ (function (_super) {
                             _this.props.onModeChange(value);
                         }
                     } })),
-            this.state.mode === 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } })),
-            this.state.mode !== 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Angle", minimum: 0, maximum: 2 * Math.PI, useEuler: true, step: 0.1, globalState: this.props.globalState, directValue: this.state.angle, onChange: function (value) { return _this.updateBasedOnMode(value); } }))));
+            this.state.mode === 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } }))),
+            this.state.mode !== 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Angle", minimum: 0, maximum: 2 * Math.PI, useEuler: true, step: 0.1, globalState: this.props.globalState, directValue: this.state.angle, onChange: function (value) { return _this.updateBasedOnMode(value); } })))));
     };
     return MatrixLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65683,9 +65734,8 @@ var NumericInputComponent = /** @class */ (function (_super) {
     NumericInputComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
-            this.props.label &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": ")),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return (_this.props.globalState.blockKeyboardEvents = true); }, onBlur: function (evt) {
                     _this.props.globalState.blockKeyboardEvents = false;
                 }, step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
     };
@@ -65726,7 +65776,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         if (props.getSelection) {
             return props.getSelection(props.target);
         }
-        return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+        return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     };
     OptionsLineComponent.prototype.setValue = function (value) {
         this.setState({ value: value });
@@ -65751,7 +65801,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     OptionsLineComponent.prototype.updateValue = function (valueString) {
@@ -65816,19 +65866,19 @@ var Popup = /** @class */ (function () {
             width: width,
             height: height,
             top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX
+            left: (window.innerWidth - height) / 2 + window.screenX,
         };
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
-            .join(',');
+            .map(function (key) { return key + "=" + windowCreationOptionsList[key]; })
+            .join(",");
         var popupWindow = window.open("", title, windowCreationOptions);
         if (!popupWindow) {
             return null;
         }
         var parentDocument = popupWindow.document;
         // Font
-        var newLinkEl = parentDocument.createElement('link');
-        newLinkEl.rel = 'stylesheet';
+        var newLinkEl = parentDocument.createElement("link");
+        newLinkEl.rel = "stylesheet";
         newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
         parentDocument.head.appendChild(newLinkEl);
         parentDocument.title = title;
@@ -65844,6 +65894,7 @@ var Popup = /** @class */ (function () {
         popupWindow.document.body.appendChild(parentControl);
         this._CopyStyles(window.document, parentDocument);
         setTimeout(function () {
+            // need this for late bindings
             _this._CopyStyles(window.document, parentDocument);
         }, 0);
         this[windowVariableName] = popupWindow;
@@ -65853,8 +65904,9 @@ var Popup = /** @class */ (function () {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet = sourceDoc.styleSheets[index];
             try {
-                if (styleSheet.cssRules) { // for <style> elements
-                    var newStyleEl = sourceDoc.createElement('style');
+                if (styleSheet.cssRules) {
+                    // for <style> elements
+                    var newStyleEl = sourceDoc.createElement("style");
                     for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
                         var cssRule = _a[_i];
                         // write the text of each rule into the body of the style element
@@ -65862,15 +65914,15 @@ var Popup = /** @class */ (function () {
                     }
                     targetDoc.head.appendChild(newStyleEl);
                 }
-                else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                    var newLinkEl = sourceDoc.createElement('link');
-                    newLinkEl.rel = 'stylesheet';
+                else if (styleSheet.href) {
+                    // for <link> elements loading CSS from a URL
+                    var newLinkEl = sourceDoc.createElement("link");
+                    newLinkEl.rel = "stylesheet";
                     newLinkEl.href = styleSheet.href;
                     targetDoc.head.appendChild(newLinkEl);
                 }
             }
-            catch (e) {
-            }
+            catch (e) { }
         }
     };
     return Popup;
@@ -65907,7 +65959,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         _this._localChange = false;
         if (_this.props.directValue !== undefined) {
             _this.state = {
-                value: _this.props.directValue
+                value: _this.props.directValue,
             };
         }
         else {
@@ -65947,7 +65999,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
                     object: this.props.target,
                     property: this.props.propertyName,
                     value: newValue,
-                    initialValue: this.state.value
+                    initialValue: this.state.value,
                 });
             }
             this.props.target[this.props.propertyName] = newValue;
@@ -66039,7 +66091,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     TextInputLineComponent.prototype.updateValue = function (value, raisePropertyChanged) {
@@ -66063,7 +66115,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.multilines ? "textInputArea" : "textInputLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
-                this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                this.props.multilines && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("textarea", { value: this.state.value, onFocus: function () {
                             _this.props.globalState.blockKeyboardEvents = true;
                             _this._onFocus = true;
@@ -66076,8 +66128,8 @@ var TextInputLineComponent = /** @class */ (function (_super) {
                             _this.updateValue(evt.target.value, true);
                             _this.props.globalState.blockKeyboardEvents = false;
                             _this._onFocus = false;
-                        } })),
-                !this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        } }))),
+                !this.props.multilines && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onFocus: function () {
                             _this.props.globalState.blockKeyboardEvents = true;
                             _this._onFocus = true;
@@ -66090,7 +66142,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
                             _this.updateValue(evt.target.value, true);
                             _this.props.globalState.blockKeyboardEvents = false;
                             _this._onFocus = false;
-                        } })))));
+                        } }))))));
     };
     return TextInputLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -66174,7 +66226,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             displayGreen: true,
             displayBlue: true,
             displayAlpha: true,
-            face: 0
+            face: 0,
         };
         _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
@@ -66275,7 +66327,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         }
                         previewCanvas.width = width;
                         previewCanvas.height = height;
-                        context = previewCanvas.getContext('2d');
+                        context = previewCanvas.getContext("2d");
                         if (context) {
                             imageData = context.createImageData(width, height);
                             castData = imageData.data;
@@ -66304,21 +66356,19 @@ var TextureLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var texture = this.props.texture;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textureLine" },
-            !this.props.hideChannelSelect && texture.isCube &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 2 ? "py command selected" : "py command", onClick: function () { return _this.setState({ face: 2 }); } }, "PY"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ")),
-            !this.props.hideChannelSelect && !texture.isCube &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false }); } }, "B"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true }); } }, "A"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true }); } }, "ALL")),
+            !this.props.hideChannelSelect && texture.isCube && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 2 ? "py command selected" : "py command", onClick: function () { return _this.setState({ face: 2 }); } }, "PY"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ"))),
+            !this.props.hideChannelSelect && !texture.isCube && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false }); } }, "B"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true }); } }, "A"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true }); } }, "ALL"))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })));
     };
     return TextureLineComponent;
@@ -66381,7 +66431,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Vector2LineComponent.prototype.updateStateX = function (value) {
@@ -66408,10 +66458,9 @@ var Vector2LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } })))));
     };
     Vector2LineComponent.defaultProps = {
         step: 0.001, // cm
@@ -66476,7 +66525,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Vector3LineComponent.prototype.updateVector3 = function () {
@@ -66508,11 +66557,10 @@ var Vector3LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } })))));
     };
     Vector3LineComponent.defaultProps = {
         step: 0.001, // cm
@@ -66577,7 +66625,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Vector4LineComponent.prototype.updateVector4 = function () {
@@ -66619,12 +66667,11 @@ var Vector4LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "w", step: this.props.step, value: this.state.value.w, onChange: function (value) { return _this.updateStateW(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "w", step: this.props.step, value: this.state.value.w, onChange: function (value) { return _this.updateStateW(value); } })))));
     };
     Vector4LineComponent.defaultProps = {
         step: 0.001, // cm
@@ -66664,10 +66711,10 @@ var ColorComponentEntry = /** @class */ (function (_super) {
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && valueAsNumber > this.props.max) {
             valueAsNumber = this.props.max;
         }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && valueAsNumber < this.props.min) {
             valueAsNumber = this.props.min;
         }
         this.props.onChange(valueAsNumber);
@@ -66756,8 +66803,7 @@ var ColorPicker = /** @class */ (function (_super) {
         return _this;
     }
     ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        return (nextProps.color.toHexString() !== this.props.color.toHexString() ||
-            nextState.color.toHexString() !== this.props.color.toHexString());
+        return nextProps.color.toHexString() !== this.props.color.toHexString() || nextState.color.toHexString() !== this.props.color.toHexString();
     };
     ColorPicker.prototype.onSaturationPointerDown = function (evt) {
         this._evaluateSaturation(evt);
@@ -66793,7 +66839,7 @@ var ColorPicker = /** @class */ (function (_super) {
         var left = evt.nativeEvent.offsetX;
         var top = evt.nativeEvent.offsetY;
         var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
-        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
+        var value = Math.min(1, Math.max(0.0001, 1 - top / this._saturationRef.current.clientHeight));
         if (this.props.debugMode) {
             console.log("Saturation: " + saturation);
             console.log("Value: " + value);
@@ -66836,7 +66882,7 @@ var ColorPicker = /** @class */ (function (_super) {
         var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" + (this.props.linearhint ? " with-hints" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
-                    background: colorHexRef
+                    background: colorHexRef,
                 } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
@@ -66846,12 +66892,12 @@ var ColorPicker = /** @class */ (function (_super) {
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
-                        background: colorHex
+                        background: colorHex,
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
                             left: (hsv.r / 360.0) * 100 + "%",
-                            border: "1px solid " + colorHexRef
+                            border: "1px solid " + colorHexRef,
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
@@ -66880,8 +66926,7 @@ var ColorPicker = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
                             _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
                         } }))),
-            this.props.linearhint &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))")));
+            this.props.linearhint && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))"))));
     };
     return ColorPicker;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -66930,7 +66975,7 @@ var HexColor = /** @class */ (function (_super) {
     };
     HexColor.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } });
     };
     return HexColor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

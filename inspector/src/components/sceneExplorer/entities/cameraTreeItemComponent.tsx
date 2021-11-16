@@ -83,7 +83,12 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
     render() {
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faVideo} /> : <FontAwesomeIcon icon={faVideo} className="isNotActive" />;
         const scene = this.props.camera.getScene()!;
-        const isGizmoEnabled = this.state.isGizmoEnabled || (this.props.camera && this.props.camera.reservedDataStore && this.props.camera.reservedDataStore.cameraGizmo) ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEye} className="isNotActive" />;
+        const isGizmoEnabled =
+            this.state.isGizmoEnabled || (this.props.camera && this.props.camera.reservedDataStore && this.props.camera.reservedDataStore.cameraGizmo) ? (
+                <FontAwesomeIcon icon={faEye} />
+            ) : (
+                <FontAwesomeIcon icon={faEye} className="isNotActive" />
+            );
         return (
             <div className="cameraTools">
                 <TreeItemLabelComponent label={this.props.camera.name} onClick={() => this.props.onClick()} icon={faCamera} color="green" />

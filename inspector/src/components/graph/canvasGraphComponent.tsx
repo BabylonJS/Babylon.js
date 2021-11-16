@@ -1,33 +1,33 @@
-import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
-import { Observable } from 'babylonjs/Misc/observable';
-import * as React from 'react';
-import { useEffect, useRef } from 'react';
-import { CanvasGraphService } from './canvasGraphService';
-import { IPerfLayoutSize } from './graphSupportingTypes';
-import { IPerfMetadata } from 'babylonjs/Misc/interfaces/iPerfViewer';
-import { Scene } from 'babylonjs/scene';
+import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+import { Observable } from "babylonjs/Misc/observable";
+import * as React from "react";
+import { useEffect, useRef } from "react";
+import { CanvasGraphService } from "./canvasGraphService";
+import { IPerfLayoutSize } from "./graphSupportingTypes";
+import { IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
+import { Scene } from "babylonjs/scene";
 
 interface ICanvasGraphComponentProps {
     id: string;
     scene: Scene;
-    collector: PerformanceViewerCollector
+    collector: PerformanceViewerCollector;
     layoutObservable?: Observable<IPerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
     const { id, collector, scene, layoutObservable, returnToPlayheadObservable } = props;
-    const canvasRef: React.MutableRefObject<HTMLCanvasElement | null>  = useRef(null);
+    const canvasRef: React.MutableRefObject<HTMLCanvasElement | null> = useRef(null);
 
     useEffect(() => {
         if (!canvasRef.current) {
             return;
         }
-        
+
         let cs: CanvasGraphService | undefined;
 
         try {
-            cs = new CanvasGraphService(canvasRef.current, {datasets: collector.datasets});
+            cs = new CanvasGraphService(canvasRef.current, { datasets: collector.datasets });
         } catch (error) {
             console.error(error);
             return;
@@ -37,7 +37,7 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
             if (!canvasRef.current) {
                 return;
             }
-            const {left, top} = canvasRef.current.getBoundingClientRect();
+            const { left, top } = canvasRef.current.getBoundingClientRect();
             newSize.width = newSize.width - left;
             newSize.height = newSize.height - top;
             cs?.resize(newSize);
@@ -57,8 +57,8 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
 
         const resetDataPosition = () => {
             cs?.resetDataPosition();
-        }
-        
+        };
+
         scene.onAfterRenderObservable.add(dataUpdated);
         collector.metadataObservable.add(metaUpdated);
 
@@ -71,10 +71,6 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
             collector.metadataObservable.removeCallback(metaUpdated);
         };
     }, [canvasRef]);
-    
-    return (
-        <canvas id={id} ref={canvasRef}>
 
-        </canvas>
-    )
-}
+    return <canvas id={id} ref={canvasRef}></canvas>;
+};

@@ -66,22 +66,34 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
 
         if (!this._animationCurveEditorContext) {
             this._animationCurveEditorContext = new Context();
-            this._animationCurveEditorContext.title = (this.props.targetedAnimation.target as any).name || "";            
+            this._animationCurveEditorContext.title = (this.props.targetedAnimation.target as any).name || "";
             this._animationCurveEditorContext.animations = [this.props.targetedAnimation.animation];
             this._animationCurveEditorContext.target = this.props.targetedAnimation.target;
             this._animationCurveEditorContext.scene = this.props.scene;
             if (this._animationGroup) {
                 this._animationCurveEditorContext.rootAnimationGroup = this._animationGroup;
             }
-        }        
+        }
 
         return (
             <div className="pane">
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={targetedAnimation.getClassName()} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={targetedAnimation.animation} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {targetedAnimation.target.name && <TextLineComponent label="Target" value={targetedAnimation.target.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)} />}
-                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext}/>
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Name"
+                        target={targetedAnimation.animation}
+                        propertyName="name"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {targetedAnimation.target.name && (
+                        <TextLineComponent
+                            label="Target"
+                            value={targetedAnimation.target.name}
+                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)}
+                        />
+                    )}
+                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />
                     <ButtonLineComponent label="Dispose" onClick={this.deleteAnimation} />
                 </LineContainerComponent>
             </div>

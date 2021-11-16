@@ -1,12 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 import * as React from "react";
 import { Nullable } from "babylonjs/types";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 
 interface IExtensionsComponentProps {
-    target: any,
-    extensibilityGroups?: IExplorerExtensibilityGroup[]
+    target: any;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
 }
 
 export class ExtensionsComponent extends React.Component<IExtensionsComponentProps, { popupVisible: boolean }> {
@@ -60,18 +60,23 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
                 <div title="Additional options" className="icon">
                     <FontAwesomeIcon icon={faEllipsisH} />
                 </div>
-                <div ref={(input) => { this._popup = input }} tabIndex={-1} className={this.state.popupVisible ? "popup show" : "popup"} onBlur={() => this.setState({ popupVisible: false })}>
-                    {
-                        options.map(extensibility => {
-                            return (
-                                <div key={extensibility.label} className="popupMenu" onClick={() => extensibility.action(this.props.target)}>
-                                    {extensibility.label}
-                                </div>
-                            )
-                        })
-                    }
+                <div
+                    ref={(input) => {
+                        this._popup = input;
+                    }}
+                    tabIndex={-1}
+                    className={this.state.popupVisible ? "popup show" : "popup"}
+                    onBlur={() => this.setState({ popupVisible: false })}
+                >
+                    {options.map((extensibility) => {
+                        return (
+                            <div key={extensibility.label} className="popupMenu" onClick={() => extensibility.action(this.props.target)}>
+                                {extensibility.label}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
-        )
+        );
     }
 }

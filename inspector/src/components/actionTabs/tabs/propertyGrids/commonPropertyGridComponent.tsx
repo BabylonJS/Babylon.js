@@ -6,8 +6,8 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
-import { TextLineComponent } from '../../../../sharedUiComponents/lines/textLineComponent';
-import { IndentedTextLineComponent } from '../../../../sharedUiComponents/lines/indentedTextLineComponent';
+import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { IndentedTextLineComponent } from "../../../../sharedUiComponents/lines/indentedTextLineComponent";
 
 interface ICommonPropertyGridComponentProps {
     globalState: GlobalState;
@@ -29,32 +29,20 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
             let type = Object.prototype.toString.call(value);
 
             switch (type) {
-                case '[object String]':
-                    components.push(
-                        <TextLineComponent key={data} label={data} ignoreValue={true} />
-                    );
-                    components.push(
-                        <IndentedTextLineComponent key={data + value} value={value} />
-                    );
+                case "[object String]":
+                    components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
+                    components.push(<IndentedTextLineComponent key={data + value} value={value} />);
                     break;
-                case '[object Array]':
-                    components.push(
-                        <TextLineComponent key={data} label={data} ignoreValue={true} />
-                    );
+                case "[object Array]":
+                    components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
                     for (var entry of value) {
-                        components.push(
-                            <IndentedTextLineComponent key={data + entry} value={entry} />
-                        );
+                        components.push(<IndentedTextLineComponent key={data + entry} value={entry} />);
                     }
                     break;
-                case '[object Object]':
-                    components.push(
-                        <TextLineComponent key={data} label={data} ignoreValue={true} />
-                    );
+                case "[object Object]":
+                    components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
                     for (var entryKey in value) {
-                        components.push(
-                            <TextLineComponent key={data + entry} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />
-                        );
+                        components.push(<TextLineComponent key={data + entry} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />);
                     }
                     break;
             }
@@ -75,9 +63,7 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
         return (
             <div>
                 <LineContainerComponent title="XMP METADATA" selection={this.props.globalState}>
-                    {
-                        this.renderLevel(this.props.host.metadata.xmp)
-                    }
+                    {this.renderLevel(this.props.host.metadata.xmp)}
                 </LineContainerComponent>
             </div>
         );
