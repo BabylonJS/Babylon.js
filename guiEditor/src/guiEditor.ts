@@ -64,7 +64,7 @@ export class GUIEditor {
             await globalState.workbench.createGUICanvas();
             if (options.currentSnippetToken) {
                 try {
-                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                    await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
 
                 } catch (error) {
                     //swallow and continue
