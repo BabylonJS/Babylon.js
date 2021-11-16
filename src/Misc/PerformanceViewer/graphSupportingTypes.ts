@@ -1,4 +1,4 @@
-import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
+import { IPerfDatasets } from "../interfaces/iPerfViewer";
 
 /**
  * Defines a structure to hold max and min.
@@ -34,7 +34,7 @@ export interface IPerfLayoutSize {
  */
 export interface IPerfTooltip {
     text: string;
-    color: string
+    color: string;
 }
 
 /**
@@ -56,7 +56,7 @@ export interface IGraphDrawableArea {
 }
 
 /**
- * Defines the structure representing necessary ticker information. 
+ * Defines the structure representing necessary ticker information.
  */
 export interface IPerfTicker extends IPerfMinMax {
     id: string;

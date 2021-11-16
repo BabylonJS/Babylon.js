@@ -59,6 +59,7 @@
 - Extended functionality for pointer move with scene pointerMoveTrianglePredicate ([phaselock](https://github.com/lockphase))
 - Added the ability to load a GUI from the snippet server and project it onto a mesh ([PirateJC](https://github.com/piratejc))
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
+- Added `addPerfViewer` and `removePerfViewer` on the Performance Viewer Scene extension. ([carolhmj](https://github.com/carolhmj))
 
 ### Engine
 

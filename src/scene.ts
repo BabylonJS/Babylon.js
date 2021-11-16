@@ -5110,6 +5110,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("performanceViewerSceneExtension");
     }
 
+    /**
+     * Add the standalone performance viewer as a child to element parentElement
+     * @param parentElement the HTML element to which the perf viewer will be appended.
+     */
+    public addPerfViewer(parentElement : HTMLElement) {
+        throw _WarnImport("performanceViewerSceneExtension");
+    }
+
+    /**
+     * Remove performance viewer from parent and dispose of any of its resources.
+     */
+    public removePerfViewer() {
+        throw _WarnImport("performanceViewerSceneExtension");
+    }
+
     private _computePressureObserver: ComputePressureObserverWrapper | undefined;
 
     /**

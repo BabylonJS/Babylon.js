@@ -6,7 +6,7 @@ import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/button
 import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
 import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CanvasGraphComponent } from "../../../graph/canvasGraphComponent";
-import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
+import { IPerfLayoutSize } from "babylonjs/Misc/PerformanceViewer/graphSupportingTypes";
 import { PopupComponent } from "../../../popupComponent";
 import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarComponent";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";

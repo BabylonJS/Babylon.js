@@ -1,11 +1,11 @@
-import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
-import { Observable } from "babylonjs/Misc/observable";
-import * as React from "react";
-import { useEffect, useRef } from "react";
-import { CanvasGraphService } from "./canvasGraphService";
-import { IPerfLayoutSize } from "./graphSupportingTypes";
-import { IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
-import { Scene } from "babylonjs/scene";
+import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
+import { Observable } from 'babylonjs/Misc/observable';
+import * as React from 'react';
+import { useEffect, useRef } from 'react';
+import { CanvasGraphService } from 'babylonjs/Misc/PerformanceViewer/canvasGraphService';
+import { IPerfLayoutSize } from 'babylonjs/Misc/PerformanceViewer/graphSupportingTypes';
+import { IPerfMetadata } from 'babylonjs/Misc/interfaces/iPerfViewer';
+import { Scene } from 'babylonjs/scene';
 
 interface ICanvasGraphComponentProps {
     id: string;
