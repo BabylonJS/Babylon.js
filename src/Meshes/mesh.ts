@@ -33,6 +33,7 @@ import { Path3D } from "../Maths/math.path";
 import { Plane } from "../Maths/math.plane";
 import { TransformNode } from "./transformNode";
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { createWorkQuantizer } from '../Misc/workQuantizer';
 
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
@@ -4291,11 +4292,52 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean
     ): Nullable<Mesh> {
+        let mergedMesh: Nullable<Mesh> = null;
+        Mesh._MergeMeshes(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false, (mesh: Nullable<Mesh>) => mergedMesh = mesh);
+        return mergedMesh;
+    }
+
+    /**
+     * Merge the array of meshes into a single mesh for performance reasons.
+     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
+     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
+     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @returns a new mesh
+     */
+    public static async MergeMeshesAsync(
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices?: boolean,
+        meshSubclass?: Mesh,
+        subdivideWithSubMeshes?: boolean,
+        multiMultiMaterials?: boolean
+    ): Promise<Nullable<Mesh>> {
+        let mergedMesh: Nullable<Mesh> = null;
+        await Mesh._MergeMeshes(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true, (mesh: Nullable<Mesh>) => mergedMesh = mesh);
+        return mergedMesh;
+    }
+
+    private static async _MergeMeshes(
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices: boolean | undefined,
+        meshSubclass: Mesh | undefined,
+        subdivideWithSubMeshes: boolean | undefined,
+        multiMultiMaterials: boolean | undefined,
+        asynchronous: boolean,
+        onFinished: (mesh: Nullable<Mesh>) => void,
+    ): Promise<void> {
+        const quantizer = asynchronous ? createWorkQuantizer() : createWorkQuantizer(false);
+
         // Remove any null/undefined entries from the mesh array
         meshes = meshes.filter(Boolean);
 
         if (meshes.length === 0) {
-            return null;
+            onFinished(null);
+            return;
         }
 
         var index: number;
@@ -4308,7 +4350,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (totalVertices >= 65536) {
                     Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                    return null;
+                    onFinished(null);
+                    return;
                 }
             }
         }
@@ -4326,7 +4369,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var mesh = meshes[index];
             if (mesh.isAnInstance) {
                 Logger.Warn("Cannot merge instance meshes.");
-                return null;
+                onFinished(null);
+                return;
             }
 
             if (subdivideWithSubMeshes) {
@@ -4372,13 +4416,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertexData.transform(wm);
             return vertexData;
         };
-        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
+
+        const sourceVertexData = getVertexDataFromMesh(source);
+        quantizer.shouldYield && await quantizer.yield();
+
+        const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
+        for (let i = 1; i < meshes.length; i++) {
+            meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
+            quantizer.shouldYield && await quantizer.yield();
+        }
+
+        const vertexData: VertexData = asynchronous ? await sourceVertexData.mergeAsync(meshVertexDatas, allow32BitsIndices) : sourceVertexData.merge(meshVertexDatas, allow32BitsIndices);
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
         }
 
-        (<VertexData>vertexData).applyToMesh(meshSubclass);
+        asynchronous ? await vertexData.applyToMeshAsync(meshSubclass) : vertexData.applyToMesh(meshSubclass);
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
@@ -4423,7 +4477,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             meshSubclass.material = source.material;
         }
 
-        return meshSubclass;
+        onFinished(meshSubclass);
     }
 
     /** @hidden */
