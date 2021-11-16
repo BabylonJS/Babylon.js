@@ -937,10 +937,10 @@ declare module NODEEDITOR {
     export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
         forceRebuild(notifiers?: {
-            "rebuild"?: boolean;
-            "update"?: boolean;
-            "activatePreviewCommand"?: boolean;
-            "callback"?: (scene: BABYLON.Scene) => void;
+            rebuild?: boolean;
+            update?: boolean;
+            activatePreviewCommand?: boolean;
+            callback?: (scene: BABYLON.Scene) => void;
         }): void;
         render(): JSX.Element;
     }

@@ -102,7 +102,7 @@ declare module GUIEDITOR {
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        createGUICanvas(): void;
+        createGUICanvas(): Promise<void>;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
         getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
@@ -1153,7 +1153,7 @@ declare module GUIEDITOR {
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: IGUIEditorOptions): void;
+        static Show(options: IGUIEditorOptions): Promise<void>;
     }
 }
 declare module GUIEDITOR {
