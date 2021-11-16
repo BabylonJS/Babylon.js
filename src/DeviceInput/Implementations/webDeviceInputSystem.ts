@@ -434,7 +434,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         }
                     }
 
-                    if (!document.pointerLockElement) {
+                    if (!document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
                         try {
                             this._elementToAttachTo.setPointerCapture(this._mouseId);
                         }
@@ -444,7 +444,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 }
                 else { // Touch; Since touches are dynamically assigned, only set capture if we have an id
-                    if (evt.pointerId && !document.pointerLockElement) {
+                    if (evt.pointerId && !document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
                         try {
                             this._elementToAttachTo.setPointerCapture(evt.pointerId);
                         }
