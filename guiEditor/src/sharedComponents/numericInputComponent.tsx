@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 interface INumericInputComponentProps {
     label: string;
@@ -10,7 +10,6 @@ interface INumericInputComponentProps {
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
-
     static defaultProps = {
         step: 1,
     };
@@ -19,7 +18,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
     constructor(props: INumericInputComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value.toFixed(3) }
+        this.state = { value: this.props.value.toFixed(3) };
     }
 
     shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
@@ -54,23 +53,22 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this.props.onChange(valueAsNumber);
     }
 
-
     render() {
         return (
             <div className="numeric">
-                {
-                    this.props.label &&
-                    <div className="numeric-label">
-                        {`${this.props.label}: `}
-                    </div>
-                }
-                <input type="number" 
-                    onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                    onBlur={evt => {
+                {this.props.label && <div className="numeric-label">{`${this.props.label}: `}</div>}
+                <input
+                    type="number"
+                    onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
+                    onBlur={(evt) => {
                         this.props.globalState.blockKeyboardEvents = false;
                     }}
-                    step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
+                    step={this.props.step}
+                    className="numeric-input"
+                    value={this.state.value}
+                    onChange={(evt) => this.updateValue(evt)}
+                />
             </div>
-        )
+        );
     }
 }

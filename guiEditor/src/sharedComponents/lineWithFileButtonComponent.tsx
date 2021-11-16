@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 
 interface ILineWithFileButtonComponentProps {
     title: string;
@@ -12,7 +12,7 @@ interface ILineWithFileButtonComponentProps {
 }
 
 export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, { isExpanded: boolean }> {
-    private uploadRef: React.RefObject<HTMLInputElement>
+    private uploadRef: React.RefObject<HTMLInputElement>;
     constructor(props: ILineWithFileButtonComponentProps) {
         super(props);
 
@@ -40,13 +40,19 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
             <div className="nonDraggableLine withButton">
                 {this.props.label}
                 <div className="icon" title={this.props.title}>
-                <img className="img" src={this.props.iconImage}/>
+                    <img className="img" src={this.props.iconImage} />
                 </div>
                 <div className="buttonLine" title={this.props.title}>
-                    <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload"/>   
-                    <input ref={this.uploadRef} id={this.props.uploadName ? this.props.uploadName : "file-upload"} type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
+                    <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload" />
+                    <input
+                        ref={this.uploadRef}
+                        id={this.props.uploadName ? this.props.uploadName : "file-upload"}
+                        type="file"
+                        accept={this.props.accept}
+                        onChange={(evt) => this.onChange(evt)}
+                    />
                 </div>
             </div>
-        ); 
+        );
     }
 }

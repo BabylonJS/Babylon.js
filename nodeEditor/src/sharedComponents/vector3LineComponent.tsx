@@ -6,7 +6,7 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -18,8 +18,7 @@ interface IVector3LineComponentProps {
     globalState: GlobalState;
 }
 
-export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean, value: Vector3 }> {
-
+export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean; value: Vector3 }> {
     static defaultProps = {
         step: 0.001, // cm
     };
@@ -29,10 +28,10 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     constructor(props: IVector3LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() }
+        this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() };
     }
 
-    shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean, value: Vector3 }) {
+    shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean; value: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -60,7 +59,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -72,7 +71,6 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
 
         this.raiseOnPropertyChanged(store);
     }
-
 
     updateStateX(value: number) {
         this._localChange = true;
@@ -96,7 +94,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     }
 
     render() {
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
             <div className="vector3Line">
@@ -104,22 +102,36 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
-                    <div className="vector">
-                        {`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}`}
-
-                    </div>
+                    <div className="vector">{`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}`}</div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
-                {
-                    this.state.isExpanded &&
+                {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent globalState={this.props.globalState} label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="z" step={this.props.step} value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
+                        <NumericInputComponent
+                            globalState={this.props.globalState}
+                            label="x"
+                            step={this.props.step}
+                            value={this.state.value.x}
+                            onChange={(value) => this.updateStateX(value)}
+                        />
+                        <NumericInputComponent
+                            globalState={this.props.globalState}
+                            label="y"
+                            step={this.props.step}
+                            value={this.state.value.y}
+                            onChange={(value) => this.updateStateY(value)}
+                        />
+                        <NumericInputComponent
+                            globalState={this.props.globalState}
+                            label="z"
+                            step={this.props.step}
+                            value={this.state.value.z}
+                            onChange={(value) => this.updateStateZ(value)}
+                        />
                     </div>
-                }
+                )}
             </div>
         );
     }

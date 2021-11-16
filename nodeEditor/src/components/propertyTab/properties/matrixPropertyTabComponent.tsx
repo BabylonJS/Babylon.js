@@ -1,8 +1,7 @@
-
 import * as React from "react";
-import { GlobalState } from '../../../globalState';
-import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { MatrixLineComponent } from '../../../sharedComponents/matrixLineComponent';
+import { GlobalState } from "../../../globalState";
+import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
+import { MatrixLineComponent } from "../../../sharedComponents/matrixLineComponent";
 
 interface IMatrixPropertyTabComponentProps {
     globalState: GlobalState;
@@ -10,16 +9,20 @@ interface IMatrixPropertyTabComponentProps {
 }
 
 export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyTabComponentProps> {
-
     render() {
         return (
-            <MatrixLineComponent globalState={this.props.globalState} label="Value" target={this.props.inputBlock} propertyName="value" onChange={() => {
-                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
-            }}
-            mode={this.props.inputBlock.matrixMode}
-            onModeChange={mode => {
-                this.props.inputBlock.matrixMode = mode;
-            }}
+            <MatrixLineComponent
+                globalState={this.props.globalState}
+                label="Value"
+                target={this.props.inputBlock}
+                propertyName="value"
+                onChange={() => {
+                    this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+                }}
+                mode={this.props.inputBlock.matrixMode}
+                onModeChange={(mode) => {
+                    this.props.inputBlock.matrixMode = mode;
+                }}
             ></MatrixLineComponent>
         );
     }

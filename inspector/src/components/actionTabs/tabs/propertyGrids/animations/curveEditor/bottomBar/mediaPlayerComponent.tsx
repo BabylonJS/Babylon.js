@@ -35,19 +35,15 @@ interface IMediaPlayerComponentProps {
     context: Context;
 }
 
-interface IMediaPlayerComponentState {
-}
+interface IMediaPlayerComponentState {}
 
-export class MediaPlayerComponent extends React.Component<
-IMediaPlayerComponentProps,
-IMediaPlayerComponentState
-> {
+export class MediaPlayerComponent extends React.Component<IMediaPlayerComponentProps, IMediaPlayerComponentState> {
     private _isMounted = false;
 
     constructor(props: IMediaPlayerComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
 
         this.props.context.onAnimationStateChanged.add(() => {
             if (!this._isMounted) {
@@ -76,7 +72,7 @@ IMediaPlayerComponentState
             this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
         }
     }
-    
+
     private _onRewind() {
         this.props.context.play(false);
         this.forceUpdate();
@@ -115,24 +111,104 @@ IMediaPlayerComponentState
     public render() {
         return (
             <div id="media-player">
-                <ControlButtonComponent tooltip="Rewind to the first frame of the selected timeline"  id="start-key" context={this.props.context} globalState={this.props.globalState} icon={startKeyIcon}  hoverIcon={startKeyHoverIcon} onClick={() => this._onFirstKey()}/>
-                <ControlButtonComponent tooltip="Rewind to the previous frame" id="prev-frame" context={this.props.context} globalState={this.props.globalState} icon={lastFrameIcon} hoverIcon={lastFrameHoverIcon} onClick={() => this._onPrevFrame()}/>
-                <ControlButtonComponent tooltip="Rewind to the previous key frame" id="first-key" context={this.props.context} globalState={this.props.globalState} icon={firstKeyIcon} hoverIcon={firstKeyHoverIcon} onClick={() => this._onPrevKey()}/>
-                { (this.props.context.isPlaying && this.props.context.forwardAnimation || !this.props.context.isPlaying) && 
-                    <ControlButtonComponent tooltip="Play backwards" id="rev-key" context={this.props.context} globalState={this.props.globalState} icon={revKeyIcon} hoverIcon={revKeyHoverIcon} onClick={() => this._onRewind()}/>
-                }                
-                { (this.props.context.isPlaying && !this.props.context.forwardAnimation) && 
-                    <ControlButtonComponent tooltip="Stop" id="stop-key" context={this.props.context} globalState={this.props.globalState} icon={stopIcon} hoverIcon={stopHoverIcon} onClick={() => this._onStop()}/>
-                }
-                { (this.props.context.isPlaying && !this.props.context.forwardAnimation || !this.props.context.isPlaying) && 
-                    <ControlButtonComponent tooltip="Play forwards" id="fwd-key" context={this.props.context} globalState={this.props.globalState} icon={fwdKeyIcon} hoverIcon={fwdKeyHoverIcon} onClick={() => this._onForward()}/>
-                }
-                { (this.props.context.isPlaying && this.props.context.forwardAnimation) && 
-                    <ControlButtonComponent tooltip="Stop" id="stop-key" context={this.props.context} globalState={this.props.globalState} icon={stopIcon} hoverIcon={stopHoverIcon} onClick={() => this._onStop()}/>
-                }
-                <ControlButtonComponent tooltip="Advance to the next key frame" id="next-key" context={this.props.context} globalState={this.props.globalState} icon={nextKeyIcon} hoverIcon={nextKeyHoverIcon} onClick={() => this._onNextKey()}/>
-                <ControlButtonComponent tooltip="Advance to the next frame" id="next-frame" context={this.props.context} globalState={this.props.globalState} icon={nextFrameIcon} hoverIcon={nextFrameHoverIcon} onClick={() => this._onNextFrame()}/>
-                <ControlButtonComponent tooltip="Advance to the last frame of the selected timeline" id="end-key" context={this.props.context} globalState={this.props.globalState} icon={endKeyIcon}  hoverIcon={endKeyHoverIcon} onClick={() => this._onEndKey()}/>
+                <ControlButtonComponent
+                    tooltip="Rewind to the first frame of the selected timeline"
+                    id="start-key"
+                    context={this.props.context}
+                    globalState={this.props.globalState}
+                    icon={startKeyIcon}
+                    hoverIcon={startKeyHoverIcon}
+                    onClick={() => this._onFirstKey()}
+                />
+                <ControlButtonComponent
+                    tooltip="Rewind to the previous frame"
+                    id="prev-frame"
+                    context={this.props.context}
+                    globalState={this.props.globalState}
+                    icon={lastFrameIcon}
+                    hoverIcon={lastFrameHoverIcon}
+                    onClick={() => this._onPrevFrame()}
+                />
+                <ControlButtonComponent
+                    tooltip="Rewind to the previous key frame"
+                    id="first-key"
+                    context={this.props.context}
+                    globalState={this.props.globalState}
+                    icon={firstKeyIcon}
+                    hoverIcon={firstKeyHoverIcon}
+                    onClick={() => this._onPrevKey()}
+                />
+                {((this.props.context.isPlaying && this.props.context.forwardAnimation) || !this.props.context.isPlaying) && (
+                    <ControlButtonComponent
+                        tooltip="Play backwards"
+                        id="rev-key"
+                        context={this.props.context}
+                        globalState={this.props.globalState}
+                        icon={revKeyIcon}
+                        hoverIcon={revKeyHoverIcon}
+                        onClick={() => this._onRewind()}
+                    />
+                )}
+                {this.props.context.isPlaying && !this.props.context.forwardAnimation && (
+                    <ControlButtonComponent
+                        tooltip="Stop"
+                        id="stop-key"
+                        context={this.props.context}
+                        globalState={this.props.globalState}
+                        icon={stopIcon}
+                        hoverIcon={stopHoverIcon}
+                        onClick={() => this._onStop()}
+                    />
+                )}
+                {((this.props.context.isPlaying && !this.props.context.forwardAnimation) || !this.props.context.isPlaying) && (
+                    <ControlButtonComponent
+                        tooltip="Play forwards"
+                        id="fwd-key"
+                        context={this.props.context}
+                        globalState={this.props.globalState}
+                        icon={fwdKeyIcon}
+                        hoverIcon={fwdKeyHoverIcon}
+                        onClick={() => this._onForward()}
+                    />
+                )}
+                {this.props.context.isPlaying && this.props.context.forwardAnimation && (
+                    <ControlButtonComponent
+                        tooltip="Stop"
+                        id="stop-key"
+                        context={this.props.context}
+                        globalState={this.props.globalState}
+                        icon={stopIcon}
+                        hoverIcon={stopHoverIcon}
+                        onClick={() => this._onStop()}
+                    />
+                )}
+                <ControlButtonComponent
+                    tooltip="Advance to the next key frame"
+                    id="next-key"
+                    context={this.props.context}
+                    globalState={this.props.globalState}
+                    icon={nextKeyIcon}
+                    hoverIcon={nextKeyHoverIcon}
+                    onClick={() => this._onNextKey()}
+                />
+                <ControlButtonComponent
+                    tooltip="Advance to the next frame"
+                    id="next-frame"
+                    context={this.props.context}
+                    globalState={this.props.globalState}
+                    icon={nextFrameIcon}
+                    hoverIcon={nextFrameHoverIcon}
+                    onClick={() => this._onNextFrame()}
+                />
+                <ControlButtonComponent
+                    tooltip="Advance to the last frame of the selected timeline"
+                    id="end-key"
+                    context={this.props.context}
+                    globalState={this.props.globalState}
+                    icon={endKeyIcon}
+                    hoverIcon={endKeyHoverIcon}
+                    onClick={() => this._onEndKey()}
+                />
             </div>
         );
     }

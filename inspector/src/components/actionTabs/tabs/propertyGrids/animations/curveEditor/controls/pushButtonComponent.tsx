@@ -9,7 +9,7 @@ interface IPushButtonComponentProps {
     id?: string;
     className?: string;
     isPushed?: boolean;
-    onClick:(state: boolean)=> void;
+    onClick: (state: boolean) => void;
     tooltip?: string;
 }
 
@@ -17,27 +17,24 @@ interface IPushButtonComponentState {
     isPushed: boolean;
 }
 
-export class PushButtonComponent extends React.Component<
-IPushButtonComponentProps,
-IPushButtonComponentState
-> {
-
+export class PushButtonComponent extends React.Component<IPushButtonComponentProps, IPushButtonComponentState> {
     constructor(props: IPushButtonComponentProps) {
         super(props);
 
-        this.state = { isPushed: !!this.props.isPushed};
+        this.state = { isPushed: !!this.props.isPushed };
     }
 
     public render() {
         return (
-            <div 
+            <div
                 title={this.props.tooltip}
-                className={"push-button" + (this.state.isPushed ? " active" : "") + (this.props.className ? " " + this.props.className : "")} 
-                id={this.props.id} 
+                className={"push-button" + (this.state.isPushed ? " active" : "") + (this.props.className ? " " + this.props.className : "")}
+                id={this.props.id}
                 onClick={() => {
-                    this.props.onClick(!this.state.isPushed)
-                    this.setState({isPushed: !this.state.isPushed});
-                }}>
+                    this.props.onClick(!this.state.isPushed);
+                    this.setState({ isPushed: !this.state.isPushed });
+                }}
+            >
                 <img className="push-button-image" src={this.props.icon} />
             </div>
         );

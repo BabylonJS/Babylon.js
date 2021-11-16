@@ -10,9 +10,9 @@ import { Tools } from "../tools";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 
 interface IParentingPropertyGridComponentProps {
-    control: Control,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    control: Control;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ParentingPropertyGridComponent extends React.Component<IParentingPropertyGridComponentProps> {
@@ -35,10 +35,10 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         this._columnNumber = cellInfo.y;
     }
 
-    private _changeCell(grid: Grid, draggedControl: Control, newCell : Vector2) {
+    private _changeCell(grid: Grid, draggedControl: Control, newCell: Vector2) {
         let index = grid.children.indexOf(draggedControl);
         grid.removeControl(draggedControl);
-        Tools.reorderGrid(grid, index, draggedControl,newCell);
+        Tools.reorderGrid(grid, index, draggedControl, newCell);
     }
 
     render() {
@@ -48,14 +48,30 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID PARENTING" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                    <FloatLineComponent lockObject={this.props.lockObject} label={"Row #"} target={this} propertyName={"_rowNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label={"Row #"}
+                        target={this}
+                        propertyName={"_rowNumber"}
+                        isInteger={true}
+                        min={0}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();
-                        }} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label={"Column #"} target={this} propertyName={"_columnNumber"} isInteger={true} min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        }}
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label={"Column #"}
+                        target={this}
+                        propertyName={"_columnNumber"}
+                        isInteger={true}
+                        min={0}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             this.updateGridPosition();
-                        }} />
+                        }}
+                    />
                 </div>
             </div>
         );

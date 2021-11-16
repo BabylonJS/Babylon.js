@@ -13,9 +13,9 @@ const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/cl
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IRectanglePropertyGridComponentProps {
-    rectangle: Rectangle,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    rectangle: Rectangle;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class RectanglePropertyGridComponent extends React.Component<IRectanglePropertyGridComponentProps> {
@@ -29,12 +29,35 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr/>
+                <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent iconLabel="Clip Content" icon={clipContentsIcon} label="" target={rectangle} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent
+                    iconLabel="Clip Content"
+                    icon={clipContentsIcon}
+                    label=""
+                    target={rectangle}
+                    propertyName="clipChildren"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <div className="ge-divider">
-                <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={rectangle} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel="Corner Radius" icon={conerRadiusIcon} lockObject={this.props.lockObject} label="" target={rectangle} propertyName="cornerRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent
+                        iconLabel="Stroke Weight"
+                        icon={strokeWeightIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={rectangle}
+                        propertyName="thickness"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        iconLabel="Corner Radius"
+                        icon={conerRadiusIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={rectangle}
+                        propertyName="cornerRadius"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
             </div>
         );
