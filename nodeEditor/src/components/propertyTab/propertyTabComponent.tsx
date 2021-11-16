@@ -1,41 +1,40 @@
-
 import * as React from "react";
-import { GlobalState } from '../../globalState';
-import { Nullable } from 'babylonjs/types';
-import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
-import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { StringTools } from '../../sharedUiComponents/stringTools';
-import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
-import { Tools } from 'babylonjs/Misc/tools';
-import { SerializationTools } from '../../serializationTools';
-import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { GraphNode } from '../../diagram/graphNode';
-import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
-import { GraphFrame } from '../../diagram/graphFrame';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
-import { Engine } from 'babylonjs/Engines/engine';
-import { FramePropertyTabComponent } from '../../diagram/properties/framePropertyComponent';
-import { FrameNodePortPropertyTabComponent } from '../../diagram/properties/frameNodePortPropertyComponent';
-import { NodePortPropertyTabComponent } from '../../diagram/properties/nodePortPropertyComponent';
-import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-import { Color3LineComponent } from '../../sharedComponents/color3LineComponent';
-import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
-import { Color4LineComponent } from '../../sharedComponents/color4LineComponent';
-import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
-import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponent';
-import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
-import { Observer } from 'babylonjs/Misc/observable';
-import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { FrameNodePort } from '../../diagram/frameNodePort';
-import { NodePort } from '../../diagram/nodePort';
-import { isFramePortData } from '../../diagram/graphCanvas';
-import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
-import { PreviewType } from '../preview/previewType';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { InputsPropertyTabComponent } from './inputsPropertyTabComponent';
+import { GlobalState } from "../../globalState";
+import { Nullable } from "babylonjs/types";
+import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
+import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { StringTools } from "../../sharedUiComponents/stringTools";
+import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
+import { Tools } from "babylonjs/Misc/tools";
+import { SerializationTools } from "../../serializationTools";
+import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { GraphNode } from "../../diagram/graphNode";
+import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
+import { GraphFrame } from "../../diagram/graphFrame";
+import { TextLineComponent } from "../../sharedComponents/textLineComponent";
+import { Engine } from "babylonjs/Engines/engine";
+import { FramePropertyTabComponent } from "../../diagram/properties/framePropertyComponent";
+import { FrameNodePortPropertyTabComponent } from "../../diagram/properties/frameNodePortPropertyComponent";
+import { NodePortPropertyTabComponent } from "../../diagram/properties/nodePortPropertyComponent";
+import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
+import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
+import { Color4LineComponent } from "../../sharedComponents/color4LineComponent";
+import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
+import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponent";
+import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
+import { Observer } from "babylonjs/Misc/observable";
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { FrameNodePort } from "../../diagram/frameNodePort";
+import { NodePort } from "../../diagram/nodePort";
+import { isFramePortData } from "../../diagram/graphCanvas";
+import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
+import { NodeMaterialModes } from "babylonjs/Materials/Node/Enums/nodeMaterialModes";
+import { PreviewType } from "../preview/previewType";
+import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
+import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -48,7 +47,7 @@ interface IPropertyTabComponentState {
     currentFrameNodePort: Nullable<FrameNodePort>;
     currentNodePort: Nullable<NodePort>;
     uploadInProgress: boolean;
- }
+}
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
@@ -71,7 +70,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             } else if (isFramePortData(selection)) {
                 this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
             } else if (selection instanceof NodePort) {
-                this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection});
+                this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection });
             } else {
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
@@ -97,82 +96,133 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                    let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
-                    return (
-                        <div key={block.uniqueId} >
-                            {
-                                block.isBoolean &&
-                                <CheckBoxLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"
+                let cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
+                return (
+                    <div key={block.uniqueId}>
+                        {block.isBoolean && (
+                            <CheckBoxLineComponent
+                                key={block.uniqueId}
+                                label={block.name}
+                                target={block}
+                                propertyName="value"
                                 onValueChanged={() => {
                                     this.processInputBlockUpdate(block);
-                                }}/>
-                            }
-                            {
-                                !block.isBoolean && cantDisplaySlider &&
-                                <FloatLineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} propertyName="value"
-                                onChange={() => this.processInputBlockUpdate(block)}/>
-                            }
-                            {
-                                !block.isBoolean && !cantDisplaySlider &&
-                                <SliderLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"
-                                step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} globalState={this.props.globalState}
-                                onChange={() => this.processInputBlockUpdate(block)}/>
-                            }
-                        </div>
-                    );
+                                }}
+                            />
+                        )}
+                        {!block.isBoolean && cantDisplaySlider && (
+                            <FloatLineComponent
+                                globalState={this.props.globalState}
+                                key={block.uniqueId}
+                                label={block.name}
+                                target={block}
+                                propertyName="value"
+                                onChange={() => this.processInputBlockUpdate(block)}
+                            />
+                        )}
+                        {!block.isBoolean && !cantDisplaySlider && (
+                            <SliderLineComponent
+                                key={block.uniqueId}
+                                label={block.name}
+                                target={block}
+                                propertyName="value"
+                                step={(block.max - block.min) / 100.0}
+                                minimum={block.min}
+                                maximum={block.max}
+                                globalState={this.props.globalState}
+                                onChange={() => this.processInputBlockUpdate(block)}
+                            />
+                        )}
+                    </div>
+                );
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
-                    <Color3LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block}
+                    <Color3LineComponent
+                        globalState={this.props.globalState}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
                         propertyName="value"
                         onChange={() => this.processInputBlockUpdate(block)}
                     />
                 );
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
-                    <Color4LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} propertyName="value"
-                    onChange={() => this.processInputBlockUpdate(block)}/>
+                    <Color4LineComponent
+                        globalState={this.props.globalState}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
-                        <Vector2LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block}
+                    <Vector2LineComponent
+                        globalState={this.props.globalState}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}/>
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
-                    <Vector3LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block}
-                    propertyName="value"
-                    onChange={() => this.processInputBlockUpdate(block)}/>
+                    <Vector3LineComponent
+                        globalState={this.props.globalState}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return (
-                    <Vector4LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block}
-                    propertyName="value"
-                    onChange={() => this.processInputBlockUpdate(block)}/>
+                    <Vector4LineComponent
+                        globalState={this.props.globalState}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
                 );
-            }
+        }
         return null;
     }
 
     load(file: File) {
-        Tools.ReadFile(file, (data) => {
-            let decoder = new TextDecoder("utf-8");
-            SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
+        Tools.ReadFile(
+            file,
+            (data) => {
+                let decoder = new TextDecoder("utf-8");
+                SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
-            if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-                this.props.globalState.onResetRequiredObservable.notifyObservers();
-            }
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        }, undefined, true);
+                if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
+                    this.props.globalState.onResetRequiredObservable.notifyObservers();
+                }
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            },
+            undefined,
+            true
+        );
     }
 
     loadFrame(file: File) {
-        Tools.ReadFile(file, (data) => {
-            // get Frame Data from file
-            let decoder = new TextDecoder("utf-8");
-            const frameData = JSON.parse(decoder.decode(data));
-            SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
-        }, undefined, true);
+        Tools.ReadFile(
+            file,
+            (data) => {
+                // get Frame Data from file
+                let decoder = new TextDecoder("utf-8");
+                const frameData = JSON.parse(decoder.decode(data));
+                SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
+            },
+            undefined,
+            true
+        );
     }
 
     save() {
@@ -181,15 +231,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     customSave() {
-        this.setState({uploadInProgress: true});
-        this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
-        this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
-            this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
-            this.setState({uploadInProgress: false});
-        }).catch((err) => {
-            this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
-            this.setState({uploadInProgress: false});
-        });
+        this.setState({ uploadInProgress: true });
+        this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
+        this.props.globalState
+            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState))
+            .then(() => {
+                this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
+                this.setState({ uploadInProgress: false });
+            })
+            .catch((err) => {
+                this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
+                this.setState({ uploadInProgress: false });
+            });
     }
 
     saveToSnippetServer() {
@@ -218,15 +271,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                             regex: new RegExp(oldId, "g"),
-                            replace: material.snippetId
+                            replace: material.snippetId,
                         });
                     }
 
-                    this.props.globalState.hostDocument.defaultView!.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
-
-                }
-                else {
-                    this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                    this.props.globalState.hostDocument.defaultView!.alert(
+                        "NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)"
+                    );
+                } else {
+                    this.props.globalState.hostDocument.defaultView!.alert(
+                        `Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(
+                            2
+                        )} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`
+                    );
                 }
             }
         };
@@ -235,12 +292,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
         var dataToSend = {
-            payload : JSON.stringify({
-                nodeMaterial: json
+            payload: JSON.stringify({
+                nodeMaterial: json,
             }),
             name: "",
             description: "",
-            tags: ""
+            tags: "",
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
@@ -258,14 +315,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material).then(() => {
-            material.build();
-            if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-                this.props.globalState.onResetRequiredObservable.notifyObservers();
-            }
-        }).catch((err) => {
-            this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
-        });
+        NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material)
+            .then(() => {
+                material.build();
+                if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
+                    this.props.globalState.onResetRequiredObservable.notifyObservers();
+                }
+            })
+            .catch((err) => {
+                this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
+            });
     }
 
     changeMode(value: any, force = false, loadDefault = true): boolean {
@@ -273,7 +332,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return false;
         }
 
-        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm("Are your sure? You will lose your current changes (if any) if they are not saved!")) {
             this._modeSelect.current?.setValue(this.props.globalState.mode);
             return false;
         }
@@ -326,9 +385,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div id="propertyTab">
                     <div id="header">
                         <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div id="title">
-                            NODE MATERIAL EDITOR
-                        </div>
+                        <div id="title">NODE MATERIAL EDITOR</div>
                     </div>
                     {this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}
                 </div>
@@ -336,21 +393,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         if (this.state.currentFrameNodePort && this.state.currentFrame) {
-            return (
-                <FrameNodePortPropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame} frameNodePort={this.state.currentFrameNodePort}/>
-            );
+            return <FrameNodePortPropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame} frameNodePort={this.state.currentFrameNodePort} />;
         }
 
         if (this.state.currentNodePort) {
-            return (
-                <NodePortPropertyTabComponent globalState={this.props.globalState} nodePort={this.state.currentNodePort}/>
-            );
+            return <NodePortPropertyTabComponent globalState={this.props.globalState} nodePort={this.state.currentNodePort} />;
         }
 
         if (this.state.currentFrame) {
-            return (
-                <FramePropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame}/>
-            );
+            return <FramePropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame} />;
         }
 
         let gridSize = DataStorage.ReadNumber("GridSize", 20);
@@ -366,51 +417,83 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             <div id="propertyTab">
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">
-                        NODE MATERIAL EDITOR
-                    </div>
+                    <div id="title">NODE MATERIAL EDITOR</div>
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={modeList} onSelect={(value) => this.changeMode(value)} />
-                        <TextLineComponent label="Version" value={Engine.Version}/>
-                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
-                        <TextInputLineComponent label="Comment" multilines={true} value={this.props.globalState.nodeMaterial!.comment} target={this.props.globalState.nodeMaterial} propertyName="comment" globalState={this.props.globalState}/>
-                        <ButtonLineComponent label="Reset to default" onClick={() => {
-                            switch (this.props.globalState.mode) {
-                                case NodeMaterialModes.Material:
-                                    this.props.globalState.nodeMaterial!.setToDefault();
-                                    break;
-                                case NodeMaterialModes.PostProcess:
-                                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
-                                    break;
-                                case NodeMaterialModes.Particle:
-                                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
-                                    break;
-                                case NodeMaterialModes.ProceduralTexture:
-                                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
-                                    break;
-                            }
-                            this.props.globalState.onResetRequiredObservable.notifyObservers();
-                        }} />
+                        <OptionsLineComponent
+                            ref={this._modeSelect}
+                            label="Mode"
+                            target={this}
+                            getSelection={(target) => this.props.globalState.mode}
+                            options={modeList}
+                            onSelect={(value) => this.changeMode(value)}
+                        />
+                        <TextLineComponent label="Version" value={Engine.Version} />
+                        <TextLineComponent
+                            label="Help"
+                            value="doc.babylonjs.com"
+                            underline={true}
+                            onLink={() => window.open("https://doc.babylonjs.com/how_to/node_material", "_blank")}
+                        />
+                        <TextInputLineComponent
+                            label="Comment"
+                            multilines={true}
+                            value={this.props.globalState.nodeMaterial!.comment}
+                            target={this.props.globalState.nodeMaterial}
+                            propertyName="comment"
+                            globalState={this.props.globalState}
+                        />
+                        <ButtonLineComponent
+                            label="Reset to default"
+                            onClick={() => {
+                                switch (this.props.globalState.mode) {
+                                    case NodeMaterialModes.Material:
+                                        this.props.globalState.nodeMaterial!.setToDefault();
+                                        break;
+                                    case NodeMaterialModes.PostProcess:
+                                        this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                                        break;
+                                    case NodeMaterialModes.Particle:
+                                        this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                                        break;
+                                    case NodeMaterialModes.ProceduralTexture:
+                                        this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                        break;
+                                }
+                                this.props.globalState.onResetRequiredObservable.notifyObservers();
+                            }}
+                        />
                     </LineContainerComponent>
                     <LineContainerComponent title="UI">
-                        <ButtonLineComponent label="Zoom to fit" onClick={() => {
-                            this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
-                        }} />
-                        <ButtonLineComponent label="Reorganize" onClick={() => {
-                            this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
-                        }} />
+                        <ButtonLineComponent
+                            label="Zoom to fit"
+                            onClick={() => {
+                                this.props.globalState.onZoomToFitRequiredObservable.notifyObservers();
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="Reorganize"
+                            onClick={() => {
+                                this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
+                            }}
+                        />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <CheckBoxLineComponent label="Embed textures when saving"
+                        <CheckBoxLineComponent
+                            label="Embed textures when saving"
                             isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
                             onSelect={(value: boolean) => {
                                 DataStorage.WriteBoolean("EmbedTextures", value);
                             }}
                         />
-                        <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5}
-                            decimalCount={0} globalState={this.props.globalState}
+                        <SliderLineComponent
+                            label="Grid size"
+                            minimum={0}
+                            maximum={100}
+                            step={5}
+                            decimalCount={0}
+                            globalState={this.props.globalState}
                             directValue={gridSize}
                             onChange={(value) => {
                                 DataStorage.WriteNumber("GridSize", value);
@@ -418,7 +501,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.forceUpdate();
                             }}
                         />
-                        <CheckBoxLineComponent label="Show grid"
+                        <CheckBoxLineComponent
+                            label="Show grid"
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
                             onSelect={(value: boolean) => {
                                 DataStorage.WriteBoolean("ShowGrid", value);
@@ -428,37 +512,48 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                        <ButtonLineComponent label="Save" onClick={() => {
-                            this.save();
-                        }} />
-                        <ButtonLineComponent label="Generate code" onClick={() => {
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
-                        }} />
-                        <ButtonLineComponent label="Export shaders" onClick={() => {
-                            this.props.globalState.nodeMaterial.build();
-                            StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
-                        }} />
-                        {
-                            this.props.globalState.customSave &&
-                            <ButtonLineComponent label={this.props.globalState.customSave!.label} isDisabled={this.state.uploadInProgress} onClick={() => {
-                                this.customSave();
-                            }} />
-                        }
-                        <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                        <ButtonLineComponent
+                            label="Save"
+                            onClick={() => {
+                                this.save();
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="Generate code"
+                            onClick={() => {
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="Export shaders"
+                            onClick={() => {
+                                this.props.globalState.nodeMaterial.build();
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
+                            }}
+                        />
+                        {this.props.globalState.customSave && (
+                            <ButtonLineComponent
+                                label={this.props.globalState.customSave!.label}
+                                isDisabled={this.state.uploadInProgress}
+                                onClick={() => {
+                                    this.customSave();
+                                }}
+                            />
+                        )}
+                        <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
-                    {
-                        !this.props.globalState.customSave &&
+                    {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">
-                            {
-                                this.props.globalState.nodeMaterial!.snippetId &&
-                                <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial!.snippetId} />
-                            }
+                            {this.props.globalState.nodeMaterial!.snippetId && <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial!.snippetId} />}
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                            <ButtonLineComponent label="Save to snippet server" onClick={() => {
-                                this.saveToSnippetServer();
-                            }} />
+                            <ButtonLineComponent
+                                label="Save to snippet server"
+                                onClick={() => {
+                                    this.saveToSnippetServer();
+                                }}
+                            />
                         </LineContainerComponent>
-                    }
+                    )}
                     <InputsPropertyTabComponent globalState={this.props.globalState} inputs={this.props.globalState.nodeMaterial.getInputBlocks()}></InputsPropertyTabComponent>
                 </div>
             </div>

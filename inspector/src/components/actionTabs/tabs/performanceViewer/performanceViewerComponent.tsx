@@ -12,10 +12,10 @@ import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarCom
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
-import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
+import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { PerformancePlayheadButtonComponent } from "./performancePlayheadButtonComponent";
 
-require('./scss/performanceViewer.scss');
+require("./scss/performanceViewer.scss");
 
 interface IPerformanceViewerComponentProps {
     scene: Scene;
@@ -29,11 +29,11 @@ const isEnabled = false;
 
 // list of strategies to add to perf graph automatically.
 const defaultStrategies = [
-                            PerfCollectionStrategy.GpuFrameTimeStrategy(),
-                            PerfCollectionStrategy.FpsStrategy(), 
-                            PerfCollectionStrategy.DrawCallsStrategy(),
-                            PerfCollectionStrategy.ActiveMeshesStrategy(),
-                        ];
+    PerfCollectionStrategy.GpuFrameTimeStrategy(),
+    PerfCollectionStrategy.FpsStrategy(),
+    PerfCollectionStrategy.DrawCallsStrategy(),
+    PerfCollectionStrategy.ActiveMeshesStrategy(),
+];
 
 enum RecordingState {
     NotRecording = "Begin Recording",
@@ -45,7 +45,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     const [isOpen, setIsOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [recordingState, setRecordingState] = useState(RecordingState.NotRecording);
-    const [ performanceCollector, setPerformanceCollector ] = useState<PerformanceViewerCollector | undefined>();
+    const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
     const [returnToLiveObservable] = useState(new Observable<void>());
     const popupRef = useRef<PopupComponent | null>(null);
@@ -57,12 +57,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         }
         setIsOpen(false);
         setIsLoaded(false);
-    }
+    };
 
     const onPerformanceButtonClick = () => {
         setIsLoaded(false);
         setIsOpen(true);
-    }
+    };
 
     const onLoadClick = (file: File) => {
         Tools.ReadFile(file, (data: string) => {
@@ -77,11 +77,11 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 setIsLoaded(false);
             }
         });
-    }
+    };
 
     const onExportClick = () => {
         performanceCollector?.exportDataToCsv();
-    }
+    };
 
     const onResize = () => {
         if (!popupRef.current) {
@@ -90,16 +90,16 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         const window = popupRef.current.getWindow();
         const width = window?.innerWidth ?? 0;
         const height = window?.innerHeight ?? 0;
-        layoutObservable.notifyObservers({width, height});
-    }
+        layoutObservable.notifyObservers({ width, height });
+    };
 
     const onToggleRecording = () => {
         if (recordingState === RecordingState.Recording) {
             setRecordingState(RecordingState.NotRecording);
         } else {
             setRecordingState(RecordingState.Recording);
-        }    
-    }
+        }
+    };
 
     useEffect(() => {
         const perfCollector = scene.getPerfCollector();
@@ -128,39 +128,38 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
         return () => {
             performanceCollector?.stop();
-        }
-    }, [recordingState])
+        };
+    }, [recordingState]);
 
     return (
         <>
-            {
-                isEnabled &&
+            {isEnabled && (
                 <LineContainerComponent title="Performance Viewer">
                     <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
                     <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
                     {!isOpen && <ButtonLineComponent label={recordingState} onClick={onToggleRecording} />}
                 </LineContainerComponent>
-            }
-            {
-                isOpen &&
-                <PopupComponent
-                    id="perf-viewer"
-                    title="Performance Viewer"
-                    size={initialWindowSize}
-                    ref={popupRef}
-                    onResize={onResize}
-                    onClose={onClosePerformanceViewer}
-                >
+            )}
+            {isOpen && (
+                <PopupComponent id="perf-viewer" title="Performance Viewer" size={initialWindowSize} ref={popupRef} onResize={onResize} onClose={onClosePerformanceViewer}>
                     <div id="performance-viewer">
-                        {performanceCollector && <>
-                            <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
-                            <PerformanceViewerSidebarComponent collector={performanceCollector} />
-                            <CanvasGraphComponent id="performance-viewer-graph" returnToPlayheadObservable={returnToLiveObservable} layoutObservable={layoutObservable} scene={scene} collector={performanceCollector} />
-                        </>}
+                        {performanceCollector && (
+                            <>
+                                <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
+                                <PerformanceViewerSidebarComponent collector={performanceCollector} />
+                                <CanvasGraphComponent
+                                    id="performance-viewer-graph"
+                                    returnToPlayheadObservable={returnToLiveObservable}
+                                    layoutObservable={layoutObservable}
+                                    scene={scene}
+                                    collector={performanceCollector}
+                                />
+                            </>
+                        )}
                     </div>
                 </PopupComponent>
-        }
+            )}
         </>
-    )
-}
+    );
+};

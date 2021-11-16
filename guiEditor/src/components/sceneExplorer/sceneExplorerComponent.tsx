@@ -58,9 +58,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         });
 
         this._onPropertyChangedObservable = this.props.globalState.onPropertyChangedObservable.add((event: PropertyChangedEvent) => {
-            if (event.property === "name" ||
-                event.property === "_columnNumber" ||
-                event.property === "_rowNumber") {
+            if (event.property === "name" || event.property === "_columnNumber" || event.property === "_rowNumber") {
                 this.forceUpdate();
             }
         });
@@ -211,23 +209,33 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
 
         return (
-            <div id="tree"
-                onDrop={event => {
+            <div
+                id="tree"
+                onDrop={(event) => {
                     this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                 }}
-                onDragOver={event => {
+                onDragOver={(event) => {
                     event.preventDefault();
                 }}
-                onClick={event => {
+                onClick={(event) => {
                     if (!this.props.globalState.selectionLock) {
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    }
-                    else {
+                    } else {
                         this.props.globalState.selectionLock = false;
                     }
-                }}>
-
-                {guiElements && guiElements.length > 0 && <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />}
+                }}
+            >
+                {guiElements && guiElements.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={guiElements}
+                        label="GUI"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
             </div>
         );
     }

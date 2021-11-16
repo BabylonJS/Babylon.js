@@ -11,9 +11,9 @@ const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/
 const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 
 interface IStackPanelPropertyGridComponentProps {
-    stackPanel: StackPanel,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    stackPanel: StackPanel;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class StackPanelPropertyGridComponent extends React.Component<IStackPanelPropertyGridComponentProps> {
@@ -29,8 +29,22 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={stackPanel} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent iconLabel={"Clip children"} icon={clipContentsIcon} label="" target={stackPanel} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent iconLabel={"Vertical"} icon={verticalMarginIcon} label="" target={stackPanel} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent
+                    iconLabel={"Clip children"}
+                    icon={clipContentsIcon}
+                    label=""
+                    target={stackPanel}
+                    propertyName="clipChildren"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <CheckBoxLineComponent
+                    iconLabel={"Vertical"}
+                    icon={verticalMarginIcon}
+                    label=""
+                    target={stackPanel}
+                    propertyName="isVertical"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

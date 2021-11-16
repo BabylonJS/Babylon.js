@@ -34,13 +34,16 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             displayGreen: true,
             displayBlue: true,
             displayAlpha: true,
-            face: 0
+            face: 0,
         };
 
         this.canvasRef = React.createRef();
     }
 
-    shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
+    shouldComponentUpdate(
+        nextProps: ITextureLineComponentProps,
+        nextState: { displayRed: boolean; displayGreen: boolean; displayBlue: boolean; displayAlpha: boolean; face: number }
+    ): boolean {
         return true;
     }
 
@@ -56,7 +59,14 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         TextureLineComponent.UpdatePreview(this.canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
-    public static async UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: () => void, globalState?: any) {
+    public static async UpdatePreview(
+        previewCanvas: HTMLCanvasElement,
+        texture: BaseTexture,
+        width: number,
+        options: ITextureLineComponentState,
+        onReady?: () => void,
+        globalState?: any
+    ) {
         if (!texture.isReady() && texture._texture) {
             texture._texture.onLoadedObservable.addOnce(() => {
                 TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
@@ -92,13 +102,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             globalState.blockMutationUpdates = true;
         }
 
-        let rtt = new RenderTargetTexture(
-            "temp",
-            { width: width, height: height },
-            scene, false);
+        let rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
 
         passPostProcess.externalTextureSamplerBinding = true;
-        passPostProcess.onApply = function(effect) {
+        passPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
         };
 
@@ -118,7 +125,6 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             if (!texture.isCube) {
                 if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
                     for (var i = 0; i < width * height * 4; i += 4) {
-
                         if (!options.displayRed) {
                             data[i] = 0;
                         }
@@ -159,7 +165,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             previewCanvas.width = width;
             previewCanvas.height = height;
-            var context = previewCanvas.getContext('2d');
+            var context = previewCanvas.getContext("2d");
 
             if (context) {
                 // Copy the pixels to the preview canvas
@@ -191,27 +197,62 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
         return (
             <div className="textureLine">
-                {
-                    !this.props.hideChannelSelect && texture.isCube &&
+                {!this.props.hideChannelSelect && texture.isCube && (
                     <div className="control3D">
-                        <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>PX</button>
-                        <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>NX</button>
-                        <button className={this.state.face === 2 ? "py command selected" : "py command"} onClick={() => this.setState({ face: 2 })}>PY</button>
-                        <button className={this.state.face === 3 ? "ny command selected" : "ny command"} onClick={() => this.setState({ face: 3 })}>NY</button>
-                        <button className={this.state.face === 4 ? "pz command selected" : "pz command"} onClick={() => this.setState({ face: 4 })}>PZ</button>
-                        <button className={this.state.face === 5 ? "nz command selected" : "nz command"} onClick={() => this.setState({ face: 5 })}>NZ</button>
+                        <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>
+                            PX
+                        </button>
+                        <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>
+                            NX
+                        </button>
+                        <button className={this.state.face === 2 ? "py command selected" : "py command"} onClick={() => this.setState({ face: 2 })}>
+                            PY
+                        </button>
+                        <button className={this.state.face === 3 ? "ny command selected" : "ny command"} onClick={() => this.setState({ face: 3 })}>
+                            NY
+                        </button>
+                        <button className={this.state.face === 4 ? "pz command selected" : "pz command"} onClick={() => this.setState({ face: 4 })}>
+                            PZ
+                        </button>
+                        <button className={this.state.face === 5 ? "nz command selected" : "nz command"} onClick={() => this.setState({ face: 5 })}>
+                            NZ
+                        </button>
                     </div>
-                }
-                {
-                    !this.props.hideChannelSelect && !texture.isCube &&
+                )}
+                {!this.props.hideChannelSelect && !texture.isCube && (
                     <div className="control">
-                        <button className={this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command"} onClick={() => this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false })}>R</button>
-                        <button className={this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command"} onClick={() => this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false })}>G</button>
-                        <button className={this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command"} onClick={() => this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false })}>B</button>
-                        <button className={this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command"} onClick={() => this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true })}>A</button>
-                        <button className={this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command"} onClick={() => this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true })}>ALL</button>
+                        <button
+                            className={this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command"}
+                            onClick={() => this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false })}
+                        >
+                            R
+                        </button>
+                        <button
+                            className={this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command"}
+                            onClick={() => this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false })}
+                        >
+                            G
+                        </button>
+                        <button
+                            className={this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command"}
+                            onClick={() => this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false })}
+                        >
+                            B
+                        </button>
+                        <button
+                            className={this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command"}
+                            onClick={() => this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true })}
+                        >
+                            A
+                        </button>
+                        <button
+                            className={this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command"}
+                            onClick={() => this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true })}
+                        >
+                            ALL
+                        </button>
                     </div>
-                }
+                )}
                 <canvas ref={this.canvasRef} className="preview" />
             </div>
         );

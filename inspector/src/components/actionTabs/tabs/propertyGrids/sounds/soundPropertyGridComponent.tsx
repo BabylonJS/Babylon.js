@@ -6,17 +6,17 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
-import { Sound } from 'babylonjs/Audio/sound';
-import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
-import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
-import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
-import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
+import { GlobalState } from "../../../../globalState";
+import { Sound } from "babylonjs/Audio/sound";
+import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
 
 interface ISoundPropertyGridComponentProps {
     globalState: GlobalState;
-    sound: Sound;    
+    sound: Sound;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -34,8 +34,14 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
             <div className="pane">
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={sound.getClassName()} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={sound} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                    <TextLineComponent label="Status" value={sound.isPaused ? "Paused" : (sound.isPlaying ? "Playing" : "Stopped")}/>
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Name"
+                        target={sound}
+                        propertyName="name"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextLineComponent label="Status" value={sound.isPaused ? "Paused" : sound.isPlaying ? "Playing" : "Stopped"} />
                     {/* {
                         postProcess.width &&
                         <TextLineComponent label="Width" value={postProcess.width.toString()} />
@@ -58,30 +64,40 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
                     }} />                       */}
                 </LineContainerComponent>
                 <LineContainerComponent title="COMMANDS" selection={this.props.globalState}>
-                    {
-                        sound.isPlaying &&
-                        <ButtonLineComponent label="Pause" onClick={() => {
-                            sound.pause();
-                            this.forceUpdate();
-                        }} /> 
-                    }
-                    {
-                        !sound.isPlaying &&
-                        <ButtonLineComponent label="Play" onClick={() => {
-                            sound.play();
-                            this.forceUpdate();
-                        }} /> 
-                    }
-                     <SliderLineComponent label="Samples" 
-                        target={sound} directValue={sound.getVolume()} 
-                        onChange={value => {
+                    {sound.isPlaying && (
+                        <ButtonLineComponent
+                            label="Pause"
+                            onClick={() => {
+                                sound.pause();
+                                this.forceUpdate();
+                            }}
+                        />
+                    )}
+                    {!sound.isPlaying && (
+                        <ButtonLineComponent
+                            label="Play"
+                            onClick={() => {
+                                sound.play();
+                                this.forceUpdate();
+                            }}
+                        />
+                    )}
+                    <SliderLineComponent
+                        label="Samples"
+                        target={sound}
+                        directValue={sound.getVolume()}
+                        onChange={(value) => {
                             sound.setVolume(value);
                             this.forceUpdate();
                         }}
-                        minimum={0} maximum={5} step={0.1} decimalCount={1} 
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Loop" target={sound} propertyName="loop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                      
-               </LineContainerComponent>
+                        minimum={0}
+                        maximum={5}
+                        step={0.1}
+                        decimalCount={1}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent label="Loop" target={sound} propertyName="loop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
             </div>
         );
     }

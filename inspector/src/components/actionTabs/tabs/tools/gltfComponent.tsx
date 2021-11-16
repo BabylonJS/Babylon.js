@@ -85,17 +85,17 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
         var animationStartMode =
-            (typeof GLTFLoaderAnimationStartMode !== "undefined"
+            typeof GLTFLoaderAnimationStartMode !== "undefined"
                 ? [
                       { label: "None", value: GLTFLoaderAnimationStartMode.NONE },
                       { label: "First", value: GLTFLoaderAnimationStartMode.FIRST },
                       { label: "ALL", value: GLTFLoaderAnimationStartMode.ALL },
                   ]
                 : [
-                    { label: "None", value: 0 },
-                    { label: "First", value: 1 },
-                    { label: "ALL", value: 2 },
-                ]);
+                      { label: "None", value: 0 },
+                      { label: "First", value: 1 },
+                      { label: "ALL", value: 2 },
+                  ];
 
         var coordinateSystemMode =
             typeof GLTFLoaderCoordinateSystemMode !== "undefined"
@@ -104,9 +104,9 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                       { label: "Right handed", value: GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED },
                   ]
                 : [
-                    { label: "Auto", value: 0 },
-                    { label: "Right handed", value: 1 },
-                ];
+                      { label: "Auto", value: 0 },
+                      { label: "Right handed", value: 1 },
+                  ];
 
         return (
             <div>
@@ -123,31 +123,133 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
                 <LineContainerComponent title="GLTF EXTENSIONS" closed={true} selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="EXT_lights_image_based" isSelected={() => extensionStates["EXT_lights_image_based"].enabled} onSelect={(value) => (extensionStates["EXT_lights_image_based"].enabled = value)} />
-                    <CheckBoxLineComponent label="EXT_mesh_gpu_instancing" isSelected={() => extensionStates["EXT_mesh_gpu_instancing"].enabled} onSelect={(value) => (extensionStates["EXT_mesh_gpu_instancing"].enabled = value)} />
-                    <CheckBoxLineComponent label="EXT_texture_webp" isSelected={() => extensionStates["EXT_texture_webp"].enabled} onSelect={(value) => (extensionStates["EXT_texture_webp"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_draco_mesh_compression" isSelected={() => extensionStates["KHR_draco_mesh_compression"].enabled} onSelect={(value) => (extensionStates["KHR_draco_mesh_compression"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_pbrSpecularGloss..." isSelected={() => extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled} onSelect={(value) => (extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_clearcoat" isSelected={() => extensionStates["KHR_materials_clearcoat"].enabled} onSelect={(value) => (extensionStates["KHR_materials_clearcoat"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_emissive_strength" isSelected={() => extensionStates["KHR_materials_emissive_strength"].enabled} onSelect={(value) => (extensionStates["KHR_materials_emissive_strength"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_ior" isSelected={() => extensionStates["KHR_materials_ior"].enabled} onSelect={(value) => (extensionStates["KHR_materials_ior"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_sheen" isSelected={() => extensionStates["KHR_materials_sheen"].enabled} onSelect={(value) => (extensionStates["KHR_materials_sheen"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_specular" isSelected={() => extensionStates["KHR_materials_specular"].enabled} onSelect={(value) => (extensionStates["KHR_materials_specular"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_unlit" isSelected={() => extensionStates["KHR_materials_unlit"].enabled} onSelect={(value) => (extensionStates["KHR_materials_unlit"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_variants" isSelected={() => extensionStates["KHR_materials_variants"].enabled} onSelect={(value) => (extensionStates["KHR_materials_variants"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_transmission" isSelected={() => extensionStates["KHR_materials_transmission"].enabled} onSelect={(value) => (extensionStates["KHR_materials_transmission"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_translucency" isSelected={() => extensionStates["KHR_materials_translucency"].enabled} onSelect={(value) => (extensionStates["KHR_materials_translucency"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_materials_volume" isSelected={() => extensionStates["KHR_materials_volume"].enabled} onSelect={(value) => (extensionStates["KHR_materials_volume"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_mesh_quantization" isSelected={() => extensionStates["KHR_mesh_quantization"].enabled} onSelect={(value) => (extensionStates["KHR_mesh_quantization"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_lights_punctual" isSelected={() => extensionStates["KHR_lights_punctual"].enabled} onSelect={(value) => (extensionStates["KHR_lights_punctual"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_texture_basisu" isSelected={() => extensionStates["KHR_texture_basisu"].enabled} onSelect={(value) => (extensionStates["KHR_texture_basisu"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_texture_transform" isSelected={() => extensionStates["KHR_texture_transform"].enabled} onSelect={(value) => (extensionStates["KHR_texture_transform"].enabled = value)} />
-                    <CheckBoxLineComponent label="KHR_xmp_json_ld" isSelected={() => extensionStates["KHR_xmp_json_ld"].enabled} onSelect={(value) => (extensionStates["KHR_xmp_json_ld"].enabled = value)} />
-                    <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={(value) => (extensionStates["MSFT_lod"].enabled = value)} />
-                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" isInteger={true} />
-                    <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={(value) => (extensionStates["MSFT_minecraftMesh"].enabled = value)} />
-                    <CheckBoxLineComponent label="MSFT_sRGBFactors" isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled} onSelect={(value) => (extensionStates["MSFT_sRGBFactors"].enabled = value)} />
-                    <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={(value) => (extensionStates["MSFT_audio_emitter"].enabled = value)} />
+                    <CheckBoxLineComponent
+                        label="EXT_lights_image_based"
+                        isSelected={() => extensionStates["EXT_lights_image_based"].enabled}
+                        onSelect={(value) => (extensionStates["EXT_lights_image_based"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="EXT_mesh_gpu_instancing"
+                        isSelected={() => extensionStates["EXT_mesh_gpu_instancing"].enabled}
+                        onSelect={(value) => (extensionStates["EXT_mesh_gpu_instancing"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="EXT_texture_webp"
+                        isSelected={() => extensionStates["EXT_texture_webp"].enabled}
+                        onSelect={(value) => (extensionStates["EXT_texture_webp"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_draco_mesh_compression"
+                        isSelected={() => extensionStates["KHR_draco_mesh_compression"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_draco_mesh_compression"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_pbrSpecularGloss..."
+                        isSelected={() => extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_clearcoat"
+                        isSelected={() => extensionStates["KHR_materials_clearcoat"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_clearcoat"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_emissive_strength"
+                        isSelected={() => extensionStates["KHR_materials_emissive_strength"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_emissive_strength"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_ior"
+                        isSelected={() => extensionStates["KHR_materials_ior"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_ior"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_sheen"
+                        isSelected={() => extensionStates["KHR_materials_sheen"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_sheen"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_specular"
+                        isSelected={() => extensionStates["KHR_materials_specular"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_specular"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_unlit"
+                        isSelected={() => extensionStates["KHR_materials_unlit"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_unlit"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_variants"
+                        isSelected={() => extensionStates["KHR_materials_variants"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_variants"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_transmission"
+                        isSelected={() => extensionStates["KHR_materials_transmission"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_transmission"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_translucency"
+                        isSelected={() => extensionStates["KHR_materials_translucency"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_translucency"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_materials_volume"
+                        isSelected={() => extensionStates["KHR_materials_volume"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_volume"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_mesh_quantization"
+                        isSelected={() => extensionStates["KHR_mesh_quantization"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_mesh_quantization"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_lights_punctual"
+                        isSelected={() => extensionStates["KHR_lights_punctual"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_lights_punctual"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_texture_basisu"
+                        isSelected={() => extensionStates["KHR_texture_basisu"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_texture_basisu"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_texture_transform"
+                        isSelected={() => extensionStates["KHR_texture_transform"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_texture_transform"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="KHR_xmp_json_ld"
+                        isSelected={() => extensionStates["KHR_xmp_json_ld"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_xmp_json_ld"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="MSFT_lod"
+                        isSelected={() => extensionStates["MSFT_lod"].enabled}
+                        onSelect={(value) => (extensionStates["MSFT_lod"].enabled = value)}
+                    />
+                    <FloatLineComponent
+                        label="Maximum LODs"
+                        target={extensionStates["MSFT_lod"]}
+                        propertyName="maxLODsToLoad"
+                        additionalClass="gltf-extension-property"
+                        isInteger={true}
+                    />
+                    <CheckBoxLineComponent
+                        label="MSFT_minecraftMesh"
+                        isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled}
+                        onSelect={(value) => (extensionStates["MSFT_minecraftMesh"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="MSFT_sRGBFactors"
+                        isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled}
+                        onSelect={(value) => (extensionStates["MSFT_sRGBFactors"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="MSFT_audio_emitter"
+                        isSelected={() => extensionStates["MSFT_audio_emitter"].enabled}
+                        onSelect={(value) => (extensionStates["MSFT_audio_emitter"].enabled = value)}
+                    />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
                 {this.props.globalState.validationResults && this.renderValidation()}
