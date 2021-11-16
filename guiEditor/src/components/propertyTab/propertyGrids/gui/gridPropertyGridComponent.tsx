@@ -12,10 +12,11 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 const gridColumnIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg");
 const gridRowIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg"); //needs change
 const confirmGridElementDark: string = require("../../../../sharedUiComponents/imgs/confirmGridElementDark.svg");
-const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/subtractGridElementDark.svg");
+const subtractGridElementDark: string = require("../../../../sharedUiComponents/imgs/subtractGridElementDark.svg");
 const addGridElementDark: string = require("../../../../sharedUiComponents/imgs/addGridElementDark.svg");
 const cancelGridElementDark: string = require("../../../../sharedUiComponents/imgs/cancelGridElementDark.svg");
-
+const valueChangedGridDark: string = require("../../../../sharedUiComponents/imgs/valueChangedGridDark.svg");
+const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/deleteGridElementDark.svg");
 
 interface IGridPropertyGridComponentProps {
     grid: Grid,
@@ -43,16 +44,25 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._rowDefinitions.map((rd, i) => {
                 return (
-                    <div key={`r${i}`} className={this._removingRow && i === this._rowEditFlags.length -1 ?  "ge-grid-remove" : this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
-                        <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label="" icon={gridColumnIconDark} iconLabel={`Row ${i}`} value={rd} numbersOnly={true}
-                            onChange={(newValue) => {
-                                this._rowDefinitions[i] = newValue;
-                                this._rowEditFlags[i] = true;
-                                this._editedRow = true;
-                                this._removingRow = false;
-                                this._rowChild = false;
-                                this.forceUpdate();
-                            }} />
+                    <div key={`r${i}`} className={this._removingRow && i === this._rowEditFlags.length - 1 ? "ge-grid-remove" : this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
+                        <div className="ge-grid-divider">
+                            <TextInputLineComponent lockObject={this.props.lockObject} key={`rText${i}`} label="" icon={gridColumnIconDark} iconLabel={`Row ${i}`} value={rd} numbersOnly={true}
+                                onChange={(newValue) => {
+                                    this._rowDefinitions[i] = newValue;
+                                    this._rowEditFlags[i] = true;
+                                    this._editedRow = true;
+                                    this._removingRow = false;
+                                    this._rowChild = false;
+                                    this.forceUpdate();
+                                }} />
+                            <TextLineComponent tooltip="" label={`[${i}]`} value="" color="grey"></TextLineComponent>
+                            {this._removingRow && i === this._rowEditFlags.length - 1 &&
+                                <TextLineComponent icon={deleteGridElementDark} label=" " value=" " color="grey"></TextLineComponent>
+                            }
+                            {this._rowEditFlags[i] &&
+                                <TextLineComponent icon={valueChangedGridDark} label=" " value=" " color="grey"></TextLineComponent>
+                            }
+                        </div>
                     </div>
                 )
             })
@@ -92,16 +102,25 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return (
             this._columnDefinitions.map((cd, i) => {
                 return (
-                    <div key={`c${i}`} className={this._removingColumn && i === this._columnEditFlags.length-1 ? "ge-grid-remove" : this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
-                        <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label="" icon={gridRowIconDark} iconLabel={`Column ${i}`} value={cd} numbersOnly={true}
-                            onChange={(newValue) => {
-                                this._columnDefinitions[i] = newValue;
-                                this._columnEditFlags[i] = true;
-                                this._editedColumn = true;
-                                this._removingColumn = false;
-                                this._columnChild = false;
-                                this.forceUpdate();
-                            }} />
+                    <div key={`c${i}`} className={this._removingColumn && i === this._columnEditFlags.length - 1 ? "ge-grid-remove" : this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
+                        <div className="ge-grid-divider">
+                            <TextInputLineComponent lockObject={this.props.lockObject} key={`ctext${i}`} label="" icon={gridRowIconDark} iconLabel={`Column ${i}`} value={cd} numbersOnly={true}
+                                onChange={(newValue) => {
+                                    this._columnDefinitions[i] = newValue;
+                                    this._columnEditFlags[i] = true;
+                                    this._editedColumn = true;
+                                    this._removingColumn = false;
+                                    this._columnChild = false;
+                                    this.forceUpdate();
+                                }} />
+                            <TextLineComponent tooltip="" label={`[${i}]`} value="" color="grey"></TextLineComponent>
+                            {this._removingColumn && i === this._columnEditFlags.length - 1 &&
+                                <TextLineComponent icon={deleteGridElementDark} label=" " value=" " color="grey"></TextLineComponent>
+                            }
+                            {this._columnEditFlags[i] &&
+                                <TextLineComponent icon={valueChangedGridDark} label=" " value=" " color="grey"></TextLineComponent>
+                            }
+                        </div>
                     </div>
                 )
             })
@@ -294,7 +313,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.resetValues();
                                 this.forceUpdate();
                             }}
-                        />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={deleteGridElementDark} shortcut="" isActive={false}
+                        />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={subtractGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.columnCount; ++i) {
@@ -367,7 +386,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             this.forceUpdate();
                         }}
                     /> {(grid.columnCount > 1 && !this._removingColumn) &&
-                        <CommandButtonComponent tooltip="Remove Column" icon={deleteGridElementDark} shortcut="" isActive={false}
+                        <CommandButtonComponent tooltip="Remove Column" icon={subtractGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.rowCount; ++i) {
@@ -397,25 +416,25 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.forceUpdate();
                             }} />
                     </>}
-                {this._removingColumn &&
-                    <>
-                        <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
-                            onClick={() => {
-                                grid.removeColumnDefinition(grid.columnCount - 1);
-                                this.setColumnValues();
-                                this.resizeColumn();
-                                this.forceUpdate();
-                                this._removingColumn = false;
-                                this._columnChild = false;
-                            }}
-                        />
-                        <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
-                            onClick={() => {
-                                this._removingColumn = false;
-                                this._columnChild = false;
-                                this.forceUpdate();
-                            }}
-                        /></>} </div>
+                    {this._removingColumn &&
+                        <>
+                            <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
+                                onClick={() => {
+                                    grid.removeColumnDefinition(grid.columnCount - 1);
+                                    this.setColumnValues();
+                                    this.resizeColumn();
+                                    this.forceUpdate();
+                                    this._removingColumn = false;
+                                    this._columnChild = false;
+                                }}
+                            />
+                            <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
+                                onClick={() => {
+                                    this._removingColumn = false;
+                                    this._columnChild = false;
+                                    this.forceUpdate();
+                                }}
+                            /></>} </div>
                 {this._columnChild && <>
                     <TextLineComponent tooltip="" label="This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?" value=" " color="grey"></TextLineComponent></>}
             </div>
