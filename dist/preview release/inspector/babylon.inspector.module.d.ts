@@ -536,11 +536,11 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
     }
 }
 declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
-    import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
-    import { Observable } from 'babylonjs/Misc/observable';
-    import * as React from 'react';
+    import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+    import { Observable } from "babylonjs/Misc/observable";
+    import * as React from "react";
     import { IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
-    import { Scene } from 'babylonjs/scene';
+    import { Scene } from "babylonjs/scene";
     interface ICanvasGraphComponentProps {
         id: string;
         scene: Scene;
@@ -657,7 +657,7 @@ declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorPicker" 
 }
 declare module "babylonjs-inspector/sharedUiComponents/lines/colorPickerComponent" {
     import * as React from "react";
-    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    import { Color4, Color3 } from "babylonjs/Maths/math.color";
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
         linearHint?: boolean;
@@ -683,15 +683,15 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/colorPickerComponen
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent" {
-    import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
+    import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
     interface IPerformanceViewerSidebarComponentProps {
         collector: PerformanceViewerCollector;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent" {
-    import { Observable } from 'babylonjs/Misc/observable';
-    import * as React from 'react';
+    import { Observable } from "babylonjs/Misc/observable";
+    import * as React from "react";
     interface IPerformancePlayheadButtonProps {
         returnToPlayhead: Observable<void>;
     }
@@ -700,7 +700,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
     import { Scene } from "babylonjs/scene";
     import * as React from "react";
-    import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
+    import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
     interface IPerformanceViewerComponentProps {
         scene: Scene;
     }
@@ -971,7 +971,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/color3LineComponent
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
-    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     export interface IColor3LineComponentProps {
         label: string;
@@ -1095,7 +1095,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cus
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IInspectable } from 'babylonjs/Misc/iInspectable';
+    import { IInspectable } from "babylonjs/Misc/iInspectable";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ICustomPropertyGridComponentProps {
         globalState: GlobalState;
@@ -2117,9 +2117,9 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar" {
-    import * as React from 'react';
+    import * as React from "react";
     import { IToolData, IToolType, IMetadata } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
-    import { Color4 } from 'babylonjs/Maths/math.color';
+    import { Color4 } from "babylonjs/Maths/math.color";
     export interface ITool extends IToolData {
         instance: IToolType;
     }
@@ -2147,12 +2147,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar" {
-    import * as React from 'react';
+    import * as React from "react";
     export interface IChannel {
         visible: boolean;
         editable: boolean;
         name: string;
-        id: 'R' | 'G' | 'B' | 'A';
+        id: "R" | "G" | "B" | "A";
         icon: any;
     }
     interface IChannelsBarProps {
@@ -2289,10 +2289,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/propertiesBar" {
-    import * as React from 'react';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import * as React from "react";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { IPixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
-    import { ISize } from 'babylonjs/Maths/math.size';
+    import { ISize } from "babylonjs/Maths/math.size";
     interface IPropertiesBarProps {
         texture: BaseTexture;
         size: ISize;
@@ -2327,8 +2327,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar" {
-    import * as React from 'react';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import * as React from "react";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     interface IBottomBarProps {
         texture: BaseTexture;
         mipLevel: number;
@@ -2338,8 +2338,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasComponent" {
-    import * as React from 'react';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import * as React from "react";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     interface ITextureCanvasComponentProps {
         canvasUI: React.RefObject<HTMLCanvasElement>;
         canvas2D: React.RefObject<HTMLCanvasElement>;
@@ -2371,7 +2371,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export default _default;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolSettings" {
-    import * as React from 'react';
+    import * as React from "react";
     import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
     interface IToolSettingsProps {
         tool: ITool | undefined;
@@ -2381,15 +2381,15 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { IPixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
     import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
     import { IChannel } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar";
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-    import { Scene } from 'babylonjs/scene';
-    import { ISize } from 'babylonjs/Maths/math.size';
-    import { Vector2 } from 'babylonjs/Maths/math.vector';
-    import { PointerInfo } from 'babylonjs/Events/pointerEvents';
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { Scene } from "babylonjs/scene";
+    import { ISize } from "babylonjs/Maths/math.size";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { PointerInfo } from "babylonjs/Events/pointerEvents";
     import { PopupComponent } from "babylonjs-inspector/components/popupComponent";
     interface ITextureEditorComponentProps {
         texture: BaseTexture;
@@ -3294,7 +3294,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+    import { PostProcess } from "babylonjs/PostProcesses/postProcess";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ICommonPostProcessPropertyGridComponentProps {
         globalState: GlobalState;
@@ -3331,7 +3331,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+    import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ICommonRenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
@@ -3385,7 +3385,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
+    import { SSAORenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ISSAORenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
@@ -3403,7 +3403,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+    import { SSAO2RenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ISSAO2RenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
@@ -3422,7 +3422,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Skeleton } from 'babylonjs/Bones/skeleton';
+    import { Skeleton } from "babylonjs/Bones/skeleton";
     interface ISkeletonPropertyGridComponentProps {
         globalState: GlobalState;
         skeleton: Skeleton;
@@ -3449,7 +3449,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Bone } from 'babylonjs/Bones/bone';
+    import { Bone } from "babylonjs/Bones/bone";
     interface IBonePropertyGridComponentProps {
         globalState: GlobalState;
         bone: Bone;
@@ -3558,9 +3558,9 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/vector4LineComponen
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/gradientStepComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
     interface IGradientStepComponentProps {
         globalState: GlobalState;
         step: GradientBlockColorStep;
@@ -3590,7 +3590,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyComponent
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/gradientNodePropertyComponent" {
     import * as React from "react";
-    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
     import { IPropertyComponentProps } from "babylonjs-inspector/components/actionTabs/tabs/propertyComponentProps";
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         private _gradientBlock;
@@ -3646,7 +3646,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: NodeMaterial;
@@ -3670,8 +3670,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Material } from 'babylonjs/Materials/material';
-    import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+    import { Material } from "babylonjs/Materials/material";
+    import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
     interface IMultiMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: MultiMaterial;
@@ -3691,7 +3691,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { Observable } from "babylonjs/Misc/observable";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { BoxParticleEmitter } from 'babylonjs/Particles/EmitterTypes/boxParticleEmitter';
+    import { BoxParticleEmitter } from "babylonjs/Particles/EmitterTypes/boxParticleEmitter";
     interface IBoxEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: BoxParticleEmitter;
@@ -3707,7 +3707,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { Observable } from "babylonjs/Misc/observable";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { ConeParticleEmitter } from 'babylonjs/Particles/EmitterTypes/coneParticleEmitter';
+    import { ConeParticleEmitter } from "babylonjs/Particles/EmitterTypes/coneParticleEmitter";
     interface IConeEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: ConeParticleEmitter;
@@ -3724,7 +3724,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { Observable } from "babylonjs/Misc/observable";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { CylinderParticleEmitter } from 'babylonjs/Particles/EmitterTypes/cylinderParticleEmitter';
+    import { CylinderParticleEmitter } from "babylonjs/Particles/EmitterTypes/cylinderParticleEmitter";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ICylinderEmitterGridComponentProps {
         globalState: GlobalState;
@@ -3743,7 +3743,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { HemisphericParticleEmitter } from 'babylonjs/Particles/EmitterTypes/hemisphericParticleEmitter';
+    import { HemisphericParticleEmitter } from "babylonjs/Particles/EmitterTypes/hemisphericParticleEmitter";
     interface IHemisphericEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: HemisphericParticleEmitter;
@@ -3761,7 +3761,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { PointParticleEmitter } from 'babylonjs/Particles/EmitterTypes/pointParticleEmitter';
+    import { PointParticleEmitter } from "babylonjs/Particles/EmitterTypes/pointParticleEmitter";
     interface IPointEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: PointParticleEmitter;
@@ -3779,7 +3779,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { SphereParticleEmitter } from 'babylonjs/Particles/EmitterTypes/sphereParticleEmitter';
+    import { SphereParticleEmitter } from "babylonjs/Particles/EmitterTypes/sphereParticleEmitter";
     interface ISphereEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: SphereParticleEmitter;
@@ -3794,9 +3794,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
 declare module "babylonjs-inspector/components/actionTabs/lines/meshPickerComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Observable } from 'babylonjs/Misc/observable';
+    import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { Scene } from 'babylonjs/scene';
+    import { Scene } from "babylonjs/scene";
     interface IMeshPickerComponentProps {
         globalState: GlobalState;
         target: any;
@@ -3816,8 +3816,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { MeshParticleEmitter } from 'babylonjs/Particles/EmitterTypes/meshParticleEmitter';
-    import { Scene } from 'babylonjs/scene';
+    import { MeshParticleEmitter } from "babylonjs/Particles/EmitterTypes/meshParticleEmitter";
+    import { Scene } from "babylonjs/scene";
     interface IMeshEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: MeshParticleEmitter;
@@ -3832,11 +3832,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { FactorGradient } from 'babylonjs/Misc/gradients';
+    import { FactorGradient } from "babylonjs/Misc/gradients";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IFactorGradientStepGridComponent {
         globalState: GlobalState;
         gradient: FactorGradient;
@@ -3869,11 +3869,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
+    import { ColorGradient, Color3Gradient } from "babylonjs/Misc/gradients";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IColorGradientStepGridComponent {
         globalState: GlobalState;
         gradient: ColorGradient | Color3Gradient;
@@ -3917,10 +3917,10 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/linkButtonComponent
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IValueGradient } from 'babylonjs/Misc/gradients';
+    import { IValueGradient } from "babylonjs/Misc/gradients";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { Nullable } from 'babylonjs/types';
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { Nullable } from "babylonjs/types";
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     export enum GradientGridMode {
         Factor = 0,
         Color3 = 1,
@@ -3952,7 +3952,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IParticleSystemPropertyGridComponentProps {
         globalState: GlobalState;
         system: IParticleSystem;
@@ -3979,7 +3979,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+    import { SpriteManager } from "babylonjs/Sprites/spriteManager";
     interface ISpriteManagerPropertyGridComponentProps {
         globalState: GlobalState;
         spriteManager: SpriteManager;
@@ -4005,7 +4005,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Sprite } from 'babylonjs/Sprites/sprite';
+    import { Sprite } from "babylonjs/Sprites/sprite";
     interface ISpritePropertyGridComponentProps {
         globalState: GlobalState;
         sprite: Sprite;
@@ -4059,7 +4059,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { FollowCamera } from 'babylonjs/Cameras/followCamera';
+    import { FollowCamera } from "babylonjs/Cameras/followCamera";
     interface IFollowCameraPropertyGridComponentProps {
         globalState: GlobalState;
         camera: FollowCamera;
@@ -4077,8 +4077,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sou
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Sound } from 'babylonjs/Audio/sound';
-    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { Sound } from "babylonjs/Audio/sound";
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     interface ISoundPropertyGridComponentProps {
         globalState: GlobalState;
         sound: Sound;
@@ -4097,7 +4097,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lay
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { EffectLayer } from "babylonjs/Layers/effectLayer";
     interface ILayerPropertyGridComponentProps {
         globalState: GlobalState;
@@ -4376,8 +4376,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/lightTreeI
 declare module "babylonjs-inspector/components/sceneExplorer/entities/materialTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Material } from "babylonjs/Materials/material";
-    import * as React from 'react';
-    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+    import * as React from "react";
+    import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
     interface IMaterialTreeItemComponentProps {
         material: Material | NodeMaterial;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4391,7 +4391,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/materialTr
 declare module "babylonjs-inspector/components/sceneExplorer/entities/textureTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Texture } from "babylonjs/Materials/Textures/texture";
-    import * as React from 'react';
+    import * as React from "react";
     interface ITextureTreeItemComponentProps {
         texture: Texture;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4419,7 +4419,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/transformN
 declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/controlTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import * as React from 'react';
+    import * as React from "react";
     interface IControlTreeItemComponentProps {
         control: Control;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4438,8 +4438,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/contro
 declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent" {
     import { Observable } from "babylonjs/Misc/observable";
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
-    import * as React from 'react';
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import * as React from "react";
     interface IAdvancedDynamicTextureTreeItemComponentProps {
         texture: AdvancedDynamicTexture;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4472,8 +4472,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/animationG
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/postProcessTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
-    import * as React from 'react';
+    import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+    import * as React from "react";
     interface IPostProcessItemComponentProps {
         postProcess: PostProcess;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4486,8 +4486,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/postProces
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/renderingPipelineTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
-    import * as React from 'react';
+    import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+    import * as React from "react";
     interface IRenderPipelineItemComponenttProps {
         renderPipeline: PostProcessRenderPipeline;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4501,7 +4501,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/renderingP
 declare module "babylonjs-inspector/components/sceneExplorer/entities/skeletonTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { Skeleton } from 'babylonjs/Bones/skeleton';
+    import { Skeleton } from "babylonjs/Bones/skeleton";
     interface ISkeletonTreeItemComponentProps {
         skeleton: Skeleton;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4515,7 +4515,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/skeletonTr
 declare module "babylonjs-inspector/components/sceneExplorer/entities/boneTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { Bone } from 'babylonjs/Bones/bone';
+    import { Bone } from "babylonjs/Bones/bone";
     interface IBoneTreeItemComponenttProps {
         bone: Bone;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4528,8 +4528,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/boneTreeIt
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/particleSystemTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import * as React from "react";
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IParticleSystemTreeItemComponentProps {
         system: IParticleSystem;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4542,8 +4542,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/particleSy
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteManagerTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
-    import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+    import * as React from "react";
+    import { SpriteManager } from "babylonjs/Sprites/spriteManager";
     interface ISpriteManagerTreeItemComponentProps {
         spriteManager: SpriteManager;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4556,8 +4556,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteMana
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
-    import { Sprite } from 'babylonjs/Sprites/sprite';
+    import * as React from "react";
+    import { Sprite } from "babylonjs/Sprites/sprite";
     interface ISpriteTreeItemComponentProps {
         sprite: Sprite;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4585,7 +4585,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/targetedAn
 declare module "babylonjs-inspector/components/sceneExplorer/entities/soundTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { Sound } from 'babylonjs/Audio/sound';
+    import { Sound } from "babylonjs/Audio/sound";
     interface ISoundTreeItemComponentProps {
         sound: Sound;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4598,7 +4598,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/soundTreeI
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/effectLayerPipelineTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
+    import * as React from "react";
     import { EffectLayer } from "babylonjs/Layers/effectLayer";
     interface IEffectLayerItemComponenttProps {
         layer: EffectLayer;
@@ -4800,7 +4800,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
+    import { IExplorerExtensibilityGroup, DebugLayerTab } from "babylonjs/Debug/debugLayer";
     interface IEmbedHostComponentProps {
         scene: Scene;
         globalState: GlobalState;
@@ -4904,7 +4904,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/draggableLineCompon
     }
 }
 declare module "babylonjs-inspector/sharedUiComponents/lines/iconButtonLineComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     export interface IIconButtonLineComponentProps {
         icon: string;
         onClick: () => void;
@@ -6857,7 +6857,7 @@ declare module INSPECTOR {
         visible: boolean;
         editable: boolean;
         name: string;
-        id: 'R' | 'G' | 'B' | 'A';
+        id: "R" | "G" | "B" | "A";
         icon: any;
     }
     interface IChannelsBarProps {

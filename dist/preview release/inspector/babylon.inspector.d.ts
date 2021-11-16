@@ -1930,7 +1930,7 @@ declare module INSPECTOR {
         visible: boolean;
         editable: boolean;
         name: string;
-        id: 'R' | 'G' | 'B' | 'A';
+        id: "R" | "G" | "B" | "A";
         icon: any;
     }
     interface IChannelsBarProps {
