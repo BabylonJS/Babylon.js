@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Color4, Color3 } from 'babylonjs/Maths/math.color';
-import { ColorPicker } from '../colorPicker/colorPicker';
+import { Color4, Color3 } from "babylonjs/Maths/math.color";
+import { ColorPicker } from "../colorPicker/colorPicker";
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
     linearHint?: boolean;
     onColorChanged: (newOne: string) => void;
-    icon? : string;
-    iconLabel? : string;
+    icon?: string;
+    iconLabel?: string;
     shouldPopRight?: boolean;
 }
 
@@ -24,9 +24,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     constructor(props: IColorPickerComponentProps) {
         super(props);
 
-        this.state = {pickerEnabled: false,
-            color: this.props.value,
-            hex: this.props.value.toHexString()};
+        this.state = { pickerEnabled: false, color: this.props.value, hex: this.props.value.toHexString() };
 
         this._floatRef = React.createRef();
         this._floatHostRef = React.createRef();
@@ -59,13 +57,11 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         let diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
 
         if (diffProps) {
-            nextState.color =  nextProps.value;
+            nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
 
-        return diffProps
-            || nextState.hex !== this.state.hex
-            || nextState.pickerEnabled !== this.state.pickerEnabled;
+        return diffProps || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
     }
 
     componentDidUpdate() {
@@ -81,23 +77,22 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
 
         return (
             <div className="color-picker">
-                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
-                <div className="color-rect"  ref={this._floatHostRef}
-                    style={{background: this.state.hex}}
-                    onClick={() => this.setState({pickerEnabled: true})}>
-
-                </div>
-                {
-                    this.state.pickerEnabled &&
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                <div className="color-rect" ref={this._floatHostRef} style={{ background: this.state.hex }} onClick={() => this.setState({ pickerEnabled: true })}></div>
+                {this.state.pickerEnabled && (
                     <>
-                        <div className="color-picker-cover" onClick={(evt) => {
+                        <div
+                            className="color-picker-cover"
+                            onClick={(evt) => {
                                 if (evt.target !== this._floatRef.current?.ownerDocument?.querySelector(".color-picker-cover")) {
                                     return;
                                 }
-                                this.setState({pickerEnabled: false});
-                            }}>
+                                this.setState({ pickerEnabled: false });
+                            }}
+                        >
                             <div className="color-picker-float" ref={this._floatRef}>
-                                <ColorPicker color={color}
+                                <ColorPicker
+                                    color={color}
                                     linearhint={this.props.linearHint}
                                     onColorChanged={(color: Color3 | Color4) => {
                                         const hex: string = color.toHexString();
@@ -108,7 +103,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                             </div>
                         </div>
                     </>
-                }
+                )}
             </div>
         );
     }

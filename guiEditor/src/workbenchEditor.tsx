@@ -41,7 +41,6 @@ interface IGraphEditorState {
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-
     private _startX: number;
     private _moveInProgress: boolean;
 
@@ -51,7 +50,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _onWidgetKeyUpPointer: any;
     private _popUpWindow: Window;
-
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -83,8 +81,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     return;
                 }
 
-                if (evt.key === "a") //all
-                {
+                if (evt.key === "a") {
+                    //all
                     evt.preventDefault();
                 }
             },
@@ -245,22 +243,29 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             return;
                         }
                         this.props.globalState.blockKeyboardEvents = false;
-                    }}>
+                    }}
+                >
                     {/* Node creation menu */}
 
-                    <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-                    <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
-                    {
-                        this.createToolbar()
-                    }
-                    {/* The gui workbench diagram */}
                     <div
-                        className="diagram-container"
-                    >
+                        id="leftGrab"
+                        onPointerDown={(evt) => this.onPointerDown(evt)}
+                        onPointerUp={(evt) => this.onPointerUp(evt)}
+                        onPointerMove={(evt) => this.resizeColumns(evt)}
+                    ></div>
+                    <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
+                    {this.createToolbar()}
+                    {/* The gui workbench diagram */}
+                    <div className="diagram-container">
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
 
-                    <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerUp={(evt) => this.onPointerUp(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
+                    <div
+                        id="rightGrab"
+                        onPointerDown={(evt) => this.onPointerDown(evt)}
+                        onPointerUp={(evt) => this.onPointerUp(evt)}
+                        onPointerMove={(evt) => this.resizeColumns(evt, false)}
+                    ></div>
 
                     {/* Property tab */}
                     <div className="right-panel">
@@ -277,13 +282,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     _items: {
-        label: string,
-        icon?: string,
-        fileButton?: boolean
-        onClick?: () => void,
-        onCheck?: (value: boolean) => void,
-        storeKey?: string,
-        isActive?: boolean,
+        label: string;
+        icon?: string;
+        fileButton?: boolean;
+        onClick?: () => void;
+        onCheck?: (value: boolean) => void;
+        storeKey?: string;
+        isActive?: boolean;
         defaultValue?: boolean | string;
         subItems?: string[];
     }[];
@@ -293,92 +298,125 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             {
                 label: "Rectangle",
                 icon: rectangleIcon,
-                onClick: () => { this.onCreate("Rectangle") }
+                onClick: () => {
+                    this.onCreate("Rectangle");
+                },
             },
             {
                 label: "Ellipse",
                 icon: ellipseIcon,
-                onClick: () => { this.onCreate("Ellipse") }
+                onClick: () => {
+                    this.onCreate("Ellipse");
+                },
             },
             {
                 label: "StackPanel",
                 icon: stackPanelIcon,
-                onClick: () => { this.onCreate("StackPanel") }
+                onClick: () => {
+                    this.onCreate("StackPanel");
+                },
             },
             {
                 label: "Grid",
                 icon: gridIcon,
-                onClick: () => { this.onCreate("Grid") }
+                onClick: () => {
+                    this.onCreate("Grid");
+                },
             },
             {
                 label: "ScrollViewer",
                 icon: scrollbarIcon,
-                onClick: () => { this.onCreate("ScrollViewer") }
+                onClick: () => {
+                    this.onCreate("ScrollViewer");
+                },
             },
             {
                 label: "Line",
                 icon: lineIcon,
-                onClick: () => { this.onCreate("Line") }
+                onClick: () => {
+                    this.onCreate("Line");
+                },
             },
             {
                 label: "Text",
                 icon: textBoxIcon,
-                onClick: () => { this.onCreate("Text") }
+                onClick: () => {
+                    this.onCreate("Text");
+                },
             },
             {
                 label: "InputText",
                 icon: inputFieldIcon,
-                onClick: () => { this.onCreate("InputText") }
+                onClick: () => {
+                    this.onCreate("InputText");
+                },
             },
             {
                 label: "InputPassword",
                 icon: passwordFieldIcon,
-                onClick: () => { this.onCreate("InputPassword") }
+                onClick: () => {
+                    this.onCreate("InputPassword");
+                },
             },
             {
                 label: "Image",
                 icon: imageIcon,
-                onClick: () => { this.onCreate("Image") }
+                onClick: () => {
+                    this.onCreate("Image");
+                },
             },
             {
                 label: "DisplayGrid",
                 icon: displaygridIcon,
-                onClick: () => { this.onCreate("DisplayGrid") }
+                onClick: () => {
+                    this.onCreate("DisplayGrid");
+                },
             },
             {
                 label: "TextButton",
                 icon: buttonIcon,
-                onClick: () => { this.onCreate("TextButton") }
+                onClick: () => {
+                    this.onCreate("TextButton");
+                },
             },
             {
                 label: "Checkbox",
                 icon: checkboxIcon,
-                onClick: () => { this.onCreate("Checkbox") }
+                onClick: () => {
+                    this.onCreate("Checkbox");
+                },
             },
             {
                 label: "RadioButton",
                 icon: radioButtonIcon,
-                onClick: () => { this.onCreate("RadioButton") }
+                onClick: () => {
+                    this.onCreate("RadioButton");
+                },
             },
             {
                 label: "Slider",
                 icon: sliderIcon,
-                onClick: () => { this.onCreate("Slider") }
+                onClick: () => {
+                    this.onCreate("Slider");
+                },
             },
             {
                 label: "VirtualKeyboard",
                 icon: keyboardIcon,
-                onClick: () => { this.onCreate("VirtualKeyboard") }
+                onClick: () => {
+                    this.onCreate("VirtualKeyboard");
+                },
             },
             {
                 label: "ColorPicker",
                 icon: colorPickerIcon,
-                onClick: () => { this.onCreate("ColorPicker") }
-            }
-
-        ]
+                onClick: () => {
+                    this.onCreate("ColorPicker");
+                },
+            },
+        ];
     }
-    
+
     onCreate(value: string): void {
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
@@ -389,52 +427,46 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     createToolbar() {
         return (
             <>
-
                 <div id="toolbarGrab">
-                    {
-                        <div className="blackLine"></div>
-                    }
+                    {<div className="blackLine"></div>}
                     {
                         <div className={"toolbar-content sub1"}>
-                            {
-                                this._items.map(m => {
-                                    return (
-                                        <div className={"toolbar-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
+                            {this._items.map((m) => {
+                                return (
+                                    <div
+                                        className={"toolbar-label" + (m.isActive ? " active" : "")}
+                                        key={m.label}
+                                        onClick={() => {
                                             if (!m.onClick) {
                                                 this.forceUpdate();
                                                 return;
                                             }
                                             if (!m.subItems) {
                                                 m.onClick();
-
                                             }
-                                        }} title={m.label}>
-                                            {
-                                                !m.icon &&
-                                                <div className="toolbar-label-text">
-                                                    {(m.isActive ? "> " : "") + m.label}
-                                                </div>
-                                            }
-                                            {
-                                                m.icon &&
-                                                <div className="toolbar-icon">
-                                                    <img src={m.icon} />
-                                                </div>
-                                            }
-                                            {
-                                                m.onCheck &&
-                                                <input type="checkBox" className="toolbar-label-check"
-                                                    onChange={(evt) => {
-
-                                                        this.forceUpdate();
-                                                        m.onCheck!(evt.target.checked);
-                                                    }}
-                                                    checked={false} />
-                                            }
-                                        </div>
-                                    )
-                                })
-                            }
+                                        }}
+                                        title={m.label}
+                                    >
+                                        {!m.icon && <div className="toolbar-label-text">{(m.isActive ? "> " : "") + m.label}</div>}
+                                        {m.icon && (
+                                            <div className="toolbar-icon">
+                                                <img src={m.icon} />
+                                            </div>
+                                        )}
+                                        {m.onCheck && (
+                                            <input
+                                                type="checkBox"
+                                                className="toolbar-label-check"
+                                                onChange={(evt) => {
+                                                    this.forceUpdate();
+                                                    m.onCheck!(evt.target.checked);
+                                                }}
+                                                checked={false}
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     }
                 </div>

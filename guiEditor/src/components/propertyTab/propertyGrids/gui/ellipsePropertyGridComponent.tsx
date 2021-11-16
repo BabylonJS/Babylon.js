@@ -12,9 +12,9 @@ const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/cl
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IEllipsePropertyGridComponentProps {
-    ellipse: Ellipse,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    ellipse: Ellipse;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class EllipsePropertyGridComponent extends React.Component<IEllipsePropertyGridComponentProps> {
@@ -28,10 +28,25 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={ellipse} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr/>
+                <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent iconLabel="Clip Content" icon={clipContentsIcon} label="" target={ellipse} propertyName="clipChildren" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={ellipse} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent
+                    iconLabel="Clip Content"
+                    icon={clipContentsIcon}
+                    label=""
+                    target={ellipse}
+                    propertyName="clipChildren"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <FloatLineComponent
+                    iconLabel="Stroke Weight"
+                    icon={strokeWeightIcon}
+                    lockObject={this.props.lockObject}
+                    label=""
+                    target={ellipse}
+                    propertyName="thickness"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

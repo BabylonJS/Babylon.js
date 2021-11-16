@@ -1,6 +1,6 @@
 import * as React from "react";
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import {ISelectedLineContainer} from './iSelectedLineContainer';
+import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { ISelectedLineContainer } from "./iSelectedLineContainer";
 const downArrow = require("./downArrow.svg");
 
 interface ILineContainerComponentProps {
@@ -10,7 +10,7 @@ interface ILineContainerComponentProps {
     closed?: boolean;
 }
 
-export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean, isHighlighted: boolean }> {
+export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean; isHighlighted: boolean }> {
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
@@ -32,11 +32,9 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
 
         return (
             <div className="header" onClick={() => this.switchExpandedState()}>
-                <div className="title">
-                    {this.props.title}
-                </div>
+                <div className="title">{this.props.title}</div>
                 <div className={className}>
-                    <img className="img" title={this.props.title} src={downArrow}/>
+                    <img className="img" title={this.props.title} src={downArrow} />
                 </div>
             </div>
         );
@@ -64,7 +62,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         } else if (this.props.selection.selectedLineContainerTitlesNoFocus.indexOf(this.props.title) > -1) {
             this.setState({ isExpanded: true, isHighlighted: false });
         } else {
-            this.setState({isExpanded: false});
+            this.setState({ isExpanded: false });
         }
     }
 
@@ -72,11 +70,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         if (!this.state.isExpanded) {
             return (
                 <div className="paneContainer">
-                    <div className="paneContainer-content">
-                        {
-                            this.renderHeader()
-                        }
-                    </div>
+                    <div className="paneContainer-content">{this.renderHeader()}</div>
                 </div>
             );
         }
@@ -84,15 +78,10 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         return (
             <div className="paneContainer">
                 <div className="paneContainer-content">
-                    {
-                        this.renderHeader()
-                    }
-                    <div className="paneList">
-                        {this.props.children}
-                    </div >
+                    {this.renderHeader()}
+                    <div className="paneList">{this.props.children}</div>
                 </div>
-                <div className={"paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "")}>
-                </div>
+                <div className={"paneContainer-highlight-border" + (!this.state.isHighlighted ? " transparent" : "")}></div>
             </div>
         );
     }

@@ -1,9 +1,9 @@
 import * as React from "react";
 
 interface ITreeItemLabelComponentProps {
-    label: string,
-    onClick?: () => void,
-    color: string
+    label: string;
+    onClick?: () => void;
+    color: string;
 }
 
 export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
@@ -16,16 +16,14 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
             return;
         }
 
-        this.props.onClick()
+        this.props.onClick();
     }
 
     render() {
         return (
             <div className="title" onClick={() => this.onClick()}>
-                <div className="titleText">
-                    {this.props.label || "no name"}
-                </div>
+                <div className="titleText">{this.props.label || "no name"}</div>
             </div>
-        )
+        );
     }
 }

@@ -3,8 +3,8 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
-import { GlobalState } from '../globalState';
-import { ColorPickerLineComponent } from './colorPickerComponent';
+import { GlobalState } from "../globalState";
+import { ColorPickerLineComponent } from "./colorPickerComponent";
 
 const copyIcon: string = require("./copy.svg");
 const plusIcon: string = require("./plus.svg");
@@ -19,7 +19,7 @@ export interface IColor4LineComponentProps {
     globalState: GlobalState;
 }
 
-export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean, color: Color4 }> {
+export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean; color: Color4 }> {
     private _localChange = false;
     constructor(props: IColor4LineComponentProps) {
         super(props);
@@ -31,7 +31,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: { color: Color4 }) {
         const currentState = nextProps.target[nextProps.propertyName];
-        let currentColor = currentState.getClassName() === "Color4" ? currentState : new Color4(currentState.r, currentState.g, currentState.b, 1.0);  
+        let currentColor = currentState.getClassName() === "Color4" ? currentState : new Color4(currentState.r, currentState.g, currentState.b, 1.0);
 
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
@@ -50,7 +50,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
 
@@ -80,7 +80,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -133,7 +133,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     copyToClipboard() {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
 
@@ -144,12 +144,11 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
             window.getSelection()!.addRange(range);
         }
 
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     }
 
     render() {
-
         const expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
 
         return (
@@ -159,26 +158,29 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <ColorPickerLineComponent globalState={this.props.globalState} value={this.state.color} onColorChanged={color => {
+                        <ColorPickerLineComponent
+                            globalState={this.props.globalState}
+                            value={this.state.color}
+                            onColorChanged={(color) => {
                                 this.onChange(color);
-                            }} />  
+                            }}
+                        />
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <img src={copyIcon} alt=""/>
+                        <img src={copyIcon} alt="" />
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
-                        <img src={expandedIcon} alt=""/>
+                        <img src={expandedIcon} alt="" />
                     </div>
                 </div>
-                {
-                    this.state.isExpanded &&
+                {this.state.isExpanded && (
                     <div className="secondLine">
                         <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
                         <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
                         <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
                         <NumericInputComponent globalState={this.props.globalState} label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
                     </div>
-                }
+                )}
             </div>
         );
     }
