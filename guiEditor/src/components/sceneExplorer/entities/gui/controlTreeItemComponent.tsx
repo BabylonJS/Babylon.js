@@ -2,7 +2,7 @@ import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
-import * as React from 'react';
+import * as React from "react";
 import { DragOverLocation, GlobalState } from "../../../../globalState";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 
@@ -18,10 +18,10 @@ interface IControlTreeItemComponentProps {
     globalState: GlobalState;
     isHovered: boolean;
     dragOverHover: boolean;
-    dragOverLocation: DragOverLocation
+    dragOverLocation: DragOverLocation;
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean }> {
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
@@ -52,24 +52,27 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         }
         let draggingSelf = this.props.globalState.draggedControl === control;
         return (
-            <div className="controlTools" >
+            <div className="controlTools">
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {(!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control)) && <>
-                    <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
-                        <img src={makeChildOfContainerIcon} />
-                    </div>
-                </>}
-                {(this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == DragOverLocation.NONE) && <>
-                    <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
-                        <img src={makeComponentIcon} />
-                    </div>
-                    <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
-                        <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon} />
-                    </div>
-                </>}
+                {!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(control) && (
+                    <>
+                        <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
+                            <img src={makeChildOfContainerIcon} />
+                        </div>
+                    </>
+                )}
+                {this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == DragOverLocation.NONE && (
+                    <>
+                        <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
+                            <img src={makeComponentIcon} />
+                        </div>
+                        <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
+                            <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon} />
+                        </div>
+                    </>
+                )}
                 <ExtensionsComponent target={control} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
         );
     }
-
 }

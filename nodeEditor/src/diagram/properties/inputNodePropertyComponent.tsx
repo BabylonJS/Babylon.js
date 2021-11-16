@@ -1,30 +1,28 @@
-
 import * as React from "react";
-import { GlobalState } from '../../globalState';
-import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
-import { FloatPropertyTabComponent } from '../../components/propertyTab/properties/floatPropertyTabComponent';
-import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
-import { Vector2PropertyTabComponent } from '../../components/propertyTab/properties/vector2PropertyTabComponent';
-import { Color3PropertyTabComponent } from '../../components/propertyTab/properties/color3PropertyTabComponent';
-import { Vector3PropertyTabComponent } from '../../components/propertyTab/properties/vector3PropertyTabComponent';
-import { Vector4PropertyTabComponent } from '../../components/propertyTab/properties/vector4PropertyTabComponent';
-import { MatrixPropertyTabComponent } from '../../components/propertyTab/properties/matrixPropertyTabComponent';
-import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
-import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { IPropertyComponentProps } from './propertyComponentProps';
-import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
-import { Color4PropertyTabComponent } from '../../components/propertyTab/properties/color4PropertyTabComponent';
-import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
+import { GlobalState } from "../../globalState";
+import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
+import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
+import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
+import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
+import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent";
+import { Vector3PropertyTabComponent } from "../../components/propertyTab/properties/vector3PropertyTabComponent";
+import { Vector4PropertyTabComponent } from "../../components/propertyTab/properties/vector4PropertyTabComponent";
+import { MatrixPropertyTabComponent } from "../../components/propertyTab/properties/matrixPropertyTabComponent";
+import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
+import { NodeMaterialBlockConnectionPointTypes } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialSystemValues } from "babylonjs/Materials/Node/Enums/nodeMaterialSystemValues";
+import { AnimatedInputBlockTypes } from "babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes";
+import { IPropertyComponentProps } from "./propertyComponentProps";
+import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
+import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
+import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
+import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-
     private onValueChangedObserver: Nullable<Observer<InputBlock>>;
 
     constructor(props: IPropertyComponentProps) {
@@ -40,7 +38,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     componentWillUnmount() {
-
         let inputBlock = this.props.block as InputBlock;
         if (this.onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
@@ -52,101 +49,132 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         let inputBlock = this.props.block as InputBlock;
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float: {
-                let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
+                let cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
                 return (
                     <>
                         <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" />
-                        {
-                            inputBlock.isBoolean &&
-                            <CheckBoxLineComponent label="Value" isSelected={() => {
-                                return inputBlock.value === 1;
-                            }} onSelect={(value) => {
-                                inputBlock.value = value ? 1 : 0;
-                                if (inputBlock.isConstant) {
-                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                                }
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                            }}/>
-                        }
-                        {
-                            !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => {
-                                if (inputBlock.value < inputBlock.min) {
-                                    inputBlock.value = inputBlock.min;
+                        {inputBlock.isBoolean && (
+                            <CheckBoxLineComponent
+                                label="Value"
+                                isSelected={() => {
+                                    return inputBlock.value === 1;
+                                }}
+                                onSelect={(value) => {
+                                    inputBlock.value = value ? 1 : 0;
                                     if (inputBlock.isConstant) {
                                         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                     }
-                                }
-                                this.forceUpdate();                                
-                            }}></FloatLineComponent>
-                        }
-                        {
-                            !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => {
-                                if (inputBlock.value > inputBlock.max) {
-                                    inputBlock.value = inputBlock.max;
+                                    this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                                }}
+                            />
+                        )}
+                        {!inputBlock.isBoolean && (
+                            <FloatLineComponent
+                                globalState={this.props.globalState}
+                                label="Min"
+                                target={inputBlock}
+                                propertyName="min"
+                                onChange={() => {
+                                    if (inputBlock.value < inputBlock.min) {
+                                        inputBlock.value = inputBlock.min;
+                                        if (inputBlock.isConstant) {
+                                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                        }
+                                    }
+                                    this.forceUpdate();
+                                }}
+                            ></FloatLineComponent>
+                        )}
+                        {!inputBlock.isBoolean && (
+                            <FloatLineComponent
+                                globalState={this.props.globalState}
+                                label="Max"
+                                target={inputBlock}
+                                propertyName="max"
+                                onChange={() => {
+                                    if (inputBlock.value > inputBlock.max) {
+                                        inputBlock.value = inputBlock.max;
+                                        if (inputBlock.isConstant) {
+                                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                        }
+                                    }
+                                    this.forceUpdate();
+                                }}
+                            ></FloatLineComponent>
+                        )}
+                        {!inputBlock.isBoolean && cantDisplaySlider && <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />}
+                        {!inputBlock.isBoolean && !cantDisplaySlider && (
+                            <SliderLineComponent
+                                label="Value"
+                                globalState={this.props.globalState}
+                                target={inputBlock}
+                                propertyName="value"
+                                step={Math.abs(inputBlock.max - inputBlock.min) / 100.0}
+                                minimum={Math.min(inputBlock.min, inputBlock.max)}
+                                maximum={inputBlock.max}
+                                onChange={() => {
                                     if (inputBlock.isConstant) {
                                         this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                     }
-                                }
-                                this.forceUpdate();
-                            }
-                            }></FloatLineComponent>
-                        }
-                        {
-                            !inputBlock.isBoolean && cantDisplaySlider &&
-                            <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                        }
-                        {
-                            !inputBlock.isBoolean && !cantDisplaySlider &&
-                            <SliderLineComponent label="Value" globalState={this.props.globalState} target={inputBlock} propertyName="value" step={Math.abs(inputBlock.max - inputBlock.min) / 100.0} minimum={Math.min(inputBlock.min, inputBlock.max)} maximum={inputBlock.max} onChange={() => {
-                                if (inputBlock.isConstant) {
-                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                                }
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                            }}/>
-                        }
+                                    this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                                }}
+                            />
+                        )}
                     </>
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return (
-                    <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );
+                return <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return (<>
+                return (
+                    <>
                         <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                        <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                        }}/>
-                        <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                        }}/>
-                        </>
-            );
+                        <CheckBoxLineComponent
+                            label="Convert to gamma space"
+                            propertyName="convertToGammaSpace"
+                            target={this.props.block}
+                            onValueChanged={() => {
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                            }}
+                        />
+                        <CheckBoxLineComponent
+                            label="Convert to linear space"
+                            propertyName="convertToLinearSpace"
+                            target={this.props.block}
+                            onValueChanged={() => {
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                            }}
+                        />
+                    </>
+                );
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return (<>
+                return (
+                    <>
                         <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                        <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                        }}/>
-                        <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                        }}/>
-                        </>
+                        <CheckBoxLineComponent
+                            label="Convert to gamma space"
+                            propertyName="convertToGammaSpace"
+                            target={this.props.block}
+                            onValueChanged={() => {
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                            }}
+                        />
+                        <CheckBoxLineComponent
+                            label="Convert to linear space"
+                            propertyName="convertToLinearSpace"
+                            target={this.props.block}
+                            onValueChanged={() => {
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                            }}
+                        />
+                    </>
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return (
-                    <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );
+                return <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );
+                return <Vector4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return (
-                    <MatrixPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
-                );
+                return <MatrixPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
         }
 
         return null;
@@ -160,9 +188,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     render() {
         let inputBlock = this.props.block as InputBlock;
 
-        var systemValuesOptions: {label: string, value: NodeMaterialSystemValues}[] = [];
-        var attributeOptions: {label: string, value: string}[] = [];
-        var animationOptions: {label: string, value: AnimatedInputBlockTypes}[] = [];
+        var systemValuesOptions: { label: string; value: NodeMaterialSystemValues }[] = [];
+        var attributeOptions: { label: string; value: string }[] = [];
+        var animationOptions: { label: string; value: AnimatedInputBlockTypes }[] = [];
 
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -170,9 +198,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "None", value: AnimatedInputBlockTypes.None },
                     { label: "Time", value: AnimatedInputBlockTypes.Time },
                 ];
-                systemValuesOptions = [
-                    { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime }
-                ];
+                systemValuesOptions = [{ label: "Delta time", value: NodeMaterialSystemValues.DeltaTime }];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 systemValuesOptions = [
@@ -181,18 +207,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "World x View x Projection", value: NodeMaterialSystemValues.WorldViewProjection },
                     { label: "View", value: NodeMaterialSystemValues.View },
                     { label: "View x Projection", value: NodeMaterialSystemValues.ViewProjection },
-                    { label: "Projection", value: NodeMaterialSystemValues.Projection }
+                    { label: "Projection", value: NodeMaterialSystemValues.Projection },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                systemValuesOptions = [
-                    { label: "Fog color", value: NodeMaterialSystemValues.FogColor }
-                ];
+                systemValuesOptions = [{ label: "Fog color", value: NodeMaterialSystemValues.FogColor }];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                attributeOptions = [
-                    { label: "color", value: "color" }
-                ];
+                attributeOptions = [{ label: "color", value: "color" }];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 attributeOptions = [
@@ -205,9 +227,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                systemValuesOptions = [
-                    { label: "Camera position", value: NodeMaterialSystemValues.CameraPosition }
-                ];
+                systemValuesOptions = [{ label: "Camera position", value: NodeMaterialSystemValues.CameraPosition }];
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
@@ -217,17 +237,13 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
-                    { label: "matricesWeights", value: "matricesWeights" }
+                    { label: "matricesWeights", value: "matricesWeights" },
                 ];
-                systemValuesOptions = [
-                    { label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }
-                ];
+                systemValuesOptions = [{ label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }];
                 break;
         }
 
-        var modeOptions = [
-            { label: "User-defined", value: 0 }
-        ];
+        var modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (attributeOptions.length > 0) {
             modeOptions.push({ label: "Mesh attribute", value: 1 });
@@ -240,16 +256,18 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         var typeOptions = [
             { label: "None", value: 0 },
             { label: "Visible in the inspector", value: 1 },
-            { label: "Constant", value: 2 }
+            { label: "Constant", value: 2 },
         ];
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block} />
                 <LineContainerComponent title="PROPERTIES">
-                    {
-                        inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                        <OptionsLineComponent label="Type" options={typeOptions} target={inputBlock}
+                    {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && (
+                        <OptionsLineComponent
+                            label="Type"
+                            options={typeOptions}
+                            target={inputBlock}
                             noDirectUpdate={true}
                             getSelection={(block) => {
                                 if (block.visibleInInspector) {
@@ -280,18 +298,26 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.forceUpdate();
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                                 this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                            }} />
-                    }
-                    {
-                        inputBlock.visibleInInspector &&
-                        <TextInputLineComponent globalState={this.props.globalState} label="Group" propertyName="groupInInspector" target={this.props.block}
+                            }}
+                        />
+                    )}
+                    {inputBlock.visibleInInspector && (
+                        <TextInputLineComponent
+                            globalState={this.props.globalState}
+                            label="Group"
+                            propertyName="groupInInspector"
+                            target={this.props.block}
                             onChange={() => {
                                 this.forceUpdate();
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                                 this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                            }} />
-                    }
-                    <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock}
+                            }}
+                        />
+                    )}
+                    <OptionsLineComponent
+                        label="Mode"
+                        options={modeOptions}
+                        target={inputBlock}
                         noDirectUpdate={true}
                         getSelection={(block) => {
                             if (block.isAttribute) {
@@ -321,44 +347,57 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             this.forceUpdate();
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        }} />
-                    {
-                        inputBlock.isAttribute &&
-                        <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={inputBlock} propertyName="name" onSelect={(value: any) => {
-                            inputBlock.setAsAttribute(value);
-                            this.forceUpdate();
+                        }}
+                    />
+                    {inputBlock.isAttribute && (
+                        <OptionsLineComponent
+                            label="Attribute"
+                            valuesAreStrings={true}
+                            options={attributeOptions}
+                            target={inputBlock}
+                            propertyName="name"
+                            onSelect={(value: any) => {
+                                inputBlock.setAsAttribute(value);
+                                this.forceUpdate();
 
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        }} />
-                    }
-                    {
-                        inputBlock.isUniform && animationOptions.length > 0 &&
-                        <OptionsLineComponent label="Animation type" options={animationOptions} target={inputBlock} propertyName="animationType" onSelect={(value: any) => {
-                            this.forceUpdate();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }}
+                        />
+                    )}
+                    {inputBlock.isUniform && animationOptions.length > 0 && (
+                        <OptionsLineComponent
+                            label="Animation type"
+                            options={animationOptions}
+                            target={inputBlock}
+                            propertyName="animationType"
+                            onSelect={(value: any) => {
+                                this.forceUpdate();
 
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        }} />
-                    }
-                    {
-                        inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                        this.renderValue(this.props.globalState)
-                    }
-                    {
-                        inputBlock.isUniform && inputBlock.isSystemValue &&
-                        <OptionsLineComponent label="System value" options={systemValuesOptions} target={inputBlock} propertyName="systemValue" onSelect={(value: any) => {
-                            inputBlock.setAsSystemValue(value);
-                            this.forceUpdate();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }}
+                        />
+                    )}
+                    {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && this.renderValue(this.props.globalState)}
+                    {inputBlock.isUniform && inputBlock.isSystemValue && (
+                        <OptionsLineComponent
+                            label="System value"
+                            options={systemValuesOptions}
+                            target={inputBlock}
+                            propertyName="systemValue"
+                            onSelect={(value: any) => {
+                                inputBlock.setAsSystemValue(value);
+                                this.forceUpdate();
 
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        }} />
-                    }
-                {
-                    inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                    <CheckBoxLineComponent label="Visible on frame" target={(this.props.block as InputBlock)} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
-                }
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }}
+                        />
+                    )}
+                    {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && (
+                        <CheckBoxLineComponent label="Visible on frame" target={this.props.block as InputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
+                    )}
                 </LineContainerComponent>
             </div>
         );

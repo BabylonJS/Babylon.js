@@ -1,12 +1,12 @@
 import * as React from "react";
 import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface ITreeItemLabelComponentProps {
-    label: string,
-    onClick?: () => void,
-    icon: IconDefinition,
-    color: string
+    label: string;
+    onClick?: () => void;
+    icon: IconDefinition;
+    color: string;
 }
 
 export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
@@ -19,7 +19,7 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
             return;
         }
 
-        this.props.onClick()
+        this.props.onClick();
     }
 
     render() {
@@ -28,10 +28,8 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
                 <div className="titleIcon">
                     <FontAwesomeIcon icon={this.props.icon} color={this.props.color} />
                 </div>
-                <div className="titleText">
-                    {this.props.label || "no name"}
-                </div>
+                <div className="titleText">{this.props.label || "no name"}</div>
             </div>
-        )
+        );
     }
 }

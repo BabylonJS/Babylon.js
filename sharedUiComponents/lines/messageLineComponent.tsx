@@ -18,7 +18,7 @@ export class MessageLineComponent extends React.Component<IMessageLineComponentP
             return (
                 <div className="iconMessageLine">
                     <div className="icon" style={{ color: this.props.color ? this.props.color : "" }}>
-                        <FontAwesomeIcon icon={this.props.icon}/>
+                        <FontAwesomeIcon icon={this.props.icon} />
                     </div>
                     <div className="value" title={this.props.text}>
                         {this.props.text}

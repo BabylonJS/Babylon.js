@@ -4,34 +4,33 @@ import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { LineContainerComponent } from '../../../../../sharedUiComponents/lines/lineContainerComponent';
-import { GlobalState } from '../../../../globalState';
-import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
-import { TextInputLineComponent } from '../../../../../sharedUiComponents/lines/textInputLineComponent';
-import { TextLineComponent } from '../../../../../sharedUiComponents/lines/textLineComponent';
-import { CheckBoxLineComponent } from '../../../../../sharedUiComponents/lines/checkBoxLineComponent';
-import { FloatLineComponent } from '../../../../../sharedUiComponents/lines/floatLineComponent';
-import { SliderLineComponent } from '../../../../../sharedUiComponents/lines/sliderLineComponent';
-import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
-import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
-import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
-import { Sprite } from 'babylonjs/Sprites/sprite';
-import { Tools } from 'babylonjs/Misc/tools';
-import { FileButtonLineComponent } from '../../../../../sharedUiComponents/lines/fileButtonLineComponent';
-import { Constants } from 'babylonjs/Engines/constants';
-import { OptionsLineComponent } from '../../../../../sharedUiComponents/lines/optionsLineComponent';
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { GlobalState } from "../../../../globalState";
+import { SpriteManager } from "babylonjs/Sprites/spriteManager";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { RenderingManager } from "babylonjs/Rendering/renderingManager";
+import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { Sprite } from "babylonjs/Sprites/sprite";
+import { Tools } from "babylonjs/Misc/tools";
+import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { Constants } from "babylonjs/Engines/constants";
+import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;
     spriteManager: SpriteManager;
     lockObject: LockObject;
     onSelectionChangedObservable?: Observable<any>;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
     private _snippetUrl = "https://snippet.babylonjs.com";
-
 
     constructor(props: ISpriteManagerPropertyGridComponentProps) {
         super(props);
@@ -62,16 +61,21 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         const spriteManager = this.props.spriteManager;
         const scene = spriteManager.scene;
 
-        Tools.ReadFile(file, (data) => {
-            let decoder = new TextDecoder("utf-8");
-            let jsonObject = JSON.parse(decoder.decode(data));
+        Tools.ReadFile(
+            file,
+            (data) => {
+                let decoder = new TextDecoder("utf-8");
+                let jsonObject = JSON.parse(decoder.decode(data));
 
-            spriteManager.dispose();
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                spriteManager.dispose();
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-            let newManager = SpriteManager.Parse(jsonObject, scene, "");
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
-        }, undefined, true);
+                let newManager = SpriteManager.Parse(jsonObject, scene, "");
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
+            },
+            undefined,
+            true
+        );
     }
 
     loadFromSnippet() {
@@ -87,11 +91,13 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         spriteManager.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        SpriteManager.CreateFromSnippetAsync(snippedId, scene).then((newManager) => {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
-        }).catch(err => {
-            alert("Unable to load your sprite manager: " + err);
-        });
+        SpriteManager.CreateFromSnippetAsync(snippedId, scene)
+            .then((newManager) => {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
+            })
+            .catch((err) => {
+                alert("Unable to load your sprite manager: " + err);
+            });
     }
 
     saveToSnippet() {
@@ -118,28 +124,27 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                             regex: new RegExp(`SpriteManager.CreateFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `SpriteManager.CreateFromSnippetAsync("${spriteManager.snippetId}`
+                            replace: `SpriteManager.CreateFromSnippetAsync("${spriteManager.snippetId}`,
                         });
                     }
 
                     alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
-                }
-                else {
+                } else {
                     alert("Unable to save your sprite manager");
                 }
             }
-        }
+        };
 
         xmlHttp.open("POST", this._snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
         var dataToSend = {
-            payload : JSON.stringify({
-                spriteManager: content
+            payload: JSON.stringify({
+                spriteManager: content,
             }),
             name: "",
             description: "",
-            tags: ""
+            tags: "",
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
@@ -161,14 +166,17 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         return (
             <div className="pane">
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={spriteManager} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Name"
+                        target={spriteManager}
+                        propertyName="name"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <TextLineComponent label="Unique ID" value={spriteManager.uniqueId.toString()} />
                     <TextLineComponent label="Capacity" value={spriteManager.capacity.toString()} />
-                    <TextureLinkLineComponent label="Texture" texture={spriteManager.texture} onSelectionChangedObservable={this.props.onSelectionChangedObservable}/>
-                    {
-                        spriteManager.sprites.length < spriteManager.capacity &&
-                        <ButtonLineComponent label="Add new sprite" onClick={() => this.addNewSprite()} />
-                    }
+                    <TextureLinkLineComponent label="Texture" texture={spriteManager.texture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
+                    {spriteManager.sprites.length < spriteManager.capacity && <ButtonLineComponent label="Add new sprite" onClick={() => this.addNewSprite()} />}
                     <ButtonLineComponent label="Dispose" onClick={() => this.disposeManager()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="FILE" selection={this.props.globalState}>
@@ -176,25 +184,60 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="SNIPPET" selection={this.props.globalState}>
-                    {
-                        spriteManager.snippetId &&
-                        <TextLineComponent label="Snippet ID" value={spriteManager.snippetId} />
-                    }
+                    {spriteManager.snippetId && <TextLineComponent label="Snippet ID" value={spriteManager.snippetId} />}
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Pickable" target={spriteManager} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Fog enabled" target={spriteManager} propertyName="fogEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="No depth write" target={spriteManager} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Rendering group ID" decimalCount={0} target={spriteManager} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={spriteManager} propertyName="blendMode"
+                    <CheckBoxLineComponent
+                        label="Fog enabled"
+                        target={spriteManager}
+                        propertyName="fogEnabled"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onSelect={(value) => this.setState({ blendMode: value })} />
+                    />
+                    <CheckBoxLineComponent
+                        label="No depth write"
+                        target={spriteManager}
+                        propertyName="disableDepthWrite"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Rendering group ID"
+                        decimalCount={0}
+                        target={spriteManager}
+                        propertyName="renderingGroupId"
+                        minimum={RenderingManager.MIN_RENDERINGGROUPS}
+                        maximum={RenderingManager.MAX_RENDERINGGROUPS - 1}
+                        step={1}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLineComponent
+                        label="Alpha mode"
+                        options={alphaModeOptions}
+                        target={spriteManager}
+                        propertyName="blendMode"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onSelect={(value) => this.setState({ blendMode: value })}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="CELLS" selection={this.props.globalState}>
-                    <FloatLineComponent label="Cell width" isInteger={true} target={spriteManager} propertyName="cellWidth" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                    <FloatLineComponent label="Cell height" isInteger={true} target={spriteManager} propertyName="cellHeight" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent
+                        label="Cell width"
+                        isInteger={true}
+                        target={spriteManager}
+                        propertyName="cellWidth"
+                        min={0}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        label="Cell height"
+                        isInteger={true}
+                        target={spriteManager}
+                        propertyName="cellHeight"
+                        min={0}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
             </div>
         );

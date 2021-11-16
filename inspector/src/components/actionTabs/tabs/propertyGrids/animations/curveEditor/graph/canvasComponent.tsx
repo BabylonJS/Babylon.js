@@ -15,19 +15,14 @@ interface ICanvasComponentProps {
     context: Context;
 }
 
-interface ICanvasComponentState {
-}
+interface ICanvasComponentState {}
 
-export class CanvasComponent extends React.Component<
-ICanvasComponentProps,
-ICanvasComponentState
-> {
-
+export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
     constructor(props: ICanvasComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
 
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
             this.forceUpdate();
@@ -43,14 +38,11 @@ ICanvasComponentState
     public render() {
         return (
             <div id="canvas-zone">
-                <GraphComponent globalState={this.props.globalState} context={this.props.context}/>
-                <FrameBarComponent globalState={this.props.globalState} context={this.props.context}/>
-                <PlayHeadComponent context={this.props.context} globalState={this.props.globalState}/>
-                <RangeFrameBarComponent context={this.props.context} globalState={this.props.globalState}/>
-                {
-                    this.props.context.activeAnimations.length > 0 &&
-                    <div id="angle-mode" />
-                }
+                <GraphComponent globalState={this.props.globalState} context={this.props.context} />
+                <FrameBarComponent globalState={this.props.globalState} context={this.props.context} />
+                <PlayHeadComponent context={this.props.context} globalState={this.props.globalState} />
+                <RangeFrameBarComponent context={this.props.context} globalState={this.props.globalState} />
+                {this.props.context.activeAnimations.length > 0 && <div id="angle-mode" />}
             </div>
         );
     }

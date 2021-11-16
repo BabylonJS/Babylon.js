@@ -72,8 +72,7 @@ export class ToolsTabComponent extends PaneComponent {
 
     componentDidMount() {
         if (!(BABYLON as any).GLTF2Export) {
-            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {
-            });
+            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {});
             return;
         }
     }
@@ -104,7 +103,7 @@ export class ToolsTabComponent extends PaneComponent {
         const oldScreenshotSize: IScreenshotSize = {
             height: this._screenShotSize.height,
             width: this._screenShotSize.width,
-            precision: this._screenShotSize.precision
+            precision: this._screenShotSize.precision,
         };
         if (!this._useWidthHeight) {
             this._screenShotSize.width = undefined;
@@ -138,13 +137,13 @@ export class ToolsTabComponent extends PaneComponent {
         this._gifRecorder = new GIF({
             workers: 2,
             quality: 10,
-            workerScript: workerUrl
+            workerScript: workerUrl,
         });
         const scene = this.props.scene;
         const engine = scene.getEngine();
 
         this._previousRenderingScale = engine.getHardwareScalingLevel();
-        engine.setHardwareScalingLevel((engine.getRenderWidth() / this._gifOptions.width) ?? 1);
+        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width ?? 1);
 
         let intervalId = setInterval(() => {
             if (!this._gifRecorder) {
@@ -181,16 +180,15 @@ export class ToolsTabComponent extends PaneComponent {
             return;
         }
 
-        Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then(value => {
+        Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then((value) => {
             this._gifWorkerBlob = new Blob([value], {
-                type: "application/javascript"
+                type: "application/javascript",
             });
             this.recordGIFInternal();
         });
     }
 
     importAnimations(event: any) {
-
         const scene = this.props.scene;
 
         const overwriteAnimations = this.props.globalState.sceneImportDefaults["overwriteAnimations"];
@@ -208,13 +206,22 @@ export class ToolsTabComponent extends PaneComponent {
                 (BABYLON as any).SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
-        let filesInputAnimation = new FilesInput(scene.getEngine() as any, scene as any, () => { }, () => { }, () => { }, (remaining: number) => { }, () => { }, reload, () => { });
+        let filesInputAnimation = new FilesInput(
+            scene.getEngine() as any,
+            scene as any,
+            () => {},
+            () => {},
+            () => {},
+            (remaining: number) => {},
+            () => {},
+            reload,
+            () => {}
+        );
 
         filesInputAnimation.loadFiles(event);
     }
 
     shouldExport(node: Node): boolean {
-
         // No skybox
         if (node instanceof Mesh) {
             if (node.material) {
@@ -235,15 +242,17 @@ export class ToolsTabComponent extends PaneComponent {
         this.forceUpdate();
 
         GLTF2Export.GLBAsync(scene, "scene", {
-            shouldExportNode: (node) => this.shouldExport(node)
-        }).then((glb: GLTFData) => {
-            glb.downloadFiles();
-            this._isExporting = false;
-            this.forceUpdate();
-        }).catch(reason => {
-            this._isExporting = false;
-            this.forceUpdate();
-        });
+            shouldExportNode: (node) => this.shouldExport(node),
+        })
+            .then((glb: GLTFData) => {
+                glb.downloadFiles();
+                this._isExporting = false;
+                this.forceUpdate();
+            })
+            .catch((reason) => {
+                this._isExporting = false;
+                this.forceUpdate();
+            });
     }
 
     exportBabylon() {
@@ -257,12 +266,10 @@ export class ToolsTabComponent extends PaneComponent {
 
     createEnvTexture() {
         const scene = this.props.scene;
-        EnvironmentTextureTools.CreateEnvTextureAsync(
-            scene.environmentTexture as CubeTexture,
-            {
-                imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
-                imageQuality: this._envOptions.imageQuality
-            })
+        EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture, {
+            imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
+            imageQuality: this._envOptions.imageQuality,
+        })
             .then((buffer: ArrayBuffer) => {
                 var blob = new Blob([buffer], { type: "octet/stream" });
                 Tools.Download(blob, "environment.env");
@@ -324,93 +331,103 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent title="CAPTURE WITH RTT" selection={this.props.globalState}>
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
-                        <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName="precision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Use Width/Height" onSelect={value => {
-                            this._useWidthHeight = value;
-                            this.forceUpdate();
-                        }} isSelected={() => this._useWidthHeight} />
-                        {
-                            this._useWidthHeight &&
+                        <FloatLineComponent
+                            label="Precision"
+                            target={this._screenShotSize}
+                            propertyName="precision"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                        <CheckBoxLineComponent
+                            label="Use Width/Height"
+                            onSelect={(value) => {
+                                this._useWidthHeight = value;
+                                this.forceUpdate();
+                            }}
+                            isSelected={() => this._useWidthHeight}
+                        />
+                        {this._useWidthHeight && (
                             <div className="secondLine">
-                                <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
-                                <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
+                                <NumericInputComponent
+                                    label="Width"
+                                    precision={0}
+                                    step={1}
+                                    value={this._screenShotSize.width ? this._screenShotSize.width : 512}
+                                    onChange={(value) => (this._screenShotSize.width = value)}
+                                />
+                                <NumericInputComponent
+                                    label="Height"
+                                    precision={0}
+                                    step={1}
+                                    value={this._screenShotSize.height ? this._screenShotSize.height : 512}
+                                    onChange={(value) => (this._screenShotSize.height = value)}
+                                />
                             </div>
-                        }
+                        )}
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent title="GIF" selection={this.props.globalState}>
-                    {
-                        this._crunchingGIF &&
-                        <MessageLineComponent text="Creating the GIF file..." />
-                    }
-                    {
-                        !this._crunchingGIF &&
-                        <ButtonLineComponent label={this._gifRecorder ? "Stop" : "Record"} onClick={() => this.recordGIF()} />
-                    }
-                    {
-                        !this._crunchingGIF && !this._gifRecorder &&
+                    {this._crunchingGIF && <MessageLineComponent text="Creating the GIF file..." />}
+                    {!this._crunchingGIF && <ButtonLineComponent label={this._gifRecorder ? "Stop" : "Record"} onClick={() => this.recordGIF()} />}
+                    {!this._crunchingGIF && !this._gifRecorder && (
                         <>
                             <FloatLineComponent label="Resolution" isInteger={true} target={this._gifOptions} propertyName="width" />
                             <FloatLineComponent label="Frequency (ms)" isInteger={true} target={this._gifOptions} propertyName="frequency" />
                         </>
-                    }
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="REPLAY" selection={this.props.globalState}>
-                    {
-                        !this.props.globalState.recorder.isRecording &&
-                        <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />
-                    }
-                    {
-                        this.props.globalState.recorder.isRecording &&
-                        <IndentedTextLineComponent value={"Record in progress"} />
-                    }
-                    {
-                        this.props.globalState.recorder.isRecording &&
-                        <ButtonLineComponent label="Generate delta file" onClick={() => this.exportReplay()} />
-                    }
+                    {!this.props.globalState.recorder.isRecording && <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />}
+                    {this.props.globalState.recorder.isRecording && <IndentedTextLineComponent value={"Record in progress"} />}
+                    {this.props.globalState.recorder.isRecording && <ButtonLineComponent label="Generate delta file" onClick={() => this.exportReplay()} />}
                     <FileButtonLineComponent label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
                 </LineContainerComponent>
                 <LineContainerComponent title="SCENE IMPORT" selection={this.props.globalState}>
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
-                    <CheckBoxLineComponent label="Overwrite animations" target={sceneImportDefaults} propertyName="overwriteAnimations" onSelect={value => {
-                        sceneImportDefaults["overwriteAnimations"] = value;
-                        this.forceUpdate();
-                    }} />
-                    {
-                        sceneImportDefaults["overwriteAnimations"] === false &&
-                        <OptionsLineComponent label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
-                    }
+                    <CheckBoxLineComponent
+                        label="Overwrite animations"
+                        target={sceneImportDefaults}
+                        propertyName="overwriteAnimations"
+                        onSelect={(value) => {
+                            sceneImportDefaults["overwriteAnimations"] = value;
+                            this.forceUpdate();
+                        }}
+                    />
+                    {sceneImportDefaults["overwriteAnimations"] === false && (
+                        <OptionsLineComponent
+                            label="Animation merge mode"
+                            options={animationGroupLoadingModes}
+                            target={sceneImportDefaults}
+                            propertyName="animationGroupLoadingMode"
+                        />
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="SCENE EXPORT" selection={this.props.globalState}>
-                    {
-                        this._isExporting &&
-                        <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
-                    }
-                    {
-                        !this._isExporting &&
+                    {this._isExporting && <TextLineComponent label="Please wait..exporting" ignoreValue={true} />}
+                    {!this._isExporting && (
                         <>
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
-                            {
-                                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
+                            {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
                                 <>
                                     <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
-                                    <OptionsLineComponent label="Image type" options={envExportImageTypes} target={this._envOptions} propertyName="imageTypeIndex" onSelect={() => {
-                                        this.forceUpdate();
-                                    }} />
-                                    {
-                                        this._envOptions.imageTypeIndex > 0 &&
+                                    <OptionsLineComponent
+                                        label="Image type"
+                                        options={envExportImageTypes}
+                                        target={this._envOptions}
+                                        propertyName="imageTypeIndex"
+                                        onSelect={() => {
+                                            this.forceUpdate();
+                                        }}
+                                    />
+                                    {this._envOptions.imageTypeIndex > 0 && (
                                         <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
-                                    }
+                                    )}
                                 </>
-                            }
+                            )}
                         </>
-                    }
+                    )}
                 </LineContainerComponent>
-                {
-                    (BABYLON as any).GLTFFileLoader &&
-                    <GLTFComponent scene={scene} globalState={this.props.globalState!} />
-                }
+                {(BABYLON as any).GLTFFileLoader && <GLTFComponent scene={scene} globalState={this.props.globalState!} />}
                 <LineContainerComponent title="REFLECTOR" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />

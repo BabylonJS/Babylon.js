@@ -28,10 +28,25 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={checkbox} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr/>
+                <hr />
                 <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
-                <FloatLineComponent iconLabel={"Check size ratio"} icon={sizeIcon} lockObject={this.props.lockObject} label="" target={checkbox} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent iconLabel={"Checked"} icon={fillColorIcon} label="" target={checkbox} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <FloatLineComponent
+                    iconLabel={"Check size ratio"}
+                    icon={sizeIcon}
+                    lockObject={this.props.lockObject}
+                    label=""
+                    target={checkbox}
+                    propertyName="checkSizeRatio"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <CheckBoxLineComponent
+                    iconLabel={"Checked"}
+                    icon={fillColorIcon}
+                    label=""
+                    target={checkbox}
+                    propertyName="isChecked"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }
