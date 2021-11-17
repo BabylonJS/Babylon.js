@@ -34,7 +34,7 @@ MaterialPluginManager.RegisterPlugin("subSurface", (material: Material) => {
 /**
  * @hidden
  */
-class IMaterialSubSurfaceDefines extends MaterialDefines {
+class MaterialSubSurfaceDefines extends MaterialDefines {
     public SUBSURFACE = false;
 
     public SS_REFRACTION = false;
@@ -67,12 +67,13 @@ class IMaterialSubSurfaceDefines extends MaterialDefines {
     public SS_USE_GLTF_TEXTURES = false;
 }
 
-const modelDefines = new IMaterialSubSurfaceDefines();
+const modelDefines = new MaterialSubSurfaceDefines();
 
 /**
  * Define the code related to the sub surface parameters of the pbr material.
  */
 export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
+    public priority: 0;
 
     private _material: PBRBaseMaterial;
 
@@ -341,7 +342,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialSubSurfaceDefines, scene: Scene, engine: Engine): boolean {
+    public isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
         }
@@ -381,7 +382,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
      */
-    public prepareDefines(defines: IMaterialSubSurfaceDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_TRANSLUCENCY = false;
@@ -507,9 +508,6 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
-     * @param isFrozen defines whether the material is frozen or not.
-     * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
-     * @param realTimeFiltering defines whether the textures should be filtered on the fly.
      * @param subMesh the submesh to bind data for
     */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
@@ -517,7 +515,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as IMaterialSubSurfaceDefines;
+        const defines = subMesh!.materialDefines as unknown as MaterialSubSurfaceDefines;
 
         const isFrozen = this._material.isFrozen;
         const realTimeFiltering = this._material.realTimeFiltering;
@@ -749,7 +747,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    public addFallbacks(defines: IMaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public addFallbacks(defines: MaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.SS_SCATTERING) {
             fallbacks.addFallback(currentRank++, "SS_SCATTERING");
         }

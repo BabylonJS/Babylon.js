@@ -1,7 +1,6 @@
 import { SerializationHelper, serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Color3 } from '../../Maths/math.color';
-import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -9,31 +8,52 @@ import { Nullable } from "../../types";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
 import { SubMesh } from '../../Meshes/subMesh';
+import { Constants } from "../../Engines/constants";
+import { IMaterialPlugin } from "../IMaterialPlugin";
+import { MaterialPluginManager } from "../materialPluginManager";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { MaterialDefines } from "../materialDefines";
+
+declare type Engine = import("../../Engines/engine").Engine;
+declare type Scene = import("../../scene").Scene;
+declare type Material = import("../material").Material;
+
+MaterialPluginManager.RegisterPlugin("subSurface", (material: Material) => {
+    if (material instanceof PBRBaseMaterial) {
+        return new PBRSheenConfiguration(material);
+    }
+    return null;
+});
 
 /**
  * @hidden
  */
-export interface IMaterialSheenDefines {
-    SHEEN: boolean;
-    SHEEN_TEXTURE: boolean;
-    SHEEN_GAMMATEXTURE: boolean;
-    SHEEN_TEXTURE_ROUGHNESS: boolean;
-    SHEEN_TEXTUREDIRECTUV: number;
-    SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
-    SHEEN_LINKWITHALBEDO: boolean;
-    SHEEN_ROUGHNESS: boolean;
-    SHEEN_ALBEDOSCALING: boolean;
-    SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
-    SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
+ class MaterialSheenDefines extends MaterialDefines {
+    public SHEEN = false;
+    public SHEEN_TEXTURE = false;
+    public SHEEN_GAMMATEXTURE = false;
+    public SHEEN_TEXTURE_ROUGHNESS = false;
+    public SHEEN_TEXTUREDIRECTUV = 0;
+    public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
+    public SHEEN_LINKWITHALBEDO = false;
+    public SHEEN_ROUGHNESS = false;
+    public SHEEN_ALBEDOSCALING = false;
+    public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
 
     /** @hidden */
     _areTexturesDirty: boolean;
 }
 
+const modelDefines = new MaterialSheenDefines();
+
 /**
  * Define the code related to the Sheen parameters of the pbr material.
  */
-export class PBRSheenConfiguration {
+export class PBRSheenConfiguration implements IMaterialPlugin {
+    public priority: 0;
+
+    private _material: PBRBaseMaterial;
 
     private _isEnabled = false;
     /**
@@ -124,8 +144,12 @@ export class PBRSheenConfiguration {
      * Instantiate a new instance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
-        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+     constructor(material: PBRBaseMaterial) {
+        this._material = material;
+    }
+
+    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
     /**
@@ -134,7 +158,7 @@ export class PBRSheenConfiguration {
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialSheenDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -158,12 +182,22 @@ export class PBRSheenConfiguration {
         return true;
     }
 
+    public collectDefineNames(names: string[]): void {
+        for (const key of Object.keys(modelDefines)) {
+            if (key[0] === "_") {
+                continue;
+            }
+
+            names.push(key);
+        }
+    }
+
     /**
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      */
-    public prepareDefines(defines: IMaterialSheenDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.SHEEN = this._isEnabled;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
@@ -205,15 +239,17 @@ export class PBRSheenConfiguration {
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
-     * @param isFrozen defines whether the material is frozen or not.
+     * @param engine the engine this scene belongs to.
      * @param subMesh the submesh to bind data for
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as IMaterialSheenDefines;
+        const defines = subMesh!.materialDefines as unknown as MaterialSheenDefines;
+
+        const isFrozen = this._material.isFrozen;
 
         const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
 
@@ -326,7 +362,7 @@ export class PBRSheenConfiguration {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    public static AddFallbacks(defines: IMaterialSheenDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public addFallbacks(defines: MaterialSheenDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.SHEEN) {
             fallbacks.addFallback(currentRank++, "SHEEN");
         }
@@ -345,7 +381,7 @@ export class PBRSheenConfiguration {
      * Add the required uniforms to the current buffer.
      * @param uniformBuffer defines the current uniform buffer.
      */
-    public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
+    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vSheenColor", 4);
         uniformBuffer.addUniform("vSheenRoughness", 1);
         uniformBuffer.addUniform("vSheenInfos", 4);
@@ -357,7 +393,7 @@ export class PBRSheenConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-    public static AddSamplers(samplers: string[]): void {
+    public addSamplers(samplers: string[]): void {
         samplers.push("sheenSampler");
         samplers.push("sheenRoughnessSampler");
     }
