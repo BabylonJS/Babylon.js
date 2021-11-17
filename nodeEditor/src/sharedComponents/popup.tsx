@@ -4,14 +4,12 @@ export class Popup {
             width: width,
             height: height,
             top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX
+            left: (window.innerWidth - height) / 2 + window.screenX,
         };
 
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map(
-                (key) => key + '=' + (windowCreationOptionsList as any)[key]
-            )
-            .join(',');
+            .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
+            .join(",");
 
         const popupWindow = window.open("", title, windowCreationOptions);
         if (!popupWindow) {
@@ -21,12 +19,11 @@ export class Popup {
         const parentDocument = popupWindow.document;
 
         // Font
-        const newLinkEl = parentDocument.createElement('link');
+        const newLinkEl = parentDocument.createElement("link");
 
-        newLinkEl.rel = 'stylesheet';
+        newLinkEl.rel = "stylesheet";
         newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
         parentDocument.head!.appendChild(newLinkEl);
-
 
         parentDocument.title = title;
         parentDocument.body.style.width = "100%";
@@ -42,7 +39,8 @@ export class Popup {
 
         popupWindow.document.body.appendChild(parentControl);
         this._CopyStyles(window.document, parentDocument);
-        setTimeout(() => { // need this for late bindings
+        setTimeout(() => {
+            // need this for late bindings
             this._CopyStyles(window.document, parentDocument);
         }, 0);
 
@@ -55,8 +53,9 @@ export class Popup {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
             try {
-                if (styleSheet.cssRules) { // for <style> elements
-                    const newStyleEl = sourceDoc.createElement('style');
+                if (styleSheet.cssRules) {
+                    // for <style> elements
+                    const newStyleEl = sourceDoc.createElement("style");
 
                     for (var cssRule of styleSheet.cssRules) {
                         // write the text of each rule into the body of the style element
@@ -64,16 +63,15 @@ export class Popup {
                     }
 
                     targetDoc.head!.appendChild(newStyleEl);
-                } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                    const newLinkEl = sourceDoc.createElement('link');
+                } else if (styleSheet.href) {
+                    // for <link> elements loading CSS from a URL
+                    const newLinkEl = sourceDoc.createElement("link");
 
-                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.rel = "stylesheet";
                     newLinkEl.href = styleSheet.href;
                     targetDoc.head!.appendChild(newLinkEl);
                 }
-            } catch (e) {
-            }
-
+            } catch (e) {}
         }
     }
 }

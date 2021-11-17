@@ -29,6 +29,7 @@ export interface IImageProcessingConfigurationDefines {
     SAMPLER3DGREENDEPTH: boolean;
     SAMPLER3DBGRMAP: boolean;
     IMAGEPROCESSINGPOSTPROCESS: boolean;
+    SKIPFINALCOLORCLAMP: boolean;
 }
 
 /**
@@ -49,6 +50,7 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -340,6 +342,29 @@ export class ImageProcessingConfiguration {
 
     /** @hidden */
     @serialize()
+    public _skipFinalColorClamp = false;
+    /**
+     * If apply by post process is set to true, setting this to true will skip the the final color clamp step in the fragment shader
+     * Applies to PBR materials.
+     */
+    public get skipFinalColorClamp(): boolean {
+        return this._skipFinalColorClamp;
+    }
+    /**
+     * If apply by post process is set to true, setting this to true will skip the the final color clamp step in the fragment shader
+     * Applies to PBR materials.
+     */
+    public set skipFinalColorClamp(value: boolean) {
+        if (this._skipFinalColorClamp === value) {
+            return;
+        }
+
+        this._skipFinalColorClamp = value;
+        this._updateParameters();
+    }
+
+    /** @hidden */
+    @serialize()
     public _applyByPostProcess = false;
     /**
      * Gets whether the image processing is applied through a post process or not.
@@ -451,6 +476,7 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
+            defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
         }
@@ -481,6 +507,7 @@ export class ImageProcessingConfiguration {
         defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
         defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
+        defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
         defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
     }
 

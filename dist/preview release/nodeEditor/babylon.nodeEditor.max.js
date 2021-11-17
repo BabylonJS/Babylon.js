@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9577,9 +9577,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9980,9 +9980,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9998,9 +9998,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss":
-/*!************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss ***!
-  \************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss ***!
+  \****************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10016,9 +10016,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \**********************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10034,9 +10034,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/graphCanvas.scss":
-/*!***************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/graphCanvas.scss ***!
-  \***************************************************************************************************************************************************/
+/*!*******************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/graphCanvas.scss ***!
+  \*******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10052,9 +10052,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************************/
+/*!****************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10070,9 +10070,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \******************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10088,9 +10088,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10193,9 +10193,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/index.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/index.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10237,9 +10237,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/acyclic.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/acyclic.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/acyclic.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10316,9 +10316,9 @@ function undo(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/add-border-segments.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/add-border-segments.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/add-border-segments.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10365,9 +10365,9 @@ function addBorderNode(g, prop, prefix, sg, sgNode, rank) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/coordinate-system.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/coordinate-system.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/coordinate-system.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10449,9 +10449,9 @@ function swapXYOne(attrs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/data/list.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/data/list.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/data/list.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10516,9 +10516,9 @@ function filterOutLinks(k, v) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/debug.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/debug.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/debug.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10561,9 +10561,9 @@ function debugOrdering(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/graphlib.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/graphlib.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/graphlib.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10589,9 +10589,9 @@ module.exports = graphlib;
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/greedy-fas.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/greedy-fas.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/greedy-fas.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10718,9 +10718,9 @@ function assignBucket(buckets, zeroIdx, entry) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/layout.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/layout.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/layout.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11122,9 +11122,9 @@ function canonicalize(attrs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/lodash.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/lodash.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/lodash.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11177,9 +11177,9 @@ module.exports = lodash;
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/nesting-graph.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/nesting-graph.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/nesting-graph.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11320,9 +11320,9 @@ function cleanup(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/normalize.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/normalize.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/normalize.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11422,9 +11422,9 @@ function undo(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/add-subgraph-constraints.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/add-subgraph-constraints.js ***!
-  \************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/add-subgraph-constraints.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11486,9 +11486,9 @@ function addSubgraphConstraints(g, cg, vs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/barycenter.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/barycenter.js ***!
-  \**********************************************************************/
+/*!************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/barycenter.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11525,9 +11525,9 @@ function barycenter(g, movable) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/build-layer-graph.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/build-layer-graph.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/build-layer-graph.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11609,9 +11609,9 @@ function createRootNode(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/cross-count.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/cross-count.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/cross-count.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11688,9 +11688,9 @@ function twoLayerCrossCount(g, northLayer, southLayer) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/index.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/index.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/index.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11779,9 +11779,9 @@ function assignOrder(g, layering) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/init-order.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/init-order.js ***!
-  \**********************************************************************/
+/*!************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/init-order.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11829,9 +11829,9 @@ function initOrder(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/resolve-conflicts.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/resolve-conflicts.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/resolve-conflicts.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11963,9 +11963,9 @@ function mergeEntries(target, source) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/sort-subgraph.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/sort-subgraph.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/sort-subgraph.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12050,9 +12050,9 @@ function mergeBarycenters(target, other) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/sort.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/order/sort.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/sort.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12118,9 +12118,9 @@ function compareWithBias(bias) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/parent-dummy-chains.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/parent-dummy-chains.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/parent-dummy-chains.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12215,9 +12215,9 @@ function postorder(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/position/bk.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/position/bk.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/position/bk.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12646,9 +12646,9 @@ function width(g, v) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/position/index.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/position/index.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/position/index.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12688,9 +12688,9 @@ function positionY(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/feasible-tree.js":
-/*!************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/feasible-tree.js ***!
-  \************************************************************************/
+/*!**************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/feasible-tree.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12789,9 +12789,9 @@ function shiftRanks(t, g, delta) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/index.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/index.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/index.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12849,9 +12849,9 @@ function networkSimplexRanker(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/network-simplex.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/network-simplex.js ***!
-  \**************************************************************************/
+/*!****************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/network-simplex.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13095,9 +13095,9 @@ function isDescendant(tree, vLabel, rootLabel) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/util.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/rank/util.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/util.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13170,9 +13170,9 @@ function slack(g, e) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/util.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/util.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/util.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13420,9 +13420,9 @@ function notime(name, fn) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/version.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/dagre/lib/version.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/version.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13432,9 +13432,9 @@ module.exports = "0.8.5";
 /***/ }),
 
 /***/ "../../node_modules/graphlib/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/index.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13481,9 +13481,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/components.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/components.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/components.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13519,9 +13519,9 @@ function components(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dfs.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/dfs.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/dfs.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13572,9 +13572,9 @@ function doDfs(g, v, postorder, visited, navigation, acc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dijkstra-all.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/dijkstra-all.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/dijkstra-all.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13593,9 +13593,9 @@ function dijkstraAll(g, weightFunc, edgeFunc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dijkstra.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/dijkstra.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/dijkstra.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13658,9 +13658,9 @@ function runDijkstra(g, source, weightFn, edgeFn) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/find-cycles.js":
-/*!************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/find-cycles.js ***!
-  \************************************************************************/
+/*!**************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/find-cycles.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13679,9 +13679,9 @@ function findCycles(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/floyd-warshall.js":
-/*!***************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/floyd-warshall.js ***!
-  \***************************************************************************/
+/*!*****************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/floyd-warshall.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13740,9 +13740,9 @@ function runFloydWarshall(g, weightFn, edgeFn) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/index.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/index.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/index.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13764,9 +13764,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/is-acyclic.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/is-acyclic.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/is-acyclic.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13790,9 +13790,9 @@ function isAcyclic(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/postorder.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/postorder.js ***!
-  \**********************************************************************/
+/*!************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/postorder.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13808,9 +13808,9 @@ function postorder(g, vs) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/preorder.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/preorder.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/preorder.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13826,9 +13826,9 @@ function preorder(g, vs) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/prim.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/prim.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/prim.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13889,9 +13889,9 @@ function prim(g, weightFunc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/tarjan.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/tarjan.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/tarjan.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13947,9 +13947,9 @@ function tarjan(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/topsort.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/alg/topsort.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/topsort.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13992,9 +13992,9 @@ CycleException.prototype = new Error(); // must be an instance of Error to pass 
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/data/priority-queue.js":
-/*!****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/data/priority-queue.js ***!
-  \****************************************************************************/
+/*!******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/data/priority-queue.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14155,9 +14155,9 @@ PriorityQueue.prototype._swap = function(i, j) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/graph.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/graph.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/graph.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14699,9 +14699,9 @@ function edgeObjToId(isDirected, edgeObj) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/index.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/index.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/index.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14715,9 +14715,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/json.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/json.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/json.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14792,9 +14792,9 @@ function read(json) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/lodash.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/lodash.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/lodash.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14837,9 +14837,9 @@ module.exports = lodash;
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/version.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/graphlib/lib/version.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/version.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14849,9 +14849,9 @@ module.exports = '2.1.8';
 /***/ }),
 
 /***/ "../../node_modules/lodash/_DataView.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_DataView.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_DataView.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14867,9 +14867,9 @@ module.exports = DataView;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Hash.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Hash.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Hash.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14910,9 +14910,9 @@ module.exports = Hash;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_ListCache.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_ListCache.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_ListCache.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14953,9 +14953,9 @@ module.exports = ListCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Map.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Map.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Map.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14971,9 +14971,9 @@ module.exports = Map;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_MapCache.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_MapCache.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_MapCache.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15014,9 +15014,9 @@ module.exports = MapCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Promise.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Promise.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Promise.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15032,9 +15032,9 @@ module.exports = Promise;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Set.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Set.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Set.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15050,9 +15050,9 @@ module.exports = Set;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_SetCache.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_SetCache.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_SetCache.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15088,9 +15088,9 @@ module.exports = SetCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Stack.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Stack.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Stack.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15126,9 +15126,9 @@ module.exports = Stack;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Symbol.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Symbol.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Symbol.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15143,9 +15143,9 @@ module.exports = Symbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Uint8Array.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15160,9 +15160,9 @@ module.exports = Uint8Array;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_WeakMap.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_WeakMap.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_WeakMap.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15178,9 +15178,9 @@ module.exports = WeakMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_apply.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_apply.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_apply.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15210,9 +15210,9 @@ module.exports = apply;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayEach.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayEach.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayEach.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15243,9 +15243,9 @@ module.exports = arrayEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayFilter.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15279,9 +15279,9 @@ module.exports = arrayFilter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayIncludes.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayIncludes.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayIncludes.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15307,9 +15307,9 @@ module.exports = arrayIncludes;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayIncludesWith.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayIncludesWith.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayIncludesWith.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15340,9 +15340,9 @@ module.exports = arrayIncludesWith;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayLikeKeys.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15400,9 +15400,9 @@ module.exports = arrayLikeKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayMap.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayMap.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayMap.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15432,9 +15432,9 @@ module.exports = arrayMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayPush.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayPush.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayPush.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15463,9 +15463,9 @@ module.exports = arrayPush;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayReduce.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arrayReduce.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayReduce.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15500,9 +15500,9 @@ module.exports = arrayReduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arraySome.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_arraySome.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arraySome.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15534,9 +15534,9 @@ module.exports = arraySome;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_asciiSize.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_asciiSize.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_asciiSize.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15557,9 +15557,9 @@ module.exports = asciiSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assignMergeValue.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15588,9 +15588,9 @@ module.exports = assignMergeValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assignValue.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_assignValue.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_assignValue.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15627,9 +15627,9 @@ module.exports = assignValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assocIndexOf.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15659,9 +15659,9 @@ module.exports = assocIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssign.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseAssign.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseAssign.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15687,9 +15687,9 @@ module.exports = baseAssign;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssignIn.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15715,9 +15715,9 @@ module.exports = baseAssignIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssignValue.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15751,9 +15751,9 @@ module.exports = baseAssignValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseClone.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseClone.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseClone.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15928,9 +15928,9 @@ module.exports = baseClone;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseCreate.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseCreate.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseCreate.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15969,9 +15969,9 @@ module.exports = baseCreate;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseEach.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseEach.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseEach.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15994,9 +15994,9 @@ module.exports = baseEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseExtremum.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseExtremum.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseExtremum.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16037,9 +16037,9 @@ module.exports = baseExtremum;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFilter.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFilter.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFilter.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16069,9 +16069,9 @@ module.exports = baseFilter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFindIndex.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFindIndex.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFindIndex.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16104,9 +16104,9 @@ module.exports = baseFindIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFlatten.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFlatten.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFlatten.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16153,9 +16153,9 @@ module.exports = baseFlatten;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFor.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseFor.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFor.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16180,9 +16180,9 @@ module.exports = baseFor;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseForOwn.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16207,9 +16207,9 @@ module.exports = baseForOwn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGet.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGet.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16242,9 +16242,9 @@ module.exports = baseGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGetAllKeys.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16273,9 +16273,9 @@ module.exports = baseGetAllKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGetTag.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16312,9 +16312,9 @@ module.exports = baseGetTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGt.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseGt.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGt.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16337,9 +16337,9 @@ module.exports = baseGt;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseHas.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseHas.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseHas.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16367,9 +16367,9 @@ module.exports = baseHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseHasIn.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16391,9 +16391,9 @@ module.exports = baseHasIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIndexOf.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIndexOf.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIndexOf.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16422,9 +16422,9 @@ module.exports = baseIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsArguments.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16451,9 +16451,9 @@ module.exports = baseIsArguments;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsEqual.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16490,9 +16490,9 @@ module.exports = baseIsEqual;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsEqualDeep.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16584,9 +16584,9 @@ module.exports = baseIsEqualDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsMap.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16613,9 +16613,9 @@ module.exports = baseIsMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsMatch.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16686,9 +16686,9 @@ module.exports = baseIsMatch;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsNaN.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsNaN.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsNaN.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16709,9 +16709,9 @@ module.exports = baseIsNaN;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsNative.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16767,9 +16767,9 @@ module.exports = baseIsNative;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsSet.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16796,9 +16796,9 @@ module.exports = baseIsSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsTypedArray.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16867,9 +16867,9 @@ module.exports = baseIsTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIteratee.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16909,9 +16909,9 @@ module.exports = baseIteratee;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseKeys.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseKeys.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseKeys.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16950,9 +16950,9 @@ module.exports = baseKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseKeysIn.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16994,9 +16994,9 @@ module.exports = baseKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseLt.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseLt.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseLt.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17019,9 +17019,9 @@ module.exports = baseLt;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMap.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMap.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMap.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17052,9 +17052,9 @@ module.exports = baseMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMatches.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMatches.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMatches.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17085,9 +17085,9 @@ module.exports = baseMatches;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMatchesProperty.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17129,9 +17129,9 @@ module.exports = baseMatchesProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMerge.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMerge.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMerge.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17182,9 +17182,9 @@ module.exports = baseMerge;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMergeDeep.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17287,9 +17287,9 @@ module.exports = baseMergeDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseOrderBy.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseOrderBy.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseOrderBy.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17347,9 +17347,9 @@ module.exports = baseOrderBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePick.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_basePick.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_basePick.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17377,9 +17377,9 @@ module.exports = basePick;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePickBy.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_basePickBy.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_basePickBy.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17418,9 +17418,9 @@ module.exports = basePickBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseProperty.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseProperty.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseProperty.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17443,9 +17443,9 @@ module.exports = baseProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePropertyDeep.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17470,9 +17470,9 @@ module.exports = basePropertyDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseRange.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseRange.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseRange.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17509,9 +17509,9 @@ module.exports = baseRange;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseReduce.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseReduce.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseReduce.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17543,9 +17543,9 @@ module.exports = baseReduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseRest.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseRest.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseRest.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17571,9 +17571,9 @@ module.exports = baseRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSet.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseSet.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseSet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17633,9 +17633,9 @@ module.exports = baseSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSetToString.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17666,9 +17666,9 @@ module.exports = baseSetToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSortBy.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseSortBy.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseSortBy.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17698,9 +17698,9 @@ module.exports = baseSortBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseTimes.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseTimes.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseTimes.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17729,9 +17729,9 @@ module.exports = baseTimes;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseToString.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseToString.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseToString.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17777,9 +17777,9 @@ module.exports = baseToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseTrim.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseTrim.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseTrim.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17807,9 +17807,9 @@ module.exports = baseTrim;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseUnary.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseUnary.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseUnary.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17832,9 +17832,9 @@ module.exports = baseUnary;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseUniq.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseUniq.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseUniq.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17915,9 +17915,9 @@ module.exports = baseUniq;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseValues.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseValues.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseValues.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17945,9 +17945,9 @@ module.exports = baseValues;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseZipObject.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_baseZipObject.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseZipObject.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17979,9 +17979,9 @@ module.exports = baseZipObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cacheHas.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cacheHas.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cacheHas.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18003,9 +18003,9 @@ module.exports = cacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_castFunction.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_castFunction.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_castFunction.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18028,9 +18028,9 @@ module.exports = castFunction;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_castPath.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_castPath.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_castPath.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18060,9 +18060,9 @@ module.exports = castPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneArrayBuffer.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18087,9 +18087,9 @@ module.exports = cloneArrayBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneBuffer.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18134,9 +18134,9 @@ module.exports = cloneBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneDataView.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18161,9 +18161,9 @@ module.exports = cloneDataView;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneRegExp.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18189,9 +18189,9 @@ module.exports = cloneRegExp;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneSymbol.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18218,9 +18218,9 @@ module.exports = cloneSymbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneTypedArray.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18245,9 +18245,9 @@ module.exports = cloneTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_compareAscending.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_compareAscending.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_compareAscending.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18297,9 +18297,9 @@ module.exports = compareAscending;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_compareMultiple.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_compareMultiple.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_compareMultiple.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18352,9 +18352,9 @@ module.exports = compareMultiple;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copyArray.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_copyArray.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copyArray.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18383,9 +18383,9 @@ module.exports = copyArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copyObject.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_copyObject.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copyObject.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18434,9 +18434,9 @@ module.exports = copyObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copySymbols.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_copySymbols.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copySymbols.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18461,9 +18461,9 @@ module.exports = copySymbols;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copySymbolsIn.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18488,9 +18488,9 @@ module.exports = copySymbolsIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_coreJsData.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_coreJsData.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_coreJsData.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18505,9 +18505,9 @@ module.exports = coreJsData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createAssigner.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_createAssigner.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createAssigner.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18553,9 +18553,9 @@ module.exports = createAssigner;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createBaseEach.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18596,9 +18596,9 @@ module.exports = createBaseEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createBaseFor.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18632,9 +18632,9 @@ module.exports = createBaseFor;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createFind.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_createFind.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createFind.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18668,9 +18668,9 @@ module.exports = createFind;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createRange.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_createRange.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createRange.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18709,9 +18709,9 @@ module.exports = createRange;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createSet.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_createSet.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createSet.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18739,9 +18739,9 @@ module.exports = createSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_defineProperty.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_defineProperty.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_defineProperty.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18761,9 +18761,9 @@ module.exports = defineProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalArrays.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_equalArrays.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_equalArrays.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18856,9 +18856,9 @@ module.exports = equalArrays;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalByTag.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_equalByTag.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_equalByTag.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18979,9 +18979,9 @@ module.exports = equalByTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalObjects.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_equalObjects.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_equalObjects.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19080,9 +19080,9 @@ module.exports = equalObjects;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_flatRest.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_flatRest.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_flatRest.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19107,9 +19107,9 @@ module.exports = flatRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_freeGlobal.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19123,9 +19123,9 @@ module.exports = freeGlobal;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getAllKeys.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19150,9 +19150,9 @@ module.exports = getAllKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getAllKeysIn.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19178,9 +19178,9 @@ module.exports = getAllKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getMapData.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getMapData.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getMapData.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19207,9 +19207,9 @@ module.exports = getMapData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getMatchData.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getMatchData.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getMatchData.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19242,9 +19242,9 @@ module.exports = getMatchData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getNative.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getNative.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getNative.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19270,9 +19270,9 @@ module.exports = getNative;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getPrototype.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getPrototype.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getPrototype.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19287,9 +19287,9 @@ module.exports = getPrototype;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getRawTag.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getRawTag.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getRawTag.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19344,9 +19344,9 @@ module.exports = getRawTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getSymbols.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getSymbols.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getSymbols.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19385,9 +19385,9 @@ module.exports = getSymbols;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getSymbolsIn.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19421,9 +19421,9 @@ module.exports = getSymbolsIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getTag.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getTag.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getTag.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19490,9 +19490,9 @@ module.exports = getTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getValue.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_getValue.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getValue.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19514,9 +19514,9 @@ module.exports = getValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hasPath.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hasPath.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hasPath.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19564,9 +19564,9 @@ module.exports = hasPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hasUnicode.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hasUnicode.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hasUnicode.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19601,9 +19601,9 @@ module.exports = hasUnicode;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashClear.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashClear.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashClear.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19627,9 +19627,9 @@ module.exports = hashClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashDelete.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashDelete.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashDelete.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19655,9 +19655,9 @@ module.exports = hashDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashGet.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashGet.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashGet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19696,9 +19696,9 @@ module.exports = hashGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashHas.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashHas.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashHas.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19730,9 +19730,9 @@ module.exports = hashHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashSet.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_hashSet.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashSet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19764,9 +19764,9 @@ module.exports = hashSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneArray.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19801,9 +19801,9 @@ module.exports = initCloneArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneByTag.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19889,9 +19889,9 @@ module.exports = initCloneByTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneObject.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19918,9 +19918,9 @@ module.exports = initCloneObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isFlattenable.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isFlattenable.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isFlattenable.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19949,9 +19949,9 @@ module.exports = isFlattenable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isIndex.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isIndex.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isIndex.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19985,9 +19985,9 @@ module.exports = isIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isIterateeCall.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20026,9 +20026,9 @@ module.exports = isIterateeCall;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isKey.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isKey.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isKey.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20066,9 +20066,9 @@ module.exports = isKey;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isKeyable.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isKeyable.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isKeyable.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20092,9 +20092,9 @@ module.exports = isKeyable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isMasked.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isMasked.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isMasked.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20123,9 +20123,9 @@ module.exports = isMasked;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isPrototype.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isPrototype.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isPrototype.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20152,9 +20152,9 @@ module.exports = isPrototype;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isStrictComparable.js":
-/*!**********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
-  \**********************************************************************/
+/*!************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20178,9 +20178,9 @@ module.exports = isStrictComparable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheClear.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20202,9 +20202,9 @@ module.exports = listCacheClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheDelete.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20248,9 +20248,9 @@ module.exports = listCacheDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheGet.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20278,9 +20278,9 @@ module.exports = listCacheGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheHas.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20305,9 +20305,9 @@ module.exports = listCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheSet.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20342,9 +20342,9 @@ module.exports = listCacheSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheClear.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20374,9 +20374,9 @@ module.exports = mapCacheClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheDelete.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20403,9 +20403,9 @@ module.exports = mapCacheDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheGet.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20430,9 +20430,9 @@ module.exports = mapCacheGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheHas.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20457,9 +20457,9 @@ module.exports = mapCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheSet.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20490,9 +20490,9 @@ module.exports = mapCacheSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapToArray.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_mapToArray.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapToArray.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20519,9 +20519,9 @@ module.exports = mapToArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_matchesStrictComparable.js":
-/*!***************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
-  \***************************************************************************/
+/*!*****************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20550,9 +20550,9 @@ module.exports = matchesStrictComparable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_memoizeCapped.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20587,9 +20587,9 @@ module.exports = memoizeCapped;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeCreate.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20604,9 +20604,9 @@ module.exports = nativeCreate;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeKeys.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20621,9 +20621,9 @@ module.exports = nativeKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeKeysIn.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20652,9 +20652,9 @@ module.exports = nativeKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nodeUtil.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20694,9 +20694,9 @@ module.exports = nodeUtil;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_objectToString.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_objectToString.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_objectToString.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20727,9 +20727,9 @@ module.exports = objectToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_overArg.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_overArg.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_overArg.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20753,9 +20753,9 @@ module.exports = overArg;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_overRest.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_overRest.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_overRest.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20800,9 +20800,9 @@ module.exports = overRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_root.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_root.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_root.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20820,9 +20820,9 @@ module.exports = root;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_safeGet.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_safeGet.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_safeGet.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20852,9 +20852,9 @@ module.exports = safeGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setCacheAdd.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20882,9 +20882,9 @@ module.exports = setCacheAdd;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setCacheHas.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20907,9 +20907,9 @@ module.exports = setCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setToArray.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_setToArray.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setToArray.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20936,9 +20936,9 @@ module.exports = setToArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setToString.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_setToString.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setToString.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20961,9 +20961,9 @@ module.exports = setToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_shortOut.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_shortOut.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_shortOut.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21009,9 +21009,9 @@ module.exports = shortOut;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackClear.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackClear.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackClear.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21035,9 +21035,9 @@ module.exports = stackClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackDelete.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackDelete.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackDelete.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21064,9 +21064,9 @@ module.exports = stackDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackGet.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackGet.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackGet.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21089,9 +21089,9 @@ module.exports = stackGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackHas.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackHas.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackHas.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21114,9 +21114,9 @@ module.exports = stackHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackSet.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stackSet.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackSet.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21159,9 +21159,9 @@ module.exports = stackSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_strictIndexOf.js":
-/*!*****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_strictIndexOf.js ***!
-  \*****************************************************************/
+/*!*******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_strictIndexOf.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21193,9 +21193,9 @@ module.exports = strictIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stringSize.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stringSize.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stringSize.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21222,9 +21222,9 @@ module.exports = stringSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stringToPath.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_stringToPath.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stringToPath.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21260,9 +21260,9 @@ module.exports = stringToPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_toKey.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_toKey.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_toKey.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21292,9 +21292,9 @@ module.exports = toKey;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_toSource.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_toSource.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_toSource.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21329,9 +21329,9 @@ module.exports = toSource;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_trimmedEndIndex.js":
-/*!*******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_trimmedEndIndex.js ***!
-  \*******************************************************************/
+/*!*********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_trimmedEndIndex.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21359,9 +21359,9 @@ module.exports = trimmedEndIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_unicodeSize.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21414,9 +21414,9 @@ module.exports = unicodeSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/clone.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/clone.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/clone.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21461,9 +21461,9 @@ module.exports = clone;
 /***/ }),
 
 /***/ "../../node_modules/lodash/cloneDeep.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/cloneDeep.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/cloneDeep.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21501,9 +21501,9 @@ module.exports = cloneDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/constant.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/constant.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/constant.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21538,9 +21538,9 @@ module.exports = constant;
 /***/ }),
 
 /***/ "../../node_modules/lodash/defaults.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/defaults.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/defaults.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21613,9 +21613,9 @@ module.exports = defaults;
 /***/ }),
 
 /***/ "../../node_modules/lodash/each.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/each.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/each.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21625,9 +21625,9 @@ module.exports = __webpack_require__(/*! ./forEach */ "../../node_modules/lodash
 /***/ }),
 
 /***/ "../../node_modules/lodash/eq.js":
-/*!*****************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/eq.js ***!
-  \*****************************************************/
+/*!*******************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/eq.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21673,9 +21673,9 @@ module.exports = eq;
 /***/ }),
 
 /***/ "../../node_modules/lodash/filter.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/filter.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/filter.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21736,9 +21736,9 @@ module.exports = filter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/find.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/find.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/find.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21789,9 +21789,9 @@ module.exports = find;
 /***/ }),
 
 /***/ "../../node_modules/lodash/findIndex.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/findIndex.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/findIndex.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21855,9 +21855,9 @@ module.exports = findIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/flatten.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/flatten.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/flatten.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21888,9 +21888,9 @@ module.exports = flatten;
 /***/ }),
 
 /***/ "../../node_modules/lodash/forEach.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/forEach.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/forEach.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21940,9 +21940,9 @@ module.exports = forEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/forIn.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/forIn.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/forIn.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21990,9 +21990,9 @@ module.exports = forIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/get.js":
-/*!******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/get.js ***!
-  \******************************************************/
+/*!********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/get.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22034,9 +22034,9 @@ module.exports = get;
 /***/ }),
 
 /***/ "../../node_modules/lodash/has.js":
-/*!******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/has.js ***!
-  \******************************************************/
+/*!********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/has.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22080,9 +22080,9 @@ module.exports = has;
 /***/ }),
 
 /***/ "../../node_modules/lodash/hasIn.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/hasIn.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/hasIn.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22125,9 +22125,9 @@ module.exports = hasIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/identity.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/identity.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/identity.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22157,9 +22157,9 @@ module.exports = identity;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArguments.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isArguments.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArguments.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22204,9 +22204,9 @@ module.exports = isArguments;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArray.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isArray.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArray.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22241,9 +22241,9 @@ module.exports = isArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArrayLike.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isArrayLike.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArrayLike.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22285,9 +22285,9 @@ module.exports = isArrayLike;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArrayLikeObject.js":
-/*!********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
-  \********************************************************************/
+/*!**********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22329,9 +22329,9 @@ module.exports = isArrayLikeObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isBuffer.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isBuffer.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isBuffer.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22379,9 +22379,9 @@ module.exports = isBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isEmpty.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isEmpty.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isEmpty.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22467,9 +22467,9 @@ module.exports = isEmpty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isFunction.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isFunction.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isFunction.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22515,9 +22515,9 @@ module.exports = isFunction;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isLength.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isLength.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isLength.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22561,9 +22561,9 @@ module.exports = isLength;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isMap.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isMap.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isMap.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22599,9 +22599,9 @@ module.exports = isMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isObject.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isObject.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isObject.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22641,9 +22641,9 @@ module.exports = isObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isObjectLike.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isObjectLike.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isObjectLike.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22681,9 +22681,9 @@ module.exports = isObjectLike;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isPlainObject.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isPlainObject.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isPlainObject.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22754,9 +22754,9 @@ module.exports = isPlainObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isSet.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isSet.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isSet.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22792,9 +22792,9 @@ module.exports = isSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isString.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isString.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isString.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22833,9 +22833,9 @@ module.exports = isString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isSymbol.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isSymbol.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isSymbol.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22873,9 +22873,9 @@ module.exports = isSymbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isTypedArray.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isTypedArray.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isTypedArray.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22911,9 +22911,9 @@ module.exports = isTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isUndefined.js":
-/*!**************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/isUndefined.js ***!
-  \**************************************************************/
+/*!****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/isUndefined.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22944,9 +22944,9 @@ module.exports = isUndefined;
 /***/ }),
 
 /***/ "../../node_modules/lodash/keys.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/keys.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/keys.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22992,9 +22992,9 @@ module.exports = keys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/keysIn.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/keysIn.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/keysIn.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23035,9 +23035,9 @@ module.exports = keysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/last.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/last.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/last.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23066,9 +23066,9 @@ module.exports = last;
 /***/ }),
 
 /***/ "../../node_modules/lodash/map.js":
-/*!******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/map.js ***!
-  \******************************************************/
+/*!********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/map.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23130,9 +23130,9 @@ module.exports = map;
 /***/ }),
 
 /***/ "../../node_modules/lodash/mapValues.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/mapValues.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/mapValues.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23184,9 +23184,9 @@ module.exports = mapValues;
 /***/ }),
 
 /***/ "../../node_modules/lodash/max.js":
-/*!******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/max.js ***!
-  \******************************************************/
+/*!********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/max.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23224,9 +23224,9 @@ module.exports = max;
 /***/ }),
 
 /***/ "../../node_modules/lodash/memoize.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/memoize.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/memoize.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23308,9 +23308,9 @@ module.exports = memoize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/merge.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/merge.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/merge.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23358,9 +23358,9 @@ module.exports = merge;
 /***/ }),
 
 /***/ "../../node_modules/lodash/min.js":
-/*!******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/min.js ***!
-  \******************************************************/
+/*!********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/min.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23398,9 +23398,9 @@ module.exports = min;
 /***/ }),
 
 /***/ "../../node_modules/lodash/minBy.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/minBy.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/minBy.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23443,9 +23443,9 @@ module.exports = minBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/noop.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/noop.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/noop.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23471,9 +23471,9 @@ module.exports = noop;
 /***/ }),
 
 /***/ "../../node_modules/lodash/now.js":
-/*!******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/now.js ***!
-  \******************************************************/
+/*!********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/now.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23505,9 +23505,9 @@ module.exports = now;
 /***/ }),
 
 /***/ "../../node_modules/lodash/pick.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/pick.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/pick.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23541,9 +23541,9 @@ module.exports = pick;
 /***/ }),
 
 /***/ "../../node_modules/lodash/property.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/property.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/property.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23584,9 +23584,9 @@ module.exports = property;
 /***/ }),
 
 /***/ "../../node_modules/lodash/range.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/range.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/range.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23641,9 +23641,9 @@ module.exports = range;
 /***/ }),
 
 /***/ "../../node_modules/lodash/reduce.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/reduce.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/reduce.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23703,9 +23703,9 @@ module.exports = reduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/size.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/size.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/size.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23760,9 +23760,9 @@ module.exports = size;
 /***/ }),
 
 /***/ "../../node_modules/lodash/sortBy.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/sortBy.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/sortBy.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23819,9 +23819,9 @@ module.exports = sortBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/stubArray.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/stubArray.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/stubArray.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23853,9 +23853,9 @@ module.exports = stubArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/stubFalse.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/stubFalse.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/stubFalse.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23882,9 +23882,9 @@ module.exports = stubFalse;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toFinite.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/toFinite.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/toFinite.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23935,9 +23935,9 @@ module.exports = toFinite;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toInteger.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/toInteger.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/toInteger.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23982,9 +23982,9 @@ module.exports = toInteger;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toNumber.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/toNumber.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/toNumber.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24057,9 +24057,9 @@ module.exports = toNumber;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toPlainObject.js":
-/*!****************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/toPlainObject.js ***!
-  \****************************************************************/
+/*!******************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/toPlainObject.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24100,9 +24100,9 @@ module.exports = toPlainObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toString.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/toString.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/toString.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24139,9 +24139,9 @@ module.exports = toString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/transform.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/transform.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/transform.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24215,9 +24215,9 @@ module.exports = transform;
 /***/ }),
 
 /***/ "../../node_modules/lodash/union.js":
-/*!********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/union.js ***!
-  \********************************************************/
+/*!**********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/union.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24252,9 +24252,9 @@ module.exports = union;
 /***/ }),
 
 /***/ "../../node_modules/lodash/uniqueId.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/uniqueId.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/uniqueId.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24291,9 +24291,9 @@ module.exports = uniqueId;
 /***/ }),
 
 /***/ "../../node_modules/lodash/values.js":
-/*!*********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/values.js ***!
-  \*********************************************************/
+/*!***********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/values.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24336,9 +24336,9 @@ module.exports = values;
 /***/ }),
 
 /***/ "../../node_modules/lodash/zipObject.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/lodash/zipObject.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/lodash/zipObject.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24371,9 +24371,9 @@ module.exports = zipObject;
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24473,9 +24473,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -24668,9 +24668,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24782,9 +24782,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25385,9 +25385,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25411,9 +25411,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25435,9 +25435,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50459,9 +50459,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50504,9 +50504,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50697,9 +50697,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50714,9 +50714,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -52638,9 +52638,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -52655,9 +52655,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53016,9 +53016,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53886,9 +53886,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53903,9 +53903,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53920,9 +53920,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -54118,9 +54118,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -54398,9 +54398,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -54473,9 +54473,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -55719,23 +55719,124 @@ var NodeListComponent = /** @class */ (function (_super) {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock", "ImageSourceBlock"],
+            Inputs: [
+                "Float",
+                "Vector2",
+                "Vector3",
+                "Vector4",
+                "Color3",
+                "Color4",
+                "TextureBlock",
+                "ReflectionTextureBlock",
+                "TimeBlock",
+                "DeltaTimeBlock",
+                "FragCoordBlock",
+                "ScreenSizeBlock",
+                "ImageSourceBlock",
+            ],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
-            Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
-            Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", "ScreenSpaceBlock"],
-            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock", "MatrixBuilderBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
+            Math__Standard: [
+                "AddBlock",
+                "DivideBlock",
+                "MaxBlock",
+                "MinBlock",
+                "ModBlock",
+                "MultiplyBlock",
+                "NegateBlock",
+                "OneMinusBlock",
+                "ReciprocalBlock",
+                "ScaleBlock",
+                "SignBlock",
+                "SqrtBlock",
+                "SubtractBlock",
+            ],
+            Math__Scientific: [
+                "AbsBlock",
+                "ArcCosBlock",
+                "ArcSinBlock",
+                "ArcTanBlock",
+                "ArcTan2Block",
+                "CosBlock",
+                "DegreesToRadiansBlock",
+                "ExpBlock",
+                "Exp2Block",
+                "FractBlock",
+                "LogBlock",
+                "PowBlock",
+                "RadiansToDegreesBlock",
+                "SawToothWaveBlock",
+                "SinBlock",
+                "SquareWaveBlock",
+                "TanBlock",
+                "TriangleWaveBlock",
+            ],
+            Math__Vector: [
+                "CrossBlock",
+                "DerivativeBlock",
+                "DistanceBlock",
+                "DotBlock",
+                "FresnelBlock",
+                "LengthBlock",
+                "ReflectBlock",
+                "RefractBlock",
+                "Rotate2dBlock",
+                "TransformBlock",
+                "ScreenSpaceBlock",
+            ],
+            Matrices: [
+                "Matrix",
+                "WorldMatrixBlock",
+                "WorldViewMatrixBlock",
+                "WorldViewProjectionMatrixBlock",
+                "ViewMatrixBlock",
+                "ViewProjectionMatrixBlock",
+                "ProjectionMatrixBlock",
+                "MatrixBuilderBlock",
+            ],
+            Mesh: [
+                "InstancesBlock",
+                "PositionBlock",
+                "UVBlock",
+                "ColorBlock",
+                "NormalBlock",
+                "PerturbNormalBlock",
+                "NormalBlendBlock",
+                "TangentBlock",
+                "MatrixIndicesBlock",
+                "MatrixWeightsBlock",
+                "WorldPositionBlock",
+                "WorldNormalBlock",
+                "WorldTangentBlock",
+                "FrontFacingBlock",
+            ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
+            Particle: [
+                "ParticleBlendMultiplyBlock",
+                "ParticleColorBlock",
+                "ParticlePositionWorldBlock",
+                "ParticleRampGradientBlock",
+                "ParticleTextureBlock",
+                "ParticleTextureMaskBlock",
+                "ParticleUVBlock",
+            ],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "CameraParametersBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "SceneDepthBlock"],
+            Scene: [
+                "FogBlock",
+                "CameraPositionBlock",
+                "CameraParametersBlock",
+                "FogColorBlock",
+                "ImageProcessingBlock",
+                "LightBlock",
+                "LightInformationBlock",
+                "ViewDirectionBlock",
+                "SceneDepthBlock",
+            ],
         };
         switch (this.props.globalState.mode) {
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
@@ -55771,18 +55872,19 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Create node menu
         var blockMenu = [];
         for (var key in allBlocks) {
-            var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
+            var blockList = allBlocks[key]
+                .filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
                 .sort(function (a, b) { return a.localeCompare(b); })
                 .map(function (block, i) {
                 if (key === "Custom_Frames") {
-                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customFrameList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeItem(value); } });
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customFrameList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeItem(value); } }));
                 }
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: NodeListComponent._Tooltips[block] || "" });
             });
             if (key === "Custom_Frames") {
-                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
+                var line = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: "custom-frame-upload", iconImage: addButton, accept: ".json", onIconClick: function (file) {
                         _this.loadCustomFrame(file);
-                    } });
+                    } }));
                 blockList.push(line);
             }
             if (blockList.length) {
@@ -55793,151 +55895,151 @@ var NodeListComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onFocus: function () { return (_this.props.globalState.blockKeyboardEvents = true); }, onBlur: function (evt) {
                                 _this.props.globalState.blockKeyboardEvents = false;
                             }, onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
     };
     NodeListComponent._Tooltips = {
-        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
-        "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
-        "AddBlock": "Adds the left and right inputs of the same type together",
-        "DistanceBlock": "Provides a distance vector based on the left and right input vectors",
-        "DivideBlock": "Divides the left input by the right input of the same type",
-        "LengthBlock": "Outputs the length of an input vector",
-        "MaxBlock": "Outputs the largest value between the left and right inputs of the same type",
-        "MinBlock": "Outputs the smallest value between the left and right inputs of the same type",
-        "MultiplyBlock": "Multiplies the left and right inputs of the same type together",
-        "NegateBlock": "Multiplies the input by -1",
-        "OneMinusBlock": "Subtracts each channel of the input value from 1 (1 - input)",
-        "RandomNumberBlock": "Provides a random number based on an input seed",
-        "ReciprocalBlock": "Quotient of 1 divided by the input",
-        "ScaleBlock": "Multiplies the input channels by a float factor",
-        "SubtractBlock": "Subtracts the right input from the left input of the same type",
-        "GradientBlock": "Returns the color in the gradient represented by the target value of the input",
-        "PosterizeBlock": "Reduces the number of values in each channel to the number in the corresponding channel of steps",
-        "ReplaceColorBlock": "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
-        "ColorMergerBlock": "Combines float input channels into a color",
-        "ColorSplitterBlock": "Separates color input channels into individual floats",
-        "VectorMergerBlock": "Combines up to four input floats into a vector",
-        "VectorSplitterBlock": "Separates vectors input channels into individual floats",
-        "Color3": "A color made up of red, green, and blue channel values",
-        "Color4": "A color made up of red, green, blue, and alpha channel values",
-        "DeltaTimeBlock": "A float representing the time that has passed since the last frame was rendered",
-        "Float": "A floating point number representing a value with a fractional component",
-        "TextureBlock": "A node for reading a linked or embedded texture file",
-        "TimeBlock": "A float value that represents the time that has passed since the scene was loaded",
-        "Vector2": "a vector composed of X and Y channels",
-        "Vector3": "a vector composed of X, Y, and Z channels",
-        "Vector4": "a vector composed of X, Y, Z, and W channels",
-        "LerpBlock": "Outputs a value that is a mix of the left and right inputs based on the target value",
-        "NLerpBlock": "Outputs a value that is a mix of the left and right inputs based on the target's normalized value",
-        "SmoothStepBlock": "Outputs a value based on a the input value's position on a curve between the two edge values",
-        "StepBlock": "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
-        "Matrix": "A 4x4 table of related values",
-        "ProjectionMatrixBlock": "A matrix to remap points in 3D space to 2D plane relative to the screen",
-        "ViewMatrixBlock": "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
-        "ViewProjectionMatrixBlock": "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
-        "WorldMatrixBlock": "A matrix to remap points in 3D local space to 3D world space",
-        "WorldViewProjectionMatrixBlock": "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
-        "ColorBlock": "Outputs the RGBA color of each vertex in the mesh",
-        "InstancesBlock": "Provides the world matrix for each instance to apply this material to all instances",
-        "MatrixIndicesBlock": "A Vector4 representing the vertex to bone skinning assignments",
-        "MatrixWeightsBlock": "A Vector4 representing the vertex to bone skinning weights",
-        "NormalBlock": "A Vector3 representing the normal of each vertex of the attached mesh",
-        "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
-        "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
-        "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
-        "WorldNormal": "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
-        "WorldTangent": "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
-        "PerturbNormalBlock": "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
-        "NormalBlend": "Outputs the result of blending two normal maps together using a per-channel screen",
-        "WorldPosition": "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
-        "DiscardBlock": "A final node that will not output a pixel below the cutoff value",
-        "FragmentOutputBlock": "A mandatory final node for outputing the color of each pixel",
-        "VertexOutputBlock": "A mandatory final node for outputing the position of each vertex",
-        "ClampBlock": "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
-        "NormalizeBlock": "Remaps the length of a vector or color to 1",
-        "RemapBlock": "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
-        "CeilingBlock": "Outputs fractional values as the next higher whole number",
-        "FloorBlock": "Outputs fractional values as the next lower whole number",
-        "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
-        "ModBlock": "Outputs the value of one parameter modulo another",
-        "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
-        "CameraParametersBlock": "Outputs a Vector4 containing (-1 for webGL and 1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
-        "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
-        "FogColorBlock": "The system value for fog color pulled from the scene",
-        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
-        "LightBlock": "Outputs diffuse and specular contributions from one or more scene lights",
-        "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
-        "ReflectionTextureBlock": "Creates a reflection from the input texture",
-        "ViewDirectionBlock": "Outputs the direction vector of where the camera is aimed",
-        "AbsBlock": "Outputs the absolute value of the input value",
-        "ArcCosBlock": "Outputs the inverse of the cosine value based on the input value",
-        "ArcSinBlock": "Outputs the inverse of the sine value based on the input value",
-        "ArcTan2Block": "Outputs the inverse of the tangent value based on the input value",
-        "ArcTanBlock": "Outputs the inverse of the tangent value based on the input value",
-        "CosBlock": "Outputs the cosine value based on the input value",
-        "DegreesToRadiansBlock": "Converts the input degrees value to radians",
-        "Exp2Block": "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
-        "ExpBlock": "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
-        "FractBlock": "Outputs only the fractional value of a floating point number",
-        "LogBlock": "The logarithmic value based on the input value",
-        "PowBlock": "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
-        "RadiansToDegreesBlock": "Converts the input radians value to degrees",
-        "SawToothWaveBlock": "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
-        "SignBlock": "returns 1 if the input is positive, 0 if input is equal to 0, or -1 if the input is negative",
-        "SinBlock": "Outputs the the sine value based on the input value",
-        "SqrtBlock": "Outputs the the square root of the input value",
-        "SquareWaveBlock": "Outputs a stepped pattern value between -1 and 1 based on the input value",
-        "TanBlock": "Outputs the the tangent value based on the input value",
-        "TriangleWaveBlock": "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
-        "CrossBlock": "Outputs a vector that is perpendicular to two input vectors",
-        "DotBlock": "Outputs the cos of the angle between two vectors",
-        "FresnelBlock": "Outputs the grazing angle of the surface of the mesh, relative to a camera influenced by the bias and power inputs",
-        "TransformBlock": "Transforms a input vector based on the input matrix",
-        "DerivativeBlock": "FRAGMENT SHADER ONLY. Provides the rate of change for an input on a given axis (x,y).",
-        "DesaturateBlock": "Convert a color input into a grayscale representation.",
-        "WorldViewMatrixBlock": "A matrix to remap points in 3D local space to 3D world space, and ending in 2D camera space.",
-        "FrontFacingBlock": "Returns 1 if a mesh triangle faces the normal direction and 0 if it does not.",
-        "SimplexPerlin3DBlock": "Creates a type of gradient noise with few directional artifacts.",
-        "WorleyNoise3DBlock": "Creates a random pattern resembling cells.",
-        "ReflectBlock": "Outputs the direction of the input vector reflected across the surface normal.",
-        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.",
-        "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
-        "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
-        "SheenBlock": "PBR Sheen block",
-        "AnisotropyBlock": "PBR Anisotropy block",
-        "ReflectionBlock": "PBR Reflection block",
-        "ClearCoatBlock": "PBR ClearCoat block",
-        "RefractionBlock": "PBR Refraction block",
-        "SubSurfaceBlock": "PBR SubSurface block",
-        "ScreenPositionBlock": "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
-        "CurrentScreenBlock": "The screen buffer used as input for the post process",
-        "ParticleUVBlock": "The particle uv texture coordinate",
-        "ParticleTextureBlock": "The particle texture",
-        "ParticleColorBlock": "The particle color",
-        "ParticleTextureMaskBlock": "The particle texture mask",
-        "ParticleRampGradientBlock": "The particle ramp gradient block",
-        "ParticleBlendMultiplyBlock": "The particle blend multiply block",
-        "ParticlePositionWorldBlock": "The world position of the particle",
-        "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
-        "ScreenSizeBlock": "The size (in pixels) of the screen window",
-        "SceneDepthBlock": "The scene depth buffer",
-        "MatrixBuilderBlock": "Converts 4 Vector4 into a matrix",
-        "EqualBlock": "Return a value if two operands are equals",
-        "NotEqualBlock": "Return a value if two operands are not equals",
-        "LessThanBlock": "Return a value if an operand is smaller than a second operand",
-        "LessOrEqualBlock": "Return a value if an operand is smaller or equal to a second operand",
-        "GreaterThanBlock": "Return a value if an operand is greater than a second operand",
-        "GreaterOrEqualBlock": "Return a value if an operand is greater or equal to a second operand",
-        "XorBlock": "Return a value if (a xor b) > 0",
-        "OrBlock": "Return a value if (a or b) > 0",
-        "AndBlock": "Return a value if (a and b) > 0",
-        "ImageSourceBlock": "Centralize texture access for TextureBlocks",
-        "CloudBlock": "Generate Fractal Brownian Motion Clouds",
-        "VoronoiNoiseBlock": "Generate Voronoi Noise",
-        "ScreenSpaceBlock": "Convert a Vector3 or a Vector4 into screen space"
+        BonesBlock: "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
+        MorphTargetsBlock: "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
+        AddBlock: "Adds the left and right inputs of the same type together",
+        DistanceBlock: "Provides a distance vector based on the left and right input vectors",
+        DivideBlock: "Divides the left input by the right input of the same type",
+        LengthBlock: "Outputs the length of an input vector",
+        MaxBlock: "Outputs the largest value between the left and right inputs of the same type",
+        MinBlock: "Outputs the smallest value between the left and right inputs of the same type",
+        MultiplyBlock: "Multiplies the left and right inputs of the same type together",
+        NegateBlock: "Multiplies the input by -1",
+        OneMinusBlock: "Subtracts each channel of the input value from 1 (1 - input)",
+        RandomNumberBlock: "Provides a random number based on an input seed",
+        ReciprocalBlock: "Quotient of 1 divided by the input",
+        ScaleBlock: "Multiplies the input channels by a float factor",
+        SubtractBlock: "Subtracts the right input from the left input of the same type",
+        GradientBlock: "Returns the color in the gradient represented by the target value of the input",
+        PosterizeBlock: "Reduces the number of values in each channel to the number in the corresponding channel of steps",
+        ReplaceColorBlock: "Outputs the replacement color if the distance between value and reference is less than distance, else outputs the value color",
+        ColorMergerBlock: "Combines float input channels into a color",
+        ColorSplitterBlock: "Separates color input channels into individual floats",
+        VectorMergerBlock: "Combines up to four input floats into a vector",
+        VectorSplitterBlock: "Separates vectors input channels into individual floats",
+        Color3: "A color made up of red, green, and blue channel values",
+        Color4: "A color made up of red, green, blue, and alpha channel values",
+        DeltaTimeBlock: "A float representing the time that has passed since the last frame was rendered",
+        Float: "A floating point number representing a value with a fractional component",
+        TextureBlock: "A node for reading a linked or embedded texture file",
+        TimeBlock: "A float value that represents the time that has passed since the scene was loaded",
+        Vector2: "a vector composed of X and Y channels",
+        Vector3: "a vector composed of X, Y, and Z channels",
+        Vector4: "a vector composed of X, Y, Z, and W channels",
+        LerpBlock: "Outputs a value that is a mix of the left and right inputs based on the target value",
+        NLerpBlock: "Outputs a value that is a mix of the left and right inputs based on the target's normalized value",
+        SmoothStepBlock: "Outputs a value based on a the input value's position on a curve between the two edge values",
+        StepBlock: "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
+        Matrix: "A 4x4 table of related values",
+        ProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the screen",
+        ViewMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
+        ViewProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
+        WorldMatrixBlock: "A matrix to remap points in 3D local space to 3D world space",
+        WorldViewProjectionMatrixBlock: "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
+        ColorBlock: "Outputs the RGBA color of each vertex in the mesh",
+        InstancesBlock: "Provides the world matrix for each instance to apply this material to all instances",
+        MatrixIndicesBlock: "A Vector4 representing the vertex to bone skinning assignments",
+        MatrixWeightsBlock: "A Vector4 representing the vertex to bone skinning weights",
+        NormalBlock: "A Vector3 representing the normal of each vertex of the attached mesh",
+        PositionBlock: "A Vector3 representing the position of each vertex of the attached mesh",
+        TangentBlock: "A Vector3 representing the tangent of each vertex of the attached mesh",
+        UVBlock: "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
+        WorldNormal: "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
+        WorldTangent: "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
+        PerturbNormalBlock: "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
+        NormalBlend: "Outputs the result of blending two normal maps together using a per-channel screen",
+        WorldPosition: "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
+        DiscardBlock: "A final node that will not output a pixel below the cutoff value",
+        FragmentOutputBlock: "A mandatory final node for outputing the color of each pixel",
+        VertexOutputBlock: "A mandatory final node for outputing the position of each vertex",
+        ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
+        NormalizeBlock: "Remaps the length of a vector or color to 1",
+        RemapBlock: "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
+        CeilingBlock: "Outputs fractional values as the next higher whole number",
+        FloorBlock: "Outputs fractional values as the next lower whole number",
+        RoundBlock: "Outputs fractional values rounded to the nearest whole number",
+        ModBlock: "Outputs the value of one parameter modulo another",
+        CameraPositionBlock: "Outputs a Vector3 position of the active scene camera",
+        CameraParametersBlock: "Outputs a Vector4 containing (-1 for webGL and 1 for webGPU, camera.minZ, camera.maxZ, 1 / camera.maxZ)",
+        FogBlock: "Applies fog to the scene with an increasing opacity based on distance from the camera",
+        FogColorBlock: "The system value for fog color pulled from the scene",
+        ImageProcessingBlock: "Provides access to all of the Babylon image processing properties",
+        LightBlock: "Outputs diffuse and specular contributions from one or more scene lights",
+        LightInformationBlock: "Provides the direction, color and intensity of a selected light based on its world position",
+        ReflectionTextureBlock: "Creates a reflection from the input texture",
+        ViewDirectionBlock: "Outputs the direction vector of where the camera is aimed",
+        AbsBlock: "Outputs the absolute value of the input value",
+        ArcCosBlock: "Outputs the inverse of the cosine value based on the input value",
+        ArcSinBlock: "Outputs the inverse of the sine value based on the input value",
+        ArcTan2Block: "Outputs the inverse of the tangent value based on the input value",
+        ArcTanBlock: "Outputs the inverse of the tangent value based on the input value",
+        CosBlock: "Outputs the cosine value based on the input value",
+        DegreesToRadiansBlock: "Converts the input degrees value to radians",
+        Exp2Block: "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
+        ExpBlock: "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
+        FractBlock: "Outputs only the fractional value of a floating point number",
+        LogBlock: "The logarithmic value based on the input value",
+        PowBlock: "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
+        RadiansToDegreesBlock: "Converts the input radians value to degrees",
+        SawToothWaveBlock: "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
+        SignBlock: "returns 1 if the input is positive, 0 if input is equal to 0, or -1 if the input is negative",
+        SinBlock: "Outputs the the sine value based on the input value",
+        SqrtBlock: "Outputs the the square root of the input value",
+        SquareWaveBlock: "Outputs a stepped pattern value between -1 and 1 based on the input value",
+        TanBlock: "Outputs the the tangent value based on the input value",
+        TriangleWaveBlock: "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
+        CrossBlock: "Outputs a vector that is perpendicular to two input vectors",
+        DotBlock: "Outputs the cos of the angle between two vectors",
+        FresnelBlock: "Outputs the grazing angle of the surface of the mesh, relative to a camera influenced by the bias and power inputs",
+        TransformBlock: "Transforms a input vector based on the input matrix",
+        DerivativeBlock: "FRAGMENT SHADER ONLY. Provides the rate of change for an input on a given axis (x,y).",
+        DesaturateBlock: "Convert a color input into a grayscale representation.",
+        WorldViewMatrixBlock: "A matrix to remap points in 3D local space to 3D world space, and ending in 2D camera space.",
+        FrontFacingBlock: "Returns 1 if a mesh triangle faces the normal direction and 0 if it does not.",
+        SimplexPerlin3DBlock: "Creates a type of gradient noise with few directional artifacts.",
+        WorleyNoise3DBlock: "Creates a random pattern resembling cells.",
+        ReflectBlock: "Outputs the direction of the input vector reflected across the surface normal.",
+        RefractBlock: "Outputs a direction simulating a deflection of the input vector.",
+        Rotate2dBlock: "Rotates UV coordinates around the W axis.",
+        PBRMetallicRoughnessBlock: "PBR metallic/roughness material",
+        SheenBlock: "PBR Sheen block",
+        AnisotropyBlock: "PBR Anisotropy block",
+        ReflectionBlock: "PBR Reflection block",
+        ClearCoatBlock: "PBR ClearCoat block",
+        RefractionBlock: "PBR Refraction block",
+        SubSurfaceBlock: "PBR SubSurface block",
+        ScreenPositionBlock: "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
+        CurrentScreenBlock: "The screen buffer used as input for the post process",
+        ParticleUVBlock: "The particle uv texture coordinate",
+        ParticleTextureBlock: "The particle texture",
+        ParticleColorBlock: "The particle color",
+        ParticleTextureMaskBlock: "The particle texture mask",
+        ParticleRampGradientBlock: "The particle ramp gradient block",
+        ParticleBlendMultiplyBlock: "The particle blend multiply block",
+        ParticlePositionWorldBlock: "The world position of the particle",
+        FragCoordBlock: "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
+        ScreenSizeBlock: "The size (in pixels) of the screen window",
+        SceneDepthBlock: "The scene depth buffer",
+        MatrixBuilderBlock: "Converts 4 Vector4 into a matrix",
+        EqualBlock: "Return a value if two operands are equals",
+        NotEqualBlock: "Return a value if two operands are not equals",
+        LessThanBlock: "Return a value if an operand is smaller than a second operand",
+        LessOrEqualBlock: "Return a value if an operand is smaller or equal to a second operand",
+        GreaterThanBlock: "Return a value if an operand is greater than a second operand",
+        GreaterOrEqualBlock: "Return a value if an operand is greater or equal to a second operand",
+        XorBlock: "Return a value if (a xor b) > 0",
+        OrBlock: "Return a value if (a or b) > 0",
+        AndBlock: "Return a value if (a and b) > 0",
+        ImageSourceBlock: "Centralize texture access for TextureBlocks",
+        CloudBlock: "Generate Fractal Brownian Motion Clouds",
+        VoronoiNoiseBlock: "Generate Voronoi Noise",
+        ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56022,12 +56124,11 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
-            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar", className: "extended" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: this.props.globalState, propertyName: "particleSystemBlendMode", noDirectUpdate: true, onSelect: function (value) {
-                            _this.changeParticleSystemBlendMode(value);
-                        } })),
-            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar", className: "extended" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: this.props.globalState, propertyName: "particleSystemBlendMode", noDirectUpdate: true, onSelect: function (value) {
+                        _this.changeParticleSystemBlendMode(value);
+                    } }))),
+            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: doubleSided, alt: "" })),
@@ -56053,7 +56154,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onLightUpdated.notifyObservers();
                             _this.forceUpdate();
                         }, className: "button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "") },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" }))))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" })))))));
     };
     return PreviewAreaComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56646,7 +56747,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             { label: "Plane", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Plane },
             { label: "Shader ball", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].ShaderBall },
             { label: "Sphere", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Sphere },
-            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 }
+            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 },
         ];
         var particleTypeOptions = [
             { label: "Default", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].DefaultParticleSystem },
@@ -56655,20 +56756,22 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             { label: "Fire", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Fire },
             { label: "Rain", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Rain },
             { label: "Smoke", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Smoke },
-            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 }
+            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 },
         ];
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
-                label: "Custom", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom
+                label: "Custom",
+                value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom,
             });
             particleTypeOptions.splice(0, 0, {
-                label: "Custom", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom
+                label: "Custom",
+                value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom,
             });
         }
         var options = this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle ? particleTypeOptions : meshTypeOptions;
         var accept = this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            (this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material || this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            (this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material || this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: options, target: this.props.globalState, propertyName: "previewType", noDirectUpdate: true, onSelect: function (value) {
                         var _a;
                         if (value !== _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1) {
@@ -56679,15 +56782,14 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
                         }
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
-                        display: "none"
+                        display: "none",
                     }, title: "Preview with a custom mesh" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: accept }))),
-            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "", id: "color-picker-image" }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } }))),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: accept })))),
+            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "", id: "color-picker-image" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: popUpIcon, alt: "" }))));
     };
@@ -56881,16 +56983,13 @@ var InputsPropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         switch (block.type) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Float:
-                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                var cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
-                    block.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
-                                _this.processInputBlockUpdate(block);
-                            } }),
-                    !block.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
-                    !block.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+                    block.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
+                            _this.processInputBlockUpdate(block);
+                        } })),
+                    !block.isBoolean && cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } })),
+                    !block.isBoolean && !cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } }))));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].Color4:
@@ -57317,16 +57416,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         switch (block.type) {
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
-                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                var cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
-                    block.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
-                                _this.processInputBlockUpdate(block);
-                            } }),
-                    !block.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_17__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
-                    !block.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+                    block.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
+                            _this.processInputBlockUpdate(block);
+                        } })),
+                    !block.isBoolean && cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_17__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } })),
+                    !block.isBoolean && !cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, globalState: this.props.globalState, onChange: function () { return _this.processInputBlockUpdate(block); } }))));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_16__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color4:
@@ -57368,10 +57464,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
-        this.props.globalState.customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(function () {
+        this.props.globalState
+            .customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState))
+            .then(function () {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
             _this.setState({ uploadInProgress: false });
-        }).catch(function (err) {
+        })
+            .catch(function (err) {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
             _this.setState({ uploadInProgress: false });
         });
@@ -57398,7 +57497,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                             regex: new RegExp(oldId, "g"),
-                            replace: material.snippetId
+                            replace: material.snippetId,
                         });
                     }
                     _this.props.globalState.hostDocument.defaultView.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
@@ -57412,11 +57511,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         xmlHttp.setRequestHeader("Content-Type", "application/json");
         var dataToSend = {
             payload: JSON.stringify({
-                nodeMaterial: json
+                nodeMaterial: json,
             }),
             name: "",
             description: "",
-            tags: ""
+            tags: "",
         };
         xmlHttp.send(JSON.stringify(dataToSend));
     };
@@ -57429,12 +57528,14 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedId, scene, "", material).then(function () {
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedId, scene, "", material)
+            .then(function () {
             material.build();
             if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
                 _this.props.globalState.onResetRequiredObservable.notifyObservers();
             }
-        }).catch(function (err) {
+        })
+            .catch(function (err) {
             _this.props.globalState.hostDocument.defaultView.alert("Unable to load your node material: " + err);
         });
     };
@@ -57445,7 +57546,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         if (this.props.globalState.mode === value) {
             return false;
         }
-        if (!force && !this.props.globalState.hostDocument.defaultView.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+        if (!force && !this.props.globalState.hostDocument.defaultView.confirm("Are your sure? You will lose your current changes (if any) if they are not saved!")) {
             (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
             return false;
         }
@@ -57494,13 +57595,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 ((_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.renderProperties()) || ((_b = this.state.currentNodePort) === null || _b === void 0 ? void 0 : _b.node.renderProperties())));
         }
         if (this.state.currentFrameNodePort && this.state.currentFrame) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_frameNodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_14__["FrameNodePortPropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame, frameNodePort: this.state.currentFrameNodePort }));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_frameNodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_14__["FrameNodePortPropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame, frameNodePort: this.state.currentFrameNodePort });
         }
         if (this.state.currentNodePort) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_nodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_15__["NodePortPropertyTabComponent"], { globalState: this.props.globalState, nodePort: this.state.currentNodePort }));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_nodePortPropertyComponent__WEBPACK_IMPORTED_MODULE_15__["NodePortPropertyTabComponent"], { globalState: this.props.globalState, nodePort: this.state.currentNodePort });
         }
         if (this.state.currentFrame) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame }));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame });
         }
         var gridSize = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
         var modeList = [
@@ -57517,7 +57618,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__["OptionsLineComponent"], { ref: this._modeSelect, label: "Mode", target: this, getSelection: function (target) { return _this.props.globalState.mode; }, options: modeList, onSelect: function (value) { return _this.changeMode(value); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open("https://doc.babylonjs.com/how_to/node_material", "_blank"); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_26__["TextInputLineComponent"], { label: "Comment", multilines: true, value: this.props.globalState.nodeMaterial.comment, target: this.props.globalState.nodeMaterial, propertyName: "comment", globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             switch (_this.props.globalState.mode) {
@@ -57568,19 +57669,16 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.nodeMaterial.build();
                             _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
                         } }),
-                    this.props.globalState.customSave &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, isDisabled: this.state.uploadInProgress, onClick: function () {
-                                _this.customSave();
-                            } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: 'frame-upload', onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
-                !this.props.globalState.customSave &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
-                        this.props.globalState.nodeMaterial.snippetId &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Snippet ID", value: this.props.globalState.nodeMaterial.snippetId }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
-                                _this.saveToSnippetServer();
-                            } })),
+                    this.props.globalState.customSave && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, isDisabled: this.state.uploadInProgress, onClick: function () {
+                            _this.customSave();
+                        } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: "frame-upload", onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
+                !this.props.globalState.customSave && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
+                    this.props.globalState.nodeMaterial.snippetId && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Snippet ID", value: this.props.globalState.nodeMaterial.snippetId }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
+                            _this.saveToSnippetServer();
+                        } }))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_27__["InputsPropertyTabComponent"], { globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() }))));
     };
     return PropertyTabComponent;
@@ -58817,7 +58915,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 id: node.id,
                 type: "node",
                 width: node.width,
-                height: node.height
+                height: node.height,
             });
         });
         this._frames.forEach(function (frame) {
@@ -58825,7 +58923,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 id: frame.id,
                 type: "frame",
                 width: frame.element.clientWidth,
-                height: frame.element.clientHeight
+                height: frame.element.clientHeight,
             });
         });
         this._nodes.forEach(function (node) {
@@ -58980,8 +59078,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._selectionBox.classList.add("selection-box");
             this._selectionContainer.appendChild(this._selectionBox);
             var rootRect = this.canvasContainer.getBoundingClientRect();
-            this._selectionStartX = (evt.pageX - rootRect.left);
-            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._selectionStartX = evt.pageX - rootRect.left;
+            this._selectionStartY = evt.pageY - rootRect.top;
             this._selectionBox.style.left = this._selectionStartX / this.zoom + "px";
             this._selectionBox.style.top = this._selectionStartY / this.zoom + "px";
             this._selectionBox.style.width = "0px";
@@ -58994,8 +59092,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._frameCandidate.classList.add("frame-box");
             this._frameContainer.appendChild(this._frameCandidate);
             var rootRect = this.canvasContainer.getBoundingClientRect();
-            this._selectionStartX = (evt.pageX - rootRect.left);
-            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._selectionStartX = evt.pageX - rootRect.left;
+            this._selectionStartY = evt.pageY - rootRect.top;
             this._frameCandidate.style.left = this._selectionStartX / this.zoom + "px";
             this._frameCandidate.style.top = this._selectionStartY / this.zoom + "px";
             this._frameCandidate.style.width = "0px";
@@ -59025,14 +59123,16 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 this.processCandidatePort();
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
             }
-            else { // is a click event on NodePort
-                if (this._candidateLink.portA instanceof _frameNodePort__WEBPACK_IMPORTED_MODULE_8__["FrameNodePort"]) { //only on Frame Node Ports
+            else {
+                // is a click event on NodePort
+                if (this._candidateLink.portA instanceof _frameNodePort__WEBPACK_IMPORTED_MODULE_8__["FrameNodePort"]) {
+                    //only on Frame Node Ports
                     var port_1 = this._candidateLink.portA;
                     var frame = this.frames.find(function (frame) { return frame.id === port_1.parentFrameId; });
                     if (frame) {
                         var data = {
                             frame: frame,
-                            port: port_1
+                            port: port_1,
                         };
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
                     }
@@ -59155,7 +59255,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var y_1 = nodeA.y;
             emittedBlock.inputs.forEach(function (connection) {
                 if (connection.connectedPoint) {
-                    var existingNodes = _this.nodes.filter(function (n) { return n.block === connection.connectedPoint.ownerBlock; });
+                    var existingNodes = _this.nodes.filter(function (n) {
+                        return n.block === connection.connectedPoint.ownerBlock;
+                    });
                     var connectedNode = existingNodes[0];
                     if (connectedNode.x === 0 && connectedNode.y === 0) {
                         connectedNode.x = x_1;
@@ -59189,7 +59291,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Check compatibility
         var isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         var compatibilityState = pointA.checkCompatibilityState(pointB);
-        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible && !(pointA instanceof babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"])) {
+        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) &&
+            compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible &&
+            !(pointA instanceof babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"])) {
             compatibilityState = pointB.checkCompatibilityState(pointA);
         }
         if (compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible) {
@@ -59227,7 +59331,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 link.dispose(false);
             });
         }
-        if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
+        if (pointB.ownerBlock.inputsAreExclusive) {
+            // Disconnect all inputs if block has exclusive inputs
             pointB.ownerBlock.inputs.forEach(function (i) {
                 var links = nodeB.getLinksForConnectionPoint(i);
                 if (!linksToNotifyForDispose) {
@@ -61685,7 +61790,7 @@ var ConditionalPropertyTabComponent = /** @class */ (function (_super) {
             { label: "GreaterOrEqual", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].GreaterOrEqual },
             { label: "Xor", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Xor },
             { label: "Or", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].Or },
-            { label: "And", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].And }
+            { label: "And", value: babylonjs_Materials_Node_Blocks_conditionalBlock__WEBPACK_IMPORTED_MODULE_4__["ConditionalBlockConditions"].And },
         ];
         conditionOptions.sort(function (a, b) {
             return a.label.localeCompare(b.label);
@@ -61736,7 +61841,7 @@ var FrameNodePortPropertyTabComponent = /** @class */ (function (_super) {
     function FrameNodePortPropertyTabComponent(props) {
         var _this_1 = _super.call(this, props) || this;
         _this_1.state = {
-            port: _this_1.props.frameNodePort
+            port: _this_1.props.frameNodePort,
         };
         var _this = _this_1;
         _this_1._onSelectionChangedObserver = _this_1.props.globalState.onSelectionChangedObservable.add(function (selection) {
@@ -61766,12 +61871,12 @@ var FrameNodePortPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Name", propertyName: "portName", target: this.props.frameNodePort }),
-                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Top && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Up", onClick: function () {
+                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Top && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Up", onClick: function () {
                             _this_1.props.frame.moveFramePortUp(_this_1.props.frameNodePort);
-                        } }),
-                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Bottom && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Down", onClick: function () {
+                        } })),
+                    this.props.frameNodePort.framePortPosition !== _graphFrame__WEBPACK_IMPORTED_MODULE_5__["FramePortPosition"].Bottom && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Move Port Down", onClick: function () {
                             _this_1.props.frame.moveFramePortDown(_this_1.props.frameNodePort);
-                        } })))));
+                        } }))))));
     };
     return FrameNodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61840,14 +61945,12 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.frame }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { globalState: this.props.globalState, label: "Color", target: this.props.frame, propertyName: "color" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.frame }),
-                    !this.props.frame.isCollapsed &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
-                                _this.props.frame.isCollapsed = true;
-                            } }),
-                    this.props.frame.isCollapsed &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Expand", onClick: function () {
-                                _this.props.frame.isCollapsed = false;
-                            } }),
+                    !this.props.frame.isCollapsed && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
+                            _this.props.frame.isCollapsed = true;
+                        } })),
+                    this.props.frame.isCollapsed && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Expand", onClick: function () {
+                            _this.props.frame.isCollapsed = false;
+                        } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Export", onClick: function () {
                             _this.props.frame.export();
                         } })),
@@ -61924,22 +62027,19 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
-                (!this.props.block.isInput || !this.props.block.isAttribute) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); }, validator: function (newName) {
-                            if (!_this.props.block.validateBlockName(newName)) {
-                                _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"" + newName + "\" is a reserved name, please choose another");
-                                return false;
-                            }
-                            return true;
-                        } }),
-                (this.props.block._originalTargetIsNeutral) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function () {
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                (!this.props.block._originalTargetIsNeutral) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
+                (!this.props.block.isInput || !this.props.block.isAttribute) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); }, validator: function (newName) {
+                        if (!_this.props.block.validateBlockName(newName)) {
+                            _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"" + newName + "\" is a reserved name, please choose another");
+                            return false;
+                        }
+                        return true;
+                    } })),
+                this.props.block._originalTargetIsNeutral && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Target", options: targetOptions, target: this.props.block, propertyName: "target", onSelect: function () {
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                !this.props.block._originalTargetIsNeutral && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["NodeMaterialBlockTargets"][this.props.block.target] }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.block.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); } }))));
     };
@@ -61968,7 +62068,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var block = this.props.block, propStore = block._propStore;
         if (!propStore) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null));
+            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null);
         }
         var componentList = {}, groups = [];
         var _loop_1 = function (propertyName, displayName, type, groupName, options) {
@@ -61984,7 +62084,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
                     break;
                 }
                 case babylonjs_Materials_Node_nodeMaterialDecorator__WEBPACK_IMPORTED_MODULE_10__["PropertyTypeForEdition"].Float: {
-                    var cantDisplaySlider = (isNaN(options.min) || isNaN(options.max) || options.min === options.max);
+                    var cantDisplaySlider = isNaN(options.min) || isNaN(options.max) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { globalState: this_1.props.globalState, label: displayName, propertyName: propertyName, target: this_1.props.block, onChange: function () { return _this.forceRebuild(options.notifiers); } }));
                     }
@@ -62012,9 +62112,7 @@ var GenericPropertyTabComponent = /** @class */ (function (_super) {
             var _a = propStore_1[_i], propertyName = _a.propertyName, displayName = _a.displayName, type = _a.type, groupName = _a.groupName, options = _a.options;
             _loop_1(propertyName, displayName, type, groupName, options);
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, groups.map(function (group) {
-            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: group }, componentList[group]);
-        })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, groups.map(function (group) { return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: group }, componentList[group])); })));
     };
     return GenericPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -62222,8 +62320,10 @@ var GradientStepComponent = /** @class */ (function (_super) {
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onPointerUp: function (evt) { return _this.onPointerUp(); }, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-copy", onClick: function () { if (_this.props.onCopy)
-                    _this.props.onCopy(); }, title: "Copy Step" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-copy", onClick: function () {
+                    if (_this.props.onCopy)
+                        _this.props.onCopy();
+                }, title: "Copy Step" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", src: copyIcon })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-delete", onClick: function () { return _this.props.onDelete(); }, title: "Delete Step" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", src: deleteButton }))));
@@ -62295,8 +62395,8 @@ var ImageSourcePropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     ImageSourcePropertyTabComponent.prototype._generateRandomForCache = function () {
-        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
-            var r = Math.random() * 10 | 0;
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, function (c) {
+            var r = (Math.random() * 10) | 0;
             return r.toString();
         });
     };
@@ -62382,63 +62482,49 @@ var ImageSourcePropertyTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
-                texture && texture.updateSamplingMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
-                            texture.updateSamplingMode(value);
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } })),
+                texture && texture.updateSamplingMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                        texture.updateSamplingMode(value);
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
                         _this.imageSourceBlock.texture = null;
                         _this.updateAfterTextureLoad();
                     } }),
-                this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
-                !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
-                !this.state.isEmbedded && url &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
-                texture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
+                this.state.isEmbedded && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                !this.state.isEmbedded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } })),
+                !this.state.isEmbedded && url && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } })),
+                texture && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_9__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block })));
     };
     return ImageSourcePropertyTabComponent;
@@ -62521,51 +62607,46 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
         var inputBlock = this.props.block;
         switch (inputBlock.type) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Float: {
-                var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
+                var cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Is boolean", target: inputBlock, propertyName: "isBoolean" }),
-                    inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Value", isSelected: function () {
-                                return inputBlock.value === 1;
-                            }, onSelect: function (value) {
-                                inputBlock.value = value ? 1 : 0;
+                    inputBlock.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Value", isSelected: function () {
+                            return inputBlock.value === 1;
+                        }, onSelect: function (value) {
+                            inputBlock.value = value ? 1 : 0;
+                            if (inputBlock.isConstant) {
+                                _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } })),
+                    !inputBlock.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                            if (inputBlock.value < inputBlock.min) {
+                                inputBlock.value = inputBlock.min;
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
-                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            } }),
-                    !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
-                                if (inputBlock.value < inputBlock.min) {
-                                    inputBlock.value = inputBlock.min;
-                                    if (inputBlock.isConstant) {
-                                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                                    }
-                                }
-                                _this.forceUpdate();
-                            } }),
-                    !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
-                                if (inputBlock.value > inputBlock.max) {
-                                    inputBlock.value = inputBlock.max;
-                                    if (inputBlock.isConstant) {
-                                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                                    }
-                                }
-                                _this.forceUpdate();
-                            } }),
-                    !inputBlock.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
-                    !inputBlock.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", globalState: this.props.globalState, target: inputBlock, propertyName: "value", step: Math.abs(inputBlock.max - inputBlock.min) / 100.0, minimum: Math.min(inputBlock.min, inputBlock.max), maximum: inputBlock.max, onChange: function () {
+                            }
+                            _this.forceUpdate();
+                        } })),
+                    !inputBlock.isBoolean && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                            if (inputBlock.value > inputBlock.max) {
+                                inputBlock.value = inputBlock.max;
                                 if (inputBlock.isConstant) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                                 }
-                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            } })));
+                            }
+                            _this.forceUpdate();
+                        } })),
+                    !inputBlock.isBoolean && cantDisplaySlider && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
+                    !inputBlock.isBoolean && !cantDisplaySlider && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", globalState: this.props.globalState, target: inputBlock, propertyName: "value", step: Math.abs(inputBlock.max - inputBlock.min) / 100.0, minimum: Math.min(inputBlock.min, inputBlock.max), maximum: inputBlock.max, onChange: function () {
+                            if (inputBlock.isConstant) {
+                                _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            }
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        } }))));
             }
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector2PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["Vector2PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_color3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["Color3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
@@ -62585,11 +62666,11 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         } })));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock });
         }
         return null;
     };
@@ -62609,9 +62690,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                     { label: "None", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None },
                     { label: "Time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].Time },
                 ];
-                systemValuesOptions = [
-                    { label: "Delta time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].DeltaTime }
-                ];
+                systemValuesOptions = [{ label: "Delta time", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].DeltaTime }];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Matrix:
                 systemValuesOptions = [
@@ -62620,18 +62699,14 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                     { label: "World x View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].WorldViewProjection },
                     { label: "View", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].View },
                     { label: "View x Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].ViewProjection },
-                    { label: "Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].Projection }
+                    { label: "Projection", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].Projection },
                 ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                systemValuesOptions = [
-                    { label: "Fog color", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].FogColor }
-                ];
+                systemValuesOptions = [{ label: "Fog color", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].FogColor }];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                attributeOptions = [
-                    { label: "color", value: "color" }
-                ];
+                attributeOptions = [{ label: "color", value: "color" }];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                 attributeOptions = [
@@ -62644,9 +62719,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                 ];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                systemValuesOptions = [
-                    { label: "Camera position", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraPosition }
-                ];
+                systemValuesOptions = [{ label: "Camera position", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraPosition }];
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
@@ -62656,16 +62729,12 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
-                    { label: "matricesWeights", value: "matricesWeights" }
+                    { label: "matricesWeights", value: "matricesWeights" },
                 ];
-                systemValuesOptions = [
-                    { label: "Camera parameters", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraParameters }
-                ];
+                systemValuesOptions = [{ label: "Camera parameters", value: babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialSystemValues"].CameraParameters }];
                 break;
         }
-        var modeOptions = [
-            { label: "User-defined", value: 0 }
-        ];
+        var modeOptions = [{ label: "User-defined", value: 0 }];
         if (attributeOptions.length > 0) {
             modeOptions.push({ label: "Mesh attribute", value: 1 });
         }
@@ -62675,45 +62744,43 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
         var typeOptions = [
             { label: "None", value: 0 },
             { label: "Visible in the inspector", value: 1 },
-            { label: "Constant", value: 2 }
+            { label: "Constant", value: 2 },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__["LineContainerComponent"], { title: "PROPERTIES" },
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
-                            if (block.visibleInInspector) {
-                                return 1;
-                            }
-                            if (block.isConstant) {
-                                return 2;
-                            }
-                            return 0;
-                        }, onSelect: function (value) {
-                            switch (value) {
-                                case 0:
-                                    inputBlock.visibleInInspector = false;
-                                    inputBlock.isConstant = false;
-                                    break;
-                                case 1:
-                                    inputBlock.visibleInInspector = true;
-                                    inputBlock.isConstant = false;
-                                    break;
-                                case 2:
-                                    inputBlock.visibleInInspector = false;
-                                    inputBlock.isConstant = true;
-                                    break;
-                            }
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.visibleInInspector &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Group", propertyName: "groupInInspector", target: this.props.block, onChange: function () {
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
+                        if (block.visibleInInspector) {
+                            return 1;
+                        }
+                        if (block.isConstant) {
+                            return 2;
+                        }
+                        return 0;
+                    }, onSelect: function (value) {
+                        switch (value) {
+                            case 0:
+                                inputBlock.visibleInInspector = false;
+                                inputBlock.isConstant = false;
+                                break;
+                            case 1:
+                                inputBlock.visibleInInspector = true;
+                                inputBlock.isConstant = false;
+                                break;
+                            case 2:
+                                inputBlock.visibleInInspector = false;
+                                inputBlock.isConstant = true;
+                                break;
+                        }
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.visibleInInspector && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Group", propertyName: "groupInInspector", target: this.props.block, onChange: function () {
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
                             return 1;
@@ -62740,30 +62807,25 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
-                inputBlock.isAttribute &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Attribute", valuesAreStrings: true, options: attributeOptions, target: inputBlock, propertyName: "name", onSelect: function (value) {
-                            inputBlock.setAsAttribute(value);
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.isUniform && animationOptions.length > 0 &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
-                    this.renderValue(this.props.globalState),
-                inputBlock.isUniform && inputBlock.isSystemValue &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
-                            inputBlock.setAsSystemValue(value);
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
-                        } }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Visible on frame", target: this.props.block, propertyName: "visibleOnFrame" }))));
+                inputBlock.isAttribute && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Attribute", valuesAreStrings: true, options: attributeOptions, target: inputBlock, propertyName: "name", onSelect: function (value) {
+                        inputBlock.setAsAttribute(value);
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.isUniform && animationOptions.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "Animation type", options: animationOptions, target: inputBlock, propertyName: "animationType", onSelect: function (value) {
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None && this.renderValue(this.props.globalState),
+                inputBlock.isUniform && inputBlock.isSystemValue && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__["OptionsLineComponent"], { label: "System value", options: systemValuesOptions, target: inputBlock, propertyName: "systemValue", onSelect: function (value) {
+                        inputBlock.setAsSystemValue(value);
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                    } })),
+                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["AnimatedInputBlockTypes"].None && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Visible on frame", target: this.props.block, propertyName: "visibleOnFrame" })))));
     };
     return InputPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -62913,11 +62975,9 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
     };
     NodePortPropertyTabComponent.prototype.render = function () {
         var _this = this;
-        var info = this.props.nodePort.hasLabel() ?
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })) :
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "This node is a constant input node and cannot be exposed to the frame.", value: " " });
+        var info = this.props.nodePort.hasLabel() ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            this.props.nodePort.hasLabel() && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort })),
+            this.props.nodePort.node.enclosingFrameId !== -1 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))) : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "This node is a constant input node and cannot be exposed to the frame.", value: " " }));
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
@@ -62999,8 +63059,8 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
-        return 'xxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function (c) {
-            var r = Math.random() * 10 | 0;
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, function (c) {
+            var r = (Math.random() * 10) | 0;
             return r.toString();
         });
     };
@@ -63026,7 +63086,10 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         if (!texture) {
             if (!this.state.loadAsCubeTexture) {
-                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"] || this.props.globalState.mode === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialModes"].PostProcess);
+                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] ||
+                    this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] ||
+                    this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"] ||
+                    this.props.globalState.mode === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialModes"].PostProcess);
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
             }
@@ -63098,31 +63161,40 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var showIsInGammaSpace = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"];
         var reflectionModeOptions = [
             {
-                label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
+                label: "Cubic",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE,
             },
             {
-                label: "Equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE
+                label: "Equirectangular",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE,
             },
             {
-                label: "Explicit", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EXPLICIT_MODE
+                label: "Explicit",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EXPLICIT_MODE,
             },
             {
-                label: "Fixed equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MODE
+                label: "Fixed equirectangular",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MODE,
             },
             {
-                label: "Fixed mirrored equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE
+                label: "Fixed mirrored equirectangular",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE,
             },
             {
-                label: "Planar", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PLANAR_MODE
+                label: "Planar",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PLANAR_MODE,
             },
             {
-                label: "Projection", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PROJECTION_MODE
+                label: "Projection",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PROJECTION_MODE,
             },
             {
-                label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SKYBOX_MODE
+                label: "Skybox",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SKYBOX_MODE,
             },
             {
-                label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE
+                label: "Spherical",
+                value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE,
             },
         ];
         var samplingMode = [
@@ -63145,90 +63217,69 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                     } }),
-                !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && showIsInGammaSpace &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
+                !isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                !isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to linear space", propertyName: "convertToLinearSpace", target: this.props.block, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && showIsInGammaSpace && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Is in gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Disable multiplying by level", propertyName: "disableLevelMultiplication", target: this.props.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
                         _this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                     } }),
-                texture && texture.updateSamplingMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
-                            texture.updateSamplingMode(value);
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
-                            texture.coordinatesMode = value;
-                            _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
-                            texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } }),
-                texture && !isInReflectionMode && !isFrozenTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
-                        } })),
-            !this.textureBlock.hasImageSource &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
-                            _this.setState({ isEmbedded: value });
-                            _this.textureBlock.texture = null;
-                            _this.updateAfterTextureLoad();
-                        } }),
-                    isInReflectionMode &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
-                    isInReflectionMode && this.state.loadAsCubeTexture &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } }),
-                    this.state.isEmbedded &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
-                    !this.state.isEmbedded &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
-                    !this.state.isEmbedded && url &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
-                    texture &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } })),
+                texture && texture.updateSamplingMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onSelect: function (value) {
+                        texture.updateSamplingMode(value);
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
+                        texture.coordinatesMode = value;
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                        texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation U", target: texture, globalState: this.props.globalState, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation V", target: texture, globalState: this.props.globalState, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } })),
+                texture && !isInReflectionMode && !isFrozenTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation W", target: texture, globalState: this.props.globalState, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block);
+                    } }))),
+            !this.textureBlock.hasImageSource && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "SOURCE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+                        _this.setState({ isEmbedded: value });
+                        _this.textureBlock.texture = null;
+                        _this.updateAfterTextureLoad();
+                    } }),
+                isInReflectionMode && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } })),
+                isInReflectionMode && this.state.loadAsCubeTexture && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Texture is prefiltered", isSelected: function () { return _this.state.textureIsPrefiltered; }, onSelect: function (value) { return _this.setState({ textureIsPrefiltered: value }); } })),
+                this.state.isEmbedded && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                !this.state.isEmbedded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } })),
+                !this.state.isEmbedded && url && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } })),
+                texture && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_11__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block })));
     };
     return TexturePropertyTabComponent;
@@ -63337,7 +63388,7 @@ var TrigonometryPropertyTabComponent = /** @class */ (function (_super) {
             { label: "Fract", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Fract },
             { label: "Sign", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Sign },
             { label: "Radians to degrees", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Degrees },
-            { label: "Degrees to radians", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Radians }
+            { label: "Degrees to radians", value: babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__["TrigonometryBlockOperations"].Radians },
         ];
         operationOptions.sort(function (a, b) {
             return a.label.localeCompare(b.label);
@@ -63629,10 +63680,10 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._mouseLocationY = 0;
         _this.handlePopUp = function () {
             _this.setState({
-                showPreviewPopUp: true
+                showPreviewPopUp: true,
             });
             _this.createPopUp();
-            _this.props.globalState.hostWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
+            _this.props.globalState.hostWindow.addEventListener("beforeunload", _this.handleClosingPopUp);
         };
         _this.handleClosingPopUp = function () {
             if (_this._previewManager) {
@@ -63640,7 +63691,7 @@ var GraphEditor = /** @class */ (function (_super) {
             }
             _this._popUpWindow.close();
             _this.setState({
-                showPreviewPopUp: false
+                showPreviewPopUp: false,
             }, function () { return _this.initiatePreviewArea(); });
         };
         _this.initiatePreviewArea = function (canvas) {
@@ -63660,8 +63711,8 @@ var GraphEditor = /** @class */ (function (_super) {
             var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ embedHostWidth: "100%" }, userOptions);
             var popUpWindow = _this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
             if (popUpWindow) {
-                popUpWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
-                var parentControl = popUpWindow.document.getElementById('node-editor-graph-root');
+                popUpWindow.addEventListener("beforeunload", _this.handleClosingPopUp);
+                var parentControl = popUpWindow.document.getElementById("node-editor-graph-root");
                 _this.createPreviewMeshControlHost(options, parentControl);
                 _this.createPreviewHost(options, parentControl);
                 if (parentControl) {
@@ -63677,11 +63728,11 @@ var GraphEditor = /** @class */ (function (_super) {
                 width: width,
                 height: height,
                 top: (_this.props.globalState.hostWindow.innerHeight - width) / 2 + window.screenY,
-                left: (_this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX
+                left: (_this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX,
             };
             var windowCreationOptions = Object.keys(windowCreationOptionsList)
-                .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
-                .join(',');
+                .map(function (key) { return key + "=" + windowCreationOptionsList[key]; })
+                .join(",");
             var popupWindow = _this.props.globalState.hostWindow.open("", title, windowCreationOptions);
             if (!popupWindow) {
                 return null;
@@ -63699,8 +63750,8 @@ var GraphEditor = /** @class */ (function (_super) {
             parentControl.style.padding = "0";
             parentControl.style.display = "grid";
             parentControl.style.gridTemplateRows = "40px auto";
-            parentControl.id = 'node-editor-graph-root';
-            parentControl.className = 'right-panel popup';
+            parentControl.id = "node-editor-graph-root";
+            parentControl.className = "right-panel popup";
             popupWindow.document.body.appendChild(parentControl);
             _sharedComponents_popup__WEBPACK_IMPORTED_MODULE_16__["Popup"]._CopyStyles(_this.props.globalState.hostWindow.document, parentDocument);
             _this[windowVariableName] = popupWindow;
@@ -63716,7 +63767,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 parentControl.appendChild(host);
                 var PreviewMeshControlComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_10__["PreviewMeshControlComponent"], {
                     globalState: _this.props.globalState,
-                    togglePreviewAreaComponent: _this.handlePopUp
+                    togglePreviewAreaComponent: _this.handlePopUp,
                 });
                 react_dom__WEBPACK_IMPORTED_MODULE_15__["render"](PreviewMeshControlComponentHost, host);
             }
@@ -63730,7 +63781,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 host.style.height = "100%";
                 host.style.overflow = "hidden";
                 host.style.display = "grid";
-                host.style.gridRow = '2';
+                host.style.gridRow = "2";
                 host.style.gridTemplateRows = "auto 40px";
                 host.style.gridTemplateRows = "calc(100% - 40px) 40px";
                 parentControl.appendChild(host);
@@ -63742,7 +63793,7 @@ var GraphEditor = /** @class */ (function (_super) {
             if (_this._previewHost) {
                 var PreviewAreaComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewAreaComponent"], {
                     globalState: _this.props.globalState,
-                    width: 200
+                    width: 200,
                 });
                 react_dom__WEBPACK_IMPORTED_MODULE_15__["render"](PreviewAreaComponentHost, _this._previewHost);
             }
@@ -63757,17 +63808,17 @@ var GraphEditor = /** @class */ (function (_super) {
             if (previewConfigBar) {
                 previewConfigBar.style.gridRow = "2";
             }
-            var newWindowButton = document.getElementById('preview-new-window');
+            var newWindowButton = document.getElementById("preview-new-window");
             if (newWindowButton) {
-                newWindowButton.style.display = 'none';
+                newWindowButton.style.display = "none";
             }
-            var previewMeshBar = document.getElementById('preview-mesh-bar');
+            var previewMeshBar = document.getElementById("preview-mesh-bar");
             if (previewMeshBar) {
                 previewMeshBar.style.gridTemplateColumns = "auto 1fr 40px 40px";
             }
         };
         _this.state = {
-            showPreviewPopUp: false
+            showPreviewPopUp: false,
         };
         _this.props.globalState.onRebuildRequiredObservable.add(function (autoConfigure) {
             if (_this.props.globalState.nodeMaterial) {
@@ -63783,7 +63834,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.props.globalState.onImportFrameObservable.add(function (source) {
             var frameData = source.editorData.frames[0];
             // create new graph nodes for only blocks from frame (last blocks added)
-            _this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach(function (block) {
+            _this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach(function (block) {
                 _this.createNodeFromObject(block);
             });
             _this._graphCanvas.addFrame(frameData);
@@ -63799,7 +63850,8 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._graphCanvas.findNodeFromBlock(block);
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) { // Delete
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) {
+                // Delete
                 var selectedItems = _this._graphCanvas.selectedNodes;
                 for (var _i = 0, selectedItems_1 = selectedItems; _i < selectedItems_1.length; _i++) {
                     var selectedItem = selectedItems_1[_i];
@@ -63842,7 +63894,8 @@ var GraphEditor = /** @class */ (function (_super) {
             if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
                 return;
             }
-            if (evt.key === "c" || evt.key === "C") { // Copy
+            if (evt.key === "c" || evt.key === "C") {
+                // Copy
                 _this._copiedNodes = [];
                 _this._copiedFrame = null;
                 if (_this._graphCanvas.selectedFrame) {
@@ -63860,7 +63913,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 }
                 _this._copiedNodes = selectedItems.slice(0);
             }
-            else if (evt.key === "v" || evt.key === "V") { // Paste
+            else if (evt.key === "v" || evt.key === "V") {
+                // Paste
                 var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
                 var zoomLevel = _this._graphCanvas.zoom;
                 var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
@@ -64082,7 +64136,7 @@ var GraphEditor = /** @class */ (function (_super) {
         this._graphCanvas._isLoading = true; // Will help loading large graphes
         if (editorData instanceof Array) {
             editorData = {
-                locations: editorData
+                locations: editorData,
             };
         }
         // setup the diagram model
@@ -64250,7 +64304,9 @@ var GraphEditor = /** @class */ (function (_super) {
         x -= this.NodeWidth + 150;
         block.inputs.forEach(function (connection) {
             if (connection.connectedPoint) {
-                var existingNodes = _this._graphCanvas.nodes.filter(function (n) { return n.block === connection.connectedPoint.ownerBlock; });
+                var existingNodes = _this._graphCanvas.nodes.filter(function (n) {
+                    return n.block === connection.connectedPoint.ownerBlock;
+                });
                 var connectedNode = existingNodes[0];
                 if (connectedNode.x === 0 && connectedNode.y === 0) {
                     connectedNode.x = x / _this._graphCanvas.zoom;
@@ -64266,7 +64322,7 @@ var GraphEditor = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_4__["Portal"], { globalState: this.props.globalState },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "node-editor-graph-root", style: {
-                    gridTemplateColumns: this.buildColumnLayout()
+                    gridTemplateColumns: this.buildColumnLayout(),
                 }, onMouseMove: function (evt) {
                     _this._mouseLocationX = evt.pageX;
                     _this._mouseLocationY = evt.pageY;
@@ -64666,7 +64722,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
                     object: this.props.target,
                     property: this.props.propertyName,
                     value: !this.state.isSelected,
-                    initialValue: this.state.isSelected
+                    initialValue: this.state.isSelected,
                 });
             }
             this.props.target[this.props.propertyName] = !this.state.isSelected;
@@ -64682,7 +64738,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? " disabled" : "") }))));
     };
     CheckBoxLineComponent._UniqueIdSeed = 0;
     return CheckBoxLineComponent;
@@ -64743,7 +64799,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
         this.props.target[this.props.propertyName] = newColor;
@@ -64767,7 +64823,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Color3LineComponent.prototype.updateStateR = function (value) {
@@ -64798,7 +64854,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.copyToClipboard = function () {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
@@ -64807,7 +64863,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
         }
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     };
     Color3LineComponent.prototype.render = function () {
@@ -64824,11 +64880,10 @@ var Color3LineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, alt: "" }))),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } })))));
     };
     return Color3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -64890,7 +64945,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
         this.props.target[this.props.propertyName] = newColor;
@@ -64914,7 +64969,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Color4LineComponent.prototype.updateStateR = function (value) {
@@ -64954,7 +65009,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
         this.raiseOnPropertyChanged(store);
     };
     Color4LineComponent.prototype.copyToClipboard = function () {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
@@ -64963,7 +65018,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
         }
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     };
     Color4LineComponent.prototype.render = function () {
@@ -64980,12 +65035,11 @@ var Color4LineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, alt: "" }))),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "a", value: this.state.color.a, onChange: function (value) { return _this.updateStateA(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "a", value: this.state.color.a, onChange: function (value) { return _this.updateStateA(value); } })))));
     };
     return Color4LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65035,9 +65089,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var result = nextProps.value.toHexString() !== this.props.value.toHexString()
-            || nextState.hex !== this.state.hex
-            || nextState.pickerEnabled !== this.state.pickerEnabled;
+        var result = nextProps.value.toHexString() !== this.props.value.toHexString() || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
         if (nextProps.value.toHexString() !== this.props.value.toHexString()) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
@@ -65060,15 +65112,14 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setPickerState(true); } }),
-            this.state.pickerEnabled &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
-                                var hex = color.toHexString();
-                                _this.setState({ hex: hex, color: color });
-                                _this.props.onColorChanged(hex);
-                            } })))));
+            this.state.pickerEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
+                            var hex = color.toHexString();
+                            _this.setState({ hex: hex, color: color });
+                            _this.props.onColorChanged(hex);
+                        } }))))));
     };
     return ColorPickerLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65147,7 +65198,9 @@ var DraggableLineWithButtonComponent = /** @class */ (function (_super) {
                 event.dataTransfer.setData("babylonjs-material-node", _this.props.data);
             } },
             this.props.data.substr(0, this.props.data.length - 6),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", onClick: function () { _this.props.onIconClick(_this.props.data); }, title: this.props.iconTitle },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", onClick: function () {
+                    _this.props.onIconClick(_this.props.data);
+                }, title: this.props.iconTitle },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "img", title: this.props.iconTitle, src: this.props.iconImage }))));
     };
     return DraggableLineWithButtonComponent;
@@ -65238,7 +65291,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
+        var newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -65263,7 +65316,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     FloatLineComponent.prototype.updateValue = function (valueString) {
@@ -65283,10 +65336,10 @@ var FloatLineComponent = /** @class */ (function (_super) {
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && valueAsNumber > this.props.max) {
             valueAsNumber = this.props.max;
         }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && valueAsNumber < this.props.min) {
             valueAsNumber = this.props.min;
         }
         this.props.target[this.props.propertyName] = valueAsNumber;
@@ -65507,7 +65560,7 @@ var MatrixLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     MatrixLineComponent.prototype.updateMatrix = function () {
@@ -65562,15 +65615,13 @@ var MatrixLineComponent = /** @class */ (function (_super) {
                             _this.props.onModeChange(value);
                         }
                     } })),
-            this.state.mode === 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } })),
-            this.state.mode !== 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Angle", minimum: 0, maximum: 2 * Math.PI, useEuler: true, step: 0.1, globalState: this.props.globalState, directValue: this.state.angle, onChange: function (value) { return _this.updateBasedOnMode(value); } }))));
+            this.state.mode === 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } }))),
+            this.state.mode !== 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Angle", minimum: 0, maximum: 2 * Math.PI, useEuler: true, step: 0.1, globalState: this.props.globalState, directValue: this.state.angle, onChange: function (value) { return _this.updateBasedOnMode(value); } })))));
     };
     return MatrixLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65683,9 +65734,8 @@ var NumericInputComponent = /** @class */ (function (_super) {
     NumericInputComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
-            this.props.label &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": ")),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return (_this.props.globalState.blockKeyboardEvents = true); }, onBlur: function (evt) {
                     _this.props.globalState.blockKeyboardEvents = false;
                 }, step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
     };
@@ -65726,7 +65776,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         if (props.getSelection) {
             return props.getSelection(props.target);
         }
-        return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+        return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     };
     OptionsLineComponent.prototype.setValue = function (value) {
         this.setState({ value: value });
@@ -65751,7 +65801,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     OptionsLineComponent.prototype.updateValue = function (valueString) {
@@ -65816,19 +65866,19 @@ var Popup = /** @class */ (function () {
             width: width,
             height: height,
             top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX
+            left: (window.innerWidth - height) / 2 + window.screenX,
         };
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
-            .join(',');
+            .map(function (key) { return key + "=" + windowCreationOptionsList[key]; })
+            .join(",");
         var popupWindow = window.open("", title, windowCreationOptions);
         if (!popupWindow) {
             return null;
         }
         var parentDocument = popupWindow.document;
         // Font
-        var newLinkEl = parentDocument.createElement('link');
-        newLinkEl.rel = 'stylesheet';
+        var newLinkEl = parentDocument.createElement("link");
+        newLinkEl.rel = "stylesheet";
         newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
         parentDocument.head.appendChild(newLinkEl);
         parentDocument.title = title;
@@ -65844,6 +65894,7 @@ var Popup = /** @class */ (function () {
         popupWindow.document.body.appendChild(parentControl);
         this._CopyStyles(window.document, parentDocument);
         setTimeout(function () {
+            // need this for late bindings
             _this._CopyStyles(window.document, parentDocument);
         }, 0);
         this[windowVariableName] = popupWindow;
@@ -65853,8 +65904,9 @@ var Popup = /** @class */ (function () {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet = sourceDoc.styleSheets[index];
             try {
-                if (styleSheet.cssRules) { // for <style> elements
-                    var newStyleEl = sourceDoc.createElement('style');
+                if (styleSheet.cssRules) {
+                    // for <style> elements
+                    var newStyleEl = sourceDoc.createElement("style");
                     for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
                         var cssRule = _a[_i];
                         // write the text of each rule into the body of the style element
@@ -65862,15 +65914,15 @@ var Popup = /** @class */ (function () {
                     }
                     targetDoc.head.appendChild(newStyleEl);
                 }
-                else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                    var newLinkEl = sourceDoc.createElement('link');
-                    newLinkEl.rel = 'stylesheet';
+                else if (styleSheet.href) {
+                    // for <link> elements loading CSS from a URL
+                    var newLinkEl = sourceDoc.createElement("link");
+                    newLinkEl.rel = "stylesheet";
                     newLinkEl.href = styleSheet.href;
                     targetDoc.head.appendChild(newLinkEl);
                 }
             }
-            catch (e) {
-            }
+            catch (e) { }
         }
     };
     return Popup;
@@ -65907,7 +65959,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         _this._localChange = false;
         if (_this.props.directValue !== undefined) {
             _this.state = {
-                value: _this.props.directValue
+                value: _this.props.directValue,
             };
         }
         else {
@@ -65947,7 +65999,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
                     object: this.props.target,
                     property: this.props.propertyName,
                     value: newValue,
-                    initialValue: this.state.value
+                    initialValue: this.state.value,
                 });
             }
             this.props.target[this.props.propertyName] = newValue;
@@ -66039,7 +66091,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     TextInputLineComponent.prototype.updateValue = function (value, raisePropertyChanged) {
@@ -66063,7 +66115,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.multilines ? "textInputArea" : "textInputLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" },
-                this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                this.props.multilines && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("textarea", { value: this.state.value, onFocus: function () {
                             _this.props.globalState.blockKeyboardEvents = true;
                             _this._onFocus = true;
@@ -66076,8 +66128,8 @@ var TextInputLineComponent = /** @class */ (function (_super) {
                             _this.updateValue(evt.target.value, true);
                             _this.props.globalState.blockKeyboardEvents = false;
                             _this._onFocus = false;
-                        } })),
-                !this.props.multilines && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        } }))),
+                !this.props.multilines && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onFocus: function () {
                             _this.props.globalState.blockKeyboardEvents = true;
                             _this._onFocus = true;
@@ -66090,7 +66142,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
                             _this.updateValue(evt.target.value, true);
                             _this.props.globalState.blockKeyboardEvents = false;
                             _this._onFocus = false;
-                        } })))));
+                        } }))))));
     };
     return TextInputLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -66174,7 +66226,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             displayGreen: true,
             displayBlue: true,
             displayAlpha: true,
-            face: 0
+            face: 0,
         };
         _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
@@ -66275,7 +66327,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         }
                         previewCanvas.width = width;
                         previewCanvas.height = height;
-                        context = previewCanvas.getContext('2d');
+                        context = previewCanvas.getContext("2d");
                         if (context) {
                             imageData = context.createImageData(width, height);
                             castData = imageData.data;
@@ -66304,21 +66356,19 @@ var TextureLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var texture = this.props.texture;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textureLine" },
-            !this.props.hideChannelSelect && texture.isCube &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 2 ? "py command selected" : "py command", onClick: function () { return _this.setState({ face: 2 }); } }, "PY"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ")),
-            !this.props.hideChannelSelect && !texture.isCube &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false }); } }, "B"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true }); } }, "A"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true }); } }, "ALL")),
+            !this.props.hideChannelSelect && texture.isCube && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 2 ? "py command selected" : "py command", onClick: function () { return _this.setState({ face: 2 }); } }, "PY"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ"))),
+            !this.props.hideChannelSelect && !texture.isCube && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && !this.state.displayGreen ? "red command selected" : "red command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: false, displayBlue: false, displayAlpha: false }); } }, "R"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayGreen && !this.state.displayBlue ? "green command selected" : "green command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: true, displayBlue: false, displayAlpha: false }); } }, "G"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false }); } }, "B"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true }); } }, "A"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true }); } }, "ALL"))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })));
     };
     return TextureLineComponent;
@@ -66381,7 +66431,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Vector2LineComponent.prototype.updateStateX = function (value) {
@@ -66408,10 +66458,9 @@ var Vector2LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } })))));
     };
     Vector2LineComponent.defaultProps = {
         step: 0.001, // cm
@@ -66476,7 +66525,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Vector3LineComponent.prototype.updateVector3 = function () {
@@ -66508,11 +66557,10 @@ var Vector3LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } })))));
     };
     Vector3LineComponent.defaultProps = {
         step: 0.001, // cm
@@ -66577,7 +66625,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Vector4LineComponent.prototype.updateVector4 = function () {
@@ -66619,12 +66667,11 @@ var Vector4LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "w", step: this.props.step, value: this.state.value.w, onChange: function (value) { return _this.updateStateW(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "w", step: this.props.step, value: this.state.value.w, onChange: function (value) { return _this.updateStateW(value); } })))));
     };
     Vector4LineComponent.defaultProps = {
         step: 0.001, // cm
@@ -66664,10 +66711,10 @@ var ColorComponentEntry = /** @class */ (function (_super) {
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && valueAsNumber > this.props.max) {
             valueAsNumber = this.props.max;
         }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && valueAsNumber < this.props.min) {
             valueAsNumber = this.props.min;
         }
         this.props.onChange(valueAsNumber);
@@ -66756,8 +66803,7 @@ var ColorPicker = /** @class */ (function (_super) {
         return _this;
     }
     ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        return (nextProps.color.toHexString() !== this.props.color.toHexString() ||
-            nextState.color.toHexString() !== this.props.color.toHexString());
+        return nextProps.color.toHexString() !== this.props.color.toHexString() || nextState.color.toHexString() !== this.props.color.toHexString();
     };
     ColorPicker.prototype.onSaturationPointerDown = function (evt) {
         this._evaluateSaturation(evt);
@@ -66793,7 +66839,7 @@ var ColorPicker = /** @class */ (function (_super) {
         var left = evt.nativeEvent.offsetX;
         var top = evt.nativeEvent.offsetY;
         var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
-        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
+        var value = Math.min(1, Math.max(0.0001, 1 - top / this._saturationRef.current.clientHeight));
         if (this.props.debugMode) {
             console.log("Saturation: " + saturation);
             console.log("Value: " + value);
@@ -66836,7 +66882,7 @@ var ColorPicker = /** @class */ (function (_super) {
         var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" + (this.props.linearhint ? " with-hints" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
-                    background: colorHexRef
+                    background: colorHexRef,
                 } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
@@ -66846,12 +66892,12 @@ var ColorPicker = /** @class */ (function (_super) {
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
-                        background: colorHex
+                        background: colorHex,
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
                             left: (hsv.r / 360.0) * 100 + "%",
-                            border: "1px solid " + colorHexRef
+                            border: "1px solid " + colorHexRef,
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
@@ -66880,8 +66926,7 @@ var ColorPicker = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
                             _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
                         } }))),
-            this.props.linearhint &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))")));
+            this.props.linearhint && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))"))));
     };
     return ColorPicker;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -66930,7 +66975,7 @@ var HexColor = /** @class */ (function (_super) {
     };
     HexColor.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } });
     };
     return HexColor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

@@ -19,9 +19,9 @@ const valueChangedGridDark: string = require("../../../../sharedUiComponents/img
 const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/deleteGridElementDark.svg");
 
 interface IGridPropertyGridComponentProps {
-    grid: Grid,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    grid: Grid;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
@@ -95,7 +95,6 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 this._columnEditFlags.push(false);
             }
         }
-
     }
 
     renderColumns() {
@@ -148,8 +147,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 let valueAsInt = parseInt(value.substring(0, value.length - 1));
                 total += valueAsInt / 100;
                 rowValues.push(valueAsInt / 100);
-            }
-            else {
+            } else {
                 let valueAsInt = parseInt(value.substring(0, value.length - 2));
                 rowValues.push(valueAsInt);
             }
@@ -212,8 +210,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                 let valueAsInt = parseInt(value.substring(0, value.length - 1));
                 total += valueAsInt / 100;
                 columnValues.push(valueAsInt / 100);
-            }
-            else {
+            } else {
                 let valueAsInt = parseInt(value.substring(0, value.length - 2));
                 columnValues.push(valueAsInt);
             }
@@ -258,14 +255,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     checkValue(value: string, percent: boolean): string {
         let newValue = value.match(/([0-9.,]+)/g)?.[0];
         if (!newValue) {
-            newValue = '0';
+            newValue = "0";
         }
-        newValue += percent ? '%' : 'px';
+        newValue += percent ? "%" : "px";
         return newValue;
     }
 
     checkPercentage(value: string): boolean {
-        const toSearch = 'px';
+        const toSearch = "px";
         return value.substring(value.length - toSearch.length, value.length) !== toSearch;
     }
 

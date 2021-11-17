@@ -959,7 +959,7 @@ export class MaterialHelper {
      * @param scene The scene we are willing to render with logarithmic scale for
      */
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-        if (defines["LOGARITHMICDEPTH"]) {
+        if (!defines || defines["LOGARITHMICDEPTH"]) {
             const camera = <Camera>scene.activeCamera;
             if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
                 Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);

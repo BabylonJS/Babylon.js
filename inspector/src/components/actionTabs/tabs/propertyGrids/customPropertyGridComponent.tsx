@@ -2,15 +2,15 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
-import { GlobalState } from '../../../globalState';
-import { IInspectable, InspectableType } from 'babylonjs/Misc/iInspectable';
-import { CheckBoxLineComponent } from '../../../../sharedUiComponents/lines/checkBoxLineComponent';
-import { SliderLineComponent } from '../../../../sharedUiComponents/lines/sliderLineComponent';
-import { Vector3LineComponent } from '../../../../sharedUiComponents/lines/vector3LineComponent';
-import { QuaternionLineComponent } from '../../lines/quaternionLineComponent';
-import { LineContainerComponent } from '../../../../sharedUiComponents/lines/lineContainerComponent';
-import { TextInputLineComponent } from '../../../../sharedUiComponents/lines/textInputLineComponent';
-import { LockObject } from '../../../../sharedUiComponents/tabs/propertyGrids/lockObject';
+import { GlobalState } from "../../../globalState";
+import { IInspectable, InspectableType } from "babylonjs/Misc/iInspectable";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
+import { Vector3LineComponent } from "../../../../sharedUiComponents/lines/vector3LineComponent";
+import { QuaternionLineComponent } from "../../lines/quaternionLineComponent";
+import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
+import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
+import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
@@ -23,7 +23,6 @@ interface ICustomPropertyGridComponentProps {
 }
 
 export class CustomPropertyGridComponent extends React.Component<ICustomPropertyGridComponentProps, { mode: number }> {
-
     constructor(props: ICustomPropertyGridComponentProps) {
         super(props);
         this.state = { mode: 0 };
@@ -33,51 +32,100 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
         switch (inspectable.type) {
             case InspectableType.Checkbox:
                 return (
-                    <CheckBoxLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 );
             case InspectableType.Slider:
                 return (
-                    <SliderLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
+                    <SliderLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
                         step={inspectable.step !== undefined ? inspectable.step : 0.1}
-                        minimum={inspectable.min !== undefined ? inspectable.min : 0} maximum={inspectable.max !== undefined ? inspectable.max : 1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        minimum={inspectable.min !== undefined ? inspectable.min : 0}
+                        maximum={inspectable.max !== undefined ? inspectable.max : 1}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 );
             case InspectableType.Vector3:
                 return (
-                    <Vector3LineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 );
             case InspectableType.Quaternion:
                 return (
-                    <QuaternionLineComponent useEuler={this.props.globalState.onlyUseEulers} key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <QuaternionLineComponent
+                        useEuler={this.props.globalState.onlyUseEulers}
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 );
             case InspectableType.Color3:
                 return (
-                    <Color3LineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 );
             case InspectableType.String:
                 return (
-                    <TextInputLineComponent key={inspectable.label} label={inspectable.label} lockObject={this.props.lockObject} target={this.props.target} propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextInputLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        lockObject={this.props.lockObject}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 );
             case InspectableType.Button:
                 return (
-                    <ButtonLineComponent key={inspectable.label} label={inspectable.label} onClick={inspectable.callback || function() {
-                        console.warn("no call back function added");
-                    }} />
+                    <ButtonLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        onClick={
+                            inspectable.callback ||
+                            function () {
+                                console.warn("no call back function added");
+                            }
+                        }
+                    />
                 );
             case InspectableType.Options:
                 return (
-                    <OptionsLineComponent key={inspectable.label} label={inspectable.label} target={this.props.target} propertyName={inspectable.propertyName} options={inspectable.options || []} onSelect={inspectable.callback || function(value) {
-                        console.log(`Option ${value} is selected`);
-                    }} />
+                    <OptionsLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        options={inspectable.options || []}
+                        onSelect={
+                            inspectable.callback ||
+                            function (value) {
+                                console.log(`Option ${value} is selected`);
+                            }
+                        }
+                    />
                 );
             case InspectableType.Tab:
-                return (
-                    <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "}/>
-                );
+                return <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "} />;
         }
 
         return null;
@@ -92,11 +140,9 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
 
         return (
             <LineContainerComponent title="CUSTOM" selection={this.props.globalState}>
-                {
-                    inspectables.map(inspectable => {
-                        return this.renderInspectable(inspectable);
-                    })
-                }
+                {inspectables.map((inspectable) => {
+                    return this.renderInspectable(inspectable);
+                })}
             </LineContainerComponent>
         );
     }

@@ -52,4 +52,3 @@ export * from "./matrixBuilderBlock";
 export * from "./conditionalBlock";
 export * from "./cloudBlock";
 export * from "./voronoiNoiseBlock";
-export * from "./screenSpaceBlock";

@@ -28,7 +28,10 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
     public constructor(props: ICommandDropdownComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, activeState: Utilities.ReadStringFromStore(this.props.storeKey || this.props.tooltip, this.props.defaultValue!, this.props.useSessionStorage) };
+        this.state = {
+            isExpanded: false,
+            activeState: Utilities.ReadStringFromStore(this.props.storeKey || this.props.tooltip, this.props.defaultValue!, this.props.useSessionStorage),
+        };
 
         this.props.globalState.OnNewDropdownButtonClicked.add((source) => {
             if (source === this) {
@@ -120,7 +123,12 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                     return (
                                                         <div
                                                             key={s}
-                                                            className={"sub-item" + (Utilities.ReadStringFromStore(m.storeKey!, m.defaultValue as string, this.props.useSessionStorage) === s ? " checked" : "")}
+                                                            className={
+                                                                "sub-item" +
+                                                                (Utilities.ReadStringFromStore(m.storeKey!, m.defaultValue as string, this.props.useSessionStorage) === s
+                                                                    ? " checked"
+                                                                    : "")
+                                                            }
                                                             onClick={() => {
                                                                 Utilities.StoreStringToStore(m.storeKey!, s, this.props.useSessionStorage);
                                                                 m.onClick!();

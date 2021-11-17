@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \**************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!**************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \**************************************************************************************/
+/*!****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \****************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9577,9 +9577,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!***********************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \***********************************************************************************/
+/*!*************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \*************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9980,9 +9980,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/classnames/index.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/classnames/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10048,9 +10048,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \******************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10066,9 +10066,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************************/
+/*!**********************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \**********************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10084,9 +10084,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \**************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10102,9 +10102,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss":
-/*!*******************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
-  \*******************************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
+  \***********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10120,9 +10120,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************************/
+/*!****************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10138,9 +10138,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss":
-/*!***********************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
-  \***********************************************************************************************************************************************/
+/*!***************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
+  \***************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10156,9 +10156,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/header.scss":
-/*!*******************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
-  \*******************************************************************************************************************************************/
+/*!***********************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
+  \***********************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10174,9 +10174,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \******************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10192,9 +10192,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10297,9 +10297,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!***************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
-  \***************************************************************/
+/*!*****************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10399,9 +10399,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/process/browser.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/process/browser.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10594,9 +10594,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10708,9 +10708,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \******************************************************************************/
+/*!********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11311,9 +11311,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
-  \************************************************************/
+/*!**************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11337,9 +11337,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11361,9 +11361,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \******************************************************************************/
+/*!********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11587,9 +11587,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11904,9 +11904,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \************************************************************************************/
+/*!**************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \**************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12104,9 +12104,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!**************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \**************************************************************************/
+/*!****************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12244,9 +12244,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \***************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12584,9 +12584,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \***************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12644,9 +12644,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \*******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12742,9 +12742,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!*************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \*************************************************************************************/
+/*!***************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \***************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12804,9 +12804,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!*************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \*************************************************************************/
+/*!***************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \***************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12853,9 +12853,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \*************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12891,9 +12891,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37915,9 +37915,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37960,9 +37960,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*****************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*****************************************************************************/
+/*!*******************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38153,9 +38153,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!**********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react-is/index.js ***!
-  \**********************************************************/
+/*!************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react-is/index.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38170,9 +38170,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!***********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \***********************************************************************/
+/*!*************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40094,9 +40094,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*******************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/react/index.js ***!
-  \*******************************************************/
+/*!*********************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/react/index.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40111,9 +40111,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!***************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \***************************************************************************************/
+/*!*****************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40472,9 +40472,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*******************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*******************************************************************************/
+/*!*********************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41342,9 +41342,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41359,9 +41359,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!*************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \*************************************************************/
+/*!***************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41376,9 +41376,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!*********************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/*!***********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41574,9 +41574,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!**********************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \**********************************************************************************************/
+/*!************************************************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41854,9 +41854,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!******************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/*!********************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41929,9 +41929,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -42899,35 +42899,61 @@ var CommandBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_3__["CommandDropdownComponent"], { globalState: this.props.globalState, toRight: true, icon: hamburgerIcon, tooltip: "Options", items: [
                         {
                             label: "Save",
-                            onClick: function () { _this.props.globalState.onSaveObservable.notifyObservers(); }
-                        }, {
+                            onClick: function () {
+                                _this.props.globalState.onSaveObservable.notifyObservers();
+                            },
+                        },
+                        {
                             label: "Load",
-                            fileButton: true
-                        }, {
+                            fileButton: true,
+                        },
+                        {
                             label: "Save to snippet",
-                            onClick: function () { _this.props.globalState.onSnippetSaveObservable.notifyObservers(); }
-                        }, {
+                            onClick: function () {
+                                _this.props.globalState.onSnippetSaveObservable.notifyObservers();
+                            },
+                        },
+                        {
                             label: "Load from snippet",
-                            onClick: function () { _this.props.globalState.onSnippetLoadObservable.notifyObservers(); }
-                        }, {
+                            onClick: function () {
+                                _this.props.globalState.onSnippetLoadObservable.notifyObservers();
+                            },
+                        },
+                        {
                             label: "Help",
-                            onClick: function () { window.open('https://doc.babylonjs.com/toolsAndResources/tools/guiEditor', '_blank'); }
+                            onClick: function () {
+                                window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
+                            },
                         },
                         {
                             label: "Give feedback",
-                            onClick: function () { window.open('https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578', '_blank'); }
+                            onClick: function () {
+                                window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
+                            },
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () { if (!_this._selecting)
-                        _this.props.globalState.onSelectionButtonObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () { if (!_this._moving)
-                        _this.props.globalState.onMoveObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () { if (!_this._panning)
-                        _this.props.globalState.onPanObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () { if (!_this._zooming)
-                        _this.props.globalState.onZoomObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () { _this.props.globalState.onFitToWindowObservable.notifyObservers(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this._outlines, onClick: function () { _this.props.globalState.onOutlinesObservable.notifyObservers(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () {
+                        if (!_this._selecting)
+                            _this.props.globalState.onSelectionButtonObservable.notifyObservers();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () {
+                        if (!_this._moving)
+                            _this.props.globalState.onMoveObservable.notifyObservers();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () {
+                        if (!_this._panning)
+                            _this.props.globalState.onPanObservable.notifyObservers();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () {
+                        if (!_this._zooming)
+                            _this.props.globalState.onZoomObservable.notifyObservers();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () {
+                        _this.props.globalState.onFitToWindowObservable.notifyObservers();
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this._outlines, onClick: function () {
+                        _this.props.globalState.onOutlinesObservable.notifyObservers();
+                    } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-right" })));
     };
     return CommandBarComponent;
@@ -42997,14 +43023,12 @@ var CommandDropdownComponent = /** @class */ (function (_super) {
     CommandDropdownComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-blocker", onClick: function () {
-                        _this.setState({ isExpanded: false });
-                    } }),
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-blocker", onClick: function () {
+                    _this.setState({ isExpanded: false });
+                } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-root" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown" + (this.state.isExpanded ? " activated" : ""), title: this.props.tooltip, onClick: function () {
                         _this.setState({ isExpanded: false });
-                        ;
                         var newState = !_this.state.isExpanded;
                         var pgHost = document.getElementById("embed-host");
                         if (pgHost) {
@@ -43012,49 +43036,41 @@ var CommandDropdownComponent = /** @class */ (function (_super) {
                         }
                         _this.setState({ isExpanded: newState });
                     } },
-                    this.props.icon &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon })),
-                    !this.props.icon &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-active" })),
-                this.state.isExpanded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "") }, this.props.items.map(function (m) {
-                        if (!m.fileButton) {
-                            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-label" + (m.isActive ? " active" : ""), key: m.label, onClick: function () {
-                                    if (!m.onClick) {
-                                        _this.forceUpdate();
-                                        return;
-                                    }
-                                    if (!m.subItems) {
+                    this.props.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon }))),
+                    !this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-active" })),
+                this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "") }, this.props.items.map(function (m) {
+                    if (!m.fileButton) {
+                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-label" + (m.isActive ? " active" : ""), key: m.label, onClick: function () {
+                                if (!m.onClick) {
+                                    _this.forceUpdate();
+                                    return;
+                                }
+                                if (!m.subItems) {
+                                    m.onClick();
+                                    _this.setState({ isExpanded: false, activeState: m.label });
+                                }
+                            }, title: m.label },
+                            !m.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-label-text" }, (m.isActive ? "> " : "") + m.label),
+                            m.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon }))),
+                            m.onCheck && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "command-dropdown-label-check", onChange: function (evt) {
+                                    _this.forceUpdate();
+                                    m.onCheck(evt.target.checked);
+                                }, checked: false })),
+                            m.subItems && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-arrow" }, ">"),
+                            m.subItems && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sub-items " }, m.subItems.map(function (s) {
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: s, className: "sub-item", onClick: function () {
                                         m.onClick();
-                                        _this.setState({ isExpanded: false, activeState: m.label });
-                                    }
-                                }, title: m.label },
-                                !m.icon &&
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-label-text" }, (m.isActive ? "> " : "") + m.label),
-                                m.icon &&
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-icon" },
-                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon })),
-                                m.onCheck &&
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "command-dropdown-label-check", onChange: function (evt) {
-                                            _this.forceUpdate();
-                                            m.onCheck(evt.target.checked);
-                                        }, checked: false }),
-                                m.subItems &&
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-dropdown-arrow" }, ">"),
-                                m.subItems &&
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sub-items " }, m.subItems.map(function (s) {
-                                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: s, className: "sub-item", onClick: function () {
-                                                m.onClick();
-                                                _this.setState({ isExpanded: false });
-                                            } },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sub-item-label" }, s)));
-                                    }))));
-                        }
-                        else {
-                            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { key: m.label, label: "Load", onClick: function (file) { return _this.props.globalState.onLoadObservable.notifyObservers(file); }, accept: ".json" }));
-                        }
-                    })))));
+                                        _this.setState({ isExpanded: false });
+                                    } },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sub-item-label" }, s)));
+                            })))));
+                    }
+                    else {
+                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { key: m.label, label: "Load", onClick: function (file) { return _this.props.globalState.onLoadObservable.notifyObservers(file); }, accept: ".json" }));
+                    }
+                }))))));
     };
     return CommandDropdownComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43453,11 +43469,11 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         var _a, _b;
         //check if it contains either a px or a % sign
         var percentage = this._responsive;
-        var negative = value.charAt(0) === '-';
-        if (value.charAt(value.length - 1) === '%') {
+        var negative = value.charAt(0) === "-";
+        if (value.charAt(value.length - 1) === "%") {
             percentage = true;
         }
-        else if (value.charAt(value.length - 1) === 'x' && value.charAt(value.length - 2) === 'p') {
+        else if (value.charAt(value.length - 1) === "x" && value.charAt(value.length - 2) === "p") {
             percentage = false;
         }
         if (((_a = this.props.control.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "StackPanel") {
@@ -43465,10 +43481,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         }
         var newValue = (_b = value.match(/([\d\.\,]+)/g)) === null || _b === void 0 ? void 0 : _b[0];
         if (!newValue) {
-            newValue = '0';
+            newValue = "0";
         }
-        newValue = (negative ? '-' : '') + newValue;
-        newValue += percentage ? '%' : 'px';
+        newValue = (negative ? "-" : "") + newValue;
+        newValue += percentage ? "%" : "px";
         this.props.control[propertyName] = newValue;
         this.forceUpdate();
     };
@@ -43485,12 +43501,24 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         this._height = this.props.control.height;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Left", icon: hAlignLeftIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT, onClick: function () { _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: hAlignCenterIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER, onClick: function () { _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Right", icon: hAlignRightIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_RIGHT, onClick: function () { _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_RIGHT); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Top", icon: vAlignTopIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: vAlignCenterIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Bottom", icon: vAlignBottomIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM, onClick: function () { _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Left", icon: hAlignLeftIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT, onClick: function () {
+                        _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: hAlignCenterIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER, onClick: function () {
+                        _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Right", icon: hAlignRightIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_RIGHT, onClick: function () {
+                        _this._updateAlignment("horizontalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_RIGHT);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Top", icon: vAlignTopIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP, onClick: function () {
+                        _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_TOP);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Center", icon: vAlignCenterIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER, onClick: function () {
+                        _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER);
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Bottom", icon: vAlignBottomIcon, shortcut: "", isActive: verticalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM, onClick: function () {
+                        _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM);
+                    } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -43500,7 +43528,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                             control.autoScale = false;
                         }
                         else if (_this.props.control.typeName === "ColorPicker") {
-                            if (newValue === '0' || newValue === '-') {
+                            if (newValue === "0" || newValue === "-") {
                                 newValue = "1";
                             }
                         }
@@ -43536,10 +43564,8 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Rotation", lockObject: this.props.lockObject, icon: rotationIcon, label: "R", target: control, decimalCount: 2, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "APPEARANCE", value: " ", color: "grey" }),
-            control.color !== undefined &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            control.background !== undefined &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            control.color !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            control.background !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { lockObject: this.props.lockObject, iconLabel: "Alpha", icon: alphaIcon, label: "", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
@@ -43736,7 +43762,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     }
     GridPropertyGridComponent.prototype.renderRows = function () {
         var _this = this;
-        return (this._rowDefinitions.map(function (rd, i) {
+        return this._rowDefinitions.map(function (rd, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "r" + i, className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "rText" + i, label: "Row " + i, value: rd, numbersOnly: true, onChange: function (newValue) {
                         _this._rowDefinitions[i] = newValue;
@@ -43744,7 +43770,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                         _this._editedRow = true;
                         _this.forceUpdate();
                     } })));
-        }));
+        });
     };
     GridPropertyGridComponent.prototype.setRowValues = function () {
         var grid = this.props.grid;
@@ -43774,7 +43800,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     };
     GridPropertyGridComponent.prototype.renderColumns = function () {
         var _this = this;
-        return (this._columnDefinitions.map(function (cd, i) {
+        return this._columnDefinitions.map(function (cd, i) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "c" + i, className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "ctext" + i, label: "Column " + i, value: cd, numbersOnly: true, onChange: function (newValue) {
                         _this._columnDefinitions[i] = newValue;
@@ -43782,7 +43808,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                         _this._editedColumn = true;
                         _this.forceUpdate();
                     } })));
-        }));
+        });
     };
     GridPropertyGridComponent.prototype.resizeRow = function () {
         var grid = this.props.grid;
@@ -43906,13 +43932,13 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         var _a;
         var newValue = (_a = value.match(/([0-9.,]+)/g)) === null || _a === void 0 ? void 0 : _a[0];
         if (!newValue) {
-            newValue = '0';
+            newValue = "0";
         }
-        newValue += percent ? '%' : 'px';
+        newValue += percent ? "%" : "px";
         return newValue;
     };
     GridPropertyGridComponent.prototype.checkPercentage = function (value) {
-        var toSearch = 'px';
+        var toSearch = "px";
         return value.substring(value.length - toSearch.length, value.length) !== toSearch;
     };
     GridPropertyGridComponent.prototype.render = function () {
@@ -43946,11 +43972,11 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                     _this.resizeRow();
                     _this.forceUpdate();
                 } }),
-            "  ",
-            (grid.rowCount > 1 && !this._removingRow) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE ROW", onClick: function () {
+            " ",
+            grid.rowCount > 1 && !this._removingRow && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE ROW", onClick: function () {
                     var hasChild = false;
                     for (var i = 0; i < grid.columnCount; ++i) {
-                        var child = grid.cells[(grid.rowCount - 1) + ":" + i];
+                        var child = grid.cells[grid.rowCount - 1 + ":" + i];
                         if (child === null || child === void 0 ? void 0 : child.children.length) {
                             hasChild = true;
                             break;
@@ -43965,26 +43991,25 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                         _this.resizeRow();
                     }
                     _this.forceUpdate();
-                } }),
-            this._removingRow &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?", value: " ", color: "grey" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
-                            grid.removeRowDefinition(grid.rowCount - 1);
-                            _this.setRowValues();
-                            _this.resizeRow();
-                            _this.forceUpdate();
-                            _this._removingRow = false;
-                        } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
-                            _this._removingRow = false;
-                            _this.forceUpdate();
-                        } })),
+                } })),
+            this._removingRow && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?", value: " ", color: "grey" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
+                        grid.removeRowDefinition(grid.rowCount - 1);
+                        _this.setRowValues();
+                        _this.resizeRow();
+                        _this.forceUpdate();
+                        _this._removingRow = false;
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
+                        _this._removingRow = false;
+                        _this.forceUpdate();
+                    } }))),
             this.renderRows(),
-            this._editedRow && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE ROW CHANGES", onClick: function () {
+            this._editedRow && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE ROW CHANGES", onClick: function () {
                     _this.resizeRow();
                     _this.forceUpdate();
-                } }),
+                } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "ADD COLUMN", onClick: function () {
                     var total = 0;
@@ -44002,45 +44027,43 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                     _this.forceUpdate();
                 } }),
             " ",
-            (grid.columnCount > 1 && !this._removingColumn) &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE COLUMN", onClick: function () {
-                        var hasChild = false;
-                        for (var i = 0; i < grid.rowCount; ++i) {
-                            var child = grid.cells[i + ":" + (grid.columnCount - 1)];
-                            if (child === null || child === void 0 ? void 0 : child.children.length) {
-                                hasChild = true;
-                                break;
-                            }
+            grid.columnCount > 1 && !this._removingColumn && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE COLUMN", onClick: function () {
+                    var hasChild = false;
+                    for (var i = 0; i < grid.rowCount; ++i) {
+                        var child = grid.cells[i + ":" + (grid.columnCount - 1)];
+                        if (child === null || child === void 0 ? void 0 : child.children.length) {
+                            hasChild = true;
+                            break;
                         }
-                        if (hasChild) {
-                            _this._removingColumn = true;
-                        }
-                        else {
-                            grid.removeColumnDefinition(grid.columnCount - 1);
-                            _this.setColumnValues();
-                            _this.resizeColumn();
-                        }
+                    }
+                    if (hasChild) {
+                        _this._removingColumn = true;
+                    }
+                    else {
+                        grid.removeColumnDefinition(grid.columnCount - 1);
+                        _this.setColumnValues();
+                        _this.resizeColumn();
+                    }
+                    _this.forceUpdate();
+                } })),
+            this._removingColumn && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?", value: " ", color: "grey" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
+                        grid.removeColumnDefinition(grid.columnCount - 1);
+                        _this.setColumnValues();
+                        _this.resizeColumn();
                         _this.forceUpdate();
+                        _this._removingColumn = false;
                     } }),
-            this._removingColumn &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?", value: " ", color: "grey" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "REMOVE", onClick: function () {
-                            grid.removeColumnDefinition(grid.columnCount - 1);
-                            _this.setColumnValues();
-                            _this.resizeColumn();
-                            _this.forceUpdate();
-                            _this._removingColumn = false;
-                        } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
-                            _this._removingColumn = false;
-                            _this.forceUpdate();
-                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "CANCEL", onClick: function () {
+                        _this._removingColumn = false;
+                        _this.forceUpdate();
+                    } }))),
             this.renderColumns(),
-            this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE COLUMN CHANGES", onClick: function () {
+            this._editedColumn && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "RECALCULATE COLUMN CHANGES", onClick: function () {
                     _this.resizeColumn();
                     _this.forceUpdate();
-                } })));
+                } }))));
     };
     return GridPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44146,7 +44169,7 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
             { label: "Fill", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_FILL },
             { label: "Uniform", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_UNIFORM },
             { label: "Extend", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_EXTEND },
-            { label: "NinePatch", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NINE_PATCH }
+            { label: "NinePatch", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NINE_PATCH },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: image, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -44433,7 +44456,6 @@ __webpack_require__.r(__webpack_exports__);
 var fillColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "./sharedUiComponents/imgs/fillColorIcon.svg");
 var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
 var conerRadiusIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/conerRadiusIcon.svg */ "./sharedUiComponents/imgs/conerRadiusIcon.svg");
-;
 var strokeWeightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/strokeWeightIcon.svg */ "./sharedUiComponents/imgs/strokeWeightIcon.svg");
 var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScrollViewerPropertyGridComponent, _super);
@@ -44494,7 +44516,6 @@ __webpack_require__.r(__webpack_exports__);
 var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
 var scaleIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/scaleIcon.svg */ "./sharedUiComponents/imgs/scaleIcon.svg");
 var horizontalMarginIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg */ "./sharedUiComponents/imgs/horizontalMarginIcon.svg");
-;
 var colorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/colorIcon.svg */ "./sharedUiComponents/imgs/colorIcon.svg");
 var vAlignCenterIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg */ "./sharedUiComponents/imgs/vAlignCenterIcon.svg");
 var clipContentsIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/clipContentsIcon.svg */ "./sharedUiComponents/imgs/clipContentsIcon.svg");
@@ -44832,13 +44853,17 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 adt = this.props.globalState.guiTexture;
                 content = JSON.stringify(adt.serializeContent());
                 savePromise = ((_a = this.props.globalState.customSave) === null || _a === void 0 ? void 0 : _a.action) || this.saveToSnippetServerHelper;
-                savePromise(content, adt).then(function (snippetId) {
+                savePromise(content, adt)
+                    .then(function (snippetId) {
                     adt.snippetId = snippetId;
                     var alertMessage = "GUI saved with ID:  " + adt.snippetId;
                     if (navigator.clipboard) {
-                        navigator.clipboard.writeText(adt.snippetId).then(function () {
+                        navigator.clipboard
+                            .writeText(adt.snippetId)
+                            .then(function () {
                             alert(alertMessage + ". The ID was copied to your clipboard.");
-                        }).catch(function (err) {
+                        })
+                            .catch(function (err) {
                             alert(alertMessage);
                         });
                     }
@@ -44846,7 +44871,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         alert(alertMessage);
                     }
                     _this.props.globalState.onBuiltObservable.notifyObservers();
-                }).catch(function (err) {
+                })
+                    .catch(function (err) {
                     alert(err);
                 });
                 this.forceUpdate();
@@ -44927,15 +44953,15 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         switch (className) {
             case "TextBlock": {
                 var textBlock = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "InputText": {
                 var inputText = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ColorPicker": {
                 var colorPicker = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Image": {
                 var image = this.state.currentNode;
@@ -44943,19 +44969,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
             case "Slider": {
                 var slider = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ImageBasedSlider": {
                 var imageBasedSlider = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Rectangle": {
                 var rectangle = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "StackPanel": {
                 var stackPanel = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Grid": {
                 var grid = this.state.currentNode;
@@ -44963,19 +44989,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
             case "ScrollViewer": {
                 var scrollViewer = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Ellipse": {
                 var ellipse = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Checkbox": {
                 var checkbox = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "RadioButton": {
                 var radioButton = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Line": {
                 var line = this.state.currentNode;
@@ -44983,21 +45009,21 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
             case "DisplayGrid": {
                 var displayGrid = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["DisplayGridPropertyGridComponent"], { displayGrid: displayGrid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["DisplayGridPropertyGridComponent"], { displayGrid: displayGrid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Button": {
                 var button_1 = this.state.currentNode;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["ButtonPropertyGridComponent"], { key: "buttonMenu", rectangle: button_1, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, onAddComponent: function (value) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["ButtonPropertyGridComponent"], { key: "buttonMenu", rectangle: button_1, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, onAddComponent: function (value) {
                         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__["GUINodeTools"].CreateControlFromString(value);
                         var newGuiNode = _this.props.globalState.workbench.createNewGuiNode(guiElement);
                         button_1.addControl(newGuiNode);
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-                    } });
+                    } }));
             }
         }
         if (className !== "") {
             var control = this.state.currentNode;
-            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
         }
         return null;
     };
@@ -45106,21 +45132,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: this.state.currentNode, propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
                 this.renderProperties(),
-                ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject }),
-                this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
-                                var _a;
-                                (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
-                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                            } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
-                                if (_this.state.currentNode) {
-                                    _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
-                                }
-                            } }))));
+                ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject })),
+                this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
+                            var _a;
+                            (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
+                            _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
+                            if (_this.state.currentNode) {
+                                _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
+                            }
+                        } })))));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -45128,8 +45152,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "AdvancedDynamicTexture")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "ART BOARD", value: " ", color: "grey" }),
-                this.props.globalState.workbench._scene !== undefined &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_27__["Color3LineComponent"], { iconLabel: "Background Color", lockObject: this._lockObject, icon: artboardColorIcon, label: "", target: this.props.globalState.workbench._scene, propertyName: "clearColor", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
+                this.props.globalState.workbench._scene !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_27__["Color3LineComponent"], { iconLabel: "Background Color", lockObject: this._lockObject, icon: artboardColorIcon, label: "", target: this.props.globalState.workbench._scene, propertyName: "clearColor", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "CANVAS", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "RESPONSIVE", iconLabel: "A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes", icon: responsiveIcon, isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
@@ -45142,27 +45165,25 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         }
                         _this.forceUpdate();
                     } }),
-                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: _sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
-                            _this._sizeOption = value;
-                            if (_this._sizeOption !== (_sizeOptions.length)) {
-                                var newSize = _sizeValues[_this._sizeOption];
-                                _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__["OptionsLineComponent"], { label: "", iconLabel: "Size", options: _sizeOptions, icon: canvasSizeIcon, target: this, propertyName: "_sizeOption", noDirectUpdate: true, onSelect: function (value) {
+                        _this._sizeOption = value;
+                        if (_this._sizeOption !== _sizeOptions.length) {
+                            var newSize = _sizeValues[_this._sizeOption];
+                            _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                        }
+                        _this.forceUpdate();
+                    } })),
+                !babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                            if (!isNaN(newvalue)) {
+                                _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, textureSize.y));
                             }
-                            _this.forceUpdate();
                         } }),
-                !babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
-                                if (!isNaN(newvalue)) {
-                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, textureSize.y));
-                                }
-                            } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
-                                if (!isNaN(newvalue)) {
-                                    _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](textureSize.x, newvalue));
-                                }
-                            } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                            if (!isNaN(newvalue)) {
+                                _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](textureSize.x, newvalue));
+                            }
+                        } }))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "FILE", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.load(file); }, accept: ".json" }),
@@ -45237,14 +45258,14 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         var draggingSelf = this.props.globalState.draggedControl === control;
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "controlTools" },
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: name, onClick: function () { return _this.props.onClick(); }, color: "greenyellow" }),
-            (!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && this.props.globalState.workbench.isContainer(control)) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+            !draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && this.props.globalState.workbench.isContainer(control) && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "makeChild icon", onClick: function () { return _this.highlight(); }, title: "Make Child" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeChildOfContainerIcon }))),
-            (this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE) && react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeChildOfContainerIcon })))),
+            this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "addComponent icon", onClick: function () { return _this.highlight(); }, title: "Add component (Not Implemented)" },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeComponentIcon })),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "visibility icon", onClick: function () { return _this.switchVisibility(); }, title: "Show/Hide control" },
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon }))),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon })))),
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_2__["ExtensionsComponent"], { target: control, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return ControlTreeItemComponent;
@@ -45314,7 +45335,9 @@ var ExtensionsComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: this.extensionRef, className: "extensions", onClick: function () { return _this.showPopup(); } },
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { title: "Additional options", className: "icon" },
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEllipsisH"] })),
-            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: function (input) { _this._popup = input; }, tabIndex: -1, className: this.state.popupVisible ? "popup show" : "popup", onBlur: function () { return _this.setState({ popupVisible: false }); } }, options.map(function (extensibility) {
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: function (input) {
+                    _this._popup = input;
+                }, tabIndex: -1, className: this.state.popupVisible ? "popup show" : "popup", onBlur: function () { return _this.setState({ popupVisible: false }); } }, options.map(function (extensibility) {
                 return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { key: extensibility.label, className: "popupMenu", onClick: function () { return extensibility.action(_this.props.target); } }, extensibility.label));
             }))));
     };
@@ -45399,9 +45422,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             });
         });
         _this._onPropertyChangedObservable = _this.props.globalState.onPropertyChangedObservable.add(function (event) {
-            if (event.property === "name" ||
-                event.property === "_columnNumber" ||
-                event.property === "_rowNumber") {
+            if (event.property === "name" || event.property === "_columnNumber" || event.property === "_rowNumber") {
                 _this.forceUpdate();
             }
         });
@@ -45544,7 +45565,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 else {
                     _this.props.globalState.selectionLock = false;
                 }
-            } }, guiElements && guiElements.length > 0 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter })));
+            } }, guiElements && guiElements.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }))));
     };
     SceneExplorerComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -45673,7 +45694,7 @@ var TreeItemComponent = /** @class */ (function (_super) {
         var _this = this;
         var items = this.props.items;
         var marginStyle = {
-            paddingLeft: (10 * (this.props.offset + 0.5)) + "px"
+            paddingLeft: 10 * (this.props.offset + 0.5) + "px",
         };
         if (!items) {
             if (this.props.forceSubitems) {
@@ -45831,24 +45852,24 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
     TreeItemSelectableComponent.prototype.renderChildren = function (isExpanded) {
         var _this = this;
         var entity = this.props.entity;
-        if (!entity.getChildren && !entity.children || !isExpanded) {
+        if ((!entity.getChildren && !entity.children) || !isExpanded) {
             return null;
         }
         var children = _tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         if (entity.typeName === "StackPanel" || entity.typeName === "VirtualKeyboard") {
             children.reverse();
         }
-        return (children.map(function (item, i) {
+        return children.map(function (item, i) {
             if (item.name == "Art-Board-Background") {
-                return (null);
+                return null;
             }
             return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
-        }));
+        });
     };
     TreeItemSelectableComponent.prototype.render = function () {
         var _this = this;
         var marginStyle = {
-            paddingLeft: (10 * (this.props.offset + 0.5)) - 20 + "px"
+            paddingLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
         };
         var entity = this.props.entity;
         if (!entity.reservedDataStore) {
@@ -45880,10 +45901,14 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         className += this.state.isHovered && this.props.globalState.draggedControl === null ? " hover" : "";
         className += this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && this.props.globalState.workbench.isContainer(entity) ? " parent" : "";
         className += this.props.globalState.draggedControl === this.props.entity ? " dragged" : "";
-        className += (this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE && this.props.globalState.draggedControl != null && entity.parent) ? " seAbove" : "";
-        className += (this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW && this.props.globalState.draggedControl != null && entity.parent) ? " seBelow" : "";
+        className +=
+            this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE && this.props.globalState.draggedControl != null && entity.parent ? " seAbove" : "";
+        className +=
+            this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW && this.props.globalState.draggedControl != null && entity.parent ? " seBelow" : "";
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: className, style: marginStyle, draggable: entity.parent ? true : false, onMouseOver: function () { return _this.setState({ isHovered: true }); }, onMouseLeave: function () { return _this.setState({ isHovered: false }); }, onClick: function () { _this.onSelect(); }, onDragStart: function (event) {
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: className, style: marginStyle, draggable: entity.parent ? true : false, onMouseOver: function () { return _this.setState({ isHovered: true }); }, onMouseLeave: function () { return _this.setState({ isHovered: false }); }, onClick: function () {
+                    _this.onSelect();
+                }, onDragStart: function (event) {
                     _this.props.globalState.draggedControl = entity;
                     _this.props.globalState.onDraggingStartObservable.notifyObservers();
                 }, onDrop: function (event) {
@@ -45896,8 +45921,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
                     _this.dragOverHover = false;
                     _this.forceUpdate();
                 } },
-                hasChildren &&
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron),
+                hasChildren && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron)),
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__["ControlTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { }, isHovered: this.state.isHovered, dragOverHover: this.dragOverHover, dragOverLocation: this.state.dragOverLocation })),
             this.renderChildren(isExpanded)));
     };
@@ -45907,10 +45931,11 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         var rect = target.getBoundingClientRect();
         var y = event.clientY - rect.top;
         if (this.props.globalState.workbench.isContainer(this.props.entity)) {
-            if (y < CONTROL_HEIGHT / 3) { //split in thirds
+            if (y < CONTROL_HEIGHT / 3) {
+                //split in thirds
                 this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE });
             }
-            else if (y > (2 * CONTROL_HEIGHT / 3)) {
+            else if (y > (2 * CONTROL_HEIGHT) / 3) {
                 this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW });
             }
             else {
@@ -45918,7 +45943,8 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             }
         }
         else {
-            if (y < CONTROL_HEIGHT / 2) { //split in half
+            if (y < CONTROL_HEIGHT / 2) {
+                //split in half
                 this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE });
             }
             else {
@@ -45967,6 +45993,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../tools */ "./tools.ts");
+
 
 
 
@@ -46046,7 +46073,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var index_1 = 0;
                     _this.nodes.forEach(function (node) {
-                        if (index_1++) { //skip the first node, the background
+                        if (index_1++) {
+                            //skip the first node, the background
                             _this.selectAllGUI(node);
                         }
                     });
@@ -46225,14 +46253,15 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.setCameraRadius = function () {
         var size = this.props.globalState.guiTexture.getSize();
         this._cameraRadias = size.width > size.height ? size.width : size.height;
-        this._cameraRadias += this._cameraRadias - (this._cameraRadias / 1.5);
+        this._cameraRadias += this._cameraRadias - this._cameraRadias / 1.5;
     };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
         if (this._selectAll) {
             var index_2 = 0;
             this.nodes.forEach(function (node) {
-                if (index_2++) { //skip the first node, the background
+                if (index_2++) {
+                    //skip the first node, the background
                     _this._clipboard.push(node);
                 }
             });
@@ -46252,7 +46281,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var serializationObject = {};
         original.serialize(serializationObject);
         var newControl = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(serializationObject, this.props.globalState.guiTexture);
-        if (newControl) { //insert the new control into the adt or parent container
+        if (newControl) {
+            //insert the new control into the adt or parent container
             this.props.globalState.workbench.appendBlock(newControl);
             this.props.globalState.guiTexture.removeControl(newControl);
             if (((_a = original.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "Grid") {
@@ -46263,9 +46293,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 (_b = original.parent) === null || _b === void 0 ? void 0 : _b.addControl(newControl);
             }
             var index_3 = 1;
-            while (this.props.globalState.guiTexture.getDescendants(false).filter(//search if there are any copies
-            function (//search if there are any copies
-            control) { return control.name === newControl.name + " Copy " + index_3; }).length) {
+            while (this.props.globalState.guiTexture.getDescendants(false).filter(
+            //search if there are any copies
+            function (control) { return control.name === newControl.name + " Copy " + index_3; }).length) {
                 index_3++;
             }
             newControl.name = newControl.name + " Copy " + index_3;
@@ -46423,8 +46453,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var draggedControl = this.props.globalState.draggedControl;
         var draggedControlParent = draggedControl === null || draggedControl === void 0 ? void 0 : draggedControl.parent;
         if (draggedControlParent && draggedControl) {
-            if (this._isNotChildInsert(dropLocationControl, draggedControl)) { //checking to make sure the element is not being inserted into a child
-                if (dropLocationControl != null) { //the control you are dragging onto top
+            if (this._isNotChildInsert(dropLocationControl, draggedControl)) {
+                //checking to make sure the element is not being inserted into a child
+                if (dropLocationControl != null) {
+                    //the control you are dragging onto top
                     if (this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === _globalState__WEBPACK_IMPORTED_MODULE_2__["DragOverLocation"].CENTER) {
                         draggedControlParent.removeControl(draggedControl);
@@ -46434,7 +46466,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                             this._convertToPixels(draggedControl, dropLocationControl);
                         }
                     }
-                    else if (dropLocationControl.parent) { //dropping inside the controls parent container
+                    else if (dropLocationControl.parent) {
+                        //dropping inside the controls parent container
                         if (dropLocationControl.parent.typeName != "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
@@ -46446,7 +46479,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                                 this._convertToPixels(draggedControl, draggedControl.parent);
                             }
                         }
-                        else if (dropLocationControl.parent === draggedControlParent) { //special case for grid
+                        else if (dropLocationControl.parent === draggedControlParent) {
+                            //special case for grid
                             this._reorderGrid(dropLocationControl.parent, draggedControl, dropLocationControl);
                         }
                         else {
@@ -46540,8 +46574,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         guiControl.topInPixels += newY;
         //convert to percentage
         if (this._responsive) {
-            var ratioX = (this._textureMesh.scaling.x);
-            var ratioY = (this._textureMesh.scaling.z);
+            var ratioX = this._textureMesh.scaling.x;
+            var ratioY = this._textureMesh.scaling.z;
             if (guiControl.parent) {
                 if (guiControl.parent.typeName === "Grid") {
                     var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
@@ -46580,8 +46614,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             var selected_1 = false;
             this.selectedGuiNodes.forEach(function (element) {
                 if (pos) {
-                    selected_1 =
-                        _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, -pos.z), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
+                    selected_1 = _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, -pos.z), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
                 }
             });
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
@@ -46602,7 +46635,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
-        if ((this._isOverGUINode.length === 0) && !evt.button) {
+        if (this._isOverGUINode.length === 0 && !evt.button) {
             if (this._forceSelecting) {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
             }
@@ -46626,46 +46659,66 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.isUp = true;
     };
     WorkbenchComponent.prototype.createGUICanvas = function () {
-        var _this = this;
-        // Get the canvas element from the DOM.
-        var canvas = document.getElementById("workbench-canvas");
-        this._canvas = canvas;
-        // Associate a Babylon Engine to it.
-        this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
-        // Create our first scene.
-        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
-        var clearColor = 204 / 255.0;
-        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
-        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
-        light.intensity = 0.9;
-        var textureSize = 1024;
-        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
-        this._textureMesh.scaling.x = textureSize;
-        this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
-        this._textureMesh.showBoundingBox = true;
-        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
-        this.artBoardBackground.width = "100%";
-        this.artBoardBackground.height = "100%";
-        this.artBoardBackground.background = "white";
-        this.artBoardBackground.thickness = 0;
-        this.globalState.guiTexture.addControl(this.artBoardBackground);
-        this.setCameraRadius();
-        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
-        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
-        this.addControls(this._scene, this._camera);
-        this._scene.getEngine().onCanvasPointerOutObservable.clear();
-        this._scene.doNotHandleCursors = true;
-        // Watch for browser/canvas resize events
-        window.addEventListener("resize", function () {
-            _this._engine.resize();
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var canvas, clearColor, light, textureSize, nodeMaterial, block;
+            var _this = this;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        canvas = document.getElementById("workbench-canvas");
+                        this._canvas = canvas;
+                        // Associate a Babylon Engine to it.
+                        this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
+                        // Create our first scene.
+                        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
+                        clearColor = 204 / 255.0;
+                        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
+                        light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
+                        light.intensity = 0.9;
+                        textureSize = 1024;
+                        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
+                        this._textureMesh.scaling.x = textureSize;
+                        this._textureMesh.scaling.z = textureSize;
+                        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
+                        this._textureMesh.showBoundingBox = true;
+                        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
+                        this.artBoardBackground.width = "100%";
+                        this.artBoardBackground.height = "100%";
+                        this.artBoardBackground.background = "transparent";
+                        this.artBoardBackground.thickness = 0;
+                        this.globalState.guiTexture.addControl(this.artBoardBackground);
+                        nodeMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["NodeMaterial"]("NodeMaterial", this._scene);
+                        return [4 /*yield*/, nodeMaterial.loadAsync("GUIEditorNodeMaterial.json")];
+                    case 1:
+                        _a.sent();
+                        nodeMaterial.build(true);
+                        this._textureMesh.material = nodeMaterial;
+                        if (nodeMaterial) {
+                            block = nodeMaterial.getBlockByName("Texture");
+                            block.texture = this.globalState.guiTexture;
+                        }
+                        this.setCameraRadius();
+                        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
+                        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
+                        // This attaches the camera to the canvas
+                        this.addControls(this._scene, this._camera);
+                        this._scene.getEngine().onCanvasPointerOutObservable.clear();
+                        this._scene.doNotHandleCursors = true;
+                        // Watch for browser/canvas resize events
+                        window.addEventListener("resize", function () {
+                            _this._engine.resize();
+                        });
+                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
+                        this._engine.runRenderLoop(function () {
+                            _this._scene.render();
+                        });
+                        this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+                        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+                        return [2 /*return*/];
+                }
+            });
         });
-        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
-        this._engine.runRenderLoop(function () { _this._scene.render(); });
-        this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
-        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
-    ;
     //Add map-like controls to an ArcRotate camera
     WorkbenchComponent.prototype.addControls = function (scene, camera) {
         var _this = this;
@@ -46959,13 +47012,15 @@ var GlobalState = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUIEditor", function() { return GUIEditor; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./globalState */ "./globalState.ts");
-/* harmony import */ var _workbenchEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./workbenchEditor */ "./workbenchEditor.tsx");
-/* harmony import */ var _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sharedUiComponents/lines/popup */ "./sharedUiComponents/lines/popup.ts");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./globalState */ "./globalState.ts");
+/* harmony import */ var _workbenchEditor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./workbenchEditor */ "./workbenchEditor.tsx");
+/* harmony import */ var _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sharedUiComponents/lines/popup */ "./sharedUiComponents/lines/popup.ts");
+
 
 
 
@@ -46982,65 +47037,77 @@ var GUIEditor = /** @class */ (function () {
      * @param options defines the options to use to configure the gui editor
      */
     GUIEditor.Show = function (options) {
-        if (this._CurrentState) {
-            var popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["gui-editor"];
-            if (popupWindow) {
-                popupWindow.close();
-            }
-            if (options.currentSnippetToken) {
-                try {
-                    this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
+            var popupWindow, hostElement, globalState, graphEditor, error_1, popupWindow;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this._CurrentState) {
+                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                            if (popupWindow) {
+                                popupWindow.close();
+                            }
+                            if (options.currentSnippetToken) {
+                                try {
+                                    this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
+                                }
+                                catch (error) {
+                                    //swallow and continue
+                                }
+                            }
+                            return [2 /*return*/];
+                        }
+                        hostElement = options.hostElement;
+                        if (!hostElement) {
+                            hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800);
+                        }
+                        globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();
+                        globalState.hostElement = hostElement;
+                        globalState.hostDocument = hostElement.ownerDocument;
+                        globalState.customSave = options.customSave;
+                        globalState.customLoad = options.customLoad;
+                        globalState.hostWindow = hostElement.ownerDocument.defaultView;
+                        graphEditor = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_workbenchEditor__WEBPACK_IMPORTED_MODULE_4__["WorkbenchEditor"], {
+                            globalState: globalState,
+                        });
+                        react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](graphEditor, hostElement);
+                        if (!!globalState.guiTexture) return [3 /*break*/, 5];
+                        return [4 /*yield*/, globalState.workbench.createGUICanvas()];
+                    case 1:
+                        _a.sent();
+                        if (!options.currentSnippetToken) return [3 /*break*/, 5];
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, globalState.workbench.loadFromSnippet(options.currentSnippetToken)];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_1 = _a.sent();
+                        return [3 /*break*/, 5];
+                    case 5:
+                        if (options.customLoadObservable) {
+                            options.customLoadObservable.add(function (data) {
+                                globalState.onResetRequiredObservable.notifyObservers();
+                                globalState.onBuiltObservable.notifyObservers();
+                            });
+                        }
+                        this._CurrentState = globalState;
+                        popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                        if (popupWindow) {
+                            window.onbeforeunload = function () {
+                                var popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                                if (popupWindow) {
+                                    popupWindow.close();
+                                }
+                            };
+                        }
+                        window.addEventListener("beforeunload", function () { });
+                        return [2 /*return*/];
                 }
-                catch (error) {
-                    //swallow and continue
-                }
-            }
-            return;
-        }
-        var hostElement = options.hostElement;
-        if (!hostElement) {
-            hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800);
-        }
-        var globalState = new _globalState__WEBPACK_IMPORTED_MODULE_2__["GlobalState"]();
-        globalState.hostElement = hostElement;
-        globalState.hostDocument = hostElement.ownerDocument;
-        globalState.customSave = options.customSave;
-        globalState.customLoad = options.customLoad;
-        globalState.hostWindow = hostElement.ownerDocument.defaultView;
-        var graphEditor = react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_workbenchEditor__WEBPACK_IMPORTED_MODULE_3__["WorkbenchEditor"], {
-            globalState: globalState,
-        });
-        react_dom__WEBPACK_IMPORTED_MODULE_1__["render"](graphEditor, hostElement);
-        // create the middle workbench canvas
-        if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas();
-            if (options.currentSnippetToken) {
-                try {
-                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
-                }
-                catch (error) {
-                    //swallow and continue
-                }
-            }
-        }
-        if (options.customLoadObservable) {
-            options.customLoadObservable.add(function (data) {
-                globalState.onResetRequiredObservable.notifyObservers();
-                globalState.onBuiltObservable.notifyObservers();
             });
-        }
-        this._CurrentState = globalState;
-        // Close the popup window when the page is refreshed or scene is disposed
-        var popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["gui-editor"];
-        if (popupWindow) {
-            window.onbeforeunload = function () {
-                var popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_4__["Popup"]["gui-editor"];
-                if (popupWindow) {
-                    popupWindow.close();
-                }
-            };
-        }
-        window.addEventListener("beforeunload", function () { });
+        });
     };
     return GUIEditor;
 }());
@@ -47473,10 +47540,10 @@ var ColorComponentEntry = /** @class */ (function (_super) {
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if (this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && valueAsNumber > this.props.max) {
             valueAsNumber = this.props.max;
         }
-        if (this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && valueAsNumber < this.props.min) {
             valueAsNumber = this.props.min;
         }
         this.props.onChange(valueAsNumber);
@@ -47565,8 +47632,7 @@ var ColorPicker = /** @class */ (function (_super) {
         return _this;
     }
     ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        return (nextProps.color.toHexString() !== this.props.color.toHexString() ||
-            nextState.color.toHexString() !== this.props.color.toHexString());
+        return nextProps.color.toHexString() !== this.props.color.toHexString() || nextState.color.toHexString() !== this.props.color.toHexString();
     };
     ColorPicker.prototype.onSaturationPointerDown = function (evt) {
         this._evaluateSaturation(evt);
@@ -47602,7 +47668,7 @@ var ColorPicker = /** @class */ (function (_super) {
         var left = evt.nativeEvent.offsetX;
         var top = evt.nativeEvent.offsetY;
         var saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current.clientWidth));
-        var value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current.clientHeight)));
+        var value = Math.min(1, Math.max(0.0001, 1 - top / this._saturationRef.current.clientHeight));
         if (this.props.debugMode) {
             console.log("Saturation: " + saturation);
             console.log("Value: " + value);
@@ -47645,7 +47711,7 @@ var ColorPicker = /** @class */ (function (_super) {
         var hasAlpha = this.props.color instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-container" + (this.props.linearhint ? " with-hints" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation", onPointerMove: function (e) { return _this.onSaturationPointerMove(e); }, onPointerDown: function (e) { return _this.onSaturationPointerDown(e); }, onPointerUp: function (e) { return _this.onSaturationPointerUp(e); }, ref: this._saturationRef, style: {
-                    background: colorHexRef
+                    background: colorHexRef,
                 } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
@@ -47655,12 +47721,12 @@ var ColorPicker = /** @class */ (function (_super) {
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
-                        background: colorHex
+                        background: colorHex,
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
                             left: (hsv.r / 360.0) * 100 + "%",
-                            border: "1px solid " + colorHexRef
+                            border: "1px solid " + colorHexRef,
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
@@ -47689,8 +47755,7 @@ var ColorPicker = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hexColor__WEBPACK_IMPORTED_MODULE_4__["HexColor"], { expectedLength: 6, value: colorHex, onChange: function (value) {
                             _this.setState({ color: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value) });
                         } }))),
-            this.props.linearhint &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))")));
+            this.props.linearhint && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-warning" }, "(Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))"))));
     };
     return ColorPicker;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47739,7 +47804,7 @@ var HexColor = /** @class */ (function (_super) {
     };
     HexColor.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } }));
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "string", className: "hex-input", value: this.state.hex, onChange: function (evt) { return _this.updateHexValue(evt.target.value); } });
     };
     return HexColor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48150,7 +48215,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
                     object: this.props.target,
                     property: this.props.propertyName,
                     value: !this.state.isSelected,
-                    initialValue: this.state.isSelected
+                    initialValue: this.state.isSelected,
                 });
             }
             this.props.target[this.props.propertyName] = !this.state.isSelected;
@@ -48167,7 +48232,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.iconLabel }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? ' disabled' : '') }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? " disabled" : "") }))));
     };
     CheckBoxLineComponent._UniqueIdSeed = 0;
     return CheckBoxLineComponent;
@@ -48211,7 +48276,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        var typeName = typeof (_this.props.target[_this.props.propertyName]);
+        var typeName = typeof _this.props.target[_this.props.propertyName];
         if (typeName === "string") {
             var colorConverted = _this.convertToColor3(_this.props.target[_this.props.propertyName]);
             _this.state = { isExpanded: false, color: colorConverted, colorText: _this.props.target[_this.props.propertyName] };
@@ -48236,17 +48301,21 @@ var Color3LineComponent = /** @class */ (function (_super) {
             document.body.append(d);
             var rgb = window.getComputedStyle(d).color;
             document.body.removeChild(d);
-            var rgbArray = rgb.substring(4, rgb.length - 1)
-                .replace(/ /g, '')
-                .split(',');
+            var rgbArray = rgb
+                .substring(4, rgb.length - 1)
+                .replace(/ /g, "")
+                .split(",");
             return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"](parseInt(rgbArray[0]) / 255, parseInt(rgbArray[1]) / 255, parseInt(rgbArray[2]) / 255);
         }
         return babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"].FromHexString(color);
     };
     Color3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var isString = typeof (this.props.target[this.props.propertyName]) === "string";
-        var currentState = isString ? this.convertToColor3(nextProps.target[nextProps.propertyName]) :
-            this.props.isLinear ? nextProps.target[nextProps.propertyName].toGammaSpace() : nextProps.target[nextProps.propertyName];
+        var isString = typeof this.props.target[this.props.propertyName] === "string";
+        var currentState = isString
+            ? this.convertToColor3(nextProps.target[nextProps.propertyName])
+            : this.props.isLinear
+                ? nextProps.target[nextProps.propertyName].toGammaSpace()
+                : nextProps.target[nextProps.propertyName];
         if (!currentState.equals(nextState.color) || this._localChange) {
             nextState.color = currentState.clone();
             nextState.colorText = isString ? nextProps.target[nextProps.propertyName] : nextProps.target[nextProps.propertyName].toHexString();
@@ -48256,7 +48325,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         return false;
     };
     Color3LineComponent.prototype.setPropertyValue = function (newColor, newColorText) {
-        var isString = typeof (this.props.target[this.props.propertyName]) === "string";
+        var isString = typeof this.props.target[this.props.propertyName] === "string";
         if (isString) {
             this.props.target[this.props.propertyName] = newColorText;
         }
@@ -48333,7 +48402,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.copyToClipboard = function () {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
@@ -48342,7 +48411,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
         }
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     };
     Color3LineComponent.prototype.convert = function (colorString) {
@@ -48364,19 +48433,17 @@ var Color3LineComponent = /** @class */ (function (_super) {
                             _this._colorPickerOpen = true;
                             _this.onChange(color);
                         } })),
-                (this.props.icon && this.props.lockObject) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) {
-                            _this._colorPickerOpen = false;
-                            _this.convert(newValue);
-                        }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                this.props.icon && this.props.lockObject && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) {
+                        _this._colorPickerOpen = false;
+                        _this.convert(newValue);
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
-            this.state.isExpanded &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
+            this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } })))));
     };
     return Color3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48406,9 +48473,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPickerLineComponent, _super);
     function ColorPickerLineComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { pickerEnabled: false,
-            color: _this.props.value,
-            hex: _this.props.value.toHexString() };
+        _this.state = { pickerEnabled: false, color: _this.props.value, hex: _this.props.value.toHexString() };
         _this._floatRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._floatHostRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
@@ -48438,9 +48503,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
-        return diffProps
-            || nextState.hex !== this.state.hex
-            || nextState.pickerEnabled !== this.state.pickerEnabled;
+        return diffProps || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
     };
     ColorPickerLineComponent.prototype.componentDidUpdate = function () {
         this.syncPositions();
@@ -48454,21 +48517,20 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
-            this.state.pickerEnabled &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function (evt) {
-                            var _a, _b;
-                            if (evt.target !== ((_b = (_a = _this._floatRef.current) === null || _a === void 0 ? void 0 : _a.ownerDocument) === null || _b === void 0 ? void 0 : _b.querySelector(".color-picker-cover"))) {
-                                return;
-                            }
-                            _this.setState({ pickerEnabled: false });
-                        } },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, linearhint: this.props.linearHint, onColorChanged: function (color) {
-                                    var hex = color.toHexString();
-                                    _this.setState({ hex: hex, color: color });
-                                    _this.props.onColorChanged(hex);
-                                } }))))));
+            this.state.pickerEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function (evt) {
+                        var _a, _b;
+                        if (evt.target !== ((_b = (_a = _this._floatRef.current) === null || _a === void 0 ? void 0 : _a.ownerDocument) === null || _b === void 0 ? void 0 : _b.querySelector(".color-picker-cover"))) {
+                            return;
+                        }
+                        _this.setState({ pickerEnabled: false });
+                    } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, linearhint: this.props.linearHint, onColorChanged: function (color) {
+                                var hex = color.toHexString();
+                                _this.setState({ hex: hex, color: color });
+                                _this.props.onColorChanged(hex);
+                            } })))))));
     };
     return ColorPickerLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48572,7 +48634,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
+        var newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -48590,7 +48652,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     FloatLineComponent.prototype.updateValue = function (valueString) {
@@ -48648,27 +48710,24 @@ var FloatLineComponent = /** @class */ (function (_super) {
         }
         var className = this.props.smallUI ? "short" : "value";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            !this.props.useEuler &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
-                    this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-                    (!this.props.icon || this.props.label != "") &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
-                                if (evt.keyCode !== 13) {
-                                    return;
-                                }
-                                if (_this.props.onEnter) {
-                                    _this.props.onEnter(_this._store);
-                                }
-                            }, value: this.state.value, onBlur: function () {
-                                _this.unlock();
-                                if (_this.props.onEnter) {
-                                    _this.props.onEnter(_this._store);
-                                }
-                            }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))),
-            this.props.useEuler &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } })));
+            !this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
+                this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
+                (!this.props.icon || this.props.label != "") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: className },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step || this.props.isInteger ? "1" : "0.01", className: "numeric-input", onKeyDown: function (evt) {
+                            if (evt.keyCode !== 13) {
+                                return;
+                            }
+                            if (_this.props.onEnter) {
+                                _this.props.onEnter(_this._store);
+                            }
+                        }, value: this.state.value, onBlur: function () {
+                            _this.unlock();
+                            if (_this.props.onEnter) {
+                                _this.props.onEnter(_this._store);
+                            }
+                        }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))),
+            this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } }))));
     };
     return FloatLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48736,8 +48795,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-            this.props.label &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": "),
+            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": ")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); }, onBlur: function () { return _this.onBlur(); } })));
     };
     NumericInputComponent.defaultProps = {
@@ -48950,7 +49008,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         _this._localChange = false;
         if (_this.props.directValue !== undefined) {
             _this.state = {
-                value: _this.props.directValue
+                value: _this.props.directValue,
             };
         }
         else {
@@ -48990,7 +49048,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
                     object: this.props.target,
                     property: this.props.propertyName,
                     value: newValue,
-                    initialValue: this.state.value
+                    initialValue: this.state.value,
                 });
             }
             this.props.target[this.props.propertyName] = newValue;
@@ -49019,12 +49077,14 @@ var SliderLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sliderLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-            (!this.props.icon || this.props.label != "") &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label),
+            (!this.props.icon || this.props.label != "") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.margin ? "label withMargins" : "label", title: this.props.label }, this.props.label)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: this.props.decimalCount === 0, smallUI: true, label: "", target: this.state, digits: this.props.decimalCount === undefined ? 4 : this.props.decimalCount, propertyName: "value", min: this.props.minimum, max: this.props.maximum, onEnter: function () {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
-                }, onChange: function (evt) { var changed = _this.prepareDataToRead(_this.state.value); _this.onChange(changed); } }),
+                }, onChange: function (evt) {
+                    var changed = _this.prepareDataToRead(_this.state.value);
+                    _this.onChange(changed);
+                } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), value: this.prepareDataToRead(this.state.value), onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
@@ -49085,7 +49145,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     TextInputLineComponent.prototype.updateValue = function (value) {
@@ -49096,7 +49156,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             if (!value) {
                 value = "0";
             }
-            //Removing starting zero if there is a number of a minus after it. 
+            //Removing starting zero if there is a number of a minus after it.
             if (value.search(/0+[0-9\-]/g) === 0) {
                 value = value.substr(1);
             }
@@ -49113,10 +49173,9 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
-            (!this.props.icon || (this.props.icon && this.props.label != "")) &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
+            (!this.props.icon || (this.props.icon && this.props.label != "")) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return _this.props.lockObject.lock = false; }, onFocus: function () { return _this.props.lockObject.lock = true; }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return (_this.props.lockObject.lock = false); }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
     return TextInputLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -49147,7 +49206,7 @@ var TextLineComponent = /** @class */ (function (_super) {
     }
     TextLineComponent.prototype.onLink = function () {
         if (this.props.url) {
-            window.open(this.props.url, '_blank');
+            window.open(this.props.url, "_blank");
             return;
         }
         if (!this.props.onLink) {
@@ -49161,7 +49220,7 @@ var TextLineComponent = /** @class */ (function (_super) {
             return null;
         }
         if (this.props.onLink || this.props.url) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link-value", title: this.props.value, onClick: function () { return _this.onLink(); } }, this.props.url ? "doc" : (this.props.value || "no name")));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link-value", title: this.props.value, onClick: function () { return _this.onLink(); } }, this.props.url ? "doc" : this.props.value || "no name"));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
     };
@@ -49542,8 +49601,8 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
                 return;
             }
-            if (evt.key === "a") //all
-             {
+            if (evt.key === "a") {
+                //all
                 evt.preventDefault();
             }
         }, false);
@@ -49634,88 +49693,122 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             {
                 label: "Rectangle",
                 icon: rectangleIcon,
-                onClick: function () { _this.onCreate("Rectangle"); }
+                onClick: function () {
+                    _this.onCreate("Rectangle");
+                },
             },
             {
                 label: "Ellipse",
                 icon: ellipseIcon,
-                onClick: function () { _this.onCreate("Ellipse"); }
+                onClick: function () {
+                    _this.onCreate("Ellipse");
+                },
             },
             {
                 label: "StackPanel",
                 icon: stackPanelIcon,
-                onClick: function () { _this.onCreate("StackPanel"); }
+                onClick: function () {
+                    _this.onCreate("StackPanel");
+                },
             },
             {
                 label: "Grid",
                 icon: gridIcon,
-                onClick: function () { _this.onCreate("Grid"); }
+                onClick: function () {
+                    _this.onCreate("Grid");
+                },
             },
             {
                 label: "ScrollViewer",
                 icon: scrollbarIcon,
-                onClick: function () { _this.onCreate("ScrollViewer"); }
+                onClick: function () {
+                    _this.onCreate("ScrollViewer");
+                },
             },
             {
                 label: "Line",
                 icon: lineIcon,
-                onClick: function () { _this.onCreate("Line"); }
+                onClick: function () {
+                    _this.onCreate("Line");
+                },
             },
             {
                 label: "Text",
                 icon: textBoxIcon,
-                onClick: function () { _this.onCreate("Text"); }
+                onClick: function () {
+                    _this.onCreate("Text");
+                },
             },
             {
                 label: "InputText",
                 icon: inputFieldIcon,
-                onClick: function () { _this.onCreate("InputText"); }
+                onClick: function () {
+                    _this.onCreate("InputText");
+                },
             },
             {
                 label: "InputPassword",
                 icon: passwordFieldIcon,
-                onClick: function () { _this.onCreate("InputPassword"); }
+                onClick: function () {
+                    _this.onCreate("InputPassword");
+                },
             },
             {
                 label: "Image",
                 icon: imageIcon,
-                onClick: function () { _this.onCreate("Image"); }
+                onClick: function () {
+                    _this.onCreate("Image");
+                },
             },
             {
                 label: "DisplayGrid",
                 icon: displaygridIcon,
-                onClick: function () { _this.onCreate("DisplayGrid"); }
+                onClick: function () {
+                    _this.onCreate("DisplayGrid");
+                },
             },
             {
                 label: "TextButton",
                 icon: buttonIcon,
-                onClick: function () { _this.onCreate("TextButton"); }
+                onClick: function () {
+                    _this.onCreate("TextButton");
+                },
             },
             {
                 label: "Checkbox",
                 icon: checkboxIcon,
-                onClick: function () { _this.onCreate("Checkbox"); }
+                onClick: function () {
+                    _this.onCreate("Checkbox");
+                },
             },
             {
                 label: "RadioButton",
                 icon: radioButtonIcon,
-                onClick: function () { _this.onCreate("RadioButton"); }
+                onClick: function () {
+                    _this.onCreate("RadioButton");
+                },
             },
             {
                 label: "Slider",
                 icon: sliderIcon,
-                onClick: function () { _this.onCreate("Slider"); }
+                onClick: function () {
+                    _this.onCreate("Slider");
+                },
             },
             {
                 label: "VirtualKeyboard",
                 icon: keyboardIcon,
-                onClick: function () { _this.onCreate("VirtualKeyboard"); }
+                onClick: function () {
+                    _this.onCreate("VirtualKeyboard");
+                },
             },
             {
                 label: "ColorPicker",
                 icon: colorPickerIcon,
-                onClick: function () { _this.onCreate("ColorPicker"); }
-            }
+                onClick: function () {
+                    _this.onCreate("ColorPicker");
+                },
+            },
         ];
     };
     WorkbenchEditor.prototype.onCreate = function (value) {
@@ -49739,16 +49832,13 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                                 m.onClick();
                             }
                         }, title: m.label },
-                        !m.icon &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label-text" }, (m.isActive ? "> " : "") + m.label),
-                        m.icon &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon" },
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon })),
-                        m.onCheck &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "toolbar-label-check", onChange: function (evt) {
-                                    _this.forceUpdate();
-                                    m.onCheck(evt.target.checked);
-                                }, checked: false })));
+                        !m.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label-text" }, (m.isActive ? "> " : "") + m.label),
+                        m.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon" },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon }))),
+                        m.onCheck && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "toolbar-label-check", onChange: function (evt) {
+                                _this.forceUpdate();
+                                m.onCheck(evt.target.checked);
+                            }, checked: false }))));
                 })))));
     };
     return WorkbenchEditor;

@@ -14,9 +14,9 @@ const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkb
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
 
 interface IRadioButtonPropertyGridComponentProps {
-    radioButton: RadioButton,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    radioButton: RadioButton;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
@@ -30,14 +30,45 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr/>
+                <hr />
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel="Check Size Ratio" icon={scaleIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="checkSizeRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent
+                        iconLabel="Stroke Weight"
+                        icon={strokeWeightIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={radioButton}
+                        propertyName="thickness"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        iconLabel="Check Size Ratio"
+                        icon={scaleIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={radioButton}
+                        propertyName="checkSizeRatio"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
-                <TextInputLineComponent iconLabel="Group" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={radioButton} propertyName="group" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent iconLabel="Is Checked" icon={checkboxIcon} label="" target={radioButton} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextInputLineComponent
+                    iconLabel="Group"
+                    icon={strokeWeightIcon}
+                    lockObject={this.props.lockObject}
+                    label=""
+                    target={radioButton}
+                    propertyName="group"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <CheckBoxLineComponent
+                    iconLabel="Is Checked"
+                    icon={checkboxIcon}
+                    label=""
+                    target={radioButton}
+                    propertyName="isChecked"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

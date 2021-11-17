@@ -7169,6 +7169,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        SKIPFINALCOLORCLAMP: boolean;
     }
     /**
      * @hidden
@@ -7188,6 +7189,7 @@ declare module BABYLON {
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
         EXPOSURE: boolean;
+        SKIPFINALCOLORCLAMP: boolean;
         constructor();
     }
     /**
@@ -7334,6 +7336,18 @@ declare module BABYLON {
          * Sets whether the vignette effect is enabled.
          */
         set vignetteEnabled(value: boolean);
+        /** @hidden */
+        _skipFinalColorClamp: boolean;
+        /**
+         * If apply by post process is set to true, setting this to true will skip the the final color clamp step in the fragment shader
+         * Applies to PBR materials.
+         */
+        get skipFinalColorClamp(): boolean;
+        /**
+         * If apply by post process is set to true, setting this to true will skip the the final color clamp step in the fragment shader
+         * Applies to PBR materials.
+         */
+        set skipFinalColorClamp(value: boolean);
         /** @hidden */
         _applyByPostProcess: boolean;
         /**
@@ -20875,6 +20889,10 @@ declare module BABYLON {
          */
         varyingDeclaration: string;
         /**
+         * List of the fragment output nodes
+         */
+        fragmentOutputNodes: Immutable<Array<NodeMaterialBlock>>;
+        /**
          * Input blocks
          */
         inputBlocks: InputBlock[];
@@ -21429,6 +21447,54 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to output the final color
+     */
+    export class FragmentOutputBlock extends NodeMaterialBlock {
+        private _linearDefineName;
+        private _gammaDefineName;
+        /**
+         * Create a new FragmentOutputBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
+        convertToGammaSpace: boolean;
+        /** Gets or sets a boolean indicating if content needs to be converted to linear space */
+        convertToLinearSpace: boolean;
+        /** Gets or sets a boolean indicating if logarithmic depth should be used */
+        useLogarithmicDepth: boolean;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the rgba input component
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb input component
+         */
+        get rgb(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a input component
+         */
+        get a(): NodeMaterialConnectionPoint;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to output the vertex position
      */
     export class VertexOutputBlock extends NodeMaterialBlock {
@@ -21446,47 +21512,8 @@ declare module BABYLON {
          * Gets the vector input component
          */
         get vector(): NodeMaterialConnectionPoint;
+        private _isLogarithmicDepthEnabled;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to output the final color
-     */
-    export class FragmentOutputBlock extends NodeMaterialBlock {
-        private _linearDefineName;
-        private _gammaDefineName;
-        /**
-         * Create a new FragmentOutputBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
-        convertToGammaSpace: boolean;
-        /** Gets or sets a boolean indicating if content needs to be converted to linear space */
-        convertToLinearSpace: boolean;
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the rgba input component
-         */
-        get rgba(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb input component
-         */
-        get rgb(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the a input component
-         */
-        get a(): NodeMaterialConnectionPoint;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        protected _dumpPropertiesCode(): string;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -21905,6 +21932,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        SKIPFINALCOLORCLAMP: boolean;
         /** MISC. */
         BUMPDIRECTUV: number;
         constructor();
@@ -31906,6 +31934,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        SKIPFINALCOLORCLAMP: boolean;
         MULTIVIEW: boolean;
         ORDER_INDEPENDENT_TRANSPARENCY: boolean;
         ORDER_INDEPENDENT_TRANSPARENCY_16BITS: boolean;
@@ -45160,11 +45189,9 @@ declare module BABYLON {
          */
         static DecodeBase64(uri: string): ArrayBuffer;
         /**
-         * Gets the absolute url.
-         * @param url the input url
-         * @return the absolute url
+         * Function used to get the absolute url. Override for custom implementation.
          */
-        static GetAbsoluteUrl(url: string): string;
+        static GetAbsoluteUrl: (url: string) => string;
         /**
          * No log
          */
@@ -45570,7 +45597,7 @@ declare module BABYLON {
          */
         readonly onInputChangedObservable: Observable<IDeviceEvent>;
         private _nativeInput;
-        constructor(nativeInput: INativeInput);
+        constructor(nativeInput?: INativeInput);
         /**
          * Configures events to work with an engine's active element
          */
@@ -45593,6 +45620,11 @@ declare module BABYLON {
          * Dispose of all the observables
          */
         dispose(): void;
+        /**
+         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
+         * @returns Object with dummy functions
+         */
+        private _createDummyNativeInput;
     }
 }
 declare module BABYLON {
@@ -69804,6 +69836,7 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        SKIPFINALCOLORCLAMP: boolean;
         EXPOSURE: boolean;
         MULTIVIEW: boolean;
         ORDER_INDEPENDENT_TRANSPARENCY: boolean;
@@ -73944,6 +73977,10 @@ declare module BABYLON {
         set boundingBoxSize(value: Vector3);
         get boundingBoxSize(): Vector3;
         /**
+         * Observable triggered once the texture has been loaded.
+         */
+        onLoadObservable: Observable<HDRCubeTexture>;
+        /**
          * Instantiates an HDRTexture from the following parameters.
          *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
@@ -73976,6 +74013,10 @@ declare module BABYLON {
          * @param value Define the reflection matrix to set
          */
         setReflectionTextureMatrix(value: Matrix): void;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
         /**
          * Parses a JSON representation of an HDR Texture in order to create the texture
          * @param parsedTexture Define the JSON representation
@@ -76402,6 +76443,45 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to transform a vector3 or a vector4 into screen space
+     */
+    export class ScreenSpaceBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ScreenSpaceBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the vector input
+         */
+        get vector(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the worldViewProjection transform input
+         */
+        get worldViewProjection(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x output component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y output component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -78759,45 +78839,6 @@ declare module BABYLON {
          * Gets the output component
         */
         get cells(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to transform a vector3 or a vector4 into screen space
-     */
-    export class ScreenSpaceBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new ScreenSpaceBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the vector input
-         */
-        get vector(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the worldViewProjection transform input
-         */
-        get worldViewProjection(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the x output component
-         */
-        get x(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the y output component
-         */
-        get y(): NodeMaterialConnectionPoint;
-        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }

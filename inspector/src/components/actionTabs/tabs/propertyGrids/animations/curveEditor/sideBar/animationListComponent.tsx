@@ -13,13 +13,10 @@ interface IAnimationListComponentProps {
 }
 
 interface IAnimationListComponentState {
-    isVisible: boolean
+    isVisible: boolean;
 }
 
-export class AnimationListComponent extends React.Component<
-IAnimationListComponentProps,
-IAnimationListComponentState
-> {
+export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
     private _onEditAnimationRequiredObserver: Nullable<Observer<Animation>>;
     private _onEditAnimationUIClosedObserver: Nullable<Observer<void>>;
     private _onDeleteAnimationObserver: Nullable<Observer<Animation>>;
@@ -27,18 +24,18 @@ IAnimationListComponentState
     constructor(props: IAnimationListComponentProps) {
         super(props);
 
-        this.state = {isVisible: true };
+        this.state = { isVisible: true };
 
         this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add((animation) => {
             this.setState({
-                isVisible: false
-            })
+                isVisible: false,
+            });
         });
 
         this._onEditAnimationUIClosedObserver = this.props.context.onEditAnimationUIClosed.add(() => {
             this.setState({
-                isVisible: true
-            })
+                isVisible: true,
+            });
         });
 
         this._onDeleteAnimationObserver = this.props.context.onDeleteAnimation.add(() => {
@@ -58,7 +55,7 @@ IAnimationListComponentState
         if (this._onDeleteAnimationObserver) {
             this.props.context.onDeleteAnimation.remove(this._onDeleteAnimationObserver);
         }
-    }    
+    }
 
     public render() {
         if (!this.state.isVisible) {
@@ -67,13 +64,16 @@ IAnimationListComponentState
 
         return (
             <div id="animation-list">
-                {
-                    this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
-                        return (
-                            <AnimationEntryComponent key={i} globalState={this.props.globalState} context={this.props.context} animation={this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : a as Animation}/>
-                        );
-                    })
-                }
+                {this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
+                    return (
+                        <AnimationEntryComponent
+                            key={i}
+                            globalState={this.props.globalState}
+                            context={this.props.context}
+                            animation={this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation)}
+                        />
+                    );
+                })}
             </div>
         );
     }

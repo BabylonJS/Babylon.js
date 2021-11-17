@@ -7,7 +7,7 @@ import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../globalState';
+import { GlobalState } from "../../../globalState";
 
 interface IFogPropertyGridComponentProps {
     globalState: GlobalState;
@@ -17,7 +17,6 @@ interface IFogPropertyGridComponentProps {
 }
 
 export class FogPropertyGridComponent extends React.Component<IFogPropertyGridComponentProps, { mode: number }> {
-
     constructor(props: IFogPropertyGridComponentProps) {
         super(props);
         this.state = { mode: this.props.scene.fogMode };
@@ -35,23 +34,44 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
 
         return (
             <div>
-                <OptionsLineComponent label="Fog mode" options={fogModeOptions} target={scene} propertyName="fogMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
-                {
-                    this.state.mode !== Scene.FOGMODE_NONE &&
+                <OptionsLineComponent
+                    label="Fog mode"
+                    options={fogModeOptions}
+                    target={scene}
+                    propertyName="fogMode"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onSelect={(value) => this.setState({ mode: value })}
+                />
+                {this.state.mode !== Scene.FOGMODE_NONE && (
                     <Color3LineComponent label="Fog color" target={scene} propertyName="fogColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    (this.state.mode === Scene.FOGMODE_EXP || this.state.mode === Scene.FOGMODE_EXP2) &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Fog density" target={scene} propertyName="fogDensity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    this.state.mode === Scene.FOGMODE_LINEAR &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Fog start" target={scene} propertyName="fogStart" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
-                {
-                    this.state.mode === Scene.FOGMODE_LINEAR &&
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Fog end" target={scene} propertyName="fogEnd" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                }
+                )}
+                {(this.state.mode === Scene.FOGMODE_EXP || this.state.mode === Scene.FOGMODE_EXP2) && (
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Fog density"
+                        target={scene}
+                        propertyName="fogDensity"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
+                {this.state.mode === Scene.FOGMODE_LINEAR && (
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Fog start"
+                        target={scene}
+                        propertyName="fogStart"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
+                {this.state.mode === Scene.FOGMODE_LINEAR && (
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Fog end"
+                        target={scene}
+                        propertyName="fogEnd"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
             </div>
         );
     }
