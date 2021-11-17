@@ -437,7 +437,6 @@ export class CanvasGraphService {
         let closestIndex = 0;
 
         while (low <= high) {
-            //const middle = Math.trunc((low + high) / 2);
             const middle = Math.floor((low + high) / 2);
             const middleTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(middle));
 
