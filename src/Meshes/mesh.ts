@@ -4386,13 +4386,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             yield;
         }
 
-        const vertexData: VertexData = yield* sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices);
+        const mergeCoroutine = sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices);
+        let mergeCoroutineStep = mergeCoroutine.next();
+        while (!mergeCoroutineStep.done) {
+            yield;
+            mergeCoroutineStep = mergeCoroutine.next();
+        }
+        const vertexData = mergeCoroutineStep.value;
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
         }
 
-        yield* vertexData._applyToCoroutine(meshSubclass);
+        const applyToCoroutine = vertexData._applyToCoroutine(meshSubclass);
+        let applyToCoroutineStep = applyToCoroutine.next();
+        while (!applyToCoroutineStep.done) {
+            yield;
+            applyToCoroutineStep = applyToCoroutine.next();
+        }
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
