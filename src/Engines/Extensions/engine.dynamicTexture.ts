@@ -23,10 +23,11 @@ declare module "../../Engines/thinEngine" {
          * @param premulAlpha defines if alpha is stored as premultiplied
          * @param format defines the format of the data
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+         * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
          */
         updateDynamicTexture(texture: Nullable<InternalTexture>,
             source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas,
-            invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean, allowGPUOptimization?: boolean): void;
     }
 }
 
@@ -59,7 +60,9 @@ ThinEngine.prototype.updateDynamicTexture = function (texture: Nullable<Internal
     invertY?: boolean,
     premulAlpha: boolean = false,
     format?: number,
-    forceBindTexture: boolean = false): void {
+    forceBindTexture: boolean = false,
+    allowGPUOptimization: boolean = false,
+    ): void {
     if (!texture) {
         return;
     }
