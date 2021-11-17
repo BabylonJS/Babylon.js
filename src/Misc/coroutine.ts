@@ -63,26 +63,20 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (ste
 // The yielding scheduler steps the coroutine synchronously until the specified time interval has elapsed, then yields control so other operations can be performed.
 // A single instance of a yielding scheduler could be shared across multiple coroutines to yield when their collective work exceeds the threshold.
 export function createYieldingScheduler<T>(yieldAfterMS = 25) {
-    let start: number | undefined;
+    let startTime: number | undefined;
     return (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
-        if (start === undefined) {
-            // If start is undefined, this is the first step of a coroutine.
-            start = performance.now();
-        } else {
-            // Otherwise check if the time interval has elapsed.
-            const end = performance.now();
-            if (end - start > yieldAfterMS) {
-                // If so, record a new start time, and schedule the coroutine step to happen later, effectively yielding control of the execution context.
-                start = end;
-                setTimeout(() => {
-                    inlineScheduler(coroutine, onSuccess, onError);
-                }, 0);
-                return;
-            }
-        }
+        const currentTime = performance.now();
 
-        // If the coroutine step was not scheduled for the future, then do step it synchronously now.
-        inlineScheduler(coroutine, onSuccess, onError);
+        if (startTime === undefined || currentTime - startTime > yieldAfterMS) {
+            // If this is the first coroutine step, or if the time interval has elapsed, record a new start time, and schedule the coroutine step to happen later, effectively yielding control of the execution context.
+            startTime = currentTime;
+            setTimeout(() => {
+                inlineScheduler(coroutine, onSuccess, onError);
+            }, 0);
+        } else {
+            // Otherwise it is not time to yield yet, so step the coroutine synchronously.
+            inlineScheduler(coroutine, onSuccess, onError);
+        }
     };
 }
 
