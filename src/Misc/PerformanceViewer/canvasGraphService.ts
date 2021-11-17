@@ -1228,7 +1228,6 @@ export class CanvasGraphService {
      * This method clears the canvas
      */
     public clear() {
-        //const { _ctx: ctx, _width, _height } = this;
         const ctx = this._ctx;
         const _width = this._width;
         const _height = this._height;
