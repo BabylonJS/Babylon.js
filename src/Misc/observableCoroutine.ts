@@ -1,7 +1,7 @@
 import { Observable } from "./observable";
 import { AsyncCoroutine, CoroutineStep, CoroutineScheduler, runCoroutineAsync, inlineScheduler } from "./coroutine";
 
-export function createObservableScheduler<T>(observable: Observable<any>) {
+function createObservableScheduler<T>(observable: Observable<any>) {
     const coroutines = new Array<AsyncCoroutine<T>>();
     const onSuccesses = new Array<(stepResult: CoroutineStep<T>) => void>();
     const onErrors = new Array<(stepError: any) => void>();
