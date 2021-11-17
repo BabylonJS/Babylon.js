@@ -3,6 +3,7 @@ import { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
@@ -26,7 +27,7 @@ export interface IMaterialPlugin {
     getCustomCode?(shaderType: string): Nullable<{ [pointName: string]: string }>;
 
     collectDefineNames?(names: string[]): void;
-    prepareDefines?(defines: MaterialDefines, scene: Scene): void;
+    prepareDefines?(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void;
     hardBindForSubMesh?(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void;
     unbind?(activeEffect: Effect): boolean;
     fillRenderTargetTextures?(renderTargets: SmartArray<RenderTargetTexture>): void;
