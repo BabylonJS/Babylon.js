@@ -4274,6 +4274,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return Vector3.Center(minMaxVector.min, minMaxVector.max);
     }
 
+    /**
+     * Merge the array of meshes into a single mesh for performance reasons.
+     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
+     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
+     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @returns a new mesh
+     */
     public static readonly MergeMeshes = makeSyncFunction((
         meshes: Array<Mesh>,
         disposeSource = true,
@@ -4282,15 +4292,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean,
     ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false));
-
-    public static readonly MergeMeshesAsync = makeAsyncFunction((
-        meshes: Array<Mesh>,
-        disposeSource = true,
-        allow32BitsIndices?: boolean,
-        meshSubclass?: Mesh,
-        subdivideWithSubMeshes?: boolean,
-        multiMultiMaterials?: boolean,
-    ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true), createYieldingScheduler());
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
@@ -4302,6 +4303,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
+    public static readonly MergeMeshesAsync = makeAsyncFunction((
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices?: boolean,
+        meshSubclass?: Mesh,
+        subdivideWithSubMeshes?: boolean,
+        multiMultiMaterials?: boolean,
+    ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true), createYieldingScheduler());
+
     private static *_MergeMeshesCoroutine(
         meshes: Array<Mesh>,
         disposeSource = true,
