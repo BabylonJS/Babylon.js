@@ -20,6 +20,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
      * @hidden
      */
     public _currentLayer: number;
+
     /**
      * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
      * @hidden
@@ -27,6 +28,16 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
     /** @hidden */
     public _mipmapGenBindGroup: GPUBindGroup[][];
+
+    /**
+     * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
+     * @hidden
+     */
+    public _copyInvertYTempTexture: GPUTexture;
+    /** @hidden */
+    public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
+    /** @hidden */
+    public _copyInvertYBindGroupd: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;

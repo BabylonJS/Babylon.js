@@ -66,6 +66,9 @@ export interface EngineFeatures {
     /**  Indicates that the engine supports render passes */
     supportRenderPasses: boolean;
 
+    /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+    allowGPUOptimizationsForGUI: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }
