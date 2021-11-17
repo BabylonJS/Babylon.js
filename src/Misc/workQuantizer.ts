@@ -1,3 +1,5 @@
+import { Tools } from './tools';
+
 /**
  * The type of an object that assists in quantizing long running work.
  */
@@ -51,7 +53,7 @@ export function createWorkQuantizer(config: number | false | undefined): WorkQua
             return false;
         },
         yieldAsync() {
-            return new Promise<void>((resolve) => setTimeout(resolve, 0));
+            return Tools.DelayAsync(0);
         },
     };
 

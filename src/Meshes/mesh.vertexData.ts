@@ -238,7 +238,7 @@ export class VertexData {
     public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
         const result = this._applyTo(mesh, updatable, undefined).next();
         if (!result.done) {
-            throw new Error("_applyToCoroutine should have completed synchronously.");
+            throw new Error("_applyTo should have completed synchronously.");
         }
         return this;
     }
