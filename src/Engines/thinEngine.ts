@@ -1287,7 +1287,6 @@ export class ThinEngine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
-            allowGPUOptimizationsForGUI: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
