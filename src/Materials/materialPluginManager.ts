@@ -1,3 +1,4 @@
+import { SerializationHelper } from "../Misc/decorators";
 import { EventState } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Nullable } from "../types";
@@ -13,19 +14,25 @@ declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
 declare type SubMesh = import("../Meshes/subMesh").SubMesh;
+declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 
-type pluginMaterialFactory = (material: Material) => Nullable<IMaterialPlugin>;
+type PluginMaterialFactory = (material: Material) => Nullable<IMaterialPlugin>;
 
 /**
  * Manages plugins for materials. Allows to customize material at runtime,
  * listening to events.
  */
 export class MaterialPluginManager {
-
-    private static _Plugins: Array<[string, pluginMaterialFactory]> = [];
+    /**
+     * List of registered plugin material factories.
+     */
+    private static _Plugins: Array<[string, PluginMaterialFactory]> = [];
 
     private static _Inited = false;
 
+    /**
+     * Initialize this class, registering an observable on Material.
+     */
     private static _Initialize(): void {
         Material.OnEventObservable.add((material: Material, eventState: EventState) => {
             switch (eventState.mask) {
@@ -51,7 +58,7 @@ export class MaterialPluginManager {
      * @param propertyName The plugin name
      * @param factory The factor function, which returns a IMaterialPlugin or null if it's not applicable.
      */
-    public static RegisterPlugin(propertyName: string, factory: pluginMaterialFactory): void {
+    public static RegisterPlugin(propertyName: string, factory: PluginMaterialFactory): void {
         if (!MaterialPluginManager._Inited) {
             MaterialPluginManager._Initialize();
         }
@@ -63,6 +70,10 @@ export class MaterialPluginManager {
         }
     }
 
+    /**
+     * Injects plugins on a material.
+     * @param material The material to inject plugins into.
+     */
     public static InjectPlugins(material: Material): void {
         const collectPointNames = (shaderType: string, customCode: Nullable<{ [pointName: string]: string }> | undefined) => {
             if (!customCode) {
@@ -89,6 +100,11 @@ export class MaterialPluginManager {
         }
     }
 
+    /**
+     * Injects custom code into the material shader.
+     * @param material The material to inject code into.
+     * @returns The code injector function.
+     */
     public static InjectCustomCode(material: Material): (shaderType: string, code: string) => string {
         return (shaderType: string, code: string) => {
             const points = material._codeInjectionPoints?.[shaderType];
@@ -111,12 +127,21 @@ export class MaterialPluginManager {
         };
     }
 
+    /**
+     * Calls fillRenderTargetTextures on all plugins for a given material.
+     * @param material The material
+     * @param renderTargets The render target textures.
+     */
     public static FillRenderTargetTextures(material: Material, renderTargets: SmartArray<RenderTargetTexture>): void {
         for (const plugin of material._plugins) {
             plugin.fillRenderTargetTextures?.(renderTargets);
         }
     }
 
+    /**
+     * Calls hasRenderTargetTextures on all plugins for a given material.
+     * @param material The material
+     */
     public static HasRenderTargetTextures(material: Material): boolean {
         for (const plugin of material._plugins) {
             if (plugin.hasRenderTargetTextures?.()) {
@@ -126,18 +151,33 @@ export class MaterialPluginManager {
         return false;
     }
 
-    public static GetAnimatables(material: Material, result: BaseTexture[]): void {
+    /**
+     * Calls getAnimatables on all plugins for a given material.
+     * @param material The material
+     * @param animatables The animatable list.
+     */
+    public static GetAnimatables(material: Material, animatables: IAnimatable[]): void {
         for (const plugin of material._plugins) {
-            plugin.getAnimatables?.(result);
+            plugin.getAnimatables?.(animatables);
         }
     }
 
-    public static GetActiveTextures(material: Material, result: BaseTexture[]): void {
+    /**
+     * Calls getActiveTextures on all plugins for a given material.
+     * @param material The material
+     * @param activeTextures The active textures list.
+     */
+     public static GetActiveTextures(material: Material, activeTextures: BaseTexture[]): void {
         for (const plugin of material._plugins) {
-            plugin.getActiveTextures?.(result);
+            plugin.getActiveTextures?.(activeTextures);
         }
     }
 
+    /**
+     * Calls hasTexture on all plugins for a given material.
+     * @param material The material
+     * @param texture The texture to check.
+     */
     public static HasTexture(material: Material, texture: BaseTexture): boolean {
         for (const plugin of material._plugins) {
             if (plugin.hasTexture?.(texture)) {
@@ -147,6 +187,10 @@ export class MaterialPluginManager {
         return false;
     }
 
+    /**
+     * Calls disableAlphaBlending on all plugins for a given material.
+     * @param material The material
+     */
     public static DisableAlphaBlending(material: Material): boolean {
         for (const plugin of material._plugins) {
             if (plugin.disableAlphaBlending) {
@@ -156,12 +200,25 @@ export class MaterialPluginManager {
         return false;
     }
 
+    /**
+     * Calls dispose on all plugins for a given material.
+     * @param material The material
+     * @param forceDisposeTextures Force dispose textures?
+     */
     public static Dispose(material: Material, forceDisposeTextures?: boolean): void {
         for (const plugin of material._plugins) {
             plugin.dispose?.(forceDisposeTextures);
         }
     }
 
+    /**
+     * Calls isReadyForSubMesh on all plugins for a given material.
+     * @param material The material
+     * @param defines The material defines.
+     * @param scene The scene the material belongs to.
+     * @param engine The engine the material belongs to
+     * @returns True if ready.
+     */
     public static IsReadyForSubMesh(material: Material, defines: MaterialDefines, scene: Scene, engine: Engine): boolean {
         let isReady = true;
         for (const plugin of material._plugins) {
@@ -170,7 +227,12 @@ export class MaterialPluginManager {
         return isReady;
     }
 
-    public static CollectDefineNames(material: Material): string[] | undefined {
+    /**
+     * Calls collectDefineNames on all plugins for a given material.
+     * @param material The material
+     * @return A list of defined names.
+     */
+     public static CollectDefineNames(material: Material): string[] | undefined {
         const names: string[] = [];
         for (const plugin of material._plugins) {
             plugin.collectDefineNames?.(names);
@@ -178,12 +240,24 @@ export class MaterialPluginManager {
         return names.length > 0 ? names : undefined;
     }
 
+    /**
+     * Calls prepareDefines on all plugins for a given material.
+     * @param material The material
+     * @param defines The material defines.
+     * @param scene The scene the material belongs to.
+     */
     public static PrepareDefines(material: Material, defines: MaterialDefines, scene: Scene): void {
         for (const plugin of material._plugins) {
             plugin.prepareDefines?.(defines, scene);
         }
     }
 
+    /**
+     * Calls unbind on all plugins for a given material.
+     * @param material The material
+     * @param effect The effect on that material.
+     * @returns True if at least one plugin returned true.
+     */
     public static Unbind(material: Material, effect: Effect): boolean {
         let result = false;
         for (const plugin of material._plugins) {
@@ -192,18 +266,42 @@ export class MaterialPluginManager {
         return result;
     }
 
+    /**
+     * Calls bindForSubMesh on all plugins for a given material.
+     * @param material The material
+     * @param ubo The Uniform Buffer
+     * @param scene The scene this material belongs to.
+     * @param engine The engine this material belongs to.
+     * @param subMesh The subMesh this material belongs to.
+     */
     public static BindForSubMesh(material: Material, ubo: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         for (const plugin of material._plugins) {
             plugin.bindForSubMesh?.(ubo, scene, engine, subMesh);
         }
     }
 
+    /**
+     * Calls hardBindForSubMesh on all plugins for a given material.
+     * @param material The material
+     * @param ubo The Uniform Buffer
+     * @param scene The scene this material belongs to.
+     * @param engine The engine this material belongs to.
+     * @param subMesh The subMesh this material belongs to.
+     */
     public static HardBindForSubMesh(material: Material, ubo: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         for (const plugin of material._plugins) {
             plugin.hardBindForSubMesh?.(ubo, scene, engine, subMesh);
         }
     }
 
+    /**
+     * Calls addFallbacks on all plugins for a given material.
+     * @param material The material
+     * @param defines The material defines
+     * @param fallbacks The effect fallbacks
+     * @param fallbackRank The fallback rank
+     * @returns The updated fallbackRank
+     */
     public static AddFallbacks(material: Material, defines: MaterialDefines, fallbacks: EffectFallbacks, fallbackRank: number): number {
         for (const plugin of material._plugins) {
             if (plugin.addFallbacks) {
@@ -213,24 +311,63 @@ export class MaterialPluginManager {
         return fallbackRank;
     }
 
+    /**
+     * Calls addUniforms on all plugins for a given material.
+     * @param material The material
+     * @param uniforms The material uniforms
+     */
     public static AddUniforms(material: Material, uniforms: string[]): void {
         for (const plugin of material._plugins) {
             plugin.addUniforms?.(uniforms);
         }
     }
 
+    /**
+     * Calls addSamplers on all plugins for a given material.
+     * @param material The material
+     * @param uniforms The samplers
+     */
     public static AddSamplers(material: Material, samplers: string[]): void {
         for (const plugin of material._plugins) {
             plugin.addSamplers?.(samplers);
         }
     }
 
+    /**
+     * Calls prepareUniformBuffer on all plugins for a given material.
+     * @param material The material
+     * @param ubo The uniform buffer
+     */
     public static PrepareUniformBuffer(material: Material, ubo: UniformBuffer): void {
         for (const plugin of material._plugins) {
             plugin.prepareUniformBuffer?.(ubo);
         }
     }
 
-    // todo: add CopyTo, Serialize, Parse
+    /**
+     * Makes a duplicate of the current configuration into another one.
+     * @param materialPluginManager define the manager where to copy the info
+     */
+    public copyTo(materialPluginManager: MaterialPluginManager): void {
+        // TODO: this class includes the factories, check if this will serialize properly
+        SerializationHelper.Clone(() => materialPluginManager, this);
+    }
 
+    /**
+     * Serializes this Sub Surface configuration.
+     * @returns - An object with the serialized config.
+     */
+    public serialize(): any {
+        return SerializationHelper.Serialize(this);
+    }
+
+    /**
+     * Parses a anisotropy Configuration from a serialized object.
+     * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
+     */
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
+    }
 }

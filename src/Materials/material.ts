@@ -60,11 +60,26 @@ export interface ICustomShaderNameResolveOptions {
     processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
 }
 
+/**
+ * Flags to filter observables in events for material plugins.
+ */
 export enum MaterialEvent {
+    /**
+     * Created material event.
+     */
     Created = 0x0001,
+    /**
+     * Called the disableAlphaBlending getter event.
+     */
     GetDisableAlphaBlending = 0x0002,
+    /**
+     * Material disposed event.
+     */
     Disposed = 0x0004,
 
+    /**
+     * All material events.
+     */
     All = 0xFFFF
 }
 
@@ -187,6 +202,10 @@ export class Material implements IAnimatable {
      */
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
 
+    /**
+     * Event observable. Used by the MaterialPluginManager.
+     * Static since it can be called before the constructor.
+     */
     public static OnEventObservable = new Observable<Material>();
 
     // object used by OnEventObservable.notifyObservers to pass data to and from the observers
@@ -194,7 +213,7 @@ export class Material implements IAnimatable {
         disableAlphaBlending: false,
         forceDisposeTextures: false,
     };
-    
+
     /**
      * Custom callback helping to override the default shader used in the material.
      */
@@ -738,7 +757,7 @@ export class Material implements IAnimatable {
     public _plugins: Array<IMaterialPlugin> = [];
     /** @hidden */
     public _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
-    
+
     protected _defineNamesFromPlugins?: string[];
 
     /**
