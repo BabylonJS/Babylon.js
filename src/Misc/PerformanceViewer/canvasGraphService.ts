@@ -195,7 +195,6 @@ export class CanvasGraphService {
      * @param size The new size of the canvas.
      */
     public resize(size: IPerfLayoutSize) {
-        //const ctx = this._ctx;
         const ctx = this._ctx;
         const { width, height } = size;
 
@@ -554,27 +553,23 @@ export class CanvasGraphService {
         if (intervalUnit >= TimestampUnit.Hours) {
             const numHours = Math.floor(timestamp / msInHour);
             timestamp -= numHours * msInHour;
-            //parsedTimestamp += `${numHours.toString().padStart(intervalUnit > TimestampUnit.Hours ? 2 : 1, "0")}:`;
             parsedTimestamp += `${this._padStart(numHours.toString(), intervalUnit > TimestampUnit.Hours ? 2 : 1, "0")}:`;
         }
 
         if (intervalUnit >= TimestampUnit.Minutes) {
             const numMinutes = Math.floor(timestamp / msInMinute);
             timestamp -= numMinutes * msInMinute;
-            //parsedTimestamp += `${numMinutes.toString().padStart(intervalUnit > TimestampUnit.Minutes ? 2 : 1, "0")}:`;
             parsedTimestamp += `${this._padStart(numMinutes.toString(), intervalUnit > TimestampUnit.Minutes ? 2 : 1, "0")}:`;
         }
 
         const numSeconds = Math.floor(timestamp / msInSecond);
         timestamp -= numSeconds * msInSecond;
-        //parsedTimestamp += numSeconds.toString().padStart(intervalUnit > TimestampUnit.Seconds ? 2 : 1, "0");
         parsedTimestamp += this._padStart(numSeconds.toString(), intervalUnit > TimestampUnit.Seconds ? 2 : 1, "0");
 
         if (timestamp > 0) {
             if (parsedTimestamp.length > 0) {
                 parsedTimestamp += ".";
             }
-            //parsedTimestamp += Math.round(timestamp).toString().padStart(3, "0");
             parsedTimestamp += this._padStart(Math.round(timestamp).toString(), 3, "0");
         }
 
@@ -613,7 +608,6 @@ export class CanvasGraphService {
      * @returns a "nice" number approximately equal to num.
      */
     private _niceNumber(num: number, shouldRound: boolean) {
-        //const exp = Math.floor(Math.log10(num));
         const exp = Math.floor(Math.log(num) * Math.LOG10E);
         const fraction = num / Math.pow(10, exp);
         let niceFraction: number;
