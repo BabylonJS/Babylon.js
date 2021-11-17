@@ -23,6 +23,7 @@ import { MaterialDefines } from "../materialDefines";
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type Material = import("../material").Material;
+declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 
 MaterialPluginManager.RegisterPlugin("subSurface", (material: Material) => {
     if (material instanceof PBRBaseMaterial) {
@@ -73,7 +74,11 @@ const modelDefines = new MaterialSubSurfaceDefines();
  * Define the code related to the sub surface parameters of the pbr material.
  */
 export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
-    public priority: 0;
+    /**
+     * Defines the priority of the plugin.
+     */
+    @serialize()
+    public priority = 130;
 
     private _material: PBRBaseMaterial;
 
@@ -326,6 +331,9 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
         this._internalMarkScenePrePassDirty();
     }
 
+    /**
+     * Instantiate a new instance of subsurface configuration.
+     */
     constructor(material: PBRBaseMaterial) {
         this._material = material;
     }
@@ -367,6 +375,10 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
         return true;
     }
 
+    /**
+     * Collects all define names.
+     * @param names The array to append to.
+     */
     public collectDefineNames(names: string[]): void {
         for (const key of Object.keys(modelDefines)) {
             if (key[0] === "_") {
@@ -381,8 +393,9 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
+     * @param mesh the mesh being rendered
      */
-    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene): void {
+     public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene, mesh: AbstractMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_TRANSLUCENCY = false;

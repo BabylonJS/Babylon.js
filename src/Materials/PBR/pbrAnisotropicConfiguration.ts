@@ -1,33 +1,58 @@
 import { SerializationHelper, serialize, expandToProperty, serializeAsVector2, serializeAsTexture } from "../../Misc/decorators";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Vector2 } from "../../Maths/math.vector";
-import { Scene } from "../../scene";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
+import { SubMesh } from "../../Meshes/subMesh";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
+import { IMaterialPlugin } from "../IMaterialPlugin";
+import { Constants } from "../../Engines/constants";
+import { MaterialPluginManager } from "../materialPluginManager";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { MaterialDefines } from "../materialDefines";
+
+declare type Engine = import("../../Engines/engine").Engine;
+declare type Scene = import("../../scene").Scene;
+declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
+declare type Material = import("../material").Material;
+
+MaterialPluginManager.RegisterPlugin("anisotropic", (material: Material) => {
+    if (material instanceof PBRBaseMaterial) {
+        return new PBRAnisotropicConfiguration(material);
+    }
+    return null;
+});
 
 /**
  * @hidden
  */
-export interface IMaterialAnisotropicDefines {
-    ANISOTROPIC: boolean;
-    ANISOTROPIC_TEXTURE: boolean;
-    ANISOTROPIC_TEXTUREDIRECTUV: number;
-    MAINUV1: boolean;
+export class MaterialAnisotropicDefines extends MaterialDefines {
+    public ANISOTROPIC: boolean;
+    public ANISOTROPIC_TEXTURE: boolean;
+    public ANISOTROPIC_TEXTUREDIRECTUV: number;
+    public MAINUV1: boolean;
 
-    _areTexturesDirty: boolean;
-    _needUVs: boolean;
+    public _areTexturesDirty: boolean;
+    public _needUVs: boolean;
 }
+
+const modelDefines = new MaterialAnisotropicDefines();
 
 /**
  * Define the code related to the anisotropic parameters of the pbr material.
  */
-export class PBRAnisotropicConfiguration {
+export class PBRAnisotropicConfiguration implements IMaterialPlugin {
+    /**
+     * Defines the priority of the plugin.
+     */
+    @serialize()
+    public priority = 110;
+
+    private _material: PBRBaseMaterial;
 
     private _isEnabled = false;
     /**
@@ -70,10 +95,32 @@ export class PBRAnisotropicConfiguration {
 
     /**
      * Instantiate a new instance of anisotropy configuration.
-     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
-        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+    constructor(material: PBRBaseMaterial) {
+        this._material = material;
+    }
+
+    /**
+     * Initializes this plugin.
+     * @param scene The scene
+     * @param dirtyCallbacks
+     */
+    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+    }
+
+    /**
+     * Collects all define names.
+     * @param names The array to append to.
+     */
+    public collectDefineNames(names: string[]): void {
+        for (const key of Object.keys(modelDefines)) {
+            if (key[0] === "_") {
+                continue;
+            }
+
+            names.push(key);
+        }
     }
 
     /**
@@ -82,7 +129,7 @@ export class PBRAnisotropicConfiguration {
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialAnisotropicDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -103,10 +150,10 @@ export class PBRAnisotropicConfiguration {
     /**
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
-     * @param mesh the mesh we are preparing the defines for.
      * @param scene defines the scene the material belongs to.
+     * @param mesh the mesh being rendered
      */
-    public prepareDefines(defines: IMaterialAnisotropicDefines, mesh: AbstractMesh, scene: Scene): void {
+    public prepareDefines(defines: MaterialAnisotropicDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.ANISOTROPIC = this._isEnabled;
             if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
@@ -134,12 +181,15 @@ export class PBRAnisotropicConfiguration {
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
-     * @param isFrozen defines whether the material is frozen or not.
-     */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+     * @param engine defines the engine the material belongs to.
+     * @param subMesh the submesh to bind data for
+    */
+     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }
+
+        const isFrozen = this._material.isFrozen;
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
@@ -219,7 +269,7 @@ export class PBRAnisotropicConfiguration {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    public static AddFallbacks(defines: IMaterialAnisotropicDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public addFallbacks(defines: MaterialAnisotropicDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.ANISOTROPIC) {
             fallbacks.addFallback(currentRank++, "ANISOTROPIC");
         }
@@ -230,7 +280,7 @@ export class PBRAnisotropicConfiguration {
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
      */
-    public static AddUniforms(uniforms: string[]): void {
+    public addUniforms(uniforms: string[]): void {
         uniforms.push("vAnisotropy", "vAnisotropyInfos", "anisotropyMatrix");
     }
 
@@ -238,7 +288,7 @@ export class PBRAnisotropicConfiguration {
      * Add the required uniforms to the current buffer.
      * @param uniformBuffer defines the current uniform buffer.
      */
-    public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
+    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vAnisotropy", 3);
         uniformBuffer.addUniform("vAnisotropyInfos", 2);
         uniformBuffer.addUniform("anisotropyMatrix", 16);
@@ -248,7 +298,7 @@ export class PBRAnisotropicConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-    public static AddSamplers(samplers: string[]): void {
+    public addSamplers(samplers: string[]): void {
         samplers.push("anisotropySampler");
     }
 

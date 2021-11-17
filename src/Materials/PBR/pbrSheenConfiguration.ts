@@ -17,8 +17,10 @@ import { MaterialDefines } from "../materialDefines";
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type Material = import("../material").Material;
+declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 
 MaterialPluginManager.RegisterPlugin("sheen", (material: Material) => {
+    console.log("sheen");
     if (material instanceof PBRBaseMaterial) {
         return new PBRSheenConfiguration(material);
     }
@@ -51,7 +53,11 @@ const modelDefines = new MaterialSheenDefines();
  * Define the code related to the Sheen parameters of the pbr material.
  */
 export class PBRSheenConfiguration implements IMaterialPlugin {
-    public priority: 0;
+    /**
+     * Defines the priority of the plugin.
+     */
+    @serialize()
+    public priority = 120;
 
     private _material: PBRBaseMaterial;
 
@@ -195,8 +201,9 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
+     * @param mesh the mesh being rendered
      */
-    public prepareDefines(defines: MaterialSheenDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialSheenDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.SHEEN = this._isEnabled;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;

@@ -14,6 +14,7 @@ declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
 declare type SubMesh = import("../Meshes/subMesh").SubMesh;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 
 type PluginMaterialFactory = (material: Material) => Nullable<IMaterialPlugin>;
@@ -98,6 +99,9 @@ export class MaterialPluginManager {
                 collectPointNames("fragment", plugin.getCustomCode?.("fragment"));
             }
         }
+
+        console.log("xxx", material._plugins);
+        material._plugins = material._plugins.sort((a, b) => a.priority - b.priority);
     }
 
     /**
@@ -245,10 +249,11 @@ export class MaterialPluginManager {
      * @param material The material
      * @param defines The material defines.
      * @param scene The scene the material belongs to.
+     * @param mesh The mesh being rendered.
      */
-    public static PrepareDefines(material: Material, defines: MaterialDefines, scene: Scene): void {
+    public static PrepareDefines(material: Material, defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {
         for (const plugin of material._plugins) {
-            plugin.prepareDefines?.(defines, scene);
+            plugin.prepareDefines?.(defines, scene, mesh);
         }
     }
 

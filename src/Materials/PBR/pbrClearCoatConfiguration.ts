@@ -16,6 +16,7 @@ import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
+declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type Material = import("../material").Material;
 
 MaterialPluginManager.RegisterPlugin("clearCoat", (material: Material) => {
@@ -56,7 +57,11 @@ const modelDefines = new MaterialClearCoatDefines();
  * Define the code related to the clear coat parameters of the pbr material.
  */
 export class PBRClearCoatConfiguration implements IMaterialPlugin{
-    public priority: 0;
+    /**
+     * Defines the priority of the plugin.
+     */
+    @serialize()
+    public priority = 100;
 
     private _material: PBRBaseMaterial;
 
@@ -250,8 +255,9 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
      * Checks to see if a texture is used in the material.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
+     * @param mesh the mesh being rendered
      */
-    public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
