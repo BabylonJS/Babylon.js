@@ -18,7 +18,7 @@ declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type Material = import("../material").Material;
 
-MaterialPluginManager.RegisterPlugin("subSurface", (material: Material) => {
+MaterialPluginManager.RegisterPlugin("sheen", (material: Material) => {
     if (material instanceof PBRBaseMaterial) {
         return new PBRSheenConfiguration(material);
     }
@@ -142,7 +142,6 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
 
     /**
      * Instantiate a new instance of sheen configuration.
-     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
      constructor(material: PBRBaseMaterial) {
         this._material = material;
