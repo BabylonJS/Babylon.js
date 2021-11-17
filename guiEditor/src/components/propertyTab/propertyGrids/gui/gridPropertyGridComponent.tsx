@@ -310,7 +310,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.resetValues();
                                 this.forceUpdate();
                             }}
-                        />  <CommandButtonComponent altStyle={true} tooltip="Remove Row" icon={subtractGridElementDark} shortcut="" isActive={false}
+                        />  <CommandButtonComponent altStyle={true} tooltip="Remove Row" icon={subtractGridElementDark} shortcut=""
+                            isActive={this._removingRow} disabled={grid.rowCount <= 1}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.columnCount; ++i) {
@@ -383,26 +384,27 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             this.resetValues();
                             this.forceUpdate();
                         }}
-                    /> 
-                        <CommandButtonComponent altStyle={true} tooltip="Remove Column" icon={subtractGridElementDark} shortcut="" isActive={grid.columnCount <= 1 || this._removingColumn}
-                            onClick={() => {
-                                let hasChild = false;
-                                for (let i = 0; i < grid.rowCount; ++i) {
-                                    const child = grid.cells[i + ":" + (grid.columnCount - 1)];
-                                    if (child?.children.length) {
-                                        hasChild = true;
-                                        break;
-                                       
-                                    }
+                    />
+                    <CommandButtonComponent altStyle={true} tooltip="Remove Column" icon={subtractGridElementDark} shortcut=""
+                        isActive={this._removingColumn} disabled={grid.columnCount <= 1}
+                        onClick={() => {
+                            let hasChild = false;
+                            for (let i = 0; i < grid.rowCount; ++i) {
+                                const child = grid.cells[i + ":" + (grid.columnCount - 1)];
+                                if (child?.children.length) {
+                                    hasChild = true;
+                                    break;
+
                                 }
-                                this.resetValues();
-                                if (hasChild) {
-                                    this._columnChild = true;
-                                }
-                                this._removingColumn = true;
-                                this.forceUpdate();
-                            }}
-                        />
+                            }
+                            this.resetValues();
+                            if (hasChild) {
+                                this._columnChild = true;
+                            }
+                            this._removingColumn = true;
+                            this.forceUpdate();
+                        }}
+                    />
                     {this._editedColumn && <>
                         <CommandButtonComponent altStyle={true} tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                             onClick={() => {

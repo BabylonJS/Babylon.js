@@ -503,32 +503,68 @@ hr.ge {
         cursor: pointer;
         width: 40px;
         margin-left: 5px;
-        margin-right: 5px;;
+        margin-right: 5px;
         .command-label {
             display: none;
         }        
+
         background-color: white;
         .command-button-icon {
             height: 100%;
             width: 100%;
             display: grid;
-            color: white;
+            align-content: center;
+            justify-content: center;
+        }
+        &:hover {
+            background-color: #c2c2c2;
+            filter: invert(1);
+        } 
+    }
+
+    .command-button-alt-disabled {
+        cursor: pointer;
+        pointer-events: none;
+        width: 40px;
+        margin-left: 5px;
+        margin-right: 5px;
+        .command-label {
+            display: none;
+        }        
+
+        background-color: white;
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
             align-content: center;
             justify-content: center;
         }
 
-        &:hover {
-           filter: invert(1);
-        } 
-        
-        .active {
-            background-color: #878787;
-        }
-
         img {
-            &.active {
-                background-color: #878787;
-            }
+            filter: invert(1);
+        }
+    }
+
+    
+    .command-button-alt-active {
+        cursor: pointer;
+        pointer-events: none;
+        width: 40px;
+        margin-left: 5px;
+        margin-right: 5px;
+        .command-label {
+            display: none;
+        }        
+
+        background-color: #c2c2c2;
+        filter: invert(1);
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
         }
     }
 
