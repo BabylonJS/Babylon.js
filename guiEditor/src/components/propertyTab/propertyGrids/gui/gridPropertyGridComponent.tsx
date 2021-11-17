@@ -297,8 +297,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     this.renderRows()
                 }
                 <div className="ge-gridLine">
-                    <div className="ge-divider">
-                        <CommandButtonComponent tooltip="Add Row" icon={addGridElementDark} shortcut="" isActive={false}
+                    <div className="ge-grid-button-divider">
+                        <CommandButtonComponent altStyle={true} tooltip="Add Row" icon={addGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let total = 0;
                                 let count = 0;
@@ -313,7 +313,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this.resetValues();
                                 this.forceUpdate();
                             }}
-                        />  {(grid.rowCount > 1 && !this._removingRow) && <CommandButtonComponent tooltip="Remove Row" icon={subtractGridElementDark} shortcut="" isActive={false}
+                        />  <CommandButtonComponent altStyle={true} tooltip="Remove Row" icon={subtractGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.columnCount; ++i) {
@@ -321,6 +321,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     if (child?.children.length) {
                                         hasChild = true;
                                         break;
+                                        //(grid.rowCount > 1 && !this._removingRow) 
                                     }
                                 }
 
@@ -331,14 +332,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this._removingRow = true;
                                 this.forceUpdate();
                             }}
-                        />}
+                        />
                         {this._editedRow &&
-                            <> <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
+                            <> <CommandButtonComponent altStyle={true} tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                                 onClick={() => {
                                     this.resizeRow();
                                     this.forceUpdate();
                                 }} />
-                                <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
+                                <CommandButtonComponent altStyle={true} tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
                                     onClick={() => {
                                         this.resetValues();
                                         this.forceUpdate();
@@ -346,7 +347,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             </>}
                         {this._removingRow &&
                             <>
-                                <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
+                                <CommandButtonComponent altStyle={true} tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                                     onClick={() => {
                                         grid.removeRowDefinition(grid.rowCount - 1);
                                         this.setRowValues();
@@ -356,7 +357,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                         this._rowChild = false;
                                     }}
                                 />
-                                <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
+                                <CommandButtonComponent altStyle={true} tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
                                     onClick={() => {
                                         this._removingRow = false;
                                         this._rowChild = false;
@@ -369,8 +370,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     this.renderColumns()
 
                 }
-                <div className="ge-divider">
-                    <CommandButtonComponent tooltip="Add Column" icon={addGridElementDark} shortcut="" isActive={false}
+                <div className="ge-grid-button-divider">
+                    <CommandButtonComponent altStyle={true} tooltip="Add Column" icon={addGridElementDark} shortcut="" isActive={false}
                         onClick={() => {
                             let total = 0;
                             let count = 0;
@@ -385,8 +386,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             this.resetValues();
                             this.forceUpdate();
                         }}
-                    /> {(grid.columnCount > 1 && !this._removingColumn) &&
-                        <CommandButtonComponent tooltip="Remove Column" icon={subtractGridElementDark} shortcut="" isActive={false}
+                    /> 
+                        <CommandButtonComponent altStyle={true} tooltip="Remove Column" icon={subtractGridElementDark} shortcut="" isActive={grid.columnCount <= 1 || this._removingColumn}
                             onClick={() => {
                                 let hasChild = false;
                                 for (let i = 0; i < grid.rowCount; ++i) {
@@ -394,6 +395,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     if (child?.children.length) {
                                         hasChild = true;
                                         break;
+                                       
                                     }
                                 }
                                 this.resetValues();
@@ -403,14 +405,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 this._removingColumn = true;
                                 this.forceUpdate();
                             }}
-                        />}
+                        />
                     {this._editedColumn && <>
-                        <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
+                        <CommandButtonComponent altStyle={true} tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 this.resizeColumn();
                                 this.forceUpdate();
                             }} />
-                        <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
+                        <CommandButtonComponent altStyle={true} tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
                             onClick={() => {
                                 this.resetValues();
                                 this.forceUpdate();
@@ -418,7 +420,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     </>}
                     {this._removingColumn &&
                         <>
-                            <CommandButtonComponent tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
+                            <CommandButtonComponent altStyle={true} tooltip="Confirm" icon={confirmGridElementDark} shortcut="" isActive={false}
                                 onClick={() => {
                                     grid.removeColumnDefinition(grid.columnCount - 1);
                                     this.setColumnValues();
@@ -428,7 +430,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     this._columnChild = false;
                                 }}
                             />
-                            <CommandButtonComponent tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
+                            <CommandButtonComponent altStyle={true} tooltip="Cancel" icon={cancelGridElementDark} shortcut="" isActive={false}
                                 onClick={() => {
                                     this._removingColumn = false;
                                     this._columnChild = false;
