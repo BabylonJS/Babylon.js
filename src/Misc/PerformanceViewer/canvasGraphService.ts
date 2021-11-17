@@ -1,4 +1,17 @@
-import { ICanvasGraphServiceSettings, IPerfMinMax, IGraphDrawableArea, IPerfMousePanningPosition, IPerfIndexBounds, IPerfTooltip, IPerfTextMeasureCache, IPerfLayoutSize, IPerfTicker, TimestampUnit, ITooltipPreprocessedInformation, IPerfTooltipHoverPosition } from "./graphSupportingTypes";
+import {
+    ICanvasGraphServiceSettings,
+    IPerfMinMax,
+    IGraphDrawableArea,
+    IPerfMousePanningPosition,
+    IPerfIndexBounds,
+    IPerfTooltip,
+    IPerfTextMeasureCache,
+    IPerfLayoutSize,
+    IPerfTicker,
+    TimestampUnit,
+    ITooltipPreprocessedInformation,
+    IPerfTooltipHoverPosition,
+} from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "../interfaces/iPerfViewer";
 import { Scalar } from "../../Maths/math.scalar";
 import { PerformanceViewerCollector } from "./performanceViewerCollector";
@@ -63,7 +76,7 @@ const maximumDatasetsAllowed = 64;
 
 const msInSecond = 1000;
 const msInMinute = msInSecond * 60;
-const msInHour =  msInMinute * 60;
+const msInHour = msInMinute * 60;
 
 // time in ms to wait between tooltip draws inside the mouse move.
 const tooltipDebounceTime = 32;
@@ -91,7 +104,7 @@ function debounce(callback: (...args: any[]) => void, time: number) {
  * @param callback callback to call.
  * @param time time to wait between calls in ms.
  */
- function throttle(callback: (...args: any[]) => void, time: number) {
+function throttle(callback: (...args: any[]) => void, time: number) {
     let lastCalledTime: number = 0;
     return function (...args: any[]) {
         const now = Date.now();
@@ -148,18 +161,18 @@ export class CanvasGraphService {
         this._hoverPosition = null;
         this._position = null;
         this._datasetBounds = { start: 0, end: 0 };
-        this._globalTimeMinMax = {min: Infinity, max: 0};
-        this._drawableArea = {top: 0, left: 0, right: 0, bottom: 0};
-        this._tooltipTextCache = {text: "", width: 0};
-        this._tickerTextCache = {text: "", width: 0};
+        this._globalTimeMinMax = { min: Infinity, max: 0 };
+        this._drawableArea = { top: 0, left: 0, right: 0, bottom: 0 };
+        this._tooltipTextCache = { text: "", width: 0 };
+        this._tickerTextCache = { text: "", width: 0 };
         this._tooltipItems = [];
         this._tickerItems = [];
-        this._preprocessedTooltipInfo = {focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0};
+        this._preprocessedTooltipInfo = { focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0 };
         this._numberOfTickers = 0;
 
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
-            this._tooltipItems.push({text: "", color: ""});
-            this._tickerItems.push({text: "", id: "", max: 0, min: 0});
+            this._tooltipItems.push({ text: "", color: "" });
+            this._tickerItems.push({ text: "", id: "", max: 0, min: 0 });
         }
 
         if (!this._ctx) {
@@ -185,10 +198,7 @@ export class CanvasGraphService {
     /**
      * This method lets the service know it should get ready to update what it is displaying.
      */
-    public update = throttle(
-        () => this._draw(),
-        drawThrottleTime
-    );
+    public update = throttle(() => this._draw(), drawThrottleTime);
 
     /**
      * Update the canvas graph service with the new height and width of the canvas.
@@ -241,7 +251,7 @@ export class CanvasGraphService {
         this._globalTimeMinMax.max = 0;
 
         // First we must get the end positions of our view port.
-        const pos = this._position ?? (numSlices - 1);
+        const pos = this._position ?? numSlices - 1;
         let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
         let startOverflow = 0;
 
@@ -298,7 +308,7 @@ export class CanvasGraphService {
         // pre-process tooltip info so we can use it in determining opacity of lines.
         this._preprocessTooltip(this._hoverPosition, this._drawableArea);
 
-        const {left, right, bottom, top} = this._drawableArea;
+        const { left, right, bottom, top } = this._drawableArea;
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
             let valueMinMax: IPerfMinMax | undefined;
@@ -427,7 +437,6 @@ export class CanvasGraphService {
         let closestIndex = 0;
 
         while (low <= high) {
-
             //const middle = Math.trunc((low + high) / 2);
             const middle = Math.floor((low + high) / 2);
             const middleTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(middle));
@@ -529,7 +538,7 @@ export class CanvasGraphService {
      * @param targetLength
      * @param padString
      */
-    private _padStart(stringToFill: string, targetLength : number, padString : string) : string {
+    private _padStart(stringToFill: string, targetLength: number, padString: string): string {
         var missing = Math.floor(targetLength - stringToFill.length);
         var rest = missing % padString.length;
         var fullAmtAdded = (missing - rest) / padString.length;
@@ -643,7 +652,8 @@ export class CanvasGraphService {
      * @returns the min and max of the array.
      */
     private _getMinMax(bounds: IPerfIndexBounds, offset: number): IPerfMinMax {
-        let min = Infinity, max = 0;
+        let min = Infinity,
+            max = 0;
 
         for (let i = bounds.start; i < bounds.end; i++) {
             const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(i) + PerformanceViewerCollector.NumberOfPointsOffset);
@@ -666,7 +676,7 @@ export class CanvasGraphService {
 
         return {
             min,
-            max
+            max,
         };
     }
 
@@ -735,25 +745,22 @@ export class CanvasGraphService {
 
         // process and draw the tooltip.
         this._debouncedTooltip(this._hoverPosition, this._drawableArea);
-    }
+    };
 
     /**
      * Debounced processing and drawing of tooltip.
      */
-    private _debouncedTooltip = debounce(
-        (pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) => {
-            this._preprocessTooltip(pos, drawableArea);
-            this._drawTooltip(pos, drawableArea);
-        },
-        tooltipDebounceTime
-    );
+    private _debouncedTooltip = debounce((pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) => {
+        this._preprocessTooltip(pos, drawableArea);
+        this._drawTooltip(pos, drawableArea);
+    }, tooltipDebounceTime);
 
     /**
      * Handles what to do when we stop hovering over the canvas.
      */
     private _handleStopHover = () => {
         this._hoverPosition = null;
-    }
+    };
 
     /**
      * Given a line defined by P1: (x1, y1) and P2: (x2, y2) get the distance of P0 (x0, y0) from the line.
@@ -815,7 +822,7 @@ export class CanvasGraphService {
             return;
         }
 
-        const {left, top} = ctx.canvas.getBoundingClientRect();
+        const { left, top } = ctx.canvas.getBoundingClientRect();
         const adjustedYPos = pos.yPos - top;
         let adjustedXPos = pos.xPos - left;
         if (adjustedXPos > drawableArea.right) {
@@ -832,7 +839,7 @@ export class CanvasGraphService {
         const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
         let actualTimestamp: number = 0;
         let closestLineId: string = "";
-        let closestLineValueMinMax: IPerfMinMax = {min: 0, max: 0};
+        let closestLineValueMinMax: IPerfMinMax = { min: 0, max: 0 };
         let closestLineDistance: number = Number.POSITIVE_INFINITY;
 
         this.datasets.ids.forEach((id, idOffset) => {
@@ -881,7 +888,14 @@ export class CanvasGraphService {
             }
 
             // initially distance between closest data point and mouse point.
-            let distance: number = this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, xForActualTimestamp, valueAtClosestPointYPos, pos.xPos - left, adjustedYPos);
+            let distance: number = this._getDistanceFromLine(
+                xForActualTimestamp,
+                valueAtClosestPointYPos,
+                xForActualTimestamp,
+                valueAtClosestPointYPos,
+                pos.xPos - left,
+                adjustedYPos
+            );
 
             // get the shortest distance between the point and the line segment infront, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
             if (
@@ -895,10 +909,7 @@ export class CanvasGraphService {
                 distance = Math.min(this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
             }
 
-            if (
-                closestIndex - 1 >= 0 &&
-                this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset
-            ) {
+            if (closestIndex - 1 >= 0 && this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset) {
                 const secondPointTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex - 1));
                 const secondPointX = this._getPixelForNumber(secondPointTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
                 const secondPointValue = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex - 1) + PerformanceViewerCollector.SliceDataOffset + idOffset);
@@ -930,7 +941,6 @@ export class CanvasGraphService {
             this._preprocessedTooltipInfo.longestText = longestText;
             this._preprocessedTooltipInfo.numberOfTooltipItems = numberOfTooltipItems;
         }
-
     }
     /**
      * Draws the tooltip given the area it is allowed to draw in and the current pixel position.
@@ -1057,7 +1067,7 @@ export class CanvasGraphService {
             return;
         }
 
-        const amount = (event.deltaY * -0.01 | 0) * 100;
+        const amount = ((event.deltaY * -0.01) | 0) * 100;
         const minZoom = 60;
 
         // The max zoom is the number of slices.
@@ -1068,7 +1078,7 @@ export class CanvasGraphService {
         }
         // Bind the zoom between [minZoom, maxZoom]
         this._sizeOfWindow = Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
-    }
+    };
 
     /**
      * Initializes the panning object and attaches appropriate listener.
@@ -1088,7 +1098,7 @@ export class CanvasGraphService {
         };
         this._hoverPosition = null;
         canvas.addEventListener("mousemove", this._handlePan);
-    }
+    };
 
     /**
      * While panning this event will keep track of the delta and update the "positions".
@@ -1102,15 +1112,15 @@ export class CanvasGraphService {
 
         const pixelDelta = this._panPosition.delta + event.clientX - this._panPosition.xPos;
         const pixelsPerItem = (this._drawableArea.right - this._drawableArea.left) / this._sizeOfWindow;
-        const itemsDelta = pixelDelta / pixelsPerItem | 0;
-        const pos = this._position ?? (this._getNumberOfSlices() - 1);
+        const itemsDelta = (pixelDelta / pixelsPerItem) | 0;
+        const pos = this._position ?? this._getNumberOfSlices() - 1;
 
         // update our position without allowing the user to pan more than they need to (approximation)
         this._position = Scalar.Clamp(
-                                        pos - itemsDelta,
-                                        Math.floor(this._sizeOfWindow * scaleFactor),
-                                        this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1 - scaleFactor))
-                                    );
+            pos - itemsDelta,
+            Math.floor(this._sizeOfWindow * scaleFactor),
+            this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1 - scaleFactor))
+        );
 
         if (itemsDelta === 0) {
             this._panPosition.delta += pixelDelta;
@@ -1119,8 +1129,7 @@ export class CanvasGraphService {
         }
 
         this._panPosition.xPos = event.clientX;
-
-    }
+    };
 
     /**
      * Clears the panning object and removes the appropriate listener.
@@ -1141,7 +1150,7 @@ export class CanvasGraphService {
         const canvas = ctx.canvas;
         canvas.removeEventListener("mousemove", this._handlePan);
         this._panPosition = null;
-    }
+    };
 
     /**
      * Method which returns true if the data should become realtime, false otherwise.
@@ -1165,7 +1174,9 @@ export class CanvasGraphService {
         const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
         const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestSlicePos);
 
-        return this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold;
+        return (
+            this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold
+        );
     }
 
     /**
