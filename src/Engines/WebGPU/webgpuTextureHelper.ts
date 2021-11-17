@@ -28,12 +28,9 @@ import { InternalTexture, InternalTextureSource } from '../../Materials/Textures
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
-import { EngineStore } from "../engineStore";
 import { WebGPUTintWASM } from "./webgpuTintWASM";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
-
-// TODO WEBGPU optimize, don't recreate things that can be cached (bind groups, descriptors, etc)
 
 // TODO WEBGPU use WGSL instead of GLSL
 const mipmapVertexSource = `
@@ -731,6 +728,11 @@ export class WebGPUTextureHelper {
 
         commandEncoder!.pushDebugGroup?.(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
 
+        // TODO WEBGPU: optimize?
+        // We could cache the temp texture so that we don't recreate it each time (in a global pool of textures to save resources?)
+        // That would also allow to cache the descriptor passed to beginRenderPass. We could also cache the bind groups but probably not in all cases:
+        // only when invertY=true, premultiply=false, mipLevel=0, layers=1 and faceIndex=0 to avoid having a cache too big and because this combination
+        // of values is probably the most likely
         const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding);
 
         const passEncoder = commandEncoder!.beginRenderPass({
@@ -1197,18 +1199,7 @@ export class WebGPUTextureHelper {
                 this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
             }
         } else {
-            imageBitmap = imageBitmap as ImageBitmap;
-
-            if (invertY || premultiplyAlpha) {
-                const engine = EngineStore.LastCreatedEngine;
-                engine && engine.createImageBitmap(imageBitmap as ImageBitmapSource, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
-                    this._device.queue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
-                });
-            } else {
-                this._device.queue.copyImageBitmapToTexture({ imageBitmap } as GPUImageBitmapCopyView, textureCopyView, textureExtent);
-            }
-
-            /*imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
+            imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
 
             if (invertY || premultiplyAlpha) {
                 // we must preprocess the image
@@ -1218,13 +1209,11 @@ export class WebGPUTextureHelper {
                     this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
 
                     // note that we have to use a new command encoder and submit it just right away so that the copy (see line above) and the preprocessing render pass happens in the right order!
+                    // (to do that, we don't pass to invertYPreMultiplyAlpha the command encoder which is passed to updateTexture, meaning invertYPreMultiplyAlpha will create a temporary one and will submit it right away)
                     // if we don't create a new command encoder, we could end up calling copyExternalImageToTexture / invertYPreMultiplyAlpha / copyExternalImageToTexture / invertYPreMultiplyAlpha in the same frame,
                     // in which case it would be executed as copyExternalImageToTexture / copyExternalImageToTexture / invertYPreMultiplyAlpha / invertYPreMultiplyAlpha because the command encoder we are passed in
                     // is submitted at the end of the frame
-                    commandEncoder = this._device.createCommandEncoder({});
-                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
-                    this._device.queue.submit([commandEncoder!.finish()]);
-                    commandEncoder = null as any;
+                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1);
                 } else {
                     // we must apply the preprocessing on the source image before copying it into the destination texture
                     const useOwnCommandEncoder = commandEncoder === undefined;
@@ -1256,7 +1245,7 @@ export class WebGPUTextureHelper {
             } else {
                 // no preprocessing: direct copy to destination texture
                 this._device.queue.copyExternalImageToTexture({ source: imageBitmap }, textureCopyView, textureExtent);
-            }*/
+            }
         }
     }
 
