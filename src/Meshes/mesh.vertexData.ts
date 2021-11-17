@@ -277,6 +277,7 @@ export class VertexData {
 
     private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this) as typeof this._applyToCoroutine);
 
+    /** @hidden */
     public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
         if (this.positions) {
             meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
@@ -496,14 +497,15 @@ export class VertexData {
         return this;
     }
 
-    public readonly merge = makeSyncFunction((others: VertexData | VertexData[], use32BitsIndices = false) => this._mergeCoroutine(others, use32BitsIndices, false));
-
     /**
      * Merges the passed VertexData into the current one
      * @param others the VertexData to be merged into the current one
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
      * @returns the modified VertexData
      */
+    public readonly merge = makeSyncFunction((others: VertexData | VertexData[], use32BitsIndices = false) => this._mergeCoroutine(others, use32BitsIndices, false));
+
+    /** @hidden */
     public *_mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices = false, isAsync: boolean): Coroutine<VertexData> {
         this._validate();
 
