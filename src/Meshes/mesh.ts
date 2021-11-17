@@ -4274,8 +4274,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return Vector3.Center(minMaxVector.min, minMaxVector.max);
     }
 
-    public static readonly MergeMeshes = makeSyncFunction(Mesh._MergeMeshesCoroutine);
-    public static readonly MergeMeshesAsync = makeAsyncFunction(Mesh._MergeMeshesCoroutine, createYieldingScheduler());
+    public static readonly MergeMeshes = makeSyncFunction((
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices?: boolean,
+        meshSubclass?: Mesh,
+        subdivideWithSubMeshes?: boolean,
+        multiMultiMaterials?: boolean,
+    ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false));
+
+    public static readonly MergeMeshesAsync = makeAsyncFunction((
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices?: boolean,
+        meshSubclass?: Mesh,
+        subdivideWithSubMeshes?: boolean,
+        multiMultiMaterials?: boolean,
+    ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true), createYieldingScheduler());
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
@@ -4287,13 +4302,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static *_MergeMeshesCoroutine(
+    private static *_MergeMeshesCoroutine(
         meshes: Array<Mesh>,
         disposeSource = true,
-        allow32BitsIndices?: boolean,
-        meshSubclass?: Mesh,
-        subdivideWithSubMeshes?: boolean,
-        multiMultiMaterials?: boolean
+        allow32BitsIndices: boolean | undefined,
+        meshSubclass: Mesh | undefined,
+        subdivideWithSubMeshes: boolean | undefined,
+        multiMultiMaterials: boolean | undefined,
+        isAsync: boolean,
     ): Coroutine<Nullable<Mesh>> {
         // Remove any null/undefined entries from the mesh array
         meshes = meshes.filter(Boolean);
@@ -4378,18 +4394,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         };
 
         const sourceVertexData = getVertexDataFromMesh(source);
-        yield;
+        if (isAsync) { yield };
 
         const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
         for (let i = 1; i < meshes.length; i++) {
             meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
-            yield;
+            if (isAsync) { yield };
         }
 
-        const mergeCoroutine = sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices);
+        const mergeCoroutine = sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices, isAsync);
         let mergeCoroutineStep = mergeCoroutine.next();
         while (!mergeCoroutineStep.done) {
-            yield;
+            if (isAsync) { yield };
             mergeCoroutineStep = mergeCoroutine.next();
         }
         const vertexData = mergeCoroutineStep.value;
@@ -4398,10 +4414,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
         }
 
-        const applyToCoroutine = vertexData._applyToCoroutine(meshSubclass);
+        const applyToCoroutine = vertexData._applyToCoroutine(meshSubclass, undefined, isAsync);
         let applyToCoroutineStep = applyToCoroutine.next();
         while (!applyToCoroutineStep.done) {
-            yield;
+            if (isAsync) { yield };
             applyToCoroutineStep = applyToCoroutine.next();
         }
 

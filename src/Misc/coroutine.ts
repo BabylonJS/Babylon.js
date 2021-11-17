@@ -129,7 +129,14 @@ export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: Co
 }
 
 // This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
-type ExtractCoroutineReturnType<T> = T extends AsyncCoroutine<infer TReturn> ? TReturn : never;
+type ExtractCoroutineReturnType<T> =
+    T extends Coroutine<infer TReturn> ? TReturn :
+    never;
+
+type ExtractAsyncCoroutineReturnType<T> =
+    T extends Coroutine<infer TReturn> ? Promise<TReturn> :
+    T extends AsyncCoroutine<infer TReturn> ? Promise<TReturn> :
+    never;
 
 /**
  * Given a function that returns a Coroutine<T>, produce a function with the same parameters that returns a T.
@@ -150,9 +157,9 @@ export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: 
  * @param coroutineFactory A function that returns a Coroutine<T>.
  * @returns A function that runs the coroutine asynchronously.
  */
-export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<TReturn>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<TReturn>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> {
-    return (...params: Parameters<TCoroutineFactory>): Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>> => {
+export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<TReturn>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<TReturn>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>> {
+    return (...params: Parameters<TCoroutineFactory>): ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
         // Run the coroutine asynchronously.
-        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as Promise<ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>; // TODO: How can I remove this cast?
+        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>>; // TODO: How can I remove this cast?
     };
 }

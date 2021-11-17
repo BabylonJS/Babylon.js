@@ -56,11 +56,11 @@ Observable.prototype.runCoroutineAsync = function(coroutine: AsyncCoroutine<void
     if (!this.coroutineScheduler) {
         this.coroutineScheduler = createObservableScheduler(this);
     }
- 
+
     if (!this.coroutineAbortController) {
         this.coroutineAbortController = new AbortController();
     }
- 
+
     return runCoroutineAsync(coroutine, this.coroutineScheduler, this.coroutineAbortController.signal);
 };
  

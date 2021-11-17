@@ -235,7 +235,7 @@ export class VertexData {
      * @returns the VertexData
      */
     public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
-        this._applyTo(mesh, updatable);
+        this._applyTo(mesh, updatable, false);
         return this;
     }
 
@@ -247,7 +247,7 @@ export class VertexData {
      * @returns VertexData
      */
     public applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {
-        this._applyTo(geometry, updatable);
+        this._applyTo(geometry, updatable, false);
         return this;
     }
 
@@ -277,80 +277,80 @@ export class VertexData {
 
     private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this) as typeof this._applyToCoroutine);
 
-    public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false): Coroutine<VertexData> {
+    public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
         if (this.positions) {
             meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.normals) {
             meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.tangents) {
             meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.uvs) {
             meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.uvs2) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.uvs3) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.uvs4) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.uvs5) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uvs5, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.uvs6) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uvs6, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.colors) {
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.matricesIndices) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.matricesWeights) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.matricesIndicesExtra) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.matricesWeightsExtra) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
-            yield;
+            if (isAsync) { yield };
         }
 
         if (this.indices) {
             meshOrGeometry.setIndices(this.indices, null, updatable);
-            yield;
+            if (isAsync) { yield };
         } else {
             meshOrGeometry.setIndices([], null);
         }
@@ -496,7 +496,7 @@ export class VertexData {
         return this;
     }
 
-    public readonly merge = makeSyncFunction(this._mergeCoroutine.bind(this) as typeof this._mergeCoroutine);
+    public readonly merge = makeSyncFunction((others: VertexData | VertexData[], use32BitsIndices = false) => this._mergeCoroutine(others, use32BitsIndices, false));
 
     /**
      * Merges the passed VertexData into the current one
@@ -504,7 +504,7 @@ export class VertexData {
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
      * @returns the modified VertexData
      */
-    public *_mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices = false): Coroutine<VertexData> {
+    public *_mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices = false, isAsync: boolean): Coroutine<VertexData> {
         this._validate();
 
         others = Array.isArray(others) ? others : [others];
@@ -559,37 +559,37 @@ export class VertexData {
                     positionsOffset += other.positions!.length / 3;
                     indicesOffset += other.indices.length;
 
-                    yield;
+                    if (isAsync) { yield };
                 }
             }
         }
 
         this.positions = VertexData._mergeElement(this.positions, others.map((other) => other.positions));
-        yield;
+        if (isAsync) { yield };
         this.normals = VertexData._mergeElement(this.normals, others.map((other) => other.normals));
-        yield;
+        if (isAsync) { yield };
         this.tangents = VertexData._mergeElement(this.tangents, others.map((other) => other.tangents));
-        yield;
+        if (isAsync) { yield };
         this.uvs = VertexData._mergeElement(this.uvs, others.map((other) => other.uvs));
-        yield;
+        if (isAsync) { yield };
         this.uvs2 = VertexData._mergeElement(this.uvs2, others.map((other) => other.uvs2));
-        yield;
+        if (isAsync) { yield };
         this.uvs3 = VertexData._mergeElement(this.uvs3, others.map((other) => other.uvs3));
-        yield;
+        if (isAsync) { yield };
         this.uvs4 = VertexData._mergeElement(this.uvs4, others.map((other) => other.uvs4));
-        yield;
+        if (isAsync) { yield };
         this.uvs5 = VertexData._mergeElement(this.uvs5, others.map((other) => other.uvs5));
-        yield;
+        if (isAsync) { yield };
         this.uvs6 = VertexData._mergeElement(this.uvs6, others.map((other) => other.uvs6));
-        yield;
+        if (isAsync) { yield };
         this.colors = VertexData._mergeElement(this.colors, others.map((other) => other.colors));
-        yield;
+        if (isAsync) { yield };
         this.matricesIndices = VertexData._mergeElement(this.matricesIndices, others.map((other) => other.matricesIndices));
-        yield;
+        if (isAsync) { yield };
         this.matricesWeights = VertexData._mergeElement(this.matricesWeights, others.map((other) => other.matricesWeights));
-        yield;
+        if (isAsync) { yield };
         this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map((other) => other.matricesIndicesExtra));
-        yield;
+        if (isAsync) { yield };
         this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map((other) => other.matricesWeightsExtra));
 
         return this;
