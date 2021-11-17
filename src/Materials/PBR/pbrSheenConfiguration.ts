@@ -141,7 +141,7 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
     }
 
     /**
-     * Instantiate a new instance of clear coat configuration.
+     * Instantiate a new instance of sheen configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
      constructor(material: PBRBaseMaterial) {
@@ -373,7 +373,7 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
      */
-    public static AddUniforms(uniforms: string[]): void {
+    public addUniforms(uniforms: string[]): void {
         uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix", "sheenRoughnessMatrix");
     }
 

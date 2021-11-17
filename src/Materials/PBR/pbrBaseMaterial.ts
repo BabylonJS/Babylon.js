@@ -10,7 +10,6 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { IMaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
 import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
@@ -44,6 +43,7 @@ import { MaterialPluginManager } from "../materialPluginManager";
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 declare type PBRSubSurfaceConfiguration = import("./pbrSubSurfaceConfiguration").PBRSubSurfaceConfiguration;
 declare type PBRSheenConfiguration = import("./pbrSheenConfiguration").PBRSheenConfiguration;
+declare type PBRClearCoatConfiguration = import("./pbrClearCoatConfiguration").PBRClearCoatConfiguration;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -53,7 +53,6 @@ const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: 
  */
 export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
-    IMaterialClearCoatDefines,
     IMaterialAnisotropicDefines,
     IMaterialBRDFDefines,
     IMaterialDetailMapDefines {
@@ -889,7 +888,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the clear coat layer parameters for the material.
      */
-    public readonly clearCoat = new PBRClearCoatConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly clearCoat: PBRClearCoatConfiguration;
 
     /**
      * Defines the anisotropic parameters for the material.
@@ -1154,7 +1153,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (!MaterialPluginManager.IsReadyForSubMesh(this, defines, scene, engine) ||
-            !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.anisotropy.isReadyForSubMesh(defines, scene) ||
             !this.detailMap.isReadyForSubMesh(defines, scene)) {
             return false;
@@ -1378,9 +1376,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         DetailMapConfiguration.AddUniforms(uniforms);
         DetailMapConfiguration.AddSamplers(samplers);
-
-        PBRClearCoatConfiguration.AddUniforms(uniforms);
-        PBRClearCoatConfiguration.AddSamplers(samplers);
 
         PBRAnisotropicConfiguration.AddUniforms(uniforms);
         PBRAnisotropicConfiguration.AddSamplers(samplers);
@@ -1732,7 +1727,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // External config
         MaterialPluginManager.PrepareDefines(this, defines, scene);
         this.detailMap.prepareDefines(defines, scene);
-        this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh, scene);
         this.brdf.prepareDefines(defines);
 
@@ -1821,7 +1815,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectanceInfos", 2);
         ubo.addUniform("reflectanceMatrix", 16);
 
-        PBRClearCoatConfiguration.PrepareUniformBuffer(ubo);
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         MaterialPluginManager.PrepareUniformBuffer(this, ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
@@ -2171,7 +2164,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             MaterialPluginManager.BindForSubMesh(this, this._uniformBuffer, scene, engine, subMesh);
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
 
             // Clip plane
@@ -2261,7 +2253,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         MaterialPluginManager.GetAnimatables(this, results);
         this.detailMap.getAnimatables(results);
-        this.clearCoat.getAnimatables(results);
         this.anisotropy.getAnimatables(results);
 
         return results;
@@ -2336,7 +2327,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         MaterialPluginManager.GetActiveTextures(this, activeTextures);
         this.detailMap.getActiveTextures(activeTextures);
-        this.clearCoat.getActiveTextures(activeTextures);
         this.anisotropy.getActiveTextures(activeTextures);
 
         return activeTextures;
@@ -2398,7 +2388,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         return MaterialPluginManager.HasTexture(this, texture) ||
             this.detailMap.hasTexture(texture) ||
-            this.clearCoat.hasTexture(texture) ||
             this.anisotropy.hasTexture(texture);
     }
 
@@ -2445,7 +2434,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this.detailMap.dispose(forceDisposeTextures);
-        this.clearCoat.dispose(forceDisposeTextures);
         this.anisotropy.dispose(forceDisposeTextures);
 
         this._renderTargets.dispose();

@@ -8,30 +8,43 @@ import { MaterialHelper } from "../../Materials/materialHelper";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
 import { SubMesh } from '../../Meshes/subMesh';
+import { Constants } from "../../Engines/constants";
+import { IMaterialPlugin } from "../IMaterialPlugin";
+import { MaterialPluginManager } from "../materialPluginManager";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
+declare type Material = import("../material").Material;
+
+MaterialPluginManager.RegisterPlugin("clearCoat", (material: Material) => {
+    if (material instanceof PBRBaseMaterial) {
+        return new PBRClearCoatConfiguration(material);
+    }
+    return null;
+});
 
 /**
  * @hidden
  */
-export interface IMaterialClearCoatDefines {
-    CLEARCOAT: boolean;
-    CLEARCOAT_DEFAULTIOR: boolean;
-    CLEARCOAT_TEXTURE: boolean;
-    CLEARCOAT_TEXTURE_ROUGHNESS: boolean;
-    CLEARCOAT_TEXTUREDIRECTUV: number;
-    CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV: number;
-    CLEARCOAT_BUMP: boolean;
-    CLEARCOAT_BUMPDIRECTUV: number;
-    CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
-    CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
-    CLEARCOAT_REMAP_F0: boolean;
+export class MaterialClearCoatDefines extends MaterialDefines {
+    public CLEARCOAT = false;
+    public CLEARCOAT_DEFAULTIOR = false;
+    public CLEARCOAT_TEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS = false;
+    public CLEARCOAT_TEXTUREDIRECTUV = 0;
+    public CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
+    public CLEARCOAT_BUMP = false;
+    public CLEARCOAT_BUMPDIRECTUV = 0;
+    public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
+    public CLEARCOAT_REMAP_F0 = false;
 
-    CLEARCOAT_TINT: boolean;
-    CLEARCOAT_TINT_TEXTURE: boolean;
-    CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
-    CLEARCOAT_TINT_GAMMATEXTURE: boolean;
+    public CLEARCOAT_TINT = false;
+    public CLEARCOAT_TINT_TEXTURE = false;
+    public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
+    public CLEARCOAT_TINT_GAMMATEXTURE = false;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -40,7 +53,11 @@ export interface IMaterialClearCoatDefines {
 /**
  * Define the code related to the clear coat parameters of the pbr material.
  */
-export class PBRClearCoatConfiguration {
+export class PBRClearCoatConfiguration implements IMaterialPlugin{
+    public priority: 0;
+
+    private _material: PBRBaseMaterial;
+
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
      * The default fits with a polyurethane material.
@@ -175,23 +192,26 @@ export class PBRClearCoatConfiguration {
      * Instantiate a new instance of clear coat configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
-        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+     constructor(material: PBRBaseMaterial) {
+        this._material = material;
+    }
+
+    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
     /**
-     * Gets whether the submesh is ready to be used or not.
+     * Specifies that the submesh is ready to be used.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
-     * @param engine defines the engine the material belongs to.
-     * @param disableBumpMap defines whether the material disables bump or not.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialClearCoatDefines, scene: Scene, engine: Engine, disableBumpMap: boolean): boolean {
+     public isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
 
+        const disableBumpMap = this._material._disableBumpMap;
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (this._texture && MaterialFlags.ClearCoatTextureEnabled) {
@@ -229,7 +249,7 @@ export class PBRClearCoatConfiguration {
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
      */
-    public prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
@@ -291,19 +311,21 @@ export class PBRClearCoatConfiguration {
      * Binds the material data.
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
-     * @param engine defines the engine the material belongs to.
-     * @param disableBumpMap defines whether the material disables bump or not.
-     * @param isFrozen defines whether the material is frozen or not.
-     * @param invertNormalMapX If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
-     * @param invertNormalMapY If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+     * @param engine the engine this scene belongs to.
      * @param subMesh the submesh to bind data for
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean, subMesh?: SubMesh): void {
+     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as IMaterialClearCoatDefines;
+        const defines = subMesh!.materialDefines as unknown as MaterialClearCoatDefines;
+
+        const isFrozen = this._material.isFrozen;
+
+        const disableBumpMap = this._material._disableBumpMap;
+        const invertNormalMapX = this._material._invertNormalMapX;
+        const invertNormalMapY = this._material._invertNormalMapY;
 
         const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;
 
@@ -474,7 +496,7 @@ export class PBRClearCoatConfiguration {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    public static AddFallbacks(defines: IMaterialClearCoatDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public addFallbacks(defines: MaterialClearCoatDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.CLEARCOAT_BUMP) {
             fallbacks.addFallback(currentRank++, "CLEARCOAT_BUMP");
         }
@@ -491,7 +513,7 @@ export class PBRClearCoatConfiguration {
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
      */
-    public static AddUniforms(uniforms: string[]): void {
+    public addUniforms(uniforms: string[]): void {
         uniforms.push("vClearCoatTangentSpaceParams", "vClearCoatParams", "vClearCoatRefractionParams",
             "vClearCoatTintParams", "clearCoatColorAtDistance",
             "clearCoatMatrix", "clearCoatRoughnessMatrix", "clearCoatBumpMatrix", "clearCoatTintMatrix",
@@ -502,7 +524,7 @@ export class PBRClearCoatConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-    public static AddSamplers(samplers: string[]): void {
+    public addSamplers(samplers: string[]): void {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
@@ -510,7 +532,7 @@ export class PBRClearCoatConfiguration {
      * Add the required uniforms to the current buffer.
      * @param uniformBuffer defines the current uniform buffer.
      */
-    public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
+    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vClearCoatParams", 2);
         uniformBuffer.addUniform("vClearCoatRefractionParams", 4);
         uniformBuffer.addUniform("vClearCoatInfos", 4);
