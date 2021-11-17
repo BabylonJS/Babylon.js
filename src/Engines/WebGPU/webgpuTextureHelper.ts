@@ -718,9 +718,11 @@ export class WebGPUTextureHelper {
         throw `Unknown format ${format}!`;
     }
 
-    public invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex = 0, mipLevel = 0, layers = 1, commandEncoder?: GPUCommandEncoder): void {
+    public invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex = 0, mipLevel = 0, layers = 1, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.InvertYPremultiplyAlpha, { invertY, premultiplyAlpha });
+
+        faceIndex = Math.max(faceIndex, 0);
 
         if (useOwnCommandEncoder) {
             commandEncoder = this._device.createCommandEncoder({});
@@ -728,14 +730,26 @@ export class WebGPUTextureHelper {
 
         commandEncoder!.pushDebugGroup?.(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
 
-        // TODO WEBGPU: optimize?
-        // We could cache the temp texture so that we don't recreate it each time (in a global pool of textures to save resources?)
-        // That would also allow to cache the descriptor passed to beginRenderPass. We could also cache the bind groups but probably not in all cases:
-        // only when invertY=true, premultiply=false, mipLevel=0, layers=1 and faceIndex=0 to avoid having a cache too big and because this combination
-        // of values is probably the most likely
-        const outputTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding);
+        let gpuTexture: Nullable<GPUTexture>;
+        if (WebGPUTextureHelper._IsHardwareTexture(gpuOrHdwTexture)) {
+            gpuTexture = gpuOrHdwTexture.underlyingResource;
+            if (!(invertY && !premultiplyAlpha && layers === 1 && faceIndex === 0)) {
+                // we optimize only for the most likely case (invertY=true, premultiplyAlpha=false, layers=1, faceIndex=0) to avoid dealing with big caches
+                gpuOrHdwTexture = undefined as any;
+            }
+        } else {
+            gpuTexture = gpuOrHdwTexture;
+            gpuOrHdwTexture = undefined as any;
+        }
+        if (!gpuTexture) {
+            return;
+        }
 
-        const passEncoder = commandEncoder!.beginRenderPass({
+        const webgpuHardwareTexture = gpuOrHdwTexture as Nullable<WebGPUHardwareTexture>;
+
+        const outputTexture = webgpuHardwareTexture?._copyInvertYTempTexture ?? this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding);
+
+        const renderPassDescriptor = webgpuHardwareTexture?._copyInvertYRenderPassDescr ?? {
             colorAttachments: [{
                 view: outputTexture.createView({
                     format,
@@ -748,9 +762,10 @@ export class WebGPUTextureHelper {
                 loadValue: WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
             }],
-        });
+        };
+        const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
 
-        const bindGroup = this._device.createBindGroup({
+        const bindGroup = webgpuHardwareTexture?._copyInvertYBindGroupd ?? this._device.createBindGroup({
             layout: bindGroupLayout,
             entries: [{
                 binding: 0,
@@ -760,7 +775,7 @@ export class WebGPUTextureHelper {
                     baseMipLevel: mipLevel,
                     mipLevelCount: 1,
                     arrayLayerCount: layers,
-                    baseArrayLayer: Math.max(faceIndex, 0),
+                    baseArrayLayer: faceIndex,
                 }),
             }],
         });
@@ -778,7 +793,7 @@ export class WebGPUTextureHelper {
             origin: {
                 x: 0,
                 y: 0,
-                z: Math.max(faceIndex, 0),
+                z: faceIndex,
             }
         }, {
             width,
@@ -787,7 +802,13 @@ export class WebGPUTextureHelper {
         }
         );
 
-        this._deferredReleaseTextures.push([outputTexture, null]);
+        if (webgpuHardwareTexture) {
+            webgpuHardwareTexture._copyInvertYTempTexture = outputTexture;
+            webgpuHardwareTexture._copyInvertYRenderPassDescr = renderPassDescriptor;
+            webgpuHardwareTexture._copyInvertYBindGroupd = bindGroup;
+        } else {
+            this._deferredReleaseTextures.push([outputTexture, null]);
+        }
 
         commandEncoder!.popDebugGroup?.();
 
@@ -968,7 +989,7 @@ export class WebGPUTextureHelper {
             return;
         }
 
-        const webgpuHardwareTexture = gpuOrHdwTexture as WebGPUHardwareTexture;
+        const webgpuHardwareTexture = gpuOrHdwTexture as Nullable<WebGPUHardwareTexture>;
         for (let i = 1; i < mipLevelCount; ++i) {
             const renderPassDescriptor = webgpuHardwareTexture?._mipmapGenRenderPassDescr[faceIndex]?.[i - 1] ?? {
                 colorAttachments: [{
@@ -1133,9 +1154,10 @@ export class WebGPUTextureHelper {
 
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
     public updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
-        commandEncoder?: GPUCommandEncoder): void {
+        commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void {
         const gpuTexture = WebGPUTextureHelper._IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture).underlyingResource! : texture;
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
+        const gpuOrHdwTexture = WebGPUTextureHelper._IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture) : texture;
 
         const textureCopyView: GPUImageCopyTexture = {
             texture: gpuTexture,
@@ -1196,7 +1218,7 @@ export class WebGPUTextureHelper {
             }
 
             if (invertY || premultiplyAlpha) {
-                this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
+                this.invertYPreMultiplyAlpha(gpuOrHdwTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder, allowGPUOptimization);
             }
         } else {
             imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
@@ -1213,14 +1235,11 @@ export class WebGPUTextureHelper {
                     // if we don't create a new command encoder, we could end up calling copyExternalImageToTexture / invertYPreMultiplyAlpha / copyExternalImageToTexture / invertYPreMultiplyAlpha in the same frame,
                     // in which case it would be executed as copyExternalImageToTexture / copyExternalImageToTexture / invertYPreMultiplyAlpha / invertYPreMultiplyAlpha because the command encoder we are passed in
                     // is submitted at the end of the frame
-                    this.invertYPreMultiplyAlpha(gpuTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1);
+                    this.invertYPreMultiplyAlpha(gpuOrHdwTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, undefined, allowGPUOptimization);
                 } else {
                     // we must apply the preprocessing on the source image before copying it into the destination texture
-                    const useOwnCommandEncoder = commandEncoder === undefined;
-
-                    if (useOwnCommandEncoder) {
-                        commandEncoder = this._device.createCommandEncoder({});
-                    }
+                    // we don't use the command encoder we are passed in because it will be submitted at the end of the frame: see more explanations in the comments above
+                    commandEncoder = this._device.createCommandEncoder({});
 
                     // create a temp texture and copy the image to it
                     const srcTexture = this.createTexture({ width, height, layers: 1 }, false, false, false, false, false, format, 1, commandEncoder, WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding);
@@ -1232,15 +1251,13 @@ export class WebGPUTextureHelper {
                     textureExtent.depthOrArrayLayers = layers || 1;
 
                     // apply the preprocessing to this temp texture
-                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder);
+                    this.invertYPreMultiplyAlpha(srcTexture, width, height, format, invertY, premultiplyAlpha, faceIndex, mipLevel, layers || 1, commandEncoder, allowGPUOptimization);
 
                     // copy the temp texture to the destination texture
-                    commandEncoder!.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
+                    commandEncoder.copyTextureToTexture({ texture: srcTexture }, textureCopyView, textureExtent);
 
-                    if (useOwnCommandEncoder) {
-                        this._device.queue.submit([commandEncoder!.finish()]);
-                        commandEncoder = null as any;
-                    }
+                    this._device.queue.submit([commandEncoder!.finish()]);
+                    commandEncoder = null as any;
                 }
             } else {
                 // no preprocessing: direct copy to destination texture

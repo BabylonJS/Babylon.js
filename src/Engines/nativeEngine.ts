@@ -819,6 +819,7 @@ export class NativeEngine extends Engine {
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
+            allowGPUOptimizationsForGUI: false,
             _collectUbosUpdatedInFrame: false,
         };
 

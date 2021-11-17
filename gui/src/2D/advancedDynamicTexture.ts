@@ -659,7 +659,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this._isDirty = false;
         this._render();
-        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha, this._engine?._features.allowGPUOptimizationsForGUI ?? false);
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
