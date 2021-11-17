@@ -9,11 +9,21 @@ declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
-    /** @hidden */
+    /**
+     * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
+     * The index in this array is the current layer we are rendering into
+     * @hidden
+    */
     public _bundleLists: WebGPUBundleList[];
-    /** @hidden */
+    /**
+     * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
+     * @hidden
+     */
     public _currentLayer: number;
-    /** @hidden */
+    /**
+     * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
+     * @hidden
+     */
     public _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
     /** @hidden */
     public _mipmapGenBindGroup: GPUBindGroup[][];
