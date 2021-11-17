@@ -174,7 +174,6 @@ export class NullEngine extends Engine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
-            allowGPUOptimizationsForGUI: false,
             _collectUbosUpdatedInFrame: false,
         };
 
