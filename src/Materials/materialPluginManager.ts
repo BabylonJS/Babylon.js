@@ -100,7 +100,6 @@ export class MaterialPluginManager {
             }
         }
 
-        console.log("xxx", material._plugins);
         material._plugins = material._plugins.sort((a, b) => a.priority - b.priority);
     }
 
