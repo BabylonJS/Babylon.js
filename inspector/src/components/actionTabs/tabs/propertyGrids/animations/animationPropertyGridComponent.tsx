@@ -94,12 +94,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             this.props.scene.stopAnimation(this.props.animatable);
             this._mainAnimatable = null;
         } else {
-            this._mainAnimatable = this.props.scene.beginAnimation(
-                this.props.animatable,
-                this._animationControl.from,
-                this._animationControl.to,
-                this._animationControl.loop
-            );
+            this._mainAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
         }
         this.forceUpdate();
     }
@@ -136,7 +131,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
-    componentDidUpdate(prevProps : IAnimationGridComponentProps) {
+    componentDidUpdate(prevProps: IAnimationGridComponentProps) {
         const prevId = (prevProps.animatable as any).uniqueId;
         const currId = (this.props.animatable as any).uniqueId;
         if (prevId !== currId) {
@@ -191,24 +186,14 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                 {animations && (
                     <>
                         <LineContainerComponent title="ANIMATIONS" selection={this.props.globalState}>
-                            <TextLineComponent label="Count" value={animations.length.toString()} />                            
-                            {
-                            animations.map((anim, i) => {
-                                return (
-                                    <TextLineComponent
-                                        key={anim.targetProperty + i}
-                                        label={"#" + i + " >"}
-                                        value={anim.targetProperty}
-                                    />
-                                );
+                            <TextLineComponent label="Count" value={animations.length.toString()} />
+                            {animations.map((anim, i) => {
+                                return <TextLineComponent key={anim.targetProperty + i} label={"#" + i + " >"} value={anim.targetProperty} />;
                             })}
-                            <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext}/>
+                            <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />
                         </LineContainerComponent>
                         {animations.length > 0 && (
-                            <LineContainerComponent
-                                title="ANIMATION GENERAL CONTROL"
-                                selection={this.props.globalState}
-                            >
+                            <LineContainerComponent title="ANIMATION GENERAL CONTROL" selection={this.props.globalState}>
                                 <FloatLineComponent
                                     lockObject={this.props.lockObject}
                                     isInteger={true}
@@ -230,7 +215,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     onSelect={(value) => {
                                         this._animationControl.loop = value;
 
-                                        animatablesForTarget.forEach(at => {
+                                        animatablesForTarget.forEach((at) => {
                                             at.loopAnimation = value;
                                         });
                                     }}
@@ -247,10 +232,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                         onInput={(value) => this.onCurrentFrameChange(value)}
                                     />
                                 )}
-                                <ButtonLineComponent
-                                    label={this._isPlaying ? "Stop" : "Play"}
-                                    onClick={() => this.playOrPause()}
-                                />
+                                <ButtonLineComponent label={this._isPlaying ? "Stop" : "Play"} onClick={() => this.playOrPause()} />
                                 {(this._ranges.length > 0 || (this._animations && this._animations.length > 0)) && (
                                     <>
                                         <CheckBoxLineComponent

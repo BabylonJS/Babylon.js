@@ -9,9 +9,9 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 
 interface ILinePropertyGridComponentProps {
-    line: Line,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    line: Line;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
@@ -24,7 +24,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         const split = value.split(",");
         line.dash = [];
 
-        split.forEach(v => {
+        split.forEach((v) => {
             const int = parseInt(v);
 
             if (isNaN(int)) {
@@ -40,14 +40,50 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={line} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={line} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="LINE">
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Line width" target={line} propertyName="lineWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="X1" target={line} propertyName="x1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Y1" target={line} propertyName="y1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="X2" target={line} propertyName="x2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Y2" target={line} propertyName="y2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Dash pattern" target={line} value={line.dash.join(",")} onChange={newValue => this.onDashChange(newValue)} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Line width"
+                        target={line}
+                        propertyName="lineWidth"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="X1"
+                        target={line}
+                        propertyName="x1"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Y1"
+                        target={line}
+                        propertyName="y1"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="X2"
+                        target={line}
+                        propertyName="x2"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Y2"
+                        target={line}
+                        propertyName="y2"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Dash pattern"
+                        target={line}
+                        value={line.dash.join(",")}
+                        onChange={(newValue) => this.onDashChange(newValue)}
+                    />
                 </LineContainerComponent>
             </div>
         );

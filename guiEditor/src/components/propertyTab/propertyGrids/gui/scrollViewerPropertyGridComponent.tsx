@@ -10,13 +10,13 @@ import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3
 
 const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
-const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");;
+const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IScrollViewerPropertyGridComponentProps {
-    scrollViewer: ScrollViewer,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    scrollViewer: ScrollViewer;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
@@ -29,21 +29,73 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={scrollViewer} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    control={scrollViewer}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <FloatLineComponent iconLabel="Stroke Weight" icon={strokeWeightIcon} lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="thickness" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel="Corner Radius" icon={conerRadiusIcon} lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="cornerRadius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent
+                        iconLabel="Stroke Weight"
+                        icon={strokeWeightIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={scrollViewer}
+                        propertyName="thickness"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        iconLabel="Corner Radius"
+                        icon={conerRadiusIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={scrollViewer}
+                        propertyName="cornerRadius"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
                 <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <FloatLineComponent iconLabel={"Wheel precision"} icon={sizeIcon} lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="wheelPrecision" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <FloatLineComponent iconLabel={"Bar size"} icon={sizeIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent
+                        iconLabel={"Wheel precision"}
+                        icon={sizeIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={scrollViewer}
+                        propertyName="wheelPrecision"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        iconLabel={"Bar size"}
+                        icon={sizeIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={scrollViewer}
+                        propertyName="barSize"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
-                <Color3LineComponent iconLabel={"Bar color"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <Color3LineComponent iconLabel={"Bar background"} icon={fillColorIcon}  lockObject={this.props.lockObject} label="" target={scrollViewer} propertyName="barBackground" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent
+                    iconLabel={"Bar color"}
+                    icon={fillColorIcon}
+                    lockObject={this.props.lockObject}
+                    label=""
+                    target={scrollViewer}
+                    propertyName="barColor"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <Color3LineComponent
+                    iconLabel={"Bar background"}
+                    icon={fillColorIcon}
+                    lockObject={this.props.lockObject}
+                    label=""
+                    target={scrollViewer}
+                    propertyName="barBackground"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

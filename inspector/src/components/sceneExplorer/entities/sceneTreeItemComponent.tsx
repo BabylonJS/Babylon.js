@@ -5,17 +5,17 @@ import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
 import { Scene } from "babylonjs/scene";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from "@fortawesome/free-solid-svg-icons";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
-import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
-import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
-import { CameraGizmo } from 'babylonjs/Gizmos/cameraGizmo';
-import { TmpVectors, Vector3 } from 'babylonjs/Maths/math';
+import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
+import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
+import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
+import { TmpVectors, Vector3 } from "babylonjs/Maths/math";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -26,7 +26,7 @@ interface ISceneTreeItemComponentProps {
     globalState: GlobalState;
 }
 
-export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean, isInPickingMode: boolean, gizmoMode: number }> {
+export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean; isInPickingMode: boolean; gizmoMode: number }> {
     private _gizmoLayerOnPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
@@ -57,7 +57,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode };
     }
 
-    shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean, isInPickingMode: boolean }) {
+    shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean; isInPickingMode: boolean }) {
         if (nextProps.selectedEntity) {
             if (nextProps.scene === nextProps.selectedEntity) {
                 nextState.isSelected = true;
@@ -97,8 +97,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
-                }else if(className.indexOf("Bone") !== -1){
-                    manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
+                } else if (className.indexOf("Bone") !== -1) {
+                    manager.attachToMesh(this._selectedEntity._linkedTransformNode ? this._selectedEntity._linkedTransformNode : this._selectedEntity);
                 } else {
                     manager.attachToNode(null);
                 }
@@ -143,8 +143,13 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         if (!this.state.isInPickingMode) {
             this._onPointerObserver = scene.onPointerObservable.add(() => {
                 const pickPosition = scene.unTranslatedPointer;
-                const pickInfo = scene.pick(pickPosition.x, pickPosition.y, (mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0, false,
-                    undefined, (p0, p1, p2, ray) => {
+                const pickInfo = scene.pick(
+                    pickPosition.x,
+                    pickPosition.y,
+                    (mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0,
+                    false,
+                    undefined,
+                    (p0, p1, p2, ray) => {
                         if (!this.props.globalState.ignoreBackfacesForPicking) {
                             return true;
                         }
@@ -158,15 +163,15 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                         normal = Vector3.Cross(p0p1, p1p2);
 
-
                         return Vector3.Dot(normal, ray.direction) < 0;
-                    });
+                    }
+                );
 
                 // Pick light gizmos first
                 if (this.props.globalState.lightGizmos.length > 0) {
                     var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
                     let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of (this.props.globalState.lightGizmos as any)) {
+                        for (var g of this.props.globalState.lightGizmos as any) {
                             if (g.attachedNode == m) {
                                 return true;
                             }
@@ -182,7 +187,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 if (this.props.globalState.cameraGizmos.length > 0) {
                     var gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
                     let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of (this.props.globalState.cameraGizmos as any)) {
+                        for (var g of this.props.globalState.cameraGizmos as any) {
                             if (g.attachedNode == m) {
                                 return true;
                             }
@@ -197,7 +202,6 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
                     this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
                 }
-
             }, PointerEventTypes.POINTERTAP);
         }
 
@@ -237,7 +241,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     }
                 }
             }
-        })
+        });
 
         manager.boundingBoxGizmoEnabled = false;
         manager.positionGizmoEnabled = false;
@@ -256,30 +260,33 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedNode) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.lightGizmo : null;
-                                var objLight: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore
+                                    ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.lightGizmo
+                                    : null;
+                                var objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
 
                                 if (objLight.position) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = objLight
-                                    e.property = "position"
+                                    e.object = objLight;
+                                    e.property = "position";
                                     e.value = objLight.position;
-                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 } else {
-                                    var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.cameraGizmo : null;
-                                    var objCamera: any = (cameraGizmo && cameraGizmo.camera) ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
-    
+                                    var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore
+                                        ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.cameraGizmo
+                                        : null;
+                                    var objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
+
                                     if (objCamera.position) {
                                         var e = new PropertyChangedEvent();
-                                        e.object = objCamera
-                                        e.property = "position"
+                                        e.object = objCamera;
+                                        e.property = "position";
                                         e.value = objCamera.position;
-                                        this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
+                                        this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                     }
-
                                 }
                             }
-                        })
+                        });
                     }
 
                     break;
@@ -289,10 +296,14 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedNode) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.lightGizmo : null;
-                                var objLight: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedNode;
-                                var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.cameraGizmo : null;
-                                var objCamera: any = (cameraGizmo && cameraGizmo.camera) ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore
+                                    ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.lightGizmo
+                                    : null;
+                                var objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedNode;
+                                var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore
+                                    ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.cameraGizmo
+                                    : null;
+                                var objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
 
                                 if (objLight.rotationQuaternion) {
                                     var e = new PropertyChangedEvent();
@@ -326,7 +337,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 }
                             }
-                        })
+                        });
                     }
 
                     break;
@@ -336,8 +347,10 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._scaleDragEnd = manager.gizmos.scaleGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore ? manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
-                                var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore
+                                    ? manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo
+                                    : null;
+                                var obj: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
 
                                 if (obj.scaling) {
                                     var e = new PropertyChangedEvent();
@@ -347,7 +360,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 }
                             }
-                        })
+                        });
                     }
 
                     break;
@@ -376,8 +389,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
-                } else if(className.indexOf("Bone") !== -1){
-                    manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
+                } else if (className.indexOf("Bone") !== -1) {
+                    manager.attachToMesh(this._selectedEntity._linkedTransformNode ? this._selectedEntity._linkedTransformNode : this._selectedEntity);
                 }
             }
         }
@@ -389,31 +402,46 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         return (
             <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"}>
                 <div className="sceneNode">
-                    <div className="sceneTitle" onClick={() => this.onSelect()} >
-                        <FontAwesomeIcon icon={faImage} />&nbsp;Scene
+                    <div className="sceneTitle" onClick={() => this.onSelect()}>
+                        <FontAwesomeIcon icon={faImage} />
+                        &nbsp;Scene
                     </div>
-                    <div className={this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon"} onClick={() => this.setGizmoMode(1)} title="Enable/Disable position mode">
+                    <div
+                        className={this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon"}
+                        onClick={() => this.setGizmoMode(1)}
+                        title="Enable/Disable position mode"
+                    >
                         <FontAwesomeIcon icon={faArrowsAlt} />
                     </div>
-                    <div className={this.state.gizmoMode === 2 ? "rotation selected icon" : "rotation icon"} onClick={() => this.setGizmoMode(2)} title="Enable/Disable rotation mode">
+                    <div
+                        className={this.state.gizmoMode === 2 ? "rotation selected icon" : "rotation icon"}
+                        onClick={() => this.setGizmoMode(2)}
+                        title="Enable/Disable rotation mode"
+                    >
                         <FontAwesomeIcon icon={faRedoAlt} />
                     </div>
                     <div className={this.state.gizmoMode === 3 ? "scaling selected icon" : "scaling icon"} onClick={() => this.setGizmoMode(3)} title="Enable/Disable scaling mode">
                         <FontAwesomeIcon icon={faCompress} />
                     </div>
-                    <div className={this.state.gizmoMode === 4 ? "bounding selected icon" : "bounding icon"} onClick={() => this.setGizmoMode(4)} title="Enable/Disable bounding box mode">
+                    <div
+                        className={this.state.gizmoMode === 4 ? "bounding selected icon" : "bounding icon"}
+                        onClick={() => this.setGizmoMode(4)}
+                        title="Enable/Disable bounding box mode"
+                    >
                         <FontAwesomeIcon icon={faVectorSquare} />
                     </div>
                     <div className="separator" />
-                    <div className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"} onClick={() => this.onPickingMode()} title="Turn picking mode on/off">
+                    <div
+                        className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"}
+                        onClick={() => this.onPickingMode()}
+                        title="Turn picking mode on/off"
+                    >
                         <FontAwesomeIcon icon={faCrosshairs} />
                     </div>
                     <div className="refresh icon" onClick={() => this.props.onRefresh()} title="Refresh the explorer">
                         <FontAwesomeIcon icon={faSyncAlt} />
                     </div>
-                    {
-                        <ExtensionsComponent target={this.props.scene} extensibilityGroups={this.props.extensibilityGroups} />
-                    }
+                    {<ExtensionsComponent target={this.props.scene} extensibilityGroups={this.props.extensibilityGroups} />}
                 </div>
             </div>
         );

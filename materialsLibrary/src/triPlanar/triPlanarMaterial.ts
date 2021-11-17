@@ -48,6 +48,7 @@ class TriPlanarMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

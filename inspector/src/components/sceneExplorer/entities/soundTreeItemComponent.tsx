@@ -1,9 +1,9 @@
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { faMusic } from '@fortawesome/free-solid-svg-icons';
+import { faMusic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Sound } from 'babylonjs/Audio/sound';
+import { Sound } from "babylonjs/Audio/sound";
 
 interface ISoundTreeItemComponentProps {
     sound: Sound;
@@ -22,9 +22,7 @@ export class SoundTreeItemComponent extends React.Component<ISoundTreeItemCompon
         return (
             <div className="soundTools">
                 <TreeItemLabelComponent label={sound.name} onClick={() => this.props.onClick()} icon={faMusic} color="teal" />
-                {
-                    <ExtensionsComponent target={sound} extensibilityGroups={this.props.extensibilityGroups} />
-                }
+                {<ExtensionsComponent target={sound} extensibilityGroups={this.props.extensibilityGroups} />}
             </div>
         );
     }

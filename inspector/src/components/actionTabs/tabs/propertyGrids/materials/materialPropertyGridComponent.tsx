@@ -6,13 +6,13 @@ import { Material } from "babylonjs/Materials/material";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { GlobalState } from "../../../../globalState";
 
 interface IMaterialPropertyGridComponentProps {
-    globalState: GlobalState,
-    material: Material,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    globalState: GlobalState;
+    material: Material;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class MaterialPropertyGridComponent extends React.Component<IMaterialPropertyGridComponentProps> {
@@ -25,7 +25,12 @@ export class MaterialPropertyGridComponent extends React.Component<IMaterialProp
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    lockObject={this.props.lockObject}
+                    material={material}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

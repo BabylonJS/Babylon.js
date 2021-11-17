@@ -1,20 +1,19 @@
 import * as React from "react";
 
 interface ICommandButtonComponentProps {
-    tooltip: string;   
+    tooltip: string;
     shortcut?: string;
-    icon: string; 
-    iconLabel? : string;
+    icon: string;
+    iconLabel?: string;
     isActive: boolean;
     onClick: () => void;
     altStyle? : boolean;
 }
 
-export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {    
-  
+export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
     public constructor(props: ICommandButtonComponentProps) {
         super(props);
-    }    
+    }
 
     public render() {
 
@@ -33,6 +32,7 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
                 <div className="command-label">
                     {this.props.tooltip}
                 </div>
+                <div className="command-label">{this.props.tooltip}</div>
             </div>
         );
     }
