@@ -5,7 +5,7 @@ export type WorkQuantizer = {
     readonly shouldYield: false,
 } | {
     readonly shouldYield: true,
-    yield: () => Promise<void>,
+    yieldAsync: () => Promise<void>,
 };
 
 /**
@@ -50,7 +50,7 @@ export function createWorkQuantizer(config: number | false | undefined): WorkQua
             }
             return false;
         },
-        yield() {
+        yieldAsync() {
             return new Promise<void>((resolve) => setTimeout(resolve, 0));
         },
     };
