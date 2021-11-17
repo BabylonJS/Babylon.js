@@ -235,7 +235,11 @@ export class VertexData {
      * @returns the VertexData
      */
     public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
-        this._applyTo(mesh, updatable, false);
+        let error: any;
+        this._applyTo(mesh, updatable, (e) => error = e);
+        if (error) {
+            throw error;
+        }
         return this;
     }
 
@@ -247,7 +251,7 @@ export class VertexData {
      * @returns the VertexData
      */
     public async applyToMeshAsync(mesh: Mesh, updatable?: boolean): Promise<VertexData> {
-        await this._applyTo(mesh, updatable, true);
+        await this._applyTo(mesh, updatable);
         return this;
     }
 
@@ -259,7 +263,11 @@ export class VertexData {
      * @returns VertexData
      */
     public applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {
-        this._applyTo(geometry, updatable, false);
+        let error: any;
+        this._applyTo(geometry, updatable, (e) => error = e);
+        if (error) {
+            throw error;
+        }
         return this;
     }
 
@@ -271,7 +279,7 @@ export class VertexData {
      * @returns VertexData
      */
     public async applyToGeometryAsync(geometry: Geometry, updatable?: boolean): Promise<VertexData> {
-        await this._applyTo(geometry, updatable, true);
+        await this._applyTo(geometry, updatable);
         return this;
     }
 
@@ -302,85 +310,93 @@ export class VertexData {
     private async _applyTo(
         meshOrGeometry: IGetSetVerticesData,
         updatable = false,
-        asynchronous: boolean,
+        onError?: (error: any) => void,
     ): Promise<void> {
-        const quantizer = asynchronous ? createWorkQuantizer() : createWorkQuantizer(false);
+        const quantizer = !onError ? createWorkQuantizer() : createWorkQuantizer(false);
 
-        if (this.positions) {
-            meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+        try {
+            if (this.positions) {
+                meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.normals) {
-            meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.normals) {
+                meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.tangents) {
-            meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.tangents) {
+                meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.uvs) {
-            meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.uvs) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.uvs2) {
-            meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.uvs2) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.uvs3) {
-            meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.uvs3) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.uvs4) {
-            meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.uvs4) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.uvs5) {
-            meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uvs5, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.uvs5) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uvs5, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.uvs6) {
-            meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uvs6, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.uvs6) {
+                meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uvs6, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.colors) {
-            meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.colors) {
+                meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.matricesIndices) {
-            meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.matricesIndices) {
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.matricesWeights) {
-            meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.matricesWeights) {
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.matricesIndicesExtra) {
-            meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.matricesIndicesExtra) {
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.matricesWeightsExtra) {
-            meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        }
+            if (this.matricesWeightsExtra) {
+                meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            }
 
-        if (this.indices) {
-            meshOrGeometry.setIndices(this.indices, null, updatable);
-            quantizer.shouldYield && await quantizer.yield();
-        } else {
-            meshOrGeometry.setIndices([], null);
+            if (this.indices) {
+                meshOrGeometry.setIndices(this.indices, null, updatable);
+                quantizer.shouldYield && await quantizer.yield();
+            } else {
+                meshOrGeometry.setIndices([], null);
+            }
+        } catch (error) {
+            if (onError) {
+                onError(error);
+            } else {
+                throw error;
+            }
         }
     }
 
@@ -529,7 +545,11 @@ export class VertexData {
      * @returns the modified VertexData
      */
     public merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData {
-        this._merge(others, use32BitsIndices, false);
+        let error: any;
+        this._merge(others, use32BitsIndices, (e) => error = e);
+        if (error) {
+            throw error;
+        }
         return this;
     }
 
@@ -540,103 +560,111 @@ export class VertexData {
      * @returns the modified VertexData
      */
     public async mergeAsync(others: VertexData | VertexData[], use32BitsIndices?: boolean): Promise<VertexData> {
-        await this._merge(others, use32BitsIndices, true);
+        await this._merge(others, use32BitsIndices);
         return this;
     }
 
     private async _merge(
         others: VertexData | VertexData[],
         use32BitsIndices = false,
-        asynchronous: boolean,
+        onError?: (error: any) => void,
     ): Promise<void> {
-        const quantizer = asynchronous ? createWorkQuantizer() : createWorkQuantizer(false);
+        const quantizer = !onError ? createWorkQuantizer() : createWorkQuantizer(false);
 
-        this._validate();
+        try {
+            this._validate();
 
-        others = Array.isArray(others) ? others : [others];
+            others = Array.isArray(others) ? others : [others];
 
-        for (const other of others) {
-            other._validate();
-
-            if (!this.normals !== !other.normals ||
-                !this.tangents !== !other.tangents ||
-                !this.uvs !== !other.uvs ||
-                !this.uvs2 !== !other.uvs2 ||
-                !this.uvs3 !== !other.uvs3 ||
-                !this.uvs4 !== !other.uvs4 ||
-                !this.uvs5 !== !other.uvs5 ||
-                !this.uvs6 !== !other.uvs6 ||
-                !this.colors !== !other.colors ||
-                !this.matricesIndices !== !other.matricesIndices ||
-                !this.matricesWeights !== !other.matricesWeights ||
-                !this.matricesIndicesExtra !== !other.matricesIndicesExtra ||
-                !this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
-                throw new Error("Cannot merge vertex data that do not have the same set of attributes");
-            }
-        }
-
-        const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
-        if (totalIndices > 0) {
-
-            let indicesOffset = this.indices?.length ?? 0;
-
-            if (!this.indices) {
-                this.indices = new Array<number>(totalIndices);
-            }
-
-            if (this.indices.length !== totalIndices) {
-                if (Array.isArray(this.indices)) {
-                    this.indices.length = totalIndices;
-                } else {
-                    const temp = use32BitsIndices || this.indices instanceof Uint32Array ? new Uint32Array(totalIndices) : new Uint16Array(totalIndices);
-                    temp.set(this.indices);
-                    this.indices = temp;
-                }
-            }
-
-            let positionsOffset = this.positions ? this.positions.length / 3 : 0;
             for (const other of others) {
-                if (other.indices) {
-                    for (let index = 0; index < other.indices.length; index++) {
-                        this.indices[indicesOffset + index] = other.indices[index] + positionsOffset;
-                    }
+                other._validate();
 
-                    // The call to _validate already checked for positions
-                    positionsOffset += other.positions!.length / 3;
-                    indicesOffset += other.indices.length;
-
-                    quantizer.shouldYield && await quantizer.yield();
+                if (!this.normals !== !other.normals ||
+                    !this.tangents !== !other.tangents ||
+                    !this.uvs !== !other.uvs ||
+                    !this.uvs2 !== !other.uvs2 ||
+                    !this.uvs3 !== !other.uvs3 ||
+                    !this.uvs4 !== !other.uvs4 ||
+                    !this.uvs5 !== !other.uvs5 ||
+                    !this.uvs6 !== !other.uvs6 ||
+                    !this.colors !== !other.colors ||
+                    !this.matricesIndices !== !other.matricesIndices ||
+                    !this.matricesWeights !== !other.matricesWeights ||
+                    !this.matricesIndicesExtra !== !other.matricesIndicesExtra ||
+                    !this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
+                    throw new Error("Cannot merge vertex data that do not have the same set of attributes");
                 }
             }
-        }
 
-        this.positions = VertexData._mergeElement(this.positions, others.map((other) => other.positions));
-        quantizer.shouldYield && await quantizer.yield();
-        this.normals = VertexData._mergeElement(this.normals, others.map((other) => other.normals));
-        quantizer.shouldYield && await quantizer.yield();
-        this.tangents = VertexData._mergeElement(this.tangents, others.map((other) => other.tangents));
-        quantizer.shouldYield && await quantizer.yield();
-        this.uvs = VertexData._mergeElement(this.uvs, others.map((other) => other.uvs));
-        quantizer.shouldYield && await quantizer.yield();
-        this.uvs2 = VertexData._mergeElement(this.uvs2, others.map((other) => other.uvs2));
-        quantizer.shouldYield && await quantizer.yield();
-        this.uvs3 = VertexData._mergeElement(this.uvs3, others.map((other) => other.uvs3));
-        quantizer.shouldYield && await quantizer.yield();
-        this.uvs4 = VertexData._mergeElement(this.uvs4, others.map((other) => other.uvs4));
-        quantizer.shouldYield && await quantizer.yield();
-        this.uvs5 = VertexData._mergeElement(this.uvs5, others.map((other) => other.uvs5));
-        quantizer.shouldYield && await quantizer.yield();
-        this.uvs6 = VertexData._mergeElement(this.uvs6, others.map((other) => other.uvs6));
-        quantizer.shouldYield && await quantizer.yield();
-        this.colors = VertexData._mergeElement(this.colors, others.map((other) => other.colors));
-        quantizer.shouldYield && await quantizer.yield();
-        this.matricesIndices = VertexData._mergeElement(this.matricesIndices, others.map((other) => other.matricesIndices));
-        quantizer.shouldYield && await quantizer.yield();
-        this.matricesWeights = VertexData._mergeElement(this.matricesWeights, others.map((other) => other.matricesWeights));
-        quantizer.shouldYield && await quantizer.yield();
-        this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map((other) => other.matricesIndicesExtra));
-        quantizer.shouldYield && await quantizer.yield();
-        this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map((other) => other.matricesWeightsExtra));
+            const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
+            if (totalIndices > 0) {
+
+                let indicesOffset = this.indices?.length ?? 0;
+
+                if (!this.indices) {
+                    this.indices = new Array<number>(totalIndices);
+                }
+
+                if (this.indices.length !== totalIndices) {
+                    if (Array.isArray(this.indices)) {
+                        this.indices.length = totalIndices;
+                    } else {
+                        const temp = use32BitsIndices || this.indices instanceof Uint32Array ? new Uint32Array(totalIndices) : new Uint16Array(totalIndices);
+                        temp.set(this.indices);
+                        this.indices = temp;
+                    }
+                }
+
+                let positionsOffset = this.positions ? this.positions.length / 3 : 0;
+                for (const other of others) {
+                    if (other.indices) {
+                        for (let index = 0; index < other.indices.length; index++) {
+                            this.indices[indicesOffset + index] = other.indices[index] + positionsOffset;
+                        }
+
+                        // The call to _validate already checked for positions
+                        positionsOffset += other.positions!.length / 3;
+                        indicesOffset += other.indices.length;
+
+                        quantizer.shouldYield && await quantizer.yield();
+                    }
+                }
+            }
+
+            this.positions = VertexData._mergeElement(this.positions, others.map((other) => other.positions));
+            quantizer.shouldYield && await quantizer.yield();
+            this.normals = VertexData._mergeElement(this.normals, others.map((other) => other.normals));
+            quantizer.shouldYield && await quantizer.yield();
+            this.tangents = VertexData._mergeElement(this.tangents, others.map((other) => other.tangents));
+            quantizer.shouldYield && await quantizer.yield();
+            this.uvs = VertexData._mergeElement(this.uvs, others.map((other) => other.uvs));
+            quantizer.shouldYield && await quantizer.yield();
+            this.uvs2 = VertexData._mergeElement(this.uvs2, others.map((other) => other.uvs2));
+            quantizer.shouldYield && await quantizer.yield();
+            this.uvs3 = VertexData._mergeElement(this.uvs3, others.map((other) => other.uvs3));
+            quantizer.shouldYield && await quantizer.yield();
+            this.uvs4 = VertexData._mergeElement(this.uvs4, others.map((other) => other.uvs4));
+            quantizer.shouldYield && await quantizer.yield();
+            this.uvs5 = VertexData._mergeElement(this.uvs5, others.map((other) => other.uvs5));
+            quantizer.shouldYield && await quantizer.yield();
+            this.uvs6 = VertexData._mergeElement(this.uvs6, others.map((other) => other.uvs6));
+            quantizer.shouldYield && await quantizer.yield();
+            this.colors = VertexData._mergeElement(this.colors, others.map((other) => other.colors));
+            quantizer.shouldYield && await quantizer.yield();
+            this.matricesIndices = VertexData._mergeElement(this.matricesIndices, others.map((other) => other.matricesIndices));
+            quantizer.shouldYield && await quantizer.yield();
+            this.matricesWeights = VertexData._mergeElement(this.matricesWeights, others.map((other) => other.matricesWeights));
+            quantizer.shouldYield && await quantizer.yield();
+            this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map((other) => other.matricesIndicesExtra));
+            quantizer.shouldYield && await quantizer.yield();
+            this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map((other) => other.matricesWeightsExtra));
+        } catch (error) {
+            if (onError) {
+                onError(error);
+            } else {
+                throw error;
+            }
+        }
     }
 
     private static _mergeElement(source: Nullable<FloatArray>, others: readonly Nullable<FloatArray>[]): Nullable<FloatArray> {

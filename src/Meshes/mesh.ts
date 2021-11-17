@@ -4293,7 +4293,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         multiMultiMaterials?: boolean
     ): Nullable<Mesh> {
         let mergedMesh: Nullable<Mesh> = null;
-        Mesh._MergeMeshes(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false, (mesh: Nullable<Mesh>) => mergedMesh = mesh);
+        let error: any;
+        Mesh._MergeMeshes(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, (mesh: Nullable<Mesh>) => mergedMesh = mesh, (e: any) => error = e);
+        if (error) {
+            throw error;
+        }
         return mergedMesh;
     }
 
@@ -4316,7 +4320,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         multiMultiMaterials?: boolean
     ): Promise<Nullable<Mesh>> {
         let mergedMesh: Nullable<Mesh> = null;
-        await Mesh._MergeMeshes(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true, (mesh: Nullable<Mesh>) => mergedMesh = mesh);
+        await Mesh._MergeMeshes(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, (mesh: Nullable<Mesh>) => mergedMesh = mesh);
         return mergedMesh;
     }
 
@@ -4327,157 +4331,166 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         meshSubclass: Mesh | undefined,
         subdivideWithSubMeshes: boolean | undefined,
         multiMultiMaterials: boolean | undefined,
-        asynchronous: boolean,
         onFinished: (mesh: Nullable<Mesh>) => void,
+        onError?: (error: any) => void,
     ): Promise<void> {
+        const asynchronous = !onError;
         const quantizer = asynchronous ? createWorkQuantizer() : createWorkQuantizer(false);
 
+        try {
         // Remove any null/undefined entries from the mesh array
-        meshes = meshes.filter(Boolean);
+            meshes = meshes.filter(Boolean);
 
-        if (meshes.length === 0) {
-            onFinished(null);
-            return;
-        }
-
-        var index: number;
-        if (!allow32BitsIndices) {
-            var totalVertices = 0;
-
-            // Counting vertices
-            for (index = 0; index < meshes.length; index++) {
-                totalVertices += meshes[index].getTotalVertices();
-
-                if (totalVertices >= 65536) {
-                    Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
-                    onFinished(null);
-                    return;
-                }
-            }
-        }
-        if (multiMultiMaterials) {
-            var newMultiMaterial: Nullable<MultiMaterial> = null;
-            var subIndex: number;
-            var matIndex: number;
-            subdivideWithSubMeshes = false;
-        }
-        var materialArray: Array<Material> = new Array<Material>();
-        var materialIndexArray: Array<number> = new Array<number>();
-        // Merge
-        var indiceArray: Array<number> = new Array<number>();
-        for (index = 0; index < meshes.length; index++) {
-            var mesh = meshes[index];
-            if (mesh.isAnInstance) {
-                Logger.Warn("Cannot merge instance meshes.");
+            if (meshes.length === 0) {
                 onFinished(null);
                 return;
             }
 
-            if (subdivideWithSubMeshes) {
-                indiceArray.push(mesh.getTotalIndices());
-            }
+            var index: number;
+            if (!allow32BitsIndices) {
+                var totalVertices = 0;
 
-            if (multiMultiMaterials) {
-                if (mesh.material) {
-                    var material = mesh.material;
-                    if (material instanceof MultiMaterial) {
-                        for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                            if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
-                                materialArray.push(<Material>material.subMaterials[matIndex]);
-                            }
-                        }
-                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
-                        }
-                    } else {
-                        if (materialArray.indexOf(<Material>material) < 0) {
-                            materialArray.push(<Material>material);
-                        }
-                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(<Material>material));
-                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
-                        }
-                    }
-                } else {
-                    for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        materialIndexArray.push(0);
-                        indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                // Counting vertices
+                for (index = 0; index < meshes.length; index++) {
+                    totalVertices += meshes[index].getTotalVertices();
+
+                    if (totalVertices >= 65536) {
+                        Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
+                        onFinished(null);
+                        return;
                     }
                 }
             }
-        }
-
-        const source = meshes[0];
-
-        const getVertexDataFromMesh = (mesh: Mesh) => {
-            const wm = mesh.computeWorldMatrix(true);
-            const vertexData = VertexData.ExtractFromMesh(mesh, true, true);
-            vertexData.transform(wm);
-            return vertexData;
-        };
-
-        const sourceVertexData = getVertexDataFromMesh(source);
-        quantizer.shouldYield && await quantizer.yield();
-
-        const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
-        for (let i = 1; i < meshes.length; i++) {
-            meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
-            quantizer.shouldYield && await quantizer.yield();
-        }
-
-        const vertexData: VertexData = asynchronous ? await sourceVertexData.mergeAsync(meshVertexDatas, allow32BitsIndices) : sourceVertexData.merge(meshVertexDatas, allow32BitsIndices);
-
-        if (!meshSubclass) {
-            meshSubclass = new Mesh(source.name + "_merged", source.getScene());
-        }
-
-        asynchronous ? await vertexData.applyToMeshAsync(meshSubclass) : vertexData.applyToMesh(meshSubclass);
-
-        // Setting properties
-        meshSubclass.checkCollisions = source.checkCollisions;
-        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
-
-        // Cleaning
-        if (disposeSource) {
+            if (multiMultiMaterials) {
+                var newMultiMaterial: Nullable<MultiMaterial> = null;
+                var subIndex: number;
+                var matIndex: number;
+                subdivideWithSubMeshes = false;
+            }
+            var materialArray: Array<Material> = new Array<Material>();
+            var materialIndexArray: Array<number> = new Array<number>();
+            // Merge
+            var indiceArray: Array<number> = new Array<number>();
             for (index = 0; index < meshes.length; index++) {
-                meshes[index].dispose();
+                var mesh = meshes[index];
+                if (mesh.isAnInstance) {
+                    Logger.Warn("Cannot merge instance meshes.");
+                    onFinished(null);
+                    return;
+                }
+
+                if (subdivideWithSubMeshes) {
+                    indiceArray.push(mesh.getTotalIndices());
+                }
+
+                if (multiMultiMaterials) {
+                    if (mesh.material) {
+                        var material = mesh.material;
+                        if (material instanceof MultiMaterial) {
+                            for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                    materialArray.push(<Material>material.subMaterials[matIndex]);
+                                }
+                            }
+                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
+                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                            }
+                        } else {
+                            if (materialArray.indexOf(<Material>material) < 0) {
+                                materialArray.push(<Material>material);
+                            }
+                            for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material));
+                                indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                            }
+                        }
+                    } else {
+                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            materialIndexArray.push(0);
+                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                        }
+                    }
+                }
+            }
+
+            const source = meshes[0];
+
+            const getVertexDataFromMesh = (mesh: Mesh) => {
+                const wm = mesh.computeWorldMatrix(true);
+                const vertexData = VertexData.ExtractFromMesh(mesh, true, true);
+                vertexData.transform(wm);
+                return vertexData;
+            };
+
+            const sourceVertexData = getVertexDataFromMesh(source);
+            quantizer.shouldYield && await quantizer.yield();
+
+            const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
+            for (let i = 1; i < meshes.length; i++) {
+                meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
+                quantizer.shouldYield && await quantizer.yield();
+            }
+
+            const vertexData: VertexData = asynchronous ? await sourceVertexData.mergeAsync(meshVertexDatas, allow32BitsIndices) : sourceVertexData.merge(meshVertexDatas, allow32BitsIndices);
+
+            if (!meshSubclass) {
+                meshSubclass = new Mesh(source.name + "_merged", source.getScene());
+            }
+
+            asynchronous ? await vertexData.applyToMeshAsync(meshSubclass) : vertexData.applyToMesh(meshSubclass);
+
+            // Setting properties
+            meshSubclass.checkCollisions = source.checkCollisions;
+            meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
+
+            // Cleaning
+            if (disposeSource) {
+                for (index = 0; index < meshes.length; index++) {
+                    meshes[index].dispose();
+                }
+            }
+
+            // Subdivide
+            if (subdivideWithSubMeshes || multiMultiMaterials) {
+                //-- removal of global submesh
+                meshSubclass.releaseSubMeshes();
+                index = 0;
+                var offset = 0;
+
+                //-- apply subdivision according to index table
+                while (index < indiceArray.length) {
+                    SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
+                    offset += indiceArray[index];
+                    index++;
+                }
+
+                for (const subMesh of meshSubclass.subMeshes) {
+                    subMesh.refreshBoundingInfo();
+                }
+
+                meshSubclass.computeWorldMatrix(true);
+            }
+
+            if (multiMultiMaterials) {
+                newMultiMaterial = new MultiMaterial(source.name + "_merged", source.getScene());
+                newMultiMaterial.subMaterials = materialArray;
+                for (subIndex = 0; subIndex < meshSubclass.subMeshes.length; subIndex++) {
+                    meshSubclass.subMeshes[subIndex].materialIndex = materialIndexArray[subIndex];
+                }
+                meshSubclass.material = newMultiMaterial;
+            } else {
+                meshSubclass.material = source.material;
+            }
+
+            onFinished(meshSubclass);
+        } catch (error) {
+            if (onError) {
+                onError(error);
+            } else {
+                throw error;
             }
         }
-
-        // Subdivide
-        if (subdivideWithSubMeshes || multiMultiMaterials) {
-            //-- removal of global submesh
-            meshSubclass.releaseSubMeshes();
-            index = 0;
-            var offset = 0;
-
-            //-- apply subdivision according to index table
-            while (index < indiceArray.length) {
-                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
-                offset += indiceArray[index];
-                index++;
-            }
-
-            for (const subMesh of meshSubclass.subMeshes) {
-                subMesh.refreshBoundingInfo();
-            }
-
-            meshSubclass.computeWorldMatrix(true);
-        }
-
-        if (multiMultiMaterials) {
-            newMultiMaterial = new MultiMaterial(source.name + "_merged", source.getScene());
-            newMultiMaterial.subMaterials = materialArray;
-            for (subIndex = 0; subIndex < meshSubclass.subMeshes.length; subIndex++) {
-                meshSubclass.subMeshes[subIndex].materialIndex = materialIndexArray[subIndex];
-            }
-            meshSubclass.material = newMultiMaterial;
-        } else {
-            meshSubclass.material = source.material;
-        }
-
-        onFinished(meshSubclass);
     }
 
     /** @hidden */
