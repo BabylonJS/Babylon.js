@@ -16,6 +16,10 @@ declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 
 type pluginMaterialFactory = (material: Material) => Nullable<IMaterialPlugin>;
 
+/**
+ * Manages plugins for materials. Allows to customize material at runtime,
+ * listening to events.
+ */
 export class MaterialPluginManager {
 
     private static _Plugins: Array<[string, pluginMaterialFactory]> = [];
@@ -42,6 +46,11 @@ export class MaterialPluginManager {
         MaterialPluginManager._Inited = true;
     }
 
+    /**
+     * Registers a new material plugin through a factory, or updates it.
+     * @param propertyName The plugin name
+     * @param factory The factor function, which returns a IMaterialPlugin or null if it's not applicable.
+     */
     public static RegisterPlugin(propertyName: string, factory: pluginMaterialFactory): void {
         if (!MaterialPluginManager._Inited) {
             MaterialPluginManager._Initialize();

@@ -13,6 +13,8 @@ declare type RenderTargetTexture = import("./Textures/renderTargetTexture").Rend
 declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
 
 export interface IMaterialPlugin {
+    priority: number;
+
     initialize?(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void;
 
     getClassName(): string;
@@ -38,5 +40,5 @@ export interface IMaterialPlugin {
     addSamplers?(samplers: string[]): void;
     prepareUniformBuffer?(uniformBuffer: UniformBuffer): void;
 
-    disableAlphaBlending: boolean;
+    disableAlphaBlending?: boolean;
 }
