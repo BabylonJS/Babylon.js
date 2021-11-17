@@ -4394,18 +4394,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         };
 
         const sourceVertexData = getVertexDataFromMesh(source);
-        if (isAsync) { yield };
+        if (isAsync) { yield; }
 
         const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
         for (let i = 1; i < meshes.length; i++) {
             meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
-            if (isAsync) { yield };
+            if (isAsync) { yield; }
         }
 
         const mergeCoroutine = sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices, isAsync);
         let mergeCoroutineStep = mergeCoroutine.next();
         while (!mergeCoroutineStep.done) {
-            if (isAsync) { yield };
+            if (isAsync) { yield; }
             mergeCoroutineStep = mergeCoroutine.next();
         }
         const vertexData = mergeCoroutineStep.value;
@@ -4417,7 +4417,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const applyToCoroutine = vertexData._applyToCoroutine(meshSubclass, undefined, isAsync);
         let applyToCoroutineStep = applyToCoroutine.next();
         while (!applyToCoroutineStep.done) {
-            if (isAsync) { yield };
+            if (isAsync) { yield; }
             applyToCoroutineStep = applyToCoroutine.next();
         }
 

@@ -63,7 +63,7 @@ Observable.prototype.runCoroutineAsync = function(coroutine: AsyncCoroutine<void
 
     return runCoroutineAsync(coroutine, this.coroutineScheduler, this.coroutineAbortController.signal);
 };
- 
+
 Observable.prototype.cancelAllCoroutines = function() {
     this.coroutineAbortController?.abort();
     this.coroutineAbortController = undefined;
