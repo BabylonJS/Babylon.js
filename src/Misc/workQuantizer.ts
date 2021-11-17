@@ -20,7 +20,7 @@ export function createWorkQuantizer(quantizeWork: false): WorkQuantizer;
  * @param yieldAfterMS The number of milliseconds of work that should be performed before yielding.
  * @returns An instance of a work quantizer that can be querried to determine when to yield.
  */
-export function createWorkQuantizer(yieldAfterMS?: number): WorkQuantizer
+export function createWorkQuantizer(yieldAfterMS?: number): WorkQuantizer;
 
 /**
  * Creates a quantizer from the specified configuration.
@@ -51,7 +51,7 @@ export function createWorkQuantizer(config: number | false | undefined): WorkQua
             return false;
         },
         yield() {
-            return new Promise<void>(resolve => setTimeout(resolve, 0));
+            return new Promise<void>((resolve) => setTimeout(resolve, 0));
         },
     };
 
