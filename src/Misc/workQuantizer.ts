@@ -34,7 +34,7 @@ export function createWorkQuantizer(config: number | false | undefined): WorkQua
         };
     }
 
-    if(config === undefined) {
+    if (config === undefined) {
         config = 25;
     }
 
