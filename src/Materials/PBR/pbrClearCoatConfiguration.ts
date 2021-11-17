@@ -50,6 +50,8 @@ export class MaterialClearCoatDefines extends MaterialDefines {
     _areTexturesDirty: boolean;
 }
 
+const modelDefines = new MaterialClearCoatDefines();
+
 /**
  * Define the code related to the clear coat parameters of the pbr material.
  */
@@ -571,5 +573,15 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
      */
     public parse(source: any, scene: Scene, rootUrl: string): void {
         SerializationHelper.Parse(() => this, source, scene, rootUrl);
+    }
+
+    public collectDefineNames(names: string[]): void {
+        for (const key of Object.keys(modelDefines)) {
+            if (key[0] === "_") {
+                continue;
+            }
+
+            names.push(key);
+        }
     }
 }
