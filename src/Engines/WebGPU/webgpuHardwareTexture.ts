@@ -33,7 +33,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
      * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
      * @hidden
      */
-    public _copyInvertYTempTexture: GPUTexture;
+    public _copyInvertYTempTexture?: GPUTexture;
     /** @hidden */
     public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
     /** @hidden */
@@ -100,6 +100,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public release(): void {
         this._webgpuTexture?.destroy();
         this._webgpuMSAATexture?.destroy();
+        this._copyInvertYTempTexture?.destroy();
         this.reset();
     }
 }
