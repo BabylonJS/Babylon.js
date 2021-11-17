@@ -289,7 +289,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 const leftKey = keys[indexToAdd];
                 const rightKey = keys[indexToAdd + 1];
 
-                if (Math.floor(currentFrame - leftKey.frame) === 0) {
+                if (Math.floor(currentFrame - leftKey?.frame) === 0) {
                     // Key already exists, update it
                     leftKey.value = value;
                 } else if (Math.floor(rightKey.frame - currentFrame) === 0) {
