@@ -53,6 +53,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
     async initEngine() {
         let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+        const antialias = this.props.globalState.commerceMode ? false : undefined;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {
@@ -67,10 +68,11 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         "depth32float-stencil8",
                     ],
                 },
+                antialiasing: antialias,
             });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
-            this._engine = new Engine(this._canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            this._engine = new Engine(this._canvas, antialias, { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: antialias });
         }
 
         this._engine.loadingUIBackgroundColor = "#2A2342";
