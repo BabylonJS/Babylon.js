@@ -20,7 +20,7 @@ declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type Material = import("../material").Material;
 
-RegisterMaterialPlugin("anisotropic", (material: Material) => {
+RegisterMaterialPlugin("anisotropy", (material: Material) => {
     if (material instanceof PBRBaseMaterial) {
         return new PBRAnisotropicConfiguration(material);
     }
