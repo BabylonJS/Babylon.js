@@ -134,11 +134,13 @@ export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: Co
 }
 
 // This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
+/** @hidden */
 type ExtractCoroutineReturnType<T> =
     T extends Coroutine<infer TReturn> ? TReturn :
     never;
 
 // This is a helper type to extract the return type of an AsyncCoroutine<T>.
+/** @hidden */
 type ExtractAsyncCoroutineReturnType<T> =
     T extends Coroutine<infer TReturn> ? Promise<TReturn> :
     T extends AsyncCoroutine<infer TReturn> ? Promise<TReturn> :

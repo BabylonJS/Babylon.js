@@ -40,7 +40,7 @@ declare module "./observable" {
 
         /**
          * Runs a coroutine asynchronously on this observable
-         * @param coroutineIterator the iterator resulting from having started the coroutine
+         * @param coroutine the iterator resulting from having started the coroutine
          * @returns a promise which will be resolved when the coroutine finishes or rejected if the coroutine is cancelled
          */
         runCoroutineAsync(coroutine: AsyncCoroutine<void>): Promise<void>;
