@@ -42329,8 +42329,9 @@ declare module BABYLON {
              * @param premulAlpha defines if alpha is stored as premultiplied
              * @param format defines the format of the data
              * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+             * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
              */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean, allowGPUOptimization?: boolean): void;
         }
 }
 declare module BABYLON {
@@ -57762,8 +57763,9 @@ declare module BABYLON {
          * Updates the texture
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
          * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
+         * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
          */
-        update(invertY?: boolean, premulAlpha?: boolean): void;
+        update(invertY?: boolean, premulAlpha?: boolean, allowGPUOptimization?: boolean): void;
         /**
          * Draws text onto the texture
          * @param text defines the text to be drawn
@@ -65312,14 +65314,33 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class WebGPUHardwareTexture implements HardwareTextureWrapper {
-        /** @hidden */
+        /**
+         * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
+         * The index in this array is the current layer we are rendering into
+         * @hidden
+        */
         _bundleLists: WebGPUBundleList[];
-        /** @hidden */
+        /**
+         * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
+         * @hidden
+         */
         _currentLayer: number;
-        /** @hidden */
+        /**
+         * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
+         * @hidden
+         */
         _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
         /** @hidden */
         _mipmapGenBindGroup: GPUBindGroup[][];
+        /**
+         * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
+         * @hidden
+         */
+        _copyInvertYTempTexture?: GPUTexture;
+        /** @hidden */
+        _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
+        /** @hidden */
+        _copyInvertYBindGroupd: GPUBindGroup;
         private _webgpuTexture;
         private _webgpuMSAATexture;
         get underlyingResource(): Nullable<GPUTexture>;
@@ -65396,7 +65417,7 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number;
-        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder): void;
+        invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -65412,7 +65433,7 @@ declare module BABYLON {
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
         updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
+        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>, noDataConversion?: boolean): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;

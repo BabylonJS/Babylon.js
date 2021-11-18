@@ -33,6 +33,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** Define the Uurl to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
 
+    /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+    public static AllowGPUOptimizations = true;
+
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
 
@@ -659,7 +662,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this._isDirty = false;
         this._render();
-        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
