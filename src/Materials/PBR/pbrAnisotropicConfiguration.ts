@@ -11,7 +11,7 @@ import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
 import { IMaterialPlugin } from "../IMaterialPlugin";
 import { Constants } from "../../Engines/constants";
-import { MaterialPluginManager } from "../materialPluginManager";
+import { RegisterMaterialPlugin } from "../materialPluginManager";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { MaterialDefines } from "../materialDefines";
 
@@ -20,7 +20,7 @@ declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type Material = import("../material").Material;
 
-MaterialPluginManager.RegisterPlugin("anisotropic", (material: Material) => {
+RegisterMaterialPlugin("anisotropic", (material: Material) => {
     if (material instanceof PBRBaseMaterial) {
         return new PBRAnisotropicConfiguration(material);
     }
