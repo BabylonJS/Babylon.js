@@ -17,6 +17,13 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
+import { MaterialEvent,
+    MaterialEventInfoAddSamplers,
+    MaterialEventInfoAddUniforms,
+    MaterialEventInfoGetAnimatables,
+    MaterialEventInfoPrepareDefines,
+    MaterialEventInfoPrepareUniformBuffer,
+} from "./materialEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -33,14 +40,14 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
-import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.detailMapConfiguration';
+
+declare type DetailMapConfiguration = import("./material.detailMapConfiguration").DetailMapConfiguration;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines
-    implements IImageProcessingConfigurationDefines,
-    IMaterialDetailMapDefines {
+    implements IImageProcessingConfigurationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -49,9 +56,6 @@ export class StandardMaterialDefines extends MaterialDefines
     public MAINUV6 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
-    public DETAIL = false;
-    public DETAILDIRECTUV = 0;
-    public DETAIL_NORMALBLENDMETHOD = 0;
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
@@ -193,9 +197,23 @@ export class StandardMaterialDefines extends MaterialDefines
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;
 
-    constructor() {
+    protected _keysFromPlugins?: string[];
+
+    /**
+     * Initializes the PBR Material defines.
+     * @param keysFromPlugins The plugin keys
+     */
+    constructor(keysFromPlugins?: string[]) {
         super();
+        this._keysFromPlugins = keysFromPlugins;
         this.rebuild();
+    }
+
+    public rebuild() {
+        super.rebuild();
+        if (this._keysFromPlugins) {
+            this._keys.push(...this._keysFromPlugins);
+        }
     }
 
     public setReflectionMode(modeToEnable: string) {
@@ -733,7 +751,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Defines the detail map parameters for the material.
      */
-    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly detailMap: DetailMapConfiguration;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
@@ -874,7 +892,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new StandardMaterialDefines();
+            subMesh.materialDefines = new StandardMaterialDefines(this._defineNamesFromPlugins);
         }
 
         var scene = this.getScene();
@@ -1080,7 +1098,7 @@ export class StandardMaterial extends PushMaterial {
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
         }
 
-        if (!this.detailMap.isReadyForSubMesh(defines, scene)) {
+        if (!super.isReadyForSubMesh(mesh, subMesh, useInstances)) {
             return false;
         }
 
@@ -1132,7 +1150,13 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
-        this.detailMap.prepareDefines(defines, scene);
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.PrepareDefines,
+            undefined,
+            undefined,
+            { defines, scene, mesh } as MaterialEventInfoPrepareDefines
+        );
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1253,8 +1277,20 @@ export class StandardMaterial extends PushMaterial {
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
-            DetailMapConfiguration.AddUniforms(uniforms);
-            DetailMapConfiguration.AddSamplers(samplers);
+            Material.OnEventObservable.notifyObservers(
+                this,
+                MaterialEvent.AddUniforms,
+                undefined,
+                undefined,
+                { uniforms } as MaterialEventInfoAddUniforms
+            );
+            Material.OnEventObservable.notifyObservers(
+                this,
+                MaterialEvent.AddSamplers,
+                undefined,
+                undefined,
+                { samplers } as MaterialEventInfoAddSamplers
+            );
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1377,7 +1413,13 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vDiffuseColor", 4);
         ubo.addUniform("vAmbientColor", 3);
 
-        DetailMapConfiguration.PrepareUniformBuffer(ubo);
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.PrepareUniformBuffer,
+            undefined,
+            undefined,
+            { ubo } as MaterialEventInfoPrepareUniformBuffer
+        );
 
         ubo.create();
     }
@@ -1626,7 +1668,7 @@ export class StandardMaterial extends PushMaterial {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
-            this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
+            super.bindForSubMesh(world, mesh, subMesh);
 
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);
@@ -1719,7 +1761,13 @@ export class StandardMaterial extends PushMaterial {
             results.push(this._refractionTexture);
         }
 
-        this.detailMap.getAnimatables(results);
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.GetAnimatables,
+            undefined,
+            undefined,
+            { animatables: results } as MaterialEventInfoGetAnimatables
+        );
 
         return results;
     }
@@ -1766,8 +1814,6 @@ export class StandardMaterial extends PushMaterial {
         if (this._refractionTexture) {
             activeTextures.push(this._refractionTexture);
         }
-
-        this.detailMap.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -1818,10 +1864,6 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        if (this.detailMap.hasTexture(texture)) {
-            return true;
-        }
-
         return false;
     }
 
@@ -1842,8 +1884,6 @@ export class StandardMaterial extends PushMaterial {
             this._lightmapTexture?.dispose();
             this._refractionTexture?.dispose();
         }
-
-        this.detailMap.dispose(forceDisposeTextures);
 
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);

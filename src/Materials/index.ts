@@ -25,3 +25,4 @@ export * from "./shadowDepthWrapper";
 export * from "./drawWrapper";
 export * from "./IMaterialPlugin";
 export * from "./materialPluginManager";
+export * from "./material.detailMapConfiguration";

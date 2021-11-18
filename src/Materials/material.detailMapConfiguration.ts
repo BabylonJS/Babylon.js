@@ -1,24 +1,42 @@
 import { Nullable } from "../types";
-import { Scene } from "../scene";
-import { Material } from "./material";
+import { Material } from './material';
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from '../Misc/decorators';
 import { MaterialFlags } from './materialFlags';
 import { MaterialHelper } from './materialHelper';
 import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from './uniformBuffer';
 import { IAnimatable } from '../Animations/animatable.interface';
+import { RegisterMaterialPlugin } from "./materialPluginManager";
+import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
+import { StandardMaterial } from "./standardMaterial";
+import { MaterialDefines } from "./materialDefines";
+import { IMaterialPlugin } from "./IMaterialPlugin";
+import { Constants } from "../Engines/constants";
+
+declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+
+RegisterMaterialPlugin("detailMap", (material: Material) => {
+    if ((material instanceof PBRBaseMaterial) || (material instanceof StandardMaterial)) {
+        return new DetailMapConfiguration(material);
+    }
+    return null;
+});
 
 /**
  * @hidden
  */
-export interface IMaterialDetailMapDefines {
-    DETAIL: boolean;
-    DETAILDIRECTUV: number;
-    DETAIL_NORMALBLENDMETHOD: number;
+ class MaterialDetailMapDefines extends MaterialDefines {
+    DETAIL = false;
+    DETAILDIRECTUV = 0;
+    DETAIL_NORMALBLENDMETHOD = 0;
 
     /** @hidden */
     _areTexturesDirty: boolean;
 }
+
+const modelDefines = new MaterialDetailMapDefines();
 
 /**
  * Define the code related to the detail map parameters of a material
@@ -28,7 +46,14 @@ export interface IMaterialDetailMapDefines {
  *   Unreal: https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/HowTo/DetailTexturing/index.html
  *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
  */
-export class DetailMapConfiguration {
+export class DetailMapConfiguration implements IMaterialPlugin {
+    /**
+     * Defines the priority of the plugin.
+     */
+    @serialize()
+    public priority = 140;
+
+    private _material: PBRBaseMaterial | StandardMaterial;
 
     private _texture: Nullable<BaseTexture> = null;
     /**
@@ -85,10 +110,13 @@ export class DetailMapConfiguration {
 
     /**
      * Instantiate a new detail map
-     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
-        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+    constructor(material: PBRBaseMaterial | StandardMaterial) {
+        this._material = material;
+    }
+
+    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
     /**
@@ -97,7 +125,7 @@ export class DetailMapConfiguration {
      * @param scene defines the scene the material belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: IMaterialDetailMapDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -117,11 +145,25 @@ export class DetailMapConfiguration {
     }
 
     /**
+     * Collects all define names.
+     * @param names The array to append to.
+     */
+     public collectDefineNames(names: string[]): void {
+        for (const key of Object.keys(modelDefines)) {
+            if (key[0] === "_") {
+                continue;
+            }
+
+            names.push(key);
+        }
+    }
+
+    /**
      * Update the defines for detail map usage
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      */
-    public prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialDetailMapDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
 
@@ -146,10 +188,12 @@ export class DetailMapConfiguration {
      * @param scene defines the scene the material belongs to.
      * @param isFrozen defines whether the material is frozen or not.
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
         }
+
+        const isFrozen = this._material.isFrozen;
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.DetailTextureEnabled) {
@@ -221,7 +265,7 @@ export class DetailMapConfiguration {
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
      */
-    public static AddUniforms(uniforms: string[]): void {
+    public addUniforms(uniforms: string[]): void {
         uniforms.push("vDetailInfos");
         uniforms.push("detailMatrix");
     }
@@ -230,7 +274,7 @@ export class DetailMapConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-    public static AddSamplers(samplers: string[]): void {
+    public addSamplers(samplers: string[]): void {
         samplers.push("detailSampler");
     }
 
@@ -238,7 +282,7 @@ export class DetailMapConfiguration {
      * Add the required uniforms to the current buffer.
      * @param uniformBuffer defines the current uniform buffer.
      */
-    public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
+    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vDetailInfos", 4);
         uniformBuffer.addUniform("detailMatrix", 16);
     }

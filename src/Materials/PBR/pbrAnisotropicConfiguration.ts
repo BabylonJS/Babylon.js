@@ -31,13 +31,13 @@ RegisterMaterialPlugin("anisotropic", (material: Material) => {
  * @hidden
  */
 export class MaterialAnisotropicDefines extends MaterialDefines {
-    public ANISOTROPIC: boolean;
-    public ANISOTROPIC_TEXTURE: boolean;
-    public ANISOTROPIC_TEXTUREDIRECTUV: number;
-    public MAINUV1: boolean;
+    public ANISOTROPIC = false;
+    public ANISOTROPIC_TEXTURE = false;
+    public ANISOTROPIC_TEXTUREDIRECTUV = 0;
+    public MAINUV1 = false;
 
-    public _areTexturesDirty: boolean;
-    public _needUVs: boolean;
+    _areTexturesDirty: boolean;
+    _needUVs: boolean;
 }
 
 const modelDefines = new MaterialAnisotropicDefines();
