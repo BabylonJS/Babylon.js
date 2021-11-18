@@ -36,6 +36,19 @@
             expect(result).to.equal(42);
         });
 
+        it('should be able to observe an exception thrown from a synchronous coroutine', () => {
+            let threwError = false;
+            try {
+                BABYLON.runCoroutineSync(function* () {
+                    yield;
+                    throw new Error();
+                }());
+            } catch {
+                threwError = true;
+            }
+            expect(threwError).to.equal(true);
+        });
+
         it('should be able to cancel a synchronous coroutine', () => {
             let wasCancelled = false;
             try {
@@ -98,6 +111,19 @@
             }(), BABYLON.inlineScheduler).then(result => {
                 expect(result).to.equal(42);
             });
+        });
+
+        it('should be able to observe an exception thrown from an asynchronous coroutine', async () => {
+            let threwError = false;
+            try {
+                await BABYLON.runCoroutineAsync(function* () {
+                    yield;
+                    throw new Error();
+                }(), BABYLON.inlineScheduler);
+            } catch {
+                threwError = true;
+            }
+            expect(threwError).to.equal(true);
         });
 
         it('should be able to cancel an asynchronous coroutine', async () => {
