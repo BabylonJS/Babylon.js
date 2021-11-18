@@ -21,7 +21,8 @@ import { MaterialEvent,
     MaterialEventInfoHardBindForSubMesh,
     MaterialEventInfoBindForSubMesh,
     MaterialEventInfoGetAnimatables,
-    MaterialEventInfoGetActiveTextures
+    MaterialEventInfoGetActiveTextures,
+    MaterialCustomCodeFunction
 } from "./materialEvent";
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -233,7 +234,7 @@ function _AddPluginToMaterial(material: Material, propertyName: string, factory:
  * @param material The material to inject code into.
  * @returns The code injector function.
  */
-function InjectCustomCode(material: Material): (shaderType: string, code: string) => string {
+function InjectCustomCode(material: Material): MaterialCustomCodeFunction {
     return (shaderType: string, code: string) => {
         const points = material._codeInjectionPoints?.[shaderType];
         if (!points) {
