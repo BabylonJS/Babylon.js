@@ -124,12 +124,12 @@ export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: Abort
     return result!;
 }
 
-// Runs the specified coroutine asynchronously with the specified sccheduler.
+// Runs the specified coroutine asynchronously with the specified scheduler.
 /** @hidden */
 export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
     // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
     return new Promise((resolve, reject) => {
-        runCoroutine(coroutine, scheduler, resolve, reject);
+        runCoroutine(coroutine, scheduler, resolve, reject, abortSignal);
     });
 }
 
