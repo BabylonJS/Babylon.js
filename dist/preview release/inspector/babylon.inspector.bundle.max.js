@@ -60013,9 +60013,9 @@ var CanvasGraphService = /** @class */ (function () {
             if (!event.deltaY) {
                 return;
             }
-            var amount = (event.deltaY * -0.01 | 0) * 100;
+            var amount = ((event.deltaY * -0.01) | 0) * 100;
             var minZoom = 60;
-            // The max zoom is the number of slices.      
+            // The max zoom is the number of slices.
             var maxZoom = _this._getNumberOfSlices();
             if (_this._shouldBecomeRealtime()) {
                 _this._position = null;
@@ -60053,9 +60053,9 @@ var CanvasGraphService = /** @class */ (function () {
             }
             var pixelDelta = _this._panPosition.delta + event.clientX - _this._panPosition.xPos;
             var pixelsPerItem = (_this._drawableArea.right - _this._drawableArea.left) / _this._sizeOfWindow;
-            var itemsDelta = pixelDelta / pixelsPerItem | 0;
-            var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : (_this._getNumberOfSlices() - 1);
-            // update our position without allowing the user to pan more than they need to (approximation) 
+            var itemsDelta = (pixelDelta / pixelsPerItem) | 0;
+            var pos = (_a = _this._position) !== null && _a !== void 0 ? _a : _this._getNumberOfSlices() - 1;
+            // update our position without allowing the user to pan more than they need to (approximation)
             _this._position = babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(pos - itemsDelta, Math.floor(_this._sizeOfWindow * scaleFactor), _this._getNumberOfSlices() - Math.floor(_this._sizeOfWindow * (1 - scaleFactor)));
             if (itemsDelta === 0) {
                 _this._panPosition.delta += pixelDelta;
@@ -60160,7 +60160,7 @@ var CanvasGraphService = /** @class */ (function () {
         this._globalTimeMinMax.min = Infinity;
         this._globalTimeMinMax.max = 0;
         // First we must get the end positions of our view port.
-        var pos = (_a = this._position) !== null && _a !== void 0 ? _a : (numSlices - 1);
+        var pos = (_a = this._position) !== null && _a !== void 0 ? _a : numSlices - 1;
         var start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
         var startOverflow = 0;
         // account for overflow from start.
@@ -60514,7 +60514,7 @@ var CanvasGraphService = /** @class */ (function () {
         }
         return {
             min: min,
-            max: max
+            max: max,
         };
     };
     /**
@@ -60680,8 +60680,7 @@ var CanvasGraphService = /** @class */ (function () {
                 var secondPointY = _this._getPixelForNumber(secondPointValue, valueMinMax, drawableArea.top, drawableArea.bottom - drawableArea.top, true);
                 distance = Math.min(_this._getDistanceFromLine(xForActualTimestamp, valueAtClosestPointYPos, secondPointX, secondPointY, pos.xPos - left, adjustedYPos), distance);
             }
-            if (closestIndex - 1 >= 0 &&
-                _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset) > idOffset) {
+            if (closestIndex - 1 >= 0 && _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex + 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].NumberOfPointsOffset) > idOffset) {
                 var secondPointTimestamp = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex - 1));
                 var secondPointX = _this._getPixelForNumber(secondPointTimestamp, _this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
                 var secondPointValue = _this.datasets.data.at(_this.datasets.startingIndices.at(closestIndex - 1) + babylonjs_Maths_math_scalar__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerCollector"].SliceDataOffset + idOffset);
@@ -60824,7 +60823,7 @@ var CanvasGraphService = /** @class */ (function () {
         // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
         var overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
         var rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestSlicePos);
-        return this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold;
+        return (this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold);
     };
     /**
      * Will generate a playhead with a futurebox that takes up (1-scalefactor)*100% of the canvas.
