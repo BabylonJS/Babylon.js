@@ -3,7 +3,7 @@ import { Tools, AsyncLoop } from "../Misc/tools";
 import { IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
-import { Coroutine, makeSyncFunction, makeAsyncFunction, createYieldingScheduler } from "../Misc/coroutine";
+import { Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
@@ -4284,14 +4284,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static readonly MergeMeshes = makeSyncFunction((
+    public static MergeMeshes(
         meshes: Array<Mesh>,
         disposeSource = true,
         allow32BitsIndices?: boolean,
         meshSubclass?: Mesh,
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean,
-    ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false));
+    ) {
+        return runCoroutineSync(Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false));
+    }
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
@@ -4303,14 +4305,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
-    public static readonly MergeMeshesAsync = makeAsyncFunction((
+    public static MergeMeshesAsync(
         meshes: Array<Mesh>,
         disposeSource = true,
         allow32BitsIndices?: boolean,
         meshSubclass?: Mesh,
         subdivideWithSubMeshes?: boolean,
         multiMultiMaterials?: boolean,
-    ) => Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true), createYieldingScheduler());
+    ) {
+        return runCoroutineAsync(Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true), createYieldingScheduler());
+    }
 
     private static *_MergeMeshesCoroutine(
         meshes: Array<Mesh>,
