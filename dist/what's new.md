@@ -385,7 +385,7 @@
 - Fixed inTangent in animationGroup ([dad72](https://github.com/dad72))
 - Fixed bug in `QuadraticErrorSimplification` not correctly optimizing mesh. ([aWeirdo](https://github.com/aWeirdo))
 - Fixed bug in `ArcRotateCamera` where setting the position would recalculate the alpha value to a value outside the current limits. ([nilss0n](https://github.com/nilss0n))
-- Fix Perf Viewer crashing if Physics or Sprite strategies are used in scenes that don't include these features. ([carolhmj](https://github.com/carolhmj))
+
 
 ## Breaking changes
 
