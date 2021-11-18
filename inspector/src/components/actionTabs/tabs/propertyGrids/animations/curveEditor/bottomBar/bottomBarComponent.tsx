@@ -44,7 +44,7 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
             const keyAlreadyExists = this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                this.props.context.onNewKeyPointRequired.notifyObservers();
+                this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
             this.setState({ clipLength: newClipLength.toFixed(0) });
@@ -57,7 +57,7 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
             const keyAlreadyExists = this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                this.props.context.onNewKeyPointRequired.notifyObservers();
+                this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
             this.props.context.toKey = Math.min(this.props.context.toKey, this.props.context.clipLength);
