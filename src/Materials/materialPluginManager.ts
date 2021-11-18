@@ -73,7 +73,7 @@ function _Initialize(): void {
         }
 
         if (eventState.mask & MaterialEvent.HasTexture) {
-            const info = (eventState.userInfo as MaterialEventInfoHasTexture)
+            const info = (eventState.userInfo as MaterialEventInfoHasTexture);
             info.hasTexture ||= HasTexture(material, info.texture);
         }
 
@@ -89,59 +89,59 @@ function _Initialize(): void {
             info.hasTexture = HasTexture(material, info.texture);
         }
         if (eventState.mask & MaterialEvent.IsReadyForSubMesh) {
-            const info = (eventState.userInfo as MaterialEventInfoIsReadyForSubMesh)
+            const info = (eventState.userInfo as MaterialEventInfoIsReadyForSubMesh);
             info.isReadyForSubMesh = IsReadyForSubMesh(material, info.defines, info.scene, info.engine);
         }
         if (eventState.mask & MaterialEvent.CollectDefineNames) {
-            const info = (eventState.userInfo as MaterialEventInfoCollectDefineNames)
+            const info = (eventState.userInfo as MaterialEventInfoCollectDefineNames);
             info.defineNames = CollectDefineNames(material);
         }
         if (eventState.mask & MaterialEvent.FillRenderTargetTextures) {
-            const info = (eventState.userInfo as MaterialEventInfoFillRenderTargetTextures)
+            const info = (eventState.userInfo as MaterialEventInfoFillRenderTargetTextures);
             FillRenderTargetTextures(material, info.renderTargets);
         }
         if (eventState.mask & MaterialEvent.AddFallbacks) {
-            const info = (eventState.userInfo as MaterialEventInfoAddFallbacks)
+            const info = (eventState.userInfo as MaterialEventInfoAddFallbacks);
             info.fallbackRank = AddFallbacks(material, info.defines, info.fallbacks, info.fallbackRank);
         }
         if (eventState.mask & MaterialEvent.AddUniforms) {
-            const info = (eventState.userInfo as MaterialEventInfoAddUniforms)
+            const info = (eventState.userInfo as MaterialEventInfoAddUniforms);
             AddUniforms(material, info.uniforms);
         }
         if (eventState.mask & MaterialEvent.AddSamplers) {
-            const info = (eventState.userInfo as MaterialEventInfoAddSamplers)
+            const info = (eventState.userInfo as MaterialEventInfoAddSamplers);
             AddSamplers(material, info.samplers);
         }
         if (eventState.mask & MaterialEvent.InjectCustomCode) {
-            const info = (eventState.userInfo as MaterialEventInfoInjectCustomCode)
+            const info = (eventState.userInfo as MaterialEventInfoInjectCustomCode);
             info.customCode = InjectCustomCode(material);
         }
         if (eventState.mask & MaterialEvent.PrepareDefines) {
-            const info = (eventState.userInfo as MaterialEventInfoPrepareDefines)
+            const info = (eventState.userInfo as MaterialEventInfoPrepareDefines);
             PrepareDefines(material, info.defines, info.scene, info.mesh);
         }
         if (eventState.mask & MaterialEvent.PrepareUniformBuffer) {
-            const info = (eventState.userInfo as MaterialEventInfoPrepareUniformBuffer)
+            const info = (eventState.userInfo as MaterialEventInfoPrepareUniformBuffer);
             PrepareUniformBuffer(material, info.ubo);
         }
         if (eventState.mask & MaterialEvent.Unbind) {
-            const info = (eventState.userInfo as MaterialEventInfoUnbind)
+            const info = (eventState.userInfo as MaterialEventInfoUnbind);
             info.needFlag = Unbind(material, info.effect);
         }
         if (eventState.mask & MaterialEvent.HardBindForSubMesh) {
-            const info = (eventState.userInfo as MaterialEventInfoHardBindForSubMesh)
+            const info = (eventState.userInfo as MaterialEventInfoHardBindForSubMesh);
             HardBindForSubMesh(material, info.ubo, info.scene, info.engine, info.subMesh);
         }
         if (eventState.mask & MaterialEvent.BindForSubMesh) {
-            const info = (eventState.userInfo as MaterialEventInfoBindForSubMesh)
+            const info = (eventState.userInfo as MaterialEventInfoBindForSubMesh);
             BindForSubMesh(material, info.ubo, info.scene, info.engine, info.subMesh);
         }
         if (eventState.mask & MaterialEvent.GetAnimatables) {
-            const info = (eventState.userInfo as MaterialEventInfoGetAnimatables)
+            const info = (eventState.userInfo as MaterialEventInfoGetAnimatables);
             GetAnimatables(material, info.animatables);
         }
         if (eventState.mask & MaterialEvent.GetActiveTextures) {
-            const info = (eventState.userInfo as MaterialEventInfoGetActiveTextures)
+            const info = (eventState.userInfo as MaterialEventInfoGetActiveTextures);
             GetActiveTextures(material, info.activeTextures);
         }
 
