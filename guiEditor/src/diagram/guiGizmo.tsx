@@ -100,6 +100,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let result = new Vector2(res.x, res.z);
                 let m2d = Matrix2D.Identity();
                 let m2dP = Matrix2D.Identity();
+                let s2dP = Matrix2D.Identity();
                 let translateBack = Matrix2D.Identity();
                 let translateTo = Matrix2D.Identity();
                 let resultMatrix = Matrix2D.Identity();
@@ -110,8 +111,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let parent = node.parent;
                 while (parent) { //#S69ESC
                     let parentRot = parent.rotation;
+                    Matrix2D.ScalingToRef(parent.scaleX, parent.scaleY, s2dP);
                     Matrix2D.RotationToRef(parentRot, m2dP);
                     m2d.multiplyToRef(m2dP, m2d);
+                    m2d.multiplyToRef(s2dP, m2d);
                     parent = parent.parent;
                 }
 
