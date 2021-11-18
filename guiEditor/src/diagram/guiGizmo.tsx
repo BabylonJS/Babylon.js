@@ -64,6 +64,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let startingPositions = [new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),];
 
             startingPositions[0].x -= node._currentMeasure.width * node.scaleX / 2;
@@ -77,6 +81,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             startingPositions[3].x += node._currentMeasure.width * node.scaleX / 2;
             startingPositions[3].z += node._currentMeasure.height * node.scaleY / 2
+
+
+            startingPositions[4].x -= node._currentMeasure.width * node.scaleX / 2;
+
+            startingPositions[5].z -= node._currentMeasure.height * node.scaleY / 2;
+
+            startingPositions[6].x += node._currentMeasure.width * node.scaleX / 2;
+
+            startingPositions[7].z += node._currentMeasure.height * node.scaleY / 2
 
 
             let index = 0;
@@ -141,7 +154,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
 
-        for (let i = 0; i < 4; ++i) {
+        for (let i = 0; i < 8; ++i) {
             let scalePoint = canvas.ownerDocument!.createElement("div");
             scalePoint.className = "ge-scalePoint";
             canvas.parentElement?.appendChild(scalePoint);
@@ -150,19 +163,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.left = i * 100 + 'px';
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.addEventListener("pointerdown", () => {this._setMousePosition(i)});
+            scalePoint.addEventListener("pointerup", this._onUp);
             this.scalePoints.push(scalePoint);
             this._previousPositions.push(new Vector2(0, 0));
+
         }
-
-        this.scalePoints[0].addEventListener("pointerdown", this._onLeftBottomDown);
-        this.scalePoints[1].addEventListener("pointerdown", this._onLeftTopDown);
-        this.scalePoints[2].addEventListener("pointerdown", this._onRightTopDown);
-        this.scalePoints[3].addEventListener("pointerdown", this._onRightBottomDown);
-
-        this.scalePoints[0].addEventListener("pointerup", this._onUp);
-        this.scalePoints[1].addEventListener("pointerup", this._onUp);
-        this.scalePoints[2].addEventListener("pointerup", this._onUp);
-        this.scalePoints[3].addEventListener("pointerup", this._onUp);
 
         this.updateGizmo();
     }
@@ -265,22 +271,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _onUp = (evt: PointerEvent) => {
         this._mouseDown = false;
         this._scalePointIndex = -1;
-    }
-
-    private _onLeftBottomDown = (evt: PointerEvent) => {
-        this._setMousePosition(0);
-    }
-
-    private _onLeftTopDown = (evt: PointerEvent) => {
-        this._setMousePosition(1);
-    }
-
-    private _onRightTopDown = (evt: PointerEvent) => {
-        this._setMousePosition(2);
-    }
-
-    private _onRightBottomDown = (evt: PointerEvent) => {
-        this._setMousePosition(3);
     }
 
     private _setMousePosition = (index: number) => {
