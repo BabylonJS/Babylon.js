@@ -12,6 +12,8 @@ declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 
+export type MaterialCustomCodeFunction = (shaderType: string, code: string) => string;
+
 /**
  * Flags to filter observables in events for material plugins.
  * @since 5.0.0
@@ -104,6 +106,9 @@ declare type IAnimatable = import("../Animations/animatable.interface").IAnimata
  * Material event info interface.
  */
 export interface MaterialEventInfoGetDisableAlphaBlending {
+    /**
+     * Disable alpha blending? Return value
+     */
     disableAlphaBlending: boolean;
 }
 
@@ -111,6 +116,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoDisposed {
+    /**
+     * Force disposal of the associated textures.
+     */
     forceDisposeTextures: boolean;
 }
 
@@ -118,7 +126,13 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoHasTexture {
+    /**
+     * Whether the texture exists (return value)
+     */
     hasTexture: boolean;
+    /**
+     * The texture being checked.
+     */
     texture: BaseTexture;
 }
 
@@ -126,6 +140,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoHasRenderTargetTextures {
+    /**
+     * Whether it has render target textures (return value)
+     */
     hasRenderTargetTextures: boolean;
 }
 
@@ -133,9 +150,21 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoIsReadyForSubMesh {
+    /**
+     * Whether it's ready for SubMesh (return value)
+     */
     isReadyForSubMesh: boolean;
+    /**
+     * Defines of the material we want to customize
+     */
     defines: MaterialDefines;
+    /**
+     * Defines the scene we are rendering
+     */
     scene: Scene;
+    /**
+     * Defines the engine we are using
+     */
     engine: Engine;
 }
 
@@ -143,6 +172,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoCollectDefineNames {
+    /**
+     * List of define names
+     */
     defineNames: string[] | undefined;
 }
 
@@ -150,6 +182,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoFillRenderTargetTextures {
+    /**
+     * Array of render target textures
+     */
     renderTargets: SmartArray<RenderTargetTexture>;
 }
 
@@ -157,8 +192,17 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoAddFallbacks {
+    /**
+     * Defines of the material we want to customize
+     */
     defines: MaterialDefines;
+    /**
+     * The effect fallbacks
+     */
     fallbacks: EffectFallbacks;
+    /**
+     * The effect fallback rank
+     */
     fallbackRank: number;
 }
 
@@ -166,6 +210,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoAddUniforms {
+    /**
+     * The list of uniform names used in the shader
+     */
     uniforms: string[];
 }
 
@@ -173,6 +220,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoAddSamplers {
+    /**
+     * The list of sampler (texture) names used in the shader
+     */
     samplers: string[];
 }
 
@@ -180,15 +230,27 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoInjectCustomCode {
-    customCode: (shaderType: string, code: string) => string;
+    /**
+     * The customCode function to inject code.
+     */
+    customCode: MaterialCustomCodeFunction;
 }
 
 /**
  * Material event info interface.
  */
  export interface MaterialEventInfoPrepareDefines {
+    /**
+     * Defines of the material we want to customize
+     */
     defines: MaterialDefines;
+    /**
+     * Defines the scene we are rendering
+     */
     scene: Scene;
+    /**
+     * Defines the mesh we're rendering
+     */
     mesh: AbstractMesh;
 }
 
@@ -196,6 +258,9 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoPrepareUniformBuffer {
+    /**
+     * The uniform buffer being prepared
+     */
     ubo: UniformBuffer;
 }
 
@@ -203,7 +268,13 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoUnbind {
+    /**
+     * Need flag?
+     */
     needFlag: boolean;
+    /**
+     * The effect being unbound
+     */
     effect: Effect;
 }
 
@@ -211,9 +282,21 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoHardBindForSubMesh {
+    /**
+     * The uniform buffer being prepared
+     */
     ubo: UniformBuffer;
+    /**
+     * Defines the scene we are rendering
+     */
     scene: Scene;
+    /**
+     * Defines the engine we are using
+     */
     engine: Engine;
+    /**
+     * Defines the submesh we're rendering
+     */
     subMesh: SubMesh;
 }
 
@@ -221,16 +304,31 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoBindForSubMesh {
+    /**
+     * The uniform buffer being prepared
+     */
     ubo: UniformBuffer;
+    /**
+     * Defines the scene we are rendering
+     */
     scene: Scene;
+    /**
+     * Defines the engine we are using
+     */
     engine: Engine;
+    /**
+     * Defines the submesh we're rendering
+     */
     subMesh: SubMesh;
 }
 
 /**
  * Material event info interface.
  */
- export interface MaterialEventInfoGetAnimatables {
+export interface MaterialEventInfoGetAnimatables {
+    /**
+     * List of animatables
+     */
     animatables: IAnimatable[];
 }
 
@@ -238,5 +336,8 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
  * Material event info interface.
  */
  export interface MaterialEventInfoGetActiveTextures {
+    /**
+     * List of active textures
+     */
     activeTextures: BaseTexture[];
 }

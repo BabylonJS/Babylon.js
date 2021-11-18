@@ -26,7 +26,7 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { IMaterialPlugin } from "./IMaterialPlugin";
-import { MaterialEvent, MaterialEventInfoBindForSubMesh, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetActiveTextures, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture, MaterialEventInfoIsReadyForSubMesh } from "./materialEvent";
+import { MaterialCustomCodeFunction, MaterialEvent, MaterialEventInfoBindForSubMesh, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetActiveTextures, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture, MaterialEventInfoIsReadyForSubMesh } from "./materialEvent";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -57,7 +57,7 @@ export interface ICustomShaderNameResolveOptions {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    processFinalCode?: Nullable<MaterialCustomCodeFunction>;
 }
 
 /**
