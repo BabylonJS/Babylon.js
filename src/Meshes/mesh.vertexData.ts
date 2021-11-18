@@ -5,7 +5,7 @@ import { _WarnImport } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
 import { nativeOverride } from '../Misc/decorators';
-import { Coroutine, makeSyncFunction } from '../Misc/coroutine';
+import { Coroutine, makeSyncFunction, runCoroutineSync } from '../Misc/coroutine';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -503,7 +503,9 @@ export class VertexData {
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
      * @returns the modified VertexData
      */
-    public readonly merge = makeSyncFunction((others: VertexData | VertexData[], use32BitsIndices = false) => this._mergeCoroutine(others, use32BitsIndices, false));
+    public merge(others: VertexData | VertexData[], use32BitsIndices = false) {
+        return runCoroutineSync(this._mergeCoroutine(others, use32BitsIndices, false));
+    }
 
     /** @hidden */
     public *_mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices = false, isAsync: boolean): Coroutine<VertexData> {
