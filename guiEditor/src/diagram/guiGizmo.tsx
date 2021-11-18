@@ -1,3 +1,4 @@
+import { Control } from "babylonjs-gui/2D/controls/control";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Measure } from "babylonjs-gui/2D/measure";
 import { Axis } from "babylonjs/Maths/math.axis";
@@ -197,6 +198,32 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let dx = newPosition.x - this._previousPositions[this._scalePointIndex].x;
             let dy = newPosition.z - this._previousPositions[this._scalePointIndex].y;
 
+            let alignmentFactorX = 2;
+            let alignmentFactorY = 2;
+            let offsetX = [0,0,0,0];
+            let offsetY = [0,0,0,0]
+            switch (node.horizontalAlignment) {
+                case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                    alignmentFactorX = 1;
+                    offsetX = [-1,-1,0,0];
+                    break;
+                case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                    alignmentFactorX = 1;
+                    offsetX = [0,0,1,1];
+                    break;
+            }
+            switch (node.verticalAlignment) {
+                case Control.VERTICAL_ALIGNMENT_TOP:
+                    alignmentFactorY = 1;
+                    offsetY = [0,-1,-1,0];
+                    break;
+                case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                    alignmentFactorY = 1;
+                    offsetY = [-1,0,0,-1];
+                    break;
+            }
+            
+
             let rotation = node.rotation;
             let parent = node.parent;
             while (parent) { //#S69ESC
@@ -206,45 +233,63 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             rotation = rotation % 6.28;
             rotation += 0.785398;
             let rotationIndex = Math.floor(rotation / 1.5708);
+
+
             if (rotationIndex % 2 == 0) {
                 switch ((this._scalePointIndex + rotationIndex) % 4) {
                     case 0:
-                        node.widthInPixels -= dx * 2;
-                        node.heightInPixels -= dy * 2;
+                        node.widthInPixels -= dx * alignmentFactorX;
+                        node.heightInPixels -= dy * alignmentFactorY;
+                        node.leftInPixels -= dx * alignmentFactorX * offsetX[0];
+                        node.topInPixels -= dy * alignmentFactorY * offsetY[0];
                         break;
                     case 1:
-                        node.widthInPixels -= dx * 2;
-                        node.heightInPixels += dy * 2;
+                        node.widthInPixels -= dx * alignmentFactorX;
+                        node.heightInPixels += dy * alignmentFactorY;
+                        node.leftInPixels -= dx * alignmentFactorX * offsetX[1];
+                        node.topInPixels += dy * alignmentFactorY * offsetY[1];
                         break;
                     case 2:
-                        node.widthInPixels += dx * 2;
-                        node.heightInPixels += dy * 2;
+                        node.widthInPixels += dx * alignmentFactorX;
+                        node.heightInPixels += dy * alignmentFactorY;
+                        node.leftInPixels += dx * alignmentFactorX * offsetX[2];
+                        node.topInPixels += dy * alignmentFactorY * offsetY[2];
                         break;
                     case 3:
-                        node.widthInPixels += dx * 2;
-                        node.heightInPixels -= dy * 2;
+                        node.widthInPixels += dx * alignmentFactorX;
+                        node.heightInPixels -= dy * alignmentFactorY;
+                        node.leftInPixels += dx * alignmentFactorX * offsetX[3];
+                        node.topInPixels -= dy * alignmentFactorY * offsetY[3];
                         break;
                     default:
                         break;
                 }
             }
             else {
+                /*node.widthInPixels += dy * 2;
+                node.heightInPixels -= dx * alignmentFactorY;
+                node.leftInPixels += dy * alignmentFactorX * offsetX[0];
+                node.topInPixels -= dx * alignmentFactorY * offsetY[0];*/
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
                     case 0:
                         node.widthInPixels += dy * 2;
                         node.heightInPixels -= dx * 2;
+
                         break;
                     case 1:
                         node.widthInPixels += dy * 2;
                         node.heightInPixels += dx * 2;
+
                         break;
                     case 2:
                         node.widthInPixels -= dy * 2;
                         node.heightInPixels += dx * 2;
+
                         break;
                     case 3:
                         node.widthInPixels -= dy * 2;
                         node.heightInPixels -= dx * 2;
+
                         break;
                     default:
                         break;
