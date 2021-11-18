@@ -14,6 +14,7 @@ declare type IAnimatable = import("../Animations/animatable.interface").IAnimata
 
 /**
  * Flags to filter observables in events for material plugins.
+ * @since 5.0.0
  */
  export enum MaterialEvent {
     /**
@@ -28,37 +29,69 @@ declare type IAnimatable = import("../Animations/animatable.interface").IAnimata
      * Material disposed event.
      */
     Disposed = 0x0004,
-
+    /**
+     * HasRenderTargetTextures event.
+     */
     HasRenderTargetTextures = 0x0008,
-
+    /**
+     * HasTexture event.
+     */
     HasTexture = 0x0010,
-
+    /**
+     * IsReadyForSubMesh event.
+     */
     IsReadyForSubMesh = 0x0020,
-
+    /**
+     * CollectDefineNames event.
+     */
     CollectDefineNames = 0x0040,
-
+    /**
+     * FillRenderTargetTextures event.
+     */
     FillRenderTargetTextures = 0x0080,
-
+    /**
+     * AddFallbacks event.
+     */
     AddFallbacks = 0x0100,
-
+    /**
+     * AddUniforms event.
+     */
     AddUniforms = 0x0200,
-
+    /**
+     * AddSamplers event.
+     */
     AddSamplers = 0x0400,
-
+    /**
+     * InjectCustomCode event.
+     */
     InjectCustomCode = 0x0800,
-
+    /**
+     * PrepareDefines event.
+     */
     PrepareDefines = 0x1000,
-
+    /**
+     * PrepareUniformBuffer event.
+     */
     PrepareUniformBuffer = 0x2000,
-
+    /**
+     * Unbind event.
+     */
     Unbind = 0x4000,
-
+    /**
+     * HardBindForSubMesh event.
+     */
     HardBindForSubMesh = 0x8000,
-
+    /**
+     * BindForSubMesh event.
+     */
     BindForSubMesh = 0x010000,
-
+    /**
+     * GetAnimatables event.
+     */
     GetAnimatables = 0x020000,
-
+    /**
+     * GetActiveTextures event.
+     */
     GetActiveTextures = 0x040000,
 
     /**
@@ -67,89 +100,143 @@ declare type IAnimatable = import("../Animations/animatable.interface").IAnimata
     All = 0xFFFFFF
 }
 
+/**
+ * Material event info interface.
+ */
 export interface MaterialEventInfoGetDisableAlphaBlending {
     disableAlphaBlending: boolean;
 }
 
-export interface MaterialEventInfoDisposed {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoDisposed {
     forceDisposeTextures: boolean;
 }
 
-export interface MaterialEventInfoHasTexture {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoHasTexture {
     hasTexture: boolean;
     texture: BaseTexture;
 }
 
-export interface MaterialEventInfoHasRenderTargetTextures {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoHasRenderTargetTextures {
     hasRenderTargetTextures: boolean;
 }
 
-export interface MaterialEventInfoIsReadyForSubMesh {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoIsReadyForSubMesh {
     isReadyForSubMesh: boolean;
     defines: MaterialDefines;
     scene: Scene;
     engine: Engine;
 }
 
-export interface MaterialEventInfoCollectDefineNames {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoCollectDefineNames {
     defineNames: string[] | undefined;
 }
 
-export interface MaterialEventInfoFillRenderTargetTextures {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoFillRenderTargetTextures {
     renderTargets: SmartArray<RenderTargetTexture>;
 }
 
-export interface MaterialEventInfoAddFallbacks {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoAddFallbacks {
     defines: MaterialDefines;
     fallbacks: EffectFallbacks;
     fallbackRank: number;
 }
 
-export interface MaterialEventInfoAddUniforms {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoAddUniforms {
     uniforms: string[];
 }
 
-export interface MaterialEventInfoAddSamplers {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoAddSamplers {
     samplers: string[];
 }
 
-export interface MaterialEventInfoInjectCustomCode {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoInjectCustomCode {
     customCode: (shaderType: string, code: string) => string;
 }
 
-export interface MaterialEventInfoPrepareDefines {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoPrepareDefines {
     defines: MaterialDefines;
     scene: Scene;
     mesh: AbstractMesh;
 }
 
-export interface MaterialEventInfoPrepareUniformBuffer {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoPrepareUniformBuffer {
     ubo: UniformBuffer;
 }
 
-export interface MaterialEventInfoUnbind {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoUnbind {
     needFlag: boolean;
     effect: Effect;
 }
 
-export interface MaterialEventInfoHardBindForSubMesh {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoHardBindForSubMesh {
     ubo: UniformBuffer;
     scene: Scene;
     engine: Engine;
     subMesh: SubMesh;
 }
 
-export interface MaterialEventInfoBindForSubMesh {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoBindForSubMesh {
     ubo: UniformBuffer;
     scene: Scene;
     engine: Engine;
     subMesh: SubMesh;
 }
 
-export interface MaterialEventInfoGetAnimatables {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoGetAnimatables {
     animatables: IAnimatable[];
 }
 
-export interface MaterialEventInfoGetActiveTextures {
+/**
+ * Material event info interface.
+ */
+ export interface MaterialEventInfoGetActiveTextures {
     activeTextures: BaseTexture[];
 }

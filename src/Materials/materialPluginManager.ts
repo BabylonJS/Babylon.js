@@ -36,6 +36,9 @@ declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 
+/**
+ * Type for plugin material factories.
+ */
 type PluginMaterialFactory = (material: Material) => Nullable<IMaterialPlugin>;
 
 /**
@@ -43,6 +46,9 @@ type PluginMaterialFactory = (material: Material) => Nullable<IMaterialPlugin>;
  */
 let _Plugins: Array<[string, PluginMaterialFactory]> = [];
 
+/**
+ * Flag for the plugin manager initialization code.
+ */
 let _Inited = false;
 
 /**
