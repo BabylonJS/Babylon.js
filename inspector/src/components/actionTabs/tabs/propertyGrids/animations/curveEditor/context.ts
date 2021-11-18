@@ -50,7 +50,6 @@ export class Context {
     onValueManuallyEntered = new Observable<number>();
 
     onFrameRequired = new Observable<void>();
-    onNewKeyPointRequired = new Observable<void>();
     onCreateOrUpdateKeyPointRequired = new Observable<void>();
     onFlattenTangentRequired = new Observable<void>();
     onLinearTangentRequired = new Observable<void>();

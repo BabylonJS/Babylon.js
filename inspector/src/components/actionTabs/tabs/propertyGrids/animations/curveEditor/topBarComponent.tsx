@@ -71,18 +71,6 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
         }
     }
 
-    private _onNewKeyButton() {
-        // Check if there is already a key on that frame, if not, create a new one.
-        const currentFrame = this.props.context.activeFrame;
-        const keyIndex = this.props.context.getKeyAtAnyFrameIndex(currentFrame);
-
-        if (keyIndex === null) {
-            this.props.context.onNewKeyPointRequired.notifyObservers();
-        } else {
-            this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
-        }
-    }
-
     public render() {
         const hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (
@@ -116,7 +104,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
                     globalState={this.props.globalState}
                     context={this.props.context}
                     icon={newKeyIcon}
-                    onClick={() => this._onNewKeyButton()}
+                    onClick={() => this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers()}
                 />
                 <ActionButtonComponent
                     tooltip="Frame canvas"
