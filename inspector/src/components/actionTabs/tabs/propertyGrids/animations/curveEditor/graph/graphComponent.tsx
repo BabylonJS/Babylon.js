@@ -125,8 +125,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             this.props.context.onActiveAnimationChanged.notifyObservers();
         });
 
-        // New keypoint
-        this.props.context.onNewKeyPointRequired.add(() => {
+        // Create or Update keypoint
+        this.props.context.onCreateOrUpdateKeyPointRequired.add(() => {
             if (this.props.context.activeAnimations.length === 0) {
                 return;
             }
@@ -159,87 +159,98 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 } else {
                     value = currentAnimation.evaluate(currentFrame);
                 }
+
                 const leftKey = keys[indexToAdd];
                 const rightKey = keys[indexToAdd + 1];
 
-                let newKey: IAnimationKey = {
-                    frame: currentFrame,
-                    value: value,
-                };
+                if (Math.floor(currentFrame - leftKey?.frame) === 0) {
+                    // Key already exists, update it
+                    leftKey.value = value;
+                } else if (Math.floor(rightKey.frame - currentFrame) === 0) {
+                    // Key already exists, update it
+                    rightKey.value = value;
+                } else {
+                    // Key doesn't exist, create it (same operations) as
+                    // the new key listener
+                    let newKey: IAnimationKey = {
+                        frame: currentFrame,
+                        value: value,
+                    };
 
-                if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
-                    let derivative: Nullable<any> = null;
-                    const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
-                    const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                    if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                        let derivative: Nullable<any> = null;
+                        const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                        const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
 
-                    switch (currentAnimation.dataType) {
-                        case Animation.ANIMATIONTYPE_FLOAT: {
-                            derivative = Scalar.Hermite1stDerivative(
-                                leftKey.value * invFrameDelta,
-                                leftKey.outTangent,
-                                rightKey.value * invFrameDelta,
-                                rightKey.inTangent,
-                                cutTime
-                            );
-                            break;
+                        switch (currentAnimation.dataType) {
+                            case Animation.ANIMATIONTYPE_FLOAT: {
+                                derivative = Scalar.Hermite1stDerivative(
+                                    leftKey.value * invFrameDelta,
+                                    leftKey.outTangent,
+                                    rightKey.value * invFrameDelta,
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            }
+                            case Animation.ANIMATIONTYPE_VECTOR2: {
+                                derivative = Vector2.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            }
+                            case Animation.ANIMATIONTYPE_VECTOR3: {
+                                derivative = Vector3.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            }
+                            case Animation.ANIMATIONTYPE_QUATERNION: {
+                                derivative = Quaternion.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            }
+                            case Animation.ANIMATIONTYPE_COLOR3:
+                                derivative = Color3.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            case Animation.ANIMATIONTYPE_COLOR4:
+                                derivative = Color4.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
                         }
-                        case Animation.ANIMATIONTYPE_VECTOR2: {
-                            derivative = Vector2.Hermite1stDerivative(
-                                leftKey.value.scale(invFrameDelta),
-                                leftKey.outTangent,
-                                rightKey.value.scale(invFrameDelta),
-                                rightKey.inTangent,
-                                cutTime
-                            );
-                            break;
+
+                        if (derivative !== null) {
+                            newKey.inTangent = derivative;
+                            newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                         }
-                        case Animation.ANIMATIONTYPE_VECTOR3: {
-                            derivative = Vector3.Hermite1stDerivative(
-                                leftKey.value.scale(invFrameDelta),
-                                leftKey.outTangent,
-                                rightKey.value.scale(invFrameDelta),
-                                rightKey.inTangent,
-                                cutTime
-                            );
-                            break;
-                        }
-                        case Animation.ANIMATIONTYPE_QUATERNION: {
-                            derivative = Quaternion.Hermite1stDerivative(
-                                leftKey.value.scale(invFrameDelta),
-                                leftKey.outTangent,
-                                rightKey.value.scale(invFrameDelta),
-                                rightKey.inTangent,
-                                cutTime
-                            );
-                            break;
-                        }
-                        case Animation.ANIMATIONTYPE_COLOR3:
-                            derivative = Color3.Hermite1stDerivative(
-                                leftKey.value.scale(invFrameDelta),
-                                leftKey.outTangent,
-                                rightKey.value.scale(invFrameDelta),
-                                rightKey.inTangent,
-                                cutTime
-                            );
-                            break;
-                        case Animation.ANIMATIONTYPE_COLOR4:
-                            derivative = Color4.Hermite1stDerivative(
-                                leftKey.value.scale(invFrameDelta),
-                                leftKey.outTangent,
-                                rightKey.value.scale(invFrameDelta),
-                                rightKey.inTangent,
-                                cutTime
-                            );
-                            break;
                     }
 
-                    if (derivative !== null) {
-                        newKey.inTangent = derivative;
-                        newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
-                    }
+                    keys.splice(indexToAdd + 1, 0, newKey);
                 }
-
-                keys.splice(indexToAdd + 1, 0, newKey);
 
                 currentAnimation.setKeys(keys);
             }
