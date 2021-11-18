@@ -395,7 +395,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * @param scene defines the scene to the material belongs to.
      * @param mesh the mesh being rendered
      */
-     public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene, mesh: AbstractMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_TRANSLUCENCY = false;

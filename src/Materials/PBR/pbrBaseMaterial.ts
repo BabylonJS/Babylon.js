@@ -22,15 +22,12 @@ import { MaterialEvent,
     MaterialEventInfoAddFallbacks,
     MaterialEventInfoAddSamplers,
     MaterialEventInfoAddUniforms,
-    MaterialEventInfoBindForSubMesh,
     MaterialEventInfoFillRenderTargetTextures,
-    MaterialEventInfoGetActiveTextures,
     MaterialEventInfoGetAnimatables,
     MaterialEventInfoGetDisableAlphaBlending,
     MaterialEventInfoHardBindForSubMesh,
     MaterialEventInfoHasRenderTargetTextures,
     MaterialEventInfoInjectCustomCode,
-    MaterialEventInfoIsReadyForSubMesh,
     MaterialEventInfoPrepareDefines,
     MaterialEventInfoPrepareUniformBuffer,
     MaterialEventInfoUnbind
@@ -53,13 +50,13 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
-import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 declare type PBRSubSurfaceConfiguration = import("./pbrSubSurfaceConfiguration").PBRSubSurfaceConfiguration;
 declare type PBRSheenConfiguration = import("./pbrSheenConfiguration").PBRSheenConfiguration;
 declare type PBRClearCoatConfiguration = import("./pbrClearCoatConfiguration").PBRClearCoatConfiguration;
 declare type PBRAnisotropicConfiguration = import("./pbrAnisotropicConfiguration").PBRAnisotropicConfiguration;
+declare type DetailMapConfiguration = import("../material.detailMapConfiguration").DetailMapConfiguration;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -69,8 +66,7 @@ const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: 
  */
 export class PBRMaterialDefines extends MaterialDefines
     implements IImageProcessingConfigurationDefines,
-    IMaterialBRDFDefines,
-    IMaterialDetailMapDefines {
+    IMaterialBRDFDefines {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
@@ -93,10 +89,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public GAMMAALBEDO = false;
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
-
-    public DETAIL = false;
-    public DETAILDIRECTUV = 0;
-    public DETAIL_NORMALBLENDMETHOD = 0;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
@@ -913,7 +905,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the detail map parameters for the material.
      */
-    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly detailMap: DetailMapConfiguration;
 
     /**
      * Instantiates a new PBRMaterial instance.
@@ -1178,23 +1170,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        const userInfo: MaterialEventInfoIsReadyForSubMesh = {
-            isReadyForSubMesh: false,
-            defines,
-            scene,
-            engine
-        };
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.IsReadyForSubMesh,
-            undefined,
-            undefined,
-            userInfo
-        );
-
-        if (!userInfo.isReadyForSubMesh ||
-            !this.detailMap.isReadyForSubMesh(defines, scene)) {
+        if (!super.isReadyForSubMesh(mesh, subMesh, useInstances)) {
             return false;
         }
 
@@ -1431,9 +1408,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             undefined,
             { samplers } as MaterialEventInfoAddSamplers
         );
-
-        DetailMapConfiguration.AddUniforms(uniforms);
-        DetailMapConfiguration.AddSamplers(samplers);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1797,7 +1771,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             undefined,
             { defines, scene, mesh } as MaterialEventInfoPrepareDefines
         );
-        this.detailMap.prepareDefines(defines, scene);
         this.brdf.prepareDefines(defines);
 
         // Values that need to be evaluated on every frame
@@ -1892,7 +1865,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             undefined,
             { ubo } as MaterialEventInfoPrepareUniformBuffer
         );
-        DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);
@@ -2253,14 +2225,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
-            Material.OnEventObservable.notifyObservers(
-                this,
-                MaterialEvent.BindForSubMesh,
-                undefined,
-                undefined,
-                { ubo, scene, engine, subMesh } as MaterialEventInfoBindForSubMesh
-            );
-            this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
+            super.bindForSubMesh(world, mesh, subMesh);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
@@ -2355,8 +2320,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             { animatables: results } as MaterialEventInfoGetAnimatables
         );
 
-        this.detailMap.getAnimatables(results);
-
         return results;
     }
 
@@ -2427,16 +2390,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             activeTextures.push(this._lightmapTexture);
         }
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.GetActiveTextures,
-            undefined,
-            undefined,
-            { activeTextures: activeTextures } as MaterialEventInfoGetActiveTextures
-        );
-
-        this.detailMap.getActiveTextures(activeTextures);
-
         return activeTextures;
     }
 
@@ -2494,7 +2447,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.detailMap.hasTexture(texture);
+        return false;
     }
 
     /**
@@ -2538,8 +2491,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._reflectanceTexture?.dispose();
             this._microSurfaceTexture?.dispose();
         }
-
-        this.detailMap.dispose(forceDisposeTextures);
 
         this._renderTargets.dispose();
 

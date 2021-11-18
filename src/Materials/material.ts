@@ -26,7 +26,7 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { IMaterialPlugin } from "./IMaterialPlugin";
-import { MaterialEvent, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture } from "./materialEvent";
+import { MaterialEvent, MaterialEventInfoBindForSubMesh, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetActiveTextures, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture, MaterialEventInfoIsReadyForSubMesh } from "./materialEvent";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -865,7 +865,29 @@ export class Material implements IAnimatable {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return false;
+        const defines = subMesh.materialDefines;
+        if (!defines) {
+            return false;
+        }
+        const scene = this.getScene();
+        const engine = scene.getEngine();
+
+        const isReadyForSubMeshInfo: MaterialEventInfoIsReadyForSubMesh = {
+            isReadyForSubMesh: false,
+            defines,
+            scene,
+            engine
+        };
+
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.IsReadyForSubMesh,
+            undefined,
+            undefined,
+            isReadyForSubMeshInfo
+        );
+
+        return isReadyForSubMeshInfo.isReadyForSubMesh;
     }
 
     /**
@@ -1056,6 +1078,21 @@ export class Material implements IAnimatable {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        const scene = this.getScene();
+        const effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+        let ubo = this._uniformBuffer;
+        const engine = scene.getEngine();
+
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.BindForSubMesh,
+            undefined,
+            undefined,
+            { ubo, scene, engine, subMesh } as MaterialEventInfoBindForSubMesh
+        );
     }
 
     /**
@@ -1174,7 +1211,15 @@ export class Material implements IAnimatable {
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
-        return [];
+        let activeTextures: BaseTexture[] = [];
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.GetActiveTextures,
+            undefined,
+            undefined,
+            { activeTextures: activeTextures } as MaterialEventInfoGetActiveTextures
+        );
+        return activeTextures;
     }
 
     /**
