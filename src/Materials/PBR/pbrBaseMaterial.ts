@@ -1170,7 +1170,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-
         if (!super.isReadyForSubMesh(mesh, subMesh, useInstances)) {
             return false;
         }

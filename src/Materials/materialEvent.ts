@@ -65,90 +65,90 @@ declare type IAnimatable = import("../Animations/animatable.interface").IAnimata
      * All material events.
      */
     All = 0xFFFFFF
-};
+}
 
 export interface MaterialEventInfoGetDisableAlphaBlending {
     disableAlphaBlending: boolean;
-};
+}
 
 export interface MaterialEventInfoDisposed {
     forceDisposeTextures: boolean;
-};
+}
 
 export interface MaterialEventInfoHasTexture {
     hasTexture: boolean;
     texture: BaseTexture;
-};
+}
 
 export interface MaterialEventInfoHasRenderTargetTextures {
     hasRenderTargetTextures: boolean;
-};
+}
 
 export interface MaterialEventInfoIsReadyForSubMesh {
     isReadyForSubMesh: boolean;
     defines: MaterialDefines;
     scene: Scene;
     engine: Engine;
-};
+}
 
 export interface MaterialEventInfoCollectDefineNames {
     defineNames: string[] | undefined;
-};
+}
 
 export interface MaterialEventInfoFillRenderTargetTextures {
-    renderTargets: SmartArray<RenderTargetTexture>
-};
+    renderTargets: SmartArray<RenderTargetTexture>;
+}
 
 export interface MaterialEventInfoAddFallbacks {
-    defines: MaterialDefines,
-    fallbacks: EffectFallbacks,
-    fallbackRank: number
-};
+    defines: MaterialDefines;
+    fallbacks: EffectFallbacks;
+    fallbackRank: number;
+}
 
 export interface MaterialEventInfoAddUniforms {
-    uniforms: string[]
-};
+    uniforms: string[];
+}
 
 export interface MaterialEventInfoAddSamplers {
-    samplers: string[]
-};
+    samplers: string[];
+}
 
 export interface MaterialEventInfoInjectCustomCode {
-    customCode: (shaderType: string, code: string) => string
-};
+    customCode: (shaderType: string, code: string) => string;
+}
 
 export interface MaterialEventInfoPrepareDefines {
     defines: MaterialDefines;
     scene: Scene;
     mesh: AbstractMesh;
-};
+}
 
 export interface MaterialEventInfoPrepareUniformBuffer {
     ubo: UniformBuffer;
-};
+}
 
 export interface MaterialEventInfoUnbind {
     needFlag: boolean;
     effect: Effect;
-};
+}
 
 export interface MaterialEventInfoHardBindForSubMesh {
     ubo: UniformBuffer;
     scene: Scene;
     engine: Engine;
     subMesh: SubMesh;
-};
+}
 
 export interface MaterialEventInfoBindForSubMesh {
     ubo: UniformBuffer;
     scene: Scene;
     engine: Engine;
     subMesh: SubMesh;
-};
+}
 
 export interface MaterialEventInfoGetAnimatables {
     animatables: IAnimatable[];
-};
+}
 
 export interface MaterialEventInfoGetActiveTextures {
     activeTextures: BaseTexture[];
