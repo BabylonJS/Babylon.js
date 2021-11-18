@@ -792,7 +792,7 @@ export class WebGPUEngine extends Engine {
             depthTextureExtension: true,
             vertexArrayObject: false,
             instancedArrays: true,
-            timerQuery: undefined /*typeof (BigUint64Array) !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? true as any : undefined*/,
+            timerQuery: typeof (BigUint64Array) !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? true as any : undefined,
             supportOcclusionQuery: typeof (BigUint64Array) !== "undefined",
             canUseTimestampForTimerQuery: true,
             multiview: false,
