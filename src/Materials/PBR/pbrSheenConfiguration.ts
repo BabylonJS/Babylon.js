@@ -10,7 +10,7 @@ import { EffectFallbacks } from '../effectFallbacks';
 import { SubMesh } from '../../Meshes/subMesh';
 import { Constants } from "../../Engines/constants";
 import { IMaterialPlugin } from "../IMaterialPlugin";
-import { MaterialPluginManager } from "../materialPluginManager";
+import { RegisterMaterialPlugin } from "../materialPluginManager";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { MaterialDefines } from "../materialDefines";
 
@@ -19,8 +19,7 @@ declare type Scene = import("../../scene").Scene;
 declare type Material = import("../material").Material;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 
-MaterialPluginManager.RegisterPlugin("sheen", (material: Material) => {
-    console.log("sheen");
+RegisterMaterialPlugin("sheen", (material: Material) => {
     if (material instanceof PBRBaseMaterial) {
         return new PBRSheenConfiguration(material);
     }

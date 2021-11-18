@@ -25,8 +25,8 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
-import { MaterialPluginManager } from "./materialPluginManager";
 import { IMaterialPlugin } from "./IMaterialPlugin";
+import { MaterialEvent, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture } from "./materialEvent";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -58,29 +58,6 @@ export interface ICustomShaderNameResolveOptions {
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
     processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
-}
-
-/**
- * Flags to filter observables in events for material plugins.
- */
-export enum MaterialEvent {
-    /**
-     * Created material event.
-     */
-    Created = 0x0001,
-    /**
-     * Called the disableAlphaBlending getter event.
-     */
-    GetDisableAlphaBlending = 0x0002,
-    /**
-     * Material disposed event.
-     */
-    Disposed = 0x0004,
-
-    /**
-     * All material events.
-     */
-    All = 0xFFFF
 }
 
 /**
@@ -390,7 +367,19 @@ export class Material implements IAnimatable {
      * Gets a boolean indicating that current material needs to register RTT
      */
     public get hasRenderTargetTextures(): boolean {
-        return MaterialPluginManager.HasRenderTargetTextures(this);
+        const userInfo: MaterialEventInfoHasRenderTargetTextures = {
+            hasRenderTargetTextures: false
+        };
+
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.HasRenderTargetTextures,
+            undefined,
+            undefined,
+            userInfo
+        );
+
+        return userInfo.hasRenderTargetTextures;
     }
 
     /**
@@ -800,7 +789,19 @@ export class Material implements IAnimatable {
         }
 
         Material.OnEventObservable.notifyObservers(this, MaterialEvent.Created);
-        this._defineNamesFromPlugins = MaterialPluginManager.CollectDefineNames(this);
+
+        // TODO: _defineNamesFromPlugins needs to be updated with `MaterialPluginManager.AddPluginToMaterial` too
+        const collectDefineNamesInfo: MaterialEventInfoCollectDefineNames = {
+            defineNames: undefined
+        };
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.CollectDefineNames,
+            undefined,
+            undefined,
+            collectDefineNamesInfo
+        );
+        this._defineNamesFromPlugins = collectDefineNamesInfo.defineNames;
     }
 
     /**
@@ -969,7 +970,19 @@ export class Material implements IAnimatable {
             return true;
         }
 
-        if (MaterialPluginManager.DisableAlphaBlending(this)) {
+        const userInfo: MaterialEventInfoGetDisableAlphaBlending= {
+            disableAlphaBlending: false
+        };
+
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.GetDisableAlphaBlending,
+            undefined,
+            undefined,
+            userInfo
+        );
+
+        if (userInfo.disableAlphaBlending) {
             return false;
         }
 
@@ -1170,7 +1183,20 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if the material uses the texture
      */
     public hasTexture(texture: BaseTexture): boolean {
-        return false;
+        const userInfo: MaterialEventInfoHasTexture = {
+            hasTexture: false,
+            texture
+        };
+
+        Material.OnEventObservable.notifyObservers(
+            this,
+            MaterialEvent.HasTexture,
+            undefined,
+            undefined,
+            userInfo
+        );
+
+        return userInfo.hasTexture;
     }
 
     /**
