@@ -401,7 +401,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         controllerData.screenCoordinates = {
                             x: this._screenCoordinatesRef.x,
                             y: this._screenCoordinatesRef.y,
-                        }
+                        };
                     }
                 }
             }
