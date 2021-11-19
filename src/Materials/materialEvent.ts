@@ -12,6 +12,9 @@ declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 
+/**
+ * Type for material custom code generators.
+ */
 export type MaterialCustomCodeFunction = (shaderType: string, code: string) => string;
 
 /**

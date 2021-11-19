@@ -503,7 +503,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
      * @param realTimeFiltering defines whether the textures should be filtered on the fly.
      * @param subMesh the submesh to bind data for
-    */
+     */
     public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;

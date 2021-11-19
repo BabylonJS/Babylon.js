@@ -115,6 +115,12 @@ export class DetailMapConfiguration implements IMaterialPlugin {
         this._material = material;
     }
 
+    /**
+     * Initialize the plugin.
+     *
+     * @param scene defines the scene the material belongs to.
+     * @param dirtyCallbacks The list of dirty callbacks
+     */
     public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
         this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -148,7 +154,7 @@ export class DetailMapConfiguration implements IMaterialPlugin {
      * Collects all define names.
      * @param names The array to append to.
      */
-     public collectDefineNames(names: string[]): void {
+    public collectDefineNames(names: string[]): void {
         for (const key of Object.keys(modelDefines)) {
             if (key[0] === "_") {
                 continue;
