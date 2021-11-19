@@ -77,7 +77,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private updateNodeOutline(guiControl: Control) {
         guiControl.isHighlighted = this._outlines;
         guiControl.highlightLineWidth = 5;
-        if (Tools.isContainer(guiControl)) {
+        if (guiControl instanceof Container) {
             (guiControl as Container).children.forEach((child) => {
                 this.updateNodeOutline(child);
             });

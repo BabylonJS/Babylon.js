@@ -6,6 +6,7 @@ import * as React from "react";
 import { DragOverLocation, GlobalState } from "../../../../globalState";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Tools } from "../../../../tools";
+import { Container } from "babylonjs-gui/2D/controls/container";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
 const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
@@ -55,7 +56,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         return (
             <div className="controlTools">
                 <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
-                {!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && Tools.isContainer(control) && (
+                {!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
                     <>
                         <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
                             <img src={makeChildOfContainerIcon} />
