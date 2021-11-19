@@ -13,6 +13,7 @@ import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { Tools } from "../../../../tools";
+import { Container } from "babylonjs-gui/2D/controls/container";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -391,7 +392,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     propertyName="shadowBlur"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 /> 
-                { (Tools.isContainer(control) || control.typeName === "TextBlock") && <>
+                { (control instanceof Container || control.typeName === "TextBlock") && <>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
