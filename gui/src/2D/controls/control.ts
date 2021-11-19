@@ -1617,24 +1617,32 @@ export class Control {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
+        let evaluatedMeasure = new Measure(0, 0, 0, 0);
+        this._currentMeasure.transformToRef(this._transformMatrix, evaluatedMeasure);
+
+        let evaluatedParentMeasure = new Measure(0, 0, 0, 0);
+        const parentMatrix = this.parent?._transformMatrix;
+        if (parentMatrix)
+            parentMeasure.transformToRef(parentMatrix, evaluatedParentMeasure);
+
         if (this.parent && this.parent.clipChildren) {
             // Early clip
-            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+            if (evaluatedMeasure.left > evaluatedParentMeasure.left + evaluatedParentMeasure.width) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+            if (evaluatedMeasure.left + evaluatedMeasure.width < evaluatedParentMeasure.left) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+            if (evaluatedMeasure.top > evaluatedParentMeasure.top + evaluatedParentMeasure.height) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+            if (evaluatedMeasure.top + evaluatedMeasure.height < evaluatedParentMeasure.top) {
                 this._isClipped = true;
                 return;
             }
