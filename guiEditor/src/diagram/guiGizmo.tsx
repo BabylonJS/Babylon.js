@@ -92,7 +92,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             startingPositions[7].z += node._currentMeasure.height * node.scaleY / 2
 
-
+            const center = node.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER &&
+            node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER;
             let index = 0;
             this.scalePoints.forEach(scalePoint => {
                 //we get the corner of the control with rotation 0
@@ -132,9 +133,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 res.z -= (size.height / 2) - tempMeasure.height / 2;
                 res.z *= -1;
 
-                this._previousPositions[index].x = res.x;
-                this._previousPositions[index].y = res.z;
-
+                if (this._scalePointIndex != index || center) { //need to remove for center center alignment
+                    this._previousPositions[index].x = res.x;
+                    this._previousPositions[index].y = res.z;
+                }
                 let camera = this.props.globalState.workbench._camera;
                 const scene = this.props.globalState.workbench._scene;
                 const engine = scene.getEngine();
@@ -145,13 +147,24 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 scalePoint.style.left = finalResult.x + "px";
                 scalePoint.style.top = finalResult.y + "px";
-
+                const rotate = this.getRotation(node) * (180/Math.PI);
+                scalePoint.style.transform= 'rotate('+rotate+'deg) * translate(-50%, -50%);'; 
                 ++index;
 
             });
 
         }
 
+    }
+
+    getRotation(node :Control) : number {
+        let rotation = node.rotation;
+        let parent = node.parent;
+        while (parent) { //#S69ESC
+            rotation += parent.rotation;
+            parent = parent.parent;
+        }
+        return rotation;
     }
 
     createBaseGizmo() {
@@ -167,11 +180,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.left = i * 100 + 'px';
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
-            scalePoint.addEventListener("pointerdown", () => {this._setMousePosition(i)});
+            scalePoint.addEventListener("pointerdown", () => { this._setMousePosition(i) });
             scalePoint.addEventListener("pointerup", this._onUp);
             this.scalePoints.push(scalePoint);
             this._previousPositions.push(new Vector2(0, 0));
-
         }
 
         this.updateGizmo();
@@ -200,40 +212,33 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             let alignmentFactorX = 2;
             let alignmentFactorY = 2;
-            let offsetX = [0,0,0,0];
-            let offsetY = [0,0,0,0]
+            let offsetX = [0, 0, 0, 0];
+            let offsetY = [0, 0, 0, 0]
             switch (node.horizontalAlignment) {
                 case Control.HORIZONTAL_ALIGNMENT_LEFT:
                     alignmentFactorX = 1;
-                    offsetX = [-1,-1,0,0];
+                    offsetX = [-1, -1, 0, 0];
                     break;
                 case Control.HORIZONTAL_ALIGNMENT_RIGHT:
                     alignmentFactorX = 1;
-                    offsetX = [0,0,1,1];
+                    offsetX = [0, 0, 1, 1];
                     break;
             }
             switch (node.verticalAlignment) {
                 case Control.VERTICAL_ALIGNMENT_TOP:
                     alignmentFactorY = 1;
-                    offsetY = [0,-1,-1,0];
+                    offsetY = [0, -1, -1, 0];
                     break;
                 case Control.VERTICAL_ALIGNMENT_BOTTOM:
                     alignmentFactorY = 1;
-                    offsetY = [-1,0,0,-1];
+                    offsetY = [1, 0, 0, 1];
                     break;
             }
-            
 
-            let rotation = node.rotation;
-            let parent = node.parent;
-            while (parent) { //#S69ESC
-                rotation += parent.rotation;
-                parent = parent.parent;
-            }
+            let rotation = this.getRotation(node);
             rotation = rotation % 6.28;
             rotation += 0.785398;
             let rotationIndex = Math.floor(rotation / 1.5708);
-
 
             if (rotationIndex % 2 == 0) {
                 switch ((this._scalePointIndex + rotationIndex) % 4) {
@@ -242,6 +247,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                         node.heightInPixels -= dy * alignmentFactorY;
                         node.leftInPixels -= dx * alignmentFactorX * offsetX[0];
                         node.topInPixels -= dy * alignmentFactorY * offsetY[0];
+
                         break;
                     case 1:
                         node.widthInPixels -= dx * alignmentFactorX;
@@ -266,30 +272,51 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 }
             }
             else {
-                /*node.widthInPixels += dy * 2;
-                node.heightInPixels -= dx * alignmentFactorY;
-                node.leftInPixels += dy * alignmentFactorX * offsetX[0];
-                node.topInPixels -= dx * alignmentFactorY * offsetY[0];*/
+                switch (node.horizontalAlignment) {
+                    case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                        alignmentFactorX = 1;
+                        offsetX = [-1, -1, 0, 0];
+                        break;
+                    case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                        alignmentFactorX = 1;
+                        offsetX = [1, 1, 0, 0];
+                        break;
+                }
+                switch (node.verticalAlignment) {
+                    case Control.VERTICAL_ALIGNMENT_TOP:
+                        alignmentFactorY = 1;
+                        offsetY = [-1, -1, -1, 0];
+                        break;
+                    case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                        alignmentFactorY = 1;
+                        offsetY = [1, 0, 0, -1];
+                        break;
+                }
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
                     case 0:
                         node.widthInPixels += dy * 2;
                         node.heightInPixels -= dx * 2;
-
+                        node.leftInPixels += dy * alignmentFactorX * offsetX[0];
+                        node.topInPixels -= dx * alignmentFactorY * offsetY[0];
                         break;
                     case 1:
                         node.widthInPixels += dy * 2;
                         node.heightInPixels += dx * 2;
-
+                        node.leftInPixels += dy * alignmentFactorX * offsetX[0];
+                        node.topInPixels += dx * alignmentFactorY * offsetY[0];
                         break;
                     case 2:
                         node.widthInPixels -= dy * 2;
                         node.heightInPixels += dx * 2;
+                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0];
+                        node.topInPixels += dx * alignmentFactorY * offsetY[0];
 
                         break;
                     case 3:
                         node.widthInPixels -= dy * 2;
                         node.heightInPixels -= dx * 2;
-
+                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0];
+                        node.topInPixels -= dx * alignmentFactorY * offsetY[0];
                         break;
                     default:
                         break;
