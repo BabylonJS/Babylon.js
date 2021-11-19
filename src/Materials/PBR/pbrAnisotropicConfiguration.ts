@@ -131,7 +131,7 @@ export class PBRAnisotropicConfiguration implements IMaterialPlugin {
      * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }

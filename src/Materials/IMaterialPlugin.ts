@@ -46,6 +46,7 @@ export interface IMaterialPlugin {
      * Specifies that the submesh is ready to be used.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
+     * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
     isReadyForSubMesh?(defines: MaterialDefines, scene: Scene, engine: Engine): boolean;
