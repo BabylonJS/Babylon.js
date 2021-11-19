@@ -6,6 +6,7 @@ import { Scene } from "babylonjs/scene";
 import { IAnimatable } from "babylonjs/Animations/animatable.interface";
 import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Animatable } from "babylonjs/Animations/animatable";
+import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
 export class Context {
     title: string;
@@ -14,7 +15,7 @@ export class Context {
     target: Nullable<IAnimatable>;
     rootAnimationGroup: Nullable<AnimationGroup>;
     activeAnimations: Animation[] = [];
-    activeChannels: {[key: number]: string} = {};
+    activeChannels: { [key: number]: string } = {};
     activeKeyPoints: Nullable<KeyPointComponent[]>;
     mainKeyPoint: Nullable<KeyPointComponent>;
     snippetId: string;
@@ -25,9 +26,12 @@ export class Context {
     toKey: number;
     forwardAnimation = true;
     isPlaying: boolean;
+    clipLength: number;
 
     referenceMinFrame = 0;
     referenceMaxFrame = 100;
+
+    focusedInput = false;
 
     onActiveAnimationChanged = new Observable<void>();
     onActiveKeyPointChanged = new Observable<void>();
@@ -46,11 +50,12 @@ export class Context {
     onValueManuallyEntered = new Observable<number>();
 
     onFrameRequired = new Observable<void>();
-    onNewKeyPointRequired = new Observable<void>();
+    onCreateOrUpdateKeyPointRequired = new Observable<void>();
     onFlattenTangentRequired = new Observable<void>();
     onLinearTangentRequired = new Observable<void>();
     onBreakTangentRequired = new Observable<void>();
     onUnifyTangentRequired = new Observable<void>();
+    onStepTangentRequired = new Observable<void>();
 
     onDeleteAnimation = new Observable<Animation>();
 
@@ -72,7 +77,12 @@ export class Context {
     onEditAnimationRequired = new Observable<Animation>();
     onEditAnimationUIClosed = new Observable<void>();
 
-    onSelectToActivated = new Observable<{from:number, to:number}>();
+    onClipLengthIncreased = new Observable<number>();
+    onClipLengthDecreased = new Observable<number>();
+
+    onInterpolationModeSet = new Observable<{ keyId: number; value: AnimationKeyInterpolation }>();
+
+    onSelectToActivated = new Observable<{ from: number; to: number }>();
 
     public prepare() {
         this.isPlaying = false;
@@ -89,6 +99,8 @@ export class Context {
         this.referenceMaxFrame = this.toKey;
         this.snippetId = animation.snippetId;
 
+        this.clipLength = this.referenceMaxFrame;
+
         if (!animation || !animation.hasRunningRuntimeAnimations) {
             return;
         }
@@ -102,13 +114,13 @@ export class Context {
         if (forward) {
             if (this.rootAnimationGroup) {
                 this.rootAnimationGroup.start(true, 1.0, this.fromKey, this.toKey);
-            } else {    
+            } else {
                 animatable = this.scene.beginAnimation(this.target, this.fromKey, this.toKey, true);
             }
         } else {
             if (this.rootAnimationGroup) {
                 this.rootAnimationGroup.start(true, 1.0, this.toKey, this.fromKey);
-            } else {    
+            } else {
                 animatable = this.scene.beginAnimation(this.target, this.toKey, this.fromKey, true);
             }
         }
@@ -117,7 +129,7 @@ export class Context {
         // Move
         if (this.rootAnimationGroup) {
             this.rootAnimationGroup.goToFrame(this.activeFrame);
-        } else { 
+        } else {
             animatable!.goToFrame(this.activeFrame);
         }
 
@@ -145,14 +157,13 @@ export class Context {
         if (!this.isPlaying) {
             if (this.rootAnimationGroup) {
                 this.rootAnimationGroup.start(false, 1.0, this.fromKey, this.toKey);
-            } else { 
+            } else {
                 this.scene.beginAnimation(this.target, this.fromKey, this.toKey, false);
             }
         }
 
         for (var animationEntry of this.animations) {
-            const animation = this.useTargetAnimations ? (animationEntry as TargetedAnimation).animation : animationEntry as Animation;
-
+            const animation = this.useTargetAnimations ? (animationEntry as TargetedAnimation).animation : (animationEntry as Animation);
             if (!animation.hasRunningRuntimeAnimations) {
                 return;
             }
@@ -165,7 +176,7 @@ export class Context {
         this.stop();
     }
 
-    public refreshTarget() {        
+    public refreshTarget() {
         if (!this.animations || !this.animations.length) {
             return;
         }
@@ -214,5 +225,78 @@ export class Context {
         }
 
         return -1;
+    }
+
+    public getPrevKey(): Nullable<number> {
+        if (!this.animations || !this.animations.length || this.activeAnimations.length === 0) {
+            return null;
+        }
+
+        let prevKey = -Number.MAX_VALUE;
+
+        for (var animation of this.activeAnimations) {
+            const keys = animation.getKeys();
+
+            for (var key of keys) {
+                if (key.frame < this.activeFrame && key.frame > prevKey) {
+                    prevKey = key.frame;
+                }
+            }
+        }
+
+        if (prevKey === -Number.MAX_VALUE) {
+            prevKey = this.fromKey;
+        }
+
+        return prevKey;
+    }
+
+    public getNextKey(): Nullable<number> {
+        if (!this.animations || !this.animations.length) {
+            return null;
+        }
+
+        let nextKey = Number.MAX_VALUE;
+
+        for (var animation of this.activeAnimations) {
+            const keys = animation.getKeys();
+
+            for (var key of keys) {
+                if (key.frame > this.activeFrame && key.frame < nextKey) {
+                    nextKey = key.frame;
+                }
+            }
+        }
+
+        if (nextKey === Number.MAX_VALUE) {
+            nextKey = this.toKey;
+        }
+
+        return nextKey;
+    }
+
+    /**
+     * If any current active animation has a key at the received frameNumber,
+     * return the index of the animation in the active animation array, and
+     * the index of the frame on the animation.
+     */
+    public getKeyAtAnyFrameIndex(frameNumber: number) {
+        if (!this.animations || !this.animations.length || !this.activeAnimations || !this.activeAnimations.length) {
+            return null;
+        }
+
+        let animIdx = 0;
+        for (let animation of this.activeAnimations) {
+            const keys = animation.getKeys();
+            let idx = 0;
+            for (let key of keys) {
+                if (Math.floor(frameNumber - key.frame) === 0) {
+                    return { animationIndex: animIdx, keyIndex: idx };
+                }
+                idx++;
+            }
+            animIdx++;
+        }
+        return null;
     }
 }

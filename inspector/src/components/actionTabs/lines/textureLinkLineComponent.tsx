@@ -7,11 +7,11 @@ import { Material } from "babylonjs/Materials/material";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
 import { TextLineComponent } from "./../../../sharedUiComponents/lines/textLineComponent";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWrench, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { FileButtonLineComponent } from './../../../sharedUiComponents/lines/fileButtonLineComponent';
-import { Tools } from 'babylonjs/Misc/tools';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { FileButtonLineComponent } from "./../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { Tools } from "babylonjs/Misc/tools";
 
 export interface ITextureLinkLineComponentProps {
     label: string;
@@ -21,7 +21,7 @@ export interface ITextureLinkLineComponentProps {
     onDebugSelectionChangeObservable?: Observable<TextureLinkLineComponent>;
     propertyName?: string;
     onTextureCreated?: (texture: BaseTexture) => void;
-    customDebugAction?: (state: boolean) => void
+    customDebugAction?: (state: boolean) => void;
     onTextureRemoved?: () => void;
 }
 
@@ -59,7 +59,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             let newState = !this.state.isDebugSelected;
             this.props.customDebugAction(newState);
             this.setState({ isDebugSelected: newState });
-            
+
             if (this.props.onDebugSelectionChangeObservable) {
                 this.props.onDebugSelectionChangeObservable.notifyObservers(this);
             }
@@ -143,21 +143,25 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
     updateTexture(file: File) {
         let material = this.props.material!;
-        Tools.ReadFile(file, (data) => {
-            var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
+        Tools.ReadFile(
+            file,
+            (data) => {
+                var blob = new Blob([data], { type: "octet/stream" });
+                var url = URL.createObjectURL(blob);
 
-            let texture = new Texture(url, material.getScene(), false, false);
+                let texture = new Texture(url, material.getScene(), false, false);
 
-            if (this.props.propertyName) {
-                (material as any)[this.props.propertyName!] = texture;
-            } else if (this.props.onTextureCreated) {
-                this.props.onTextureCreated(texture);
-            }
+                if (this.props.propertyName) {
+                    (material as any)[this.props.propertyName!] = texture;
+                } else if (this.props.onTextureCreated) {
+                    this.props.onTextureCreated(texture);
+                }
 
-            this.forceUpdate();
-
-        }, undefined, true);
+                this.forceUpdate();
+            },
+            undefined,
+            true
+        );
     }
 
     removeTexture() {
@@ -169,23 +173,20 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         }
 
         this.forceUpdate();
-}
+    }
 
     render() {
         const texture = this.props.texture;
 
         if (!texture) {
             if (this.props.propertyName || this.props.onTextureCreated) {
-                return (
-                    <FileButtonLineComponent label={`Add ${this.props.label} texture`} onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                )
+                return <FileButtonLineComponent label={`Add ${this.props.label} texture`} onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />;
             }
             return null;
         }
         return (
             <div className="textureLinkLine">
-                {
-                    !texture.isCube && this.props.material &&
+                {!texture.isCube && this.props.material && (
                     <>
                         <div className={this.state.isDebugSelected ? "debug selected" : "debug"}>
                             <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
@@ -196,7 +197,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                             </span>
                         </div>
                     </>
-                }
+                )}
                 <TextLineComponent label={this.props.label} value={texture.name} onLink={() => this.onLink()} />
             </div>
         );

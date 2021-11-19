@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Color4, Color3 } from 'babylonjs/Maths/math.color';
-import { GlobalState } from '../globalState';
-import { ColorPicker } from '../sharedUiComponents/colorPicker/colorPicker';
+import { Color4, Color3 } from "babylonjs/Maths/math.color";
+import { GlobalState } from "../globalState";
+import { ColorPicker } from "../sharedUiComponents/colorPicker/colorPicker";
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
@@ -22,7 +22,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     constructor(props: IColorPickerComponentProps) {
         super(props);
 
-        this.state = {pickerEnabled: false, color: this.props.value, hex: this.props.value.toHexString()};
+        this.state = { pickerEnabled: false, color: this.props.value, hex: this.props.value.toHexString() };
 
         this._floatRef = React.createRef();
         this._floatHostRef = React.createRef();
@@ -48,15 +48,13 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        let result = nextProps.value.toHexString() !== this.props.value.toHexString()            
-            || nextState.hex !== this.state.hex
-            || nextState.pickerEnabled !== this.state.pickerEnabled;
+        let result = nextProps.value.toHexString() !== this.props.value.toHexString() || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
 
-        if (nextProps.value.toHexString() !== this.props.value.toHexString() ) {
+        if (nextProps.value.toHexString() !== this.props.value.toHexString()) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
-        
+
         return result;
     }
 
@@ -80,17 +78,13 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
 
         return (
             <div className="color-picker">
-                <div className="color-rect"  ref={this._floatHostRef}
-                    style={{background: this.state.hex}}
-                    onClick={() => this.setPickerState(true)}>
-
-                </div>
-                {
-                    this.state.pickerEnabled &&
+                <div className="color-rect" ref={this._floatHostRef} style={{ background: this.state.hex }} onClick={() => this.setPickerState(true)}></div>
+                {this.state.pickerEnabled && (
                     <>
                         <div className="color-picker-cover" onClick={() => this.setPickerState(false)}></div>
                         <div className="color-picker-float" ref={this._floatRef}>
-                            <ColorPicker color={color}
+                            <ColorPicker
+                                color={color}
                                 onColorChanged={(color: Color3 | Color4) => {
                                     const hex = color.toHexString();
                                     this.setState({ hex, color });
@@ -99,7 +93,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                             />
                         </div>
                     </>
-                }
+                )}
             </div>
         );
     }

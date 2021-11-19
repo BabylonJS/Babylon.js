@@ -26,7 +26,6 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
-import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
  * Utility interface for storing vertex attribute data
@@ -1632,16 +1631,12 @@ export class _Exporter {
             if (node.name !== "__root__") {
                 return false;
             }
+
             // Transform
             let matrix = node.getWorldMatrix();
-            let matrixToLeftHanded = Matrix.Compose(this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
-            let matrixProduct = matrix.multiply(matrixToLeftHanded);
-            let matrixIdentity = Matrix.IdentityReadOnly;
 
-            for (let i = 0; i < 16; i++) {
-                if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > Epsilon) {
-                    return false;
-                }
+            if (matrix.determinant() === 1) {
+                return false;
             }
 
             // Geometry

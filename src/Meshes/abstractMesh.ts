@@ -464,6 +464,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             return;
         }
 
+        this.resetDrawCache();
         this._unBindEffect();
     }
 
@@ -1413,6 +1414,30 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             }
         }
 
+        if (data && applyMorph && this.morphTargetManager) {
+            let faceIndexCount = 0;
+            let positionIndex = 0;
+            for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
+                for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
+                    const targetMorph = this.morphTargetManager.getTarget(targetCount);
+                    const influence = targetMorph.influence;
+                    if (influence > 0.0) {
+                        const morphTargetPositions = targetMorph.getPositions();
+                        if (morphTargetPositions) {
+                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                        }
+                    }
+                }
+
+                faceIndexCount++;
+
+                if (this._positions && faceIndexCount === 3) { // We want to merge into positions every 3 indices starting (but not 0)
+                    faceIndexCount = 0;
+                    let index = positionIndex * 3;
+                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
+                }
+            }
+        }
         if (data && applySkeleton && this.skeleton) {
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -1457,30 +1482,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     if (this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
                     }
-                }
-            }
-        }
-        if (data && applyMorph && this.morphTargetManager) {
-            let faceIndexCount = 0;
-            let positionIndex = 0;
-            for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
-                for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
-                    const targetMorph = this.morphTargetManager.getTarget(targetCount);
-                    const influence = targetMorph.influence;
-                    if (influence > 0.0) {
-                        const morphTargetPositions = targetMorph.getPositions();
-                        if (morphTargetPositions) {
-                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
-                        }
-                    }
-                }
-
-                faceIndexCount++;
-
-                if (this._positions && faceIndexCount === 3) { // We want to merge into positions every 3 indices starting (but not 0)
-                    faceIndexCount = 0;
-                    let index = positionIndex * 3;
-                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
                 }
             }
         }

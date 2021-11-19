@@ -2,10 +2,10 @@ import * as React from "react";
 import { Vector3, Matrix, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { Vector4LineComponent } from './vector4LineComponent';
-import { OptionsLineComponent } from './optionsLineComponent';
-import { SliderLineComponent } from './sliderLineComponent';
-import { GlobalState } from '../globalState';
+import { Vector4LineComponent } from "./vector4LineComponent";
+import { OptionsLineComponent } from "./optionsLineComponent";
+import { SliderLineComponent } from "./sliderLineComponent";
+import { GlobalState } from "../globalState";
 
 interface IMatrixLineComponentProps {
     label: string;
@@ -19,8 +19,8 @@ interface IMatrixLineComponentProps {
     globalState: GlobalState;
 }
 
-export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, { value: Matrix, mode: number, angle: number}> {
-   private _localChange = false;
+export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, { value: Matrix; mode: number; angle: number }> {
+    private _localChange = false;
 
     constructor(props: IMatrixLineComponentProps) {
         super(props);
@@ -48,10 +48,10 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
             }
         }
 
-        this.state = { value:matrix, mode: this.props.mode || 0, angle: angle };
+        this.state = { value: matrix, mode: this.props.mode || 0, angle: angle };
     }
 
-    shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix, mode: number, angle: number }) {
+    shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix; mode: number; angle: number }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -74,7 +74,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -95,7 +95,6 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
     }
 
     updateBasedOnMode(value: number) {
-
         switch (this.state.mode) {
             case 1: {
                 Matrix.RotationXToRef(this.state.angle, this.state.value);
@@ -112,7 +111,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
         }
         this.updateMatrix();
 
-        this.setState({angle: value});
+        this.setState({ angle: value });
     }
 
     render() {
@@ -131,9 +130,11 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                     </div>
                 </div>
                 <div className="secondLine">
-                    <OptionsLineComponent label="Mode"
+                    <OptionsLineComponent
+                        label="Mode"
                         className="no-right-margin"
-                        options={modeOptions} target={this} 
+                        options={modeOptions}
+                        target={this}
                         noDirectUpdate={true}
                         getSelection={() => {
                             return this.state.mode;
@@ -141,30 +142,58 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                         onSelect={(value: any) => {
                             this.props.target[this.props.propertyName] = Matrix.Identity();
                             Matrix.IdentityToRef(this.state.value);
-                            this.setState({mode: value, angle: 0});
-                            
+                            this.setState({ mode: value, angle: 0 });
+
                             this.updateMatrix();
 
                             if (this.props.onModeChange) {
                                 this.props.onModeChange(value);
                             }
-                        }} />                
-                    </div>
-                {
-                    this.state.mode === 0 &&
+                        }}
+                    />
+                </div>
+                {this.state.mode === 0 && (
                     <div className="secondLine">
-                        <Vector4LineComponent globalState={this.props.globalState} label="Row #0" value={this.state.value.getRow(0)!} onChange={value => this.updateRow(value, 0)}/>
-                        <Vector4LineComponent globalState={this.props.globalState} label="Row #1" value={this.state.value.getRow(1)!} onChange={value => this.updateRow(value, 1)}/>
-                        <Vector4LineComponent globalState={this.props.globalState} label="Row #2" value={this.state.value.getRow(2)!} onChange={value => this.updateRow(value, 2)}/>
-                        <Vector4LineComponent globalState={this.props.globalState} label="Row #3" value={this.state.value.getRow(3)!} onChange={value => this.updateRow(value, 3)}/>
+                        <Vector4LineComponent
+                            globalState={this.props.globalState}
+                            label="Row #0"
+                            value={this.state.value.getRow(0)!}
+                            onChange={(value) => this.updateRow(value, 0)}
+                        />
+                        <Vector4LineComponent
+                            globalState={this.props.globalState}
+                            label="Row #1"
+                            value={this.state.value.getRow(1)!}
+                            onChange={(value) => this.updateRow(value, 1)}
+                        />
+                        <Vector4LineComponent
+                            globalState={this.props.globalState}
+                            label="Row #2"
+                            value={this.state.value.getRow(2)!}
+                            onChange={(value) => this.updateRow(value, 2)}
+                        />
+                        <Vector4LineComponent
+                            globalState={this.props.globalState}
+                            label="Row #3"
+                            value={this.state.value.getRow(3)!}
+                            onChange={(value) => this.updateRow(value, 3)}
+                        />
                     </div>
-                }
-                {
-                    this.state.mode !== 0 &&
+                )}
+                {this.state.mode !== 0 && (
                     <div className="secondLine">
-                        <SliderLineComponent label="Angle" minimum={0} maximum={2 * Math.PI} useEuler={true} step={0.1} globalState={this.props.globalState} directValue={this.state.angle} onChange={value => this.updateBasedOnMode(value)}/>
+                        <SliderLineComponent
+                            label="Angle"
+                            minimum={0}
+                            maximum={2 * Math.PI}
+                            useEuler={true}
+                            step={0.1}
+                            globalState={this.props.globalState}
+                            directValue={this.state.angle}
+                            onChange={(value) => this.updateBasedOnMode(value)}
+                        />
                     </div>
-                }
+                )}
             </div>
         );
     }

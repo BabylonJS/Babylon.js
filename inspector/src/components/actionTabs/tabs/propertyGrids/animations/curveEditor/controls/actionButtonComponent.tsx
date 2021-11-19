@@ -9,31 +9,27 @@ interface IActionButtonComponentProps {
     id?: string;
     className?: string;
     isActive?: boolean;
-    onClick:()=> void;
+    onClick: () => void;
     tooltip?: string;
 }
 
-interface IActionButtonComponentState {
-}
+interface IActionButtonComponentState {}
 
-export class ActionButtonComponent extends React.Component<
-IActionButtonComponentProps,
-IActionButtonComponentState
-> {
-
+export class ActionButtonComponent extends React.Component<IActionButtonComponentProps, IActionButtonComponentState> {
     constructor(props: IActionButtonComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
     }
 
     public render() {
         return (
-            <div 
+            <div
                 title={this.props.tooltip}
-                className={"action-button" + (this.props.isActive ? " active" : "") + (this.props.className ? " " + this.props.className : "")} 
-                id={this.props.id} 
-                onClick={() => this.props.onClick()}>
+                className={"action-button" + (this.props.isActive ? " active" : "") + (this.props.className ? " " + this.props.className : "")}
+                id={this.props.id}
+                onClick={() => this.props.onClick()}
+            >
                 <img className="action-button-image" src={this.props.icon} />
             </div>
         );

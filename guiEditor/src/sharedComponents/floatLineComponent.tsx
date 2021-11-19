@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -14,10 +14,10 @@ interface IFloatLineComponentProps {
     step?: string;
     digits?: number;
     globalState: GlobalState;
-    min?: number
-    max?: number
+    min?: number;
+    max?: number;
     smallUI?: boolean;
-    onEnter?: (newValue:number) => void;
+    onEnter?: (newValue: number) => void;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -28,9 +28,9 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     constructor(props: IFloatLineComponentProps) {
         super(props);
         let currentValue = this.props.target[this.props.propertyName];
-        
-        this._digits == this.props.digits == undefined ? 2 : this.props.digits;
-    
+
+        (this._digits == this.props.digits) == undefined ? 2 : this.props.digits;
+
         this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this._digits)) : "0" };
         this._store = currentValue;
 
@@ -51,7 +51,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this._digits) : "0";
+        const newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this._digits)) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -72,7 +72,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -92,15 +92,15 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         this._localChange = true;
-        this.setState({ value: valueString});
+        this.setState({ value: valueString });
 
         if (isNaN(valueAsNumber)) {
             return;
         }
-        if(this.props.max != undefined && (valueAsNumber > this.props.max)) {
+        if (this.props.max != undefined && valueAsNumber > this.props.max) {
             valueAsNumber = this.props.max;
         }
-        if(this.props.min != undefined && (valueAsNumber < this.props.min)) {
+        if (this.props.min != undefined && valueAsNumber < this.props.min) {
             valueAsNumber = this.props.min;
         }
 
@@ -111,33 +111,36 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
-        let className = this.props.smallUI ? "short": "value";
+        let className = this.props.smallUI ? "short" : "value";
 
         return (
             <div>
                 {
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        <div className="label">
-                            {this.props.label}
-                        </div>
+                        <div className="label">{this.props.label}</div>
                         <div className={className}>
-                            <input type="number" step={this.props.step || "0.01"} className="numeric-input"
-                            onBlur={(evt) => {
-                                this.props.globalState.blockKeyboardEvents = false;
-                                if(this.props.onEnter) {
-                                    this.props.onEnter(this._store);
-                                }
-                            }}
-                            onKeyDown={evt => {
-                                if (evt.keyCode !== 13) {
-                                    return;
-                                }
-                                if(this.props.onEnter) {
-                                    this.props.onEnter(this._store);
-                                }
-                            }}
-                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                            value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} />
+                            <input
+                                type="number"
+                                step={this.props.step || "0.01"}
+                                className="numeric-input"
+                                onBlur={(evt) => {
+                                    this.props.globalState.blockKeyboardEvents = false;
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }}
+                                onKeyDown={(evt) => {
+                                    if (evt.keyCode !== 13) {
+                                        return;
+                                    }
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }}
+                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
+                                value={this.state.value}
+                                onChange={(evt) => this.updateValue(evt.target.value)}
+                            />
                         </div>
                     </div>
                 }

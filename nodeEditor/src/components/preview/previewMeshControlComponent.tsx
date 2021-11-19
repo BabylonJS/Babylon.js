@@ -1,13 +1,12 @@
-
 import * as React from "react";
-import { GlobalState } from '../../globalState';
-import { Color3, Color4 } from 'babylonjs/Maths/math.color';
-import { PreviewType } from './previewType';
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
-import { Observer } from 'babylonjs/Misc/observable';
-import { Nullable } from 'babylonjs/types';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { GlobalState } from "../../globalState";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { PreviewType } from "./previewType";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
+import { NodeMaterialModes } from "babylonjs/Materials/Node/Enums/nodeMaterialModes";
 
 const popUpIcon: string = require("./svgs/popOut.svg");
 const colorPicker: string = require("./svgs/colorPicker.svg");
@@ -94,14 +93,13 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     }
 
     render() {
-
         var meshTypeOptions = [
             { label: "Cube", value: PreviewType.Box },
             { label: "Cylinder", value: PreviewType.Cylinder },
             { label: "Plane", value: PreviewType.Plane },
             { label: "Shader ball", value: PreviewType.ShaderBall },
             { label: "Sphere", value: PreviewType.Sphere },
-            { label: "Load...", value: PreviewType.Custom + 1 }
+            { label: "Load...", value: PreviewType.Custom + 1 },
         ];
 
         var particleTypeOptions = [
@@ -111,16 +109,18 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Fire", value: PreviewType.Fire },
             { label: "Rain", value: PreviewType.Rain },
             { label: "Smoke", value: PreviewType.Smoke },
-            { label: "Load...", value: PreviewType.Custom + 1 }
-        ]; 
+            { label: "Load...", value: PreviewType.Custom + 1 },
+        ];
 
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
-                label: "Custom", value: PreviewType.Custom
+                label: "Custom",
+                value: PreviewType.Custom,
             });
 
             particleTypeOptions.splice(0, 0, {
-                label: "Custom", value: PreviewType.Custom
+                label: "Custom",
+                value: PreviewType.Custom,
             });
         }
 
@@ -129,46 +129,45 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
         return (
             <div id="preview-mesh-bar">
-                { (this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && <>
-                    <OptionsLineComponent label="" options={options} target={this.props.globalState}
-                                propertyName="previewType"
-                                noDirectUpdate={true}
-                                onSelect={(value: any) => {
-                                    if (value !== PreviewType.Custom + 1) {
-                                        this.changeMeshType(value);
-                                    } else {
-                                        this.filePickerRef.current?.click();
-                                    }
-                                }} />
-                    <div style={{
-                        display: "none"
-                    }} title="Preview with a custom mesh" >
-                        <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept}/>
-                    </div>
-                </> }
-                { 
-                    this.props.globalState.mode === NodeMaterialModes.Material && 
+                {(this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && (
                     <>
+                        <OptionsLineComponent
+                            label=""
+                            options={options}
+                            target={this.props.globalState}
+                            propertyName="previewType"
+                            noDirectUpdate={true}
+                            onSelect={(value: any) => {
+                                if (value !== PreviewType.Custom + 1) {
+                                    this.changeMeshType(value);
+                                } else {
+                                    this.filePickerRef.current?.click();
+                                }
+                            }}
+                        />
                         <div
-                            title="Turn-table animation"
-                            onClick={() => this.changeAnimation()} className="button" id="play-button">
-                            {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
+                            style={{
+                                display: "none",
+                            }}
+                            title="Preview with a custom mesh"
+                        >
+                            <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept} />
                         </div>
-                        <div
-                        id="color-picker-button"
-                            title="Background color"
-                            className={"button align"}
-                            onClick={(_) => this.changeBackgroundClick()}
-                            >
-                            <img src={colorPicker} alt="" id="color-picker-image"/>
+                    </>
+                )}
+                {this.props.globalState.mode === NodeMaterialModes.Material && (
+                    <>
+                        <div title="Turn-table animation" onClick={() => this.changeAnimation()} className="button" id="play-button">
+                            {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt="" /> : <img src={playIcon} alt="" />}
+                        </div>
+                        <div id="color-picker-button" title="Background color" className={"button align"} onClick={(_) => this.changeBackgroundClick()}>
+                            <img src={colorPicker} alt="" id="color-picker-image" />
                             <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
                         </div>
-                    </> 
-                }
-                <div
-                    title="Open preview in new window" id="preview-new-window"
-                    onClick={() => this.onPopUp()} className="button">
-                    <img src={popUpIcon} alt=""/>
+                    </>
+                )}
+                <div title="Open preview in new window" id="preview-new-window" onClick={() => this.onPopUp()} className="button">
+                    <img src={popUpIcon} alt="" />
                 </div>
             </div>
         );

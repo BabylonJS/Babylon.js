@@ -70,6 +70,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
