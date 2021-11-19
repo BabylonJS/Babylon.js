@@ -828,7 +828,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _augmentPointerInit(pointerEventInit: PointerEventInit, id: number, screenCoordinates?: { x: number; y: number; }): void {
         pointerEventInit.pointerId = id;
         pointerEventInit.pointerType = "xr";
-        if(screenCoordinates) {
+        if (screenCoordinates) {
             pointerEventInit.screenX = screenCoordinates.x;
             pointerEventInit.screenY = screenCoordinates.y;
         }
