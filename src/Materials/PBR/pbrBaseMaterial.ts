@@ -951,7 +951,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        // TODO: super.hasRenderTargetTextures; is not allowed. This copies the code.
+        // `super.hasRenderTargetTextures` is not allowed, so code is replicated here.
         const userInfo: MaterialEventInfoHasRenderTargetTextures = {
             hasRenderTargetTextures: false
         };
