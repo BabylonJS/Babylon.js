@@ -160,6 +160,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         CloudBlock: "Generate Fractal Brownian Motion Clouds",
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
+        TwirlBlock: "Apply a twirl rotation"
     };
 
     private _customFrameList: { [key: string]: string };
@@ -307,6 +308,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "Rotate2dBlock",
                 "TransformBlock",
                 "ScreenSpaceBlock",
+                "TwirlBlock"
             ],
             Matrices: [
                 "Matrix",
