@@ -160,13 +160,18 @@ async function runTest(sandboxUrl, index) {
     referenceCanvas.className = "referenceImage";
     container.appendChild(referenceCanvas);
 
-    const renderFrame = document.createElement("iframe");
-    renderFrame.className = "renderImage";
-    container.appendChild(renderFrame);
+    const renderCanvas = document.createElement("canvas");
+    renderCanvas.className = "renderImage";
+    container.appendChild(renderCanvas);
 
     const diffCanvas = document.createElement("canvas");
     diffCanvas.className = "diffImage";
     container.appendChild(diffCanvas);
+
+    // Transient iframe for the sandbox
+    const renderFrame = document.createElement("iframe");
+    renderFrame.className = "renderFrame";
+    document.body.appendChild(renderFrame);
 
     console.log(`Running ${test.title}`);
 
@@ -178,13 +183,9 @@ async function runTest(sandboxUrl, index) {
     referenceContext.drawImage(referenceImage, 0, 0);
 
     // Render
-    renderFrame.width = referenceCanvas.clientWidth;
-    renderFrame.height = referenceCanvas.clientHeight;
     const src = `${sandboxUrl}?&dist=true&skybox=false&clearColor=FFFFFF&kiosk=true&assetUrl=${config.root}/${test.model}&environment=${config.root}/${test.environment || "Neutral.hdr"}&camera=${test.camera || 0}`;
     await loadFrame(renderFrame, src);
     const renderScreenshot = await renderFrame.contentWindow.BABYLON.Sandbox.CaptureScreenshotAsync({width: 1024, height: 1024});
-    const renderCanvas = document.createElement("canvas");
-    renderCanvas.className = "renderImage";
     const renderContext = renderCanvas.getContext("2d");
     const renderImage = await loadImage(renderScreenshot);
     renderCanvas.width = renderImage.width;
