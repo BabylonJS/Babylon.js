@@ -171,6 +171,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             disabledByNearInteraction: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
+            screenCoordinates?: { x: number; y: number };
         };
     } = {};
     private _scene: Scene;
@@ -395,6 +396,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
                     scene.pointerX = this._screenCoordinatesRef.x;
                     scene.pointerY = this._screenCoordinatesRef.y;
+                    controllerData.screenCoordinates = {
+                        x: this._screenCoordinatesRef.x,
+                        y: this._screenCoordinatesRef.y,
+                    }
                 }
             }
 
@@ -548,6 +553,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pointerType: "xr",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+            if(controllerData.screenCoordinates && controllerData.screenCoordinates.x) {
+                pointerEventInit.screenX = controllerData.screenCoordinates.x;
+                pointerEventInit.screenY = controllerData.screenCoordinates.y;
+            }
             if (!controllerData.pick || (this._options.disablePointerUpOnTouchOut && downTriggered)) {
                 return;
             }
