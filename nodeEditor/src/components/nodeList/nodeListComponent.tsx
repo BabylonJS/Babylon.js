@@ -269,7 +269,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         );
     }
 
-    removeBlock(value: string): void {
+    removeCustomBlock(value: string): void {
         let blockJson = localStorage.getItem("Custom-Block-List");
         if (blockJson) {
             let blockList = JSON.parse(blockJson);
@@ -477,7 +477,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                                 tooltip={this._customBlockList[block] || ""}
                                 iconImage={deleteButton}
                                 iconTitle="Delete"
-                                onIconClick={(value) => this.removeBlock(value)}
+                                onIconClick={(value) => this.removeCustomBlock(value)}
                                 lenSuffixToRemove={11}
                             />
                         );
