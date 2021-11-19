@@ -186,6 +186,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             disabledByNearInteraction: boolean;
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
+            finalPointerUpTriggered?: boolean;
         };
     } = {};
     private _scene: Scene;
@@ -549,6 +550,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             xrController.onDisposeObservable.addOnce(() => {
                 if (controllerData.pick && !this._options.disablePointerUpOnTouchOut && downTriggered) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                    controllerData.finalPointerUpTriggered = true;
                 }
                 discMesh.dispose();
             });
@@ -579,6 +581,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         xrController.onDisposeObservable.addOnce(() => {
             if (controllerData.pick && downTriggered && !this._options.disablePointerUpOnTouchOut) {
                 this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                controllerData.finalPointerUpTriggered = true;
             }
         });
     }
@@ -699,12 +702,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
 
         this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
-            // Fire a pointerup
-            const pointerEventInit: PointerEventInit = {
-                pointerId: controllerData.id,
-                pointerType: "xr",
-            };
-            this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+            if (!this._controllers[xrControllerUniqueId].finalPointerUpTriggered) {
+                // Stay safe and fire a pointerup, in case it wasn't already triggered
+                const pointerEventInit: PointerEventInit = {
+                    pointerId: controllerData.id,
+                    pointerType: "xr",
+                };
+                this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+            }
 
             controllerData.selectionMesh.dispose();
             controllerData.laserPointer.dispose();
