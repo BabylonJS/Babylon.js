@@ -78,4 +78,20 @@ export class Tools {
             grid.addControl(controls[i], tags[i].x, tags[i].y);
         }
     }
+
+    public static isContainer(guiControl: Control) {
+        switch (guiControl.typeName) {
+            case "Button":
+            case "StackPanel":
+            case "Rectangle":
+            case "Ellipse":
+            case "Grid":
+            case "ScrollViewer":
+            case "Container":
+            case "VirtualKeyboard":
+                return true;
+            default:
+                return false;
+        }
+    }
 }

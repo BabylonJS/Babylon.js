@@ -258,7 +258,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     private updateHitTest(guiControl: Control, value: boolean) {
         guiControl.isHitTestVisible = value;
-        if (this.props.globalState.workbench.isContainer(guiControl)) {
+        if (Tools.isContainer(guiControl)) {
             (guiControl as Container).children.forEach((child) => {
                 this.updateHitTest(child, value);
             });
@@ -329,7 +329,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     private selectAllGUI(node: Control) {
         this.globalState.onSelectionChangedObservable.notifyObservers(node);
-        if (this.isContainer(node)) {
+        if (Tools.isContainer(node)) {
             (node as Container).children.forEach((child) => {
                 this.selectAllGUI(child);
             });
@@ -419,21 +419,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
-    public isContainer(guiControl: Control) {
-        switch (guiControl.typeName) {
-            case "Button":
-            case "StackPanel":
-            case "Rectangle":
-            case "Ellipse":
-            case "Grid":
-            case "ScrollViewer":
-            case "Container":
-            case "VirtualKeyboard":
-                return true;
-            default:
-                return false;
-        }
-    }
+
 
     createNewGuiNode(guiControl: Control) {
         guiControl.highlightLineWidth = 5;
@@ -469,7 +455,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        if (this.isContainer(guiControl)) {
+        if (Tools.isContainer(guiControl)) {
             (guiControl as Container).children.forEach((child) => {
                 this.createNewGuiNode(child);
             });
@@ -490,7 +476,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 if (dropLocationControl != null) {
                     //the control you are dragging onto top
                     if (
-                        this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
+                        Tools.isContainer(dropLocationControl) && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER
                     ) {
                         draggedControlParent.removeControl(draggedControl);
