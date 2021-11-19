@@ -41,24 +41,19 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (ste
     try {
         const step = coroutine.next();
 
-        if (!!step.value) {
-            if (step.done) {
-                onSuccess(step);
-            } else {
-                step.value.then(
-                    // TODO: Ideally just set step.value to undefined and reuse the same object
-                    () => onSuccess({done: step.done, value: undefined}),
-                    (error) => onError(error),
-                );
-            }
+        if (step.done) {
+            onSuccess(step);
+        } else if (!step.value) {
+            // NOTE: The properties of step have been narrowed, but the type of step itself is not narrowed, so the cast below is the most type safe way to deal with this without instantiating a new object to hold the values.
+            onSuccess(step as {done: typeof step.done, value: typeof step.value});
         } else {
-            if (step.done) {
-                onSuccess(step);
-            } else {
-                // const {done, value} = step;
-                // onSuccess({done, value});
-                onSuccess(step as IteratorYieldResult<void>); // TODO: Why is this typing wonky?
-            }
+            step.value.then(
+                () => {
+                    step.value = undefined;
+                    onSuccess(step as {done: typeof step.done, value: typeof step.value});
+                },
+                (error) => onError(error),
+            );
         }
     } catch (error) {
         onError(error);
@@ -153,10 +148,10 @@ type ExtractAsyncCoroutineReturnType<T> =
  * @returns A function that runs the coroutine synchronously.
  * @hidden
  */
-export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => Coroutine<TReturn>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> {
-    return (...params: Parameters<TCoroutineFactory>): ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
+export function makeSyncFunction<TCoroutineFactory extends (...params: any[]) => Coroutine<unknown>, TReturn extends ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn {
+    return (...params: Parameters<TCoroutineFactory>): TReturn => {
         // Run the coroutine synchronously.
-        return runCoroutineSync(coroutineFactory(...params), abortSignal) as ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>; // TODO: How can we remove this cast?
+        return runCoroutineSync(coroutineFactory(...params), abortSignal) as TReturn;
     };
 }
 
@@ -167,9 +162,9 @@ export function makeSyncFunction<TReturn, TCoroutineFactory extends (...params: 
  * @returns A function that runs the coroutine asynchronously.
  * @hidden
  */
-export function makeAsyncFunction<TReturn, TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<TReturn>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<TReturn>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>> {
-    return (...params: Parameters<TCoroutineFactory>): ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>> => {
+export function makeAsyncFunction<TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<unknown>, TReturn extends ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<unknown>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn {
+    return (...params: Parameters<TCoroutineFactory>): TReturn => {
         // Run the coroutine asynchronously.
-        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>>; // TODO: How can I remove this cast?
+        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as TReturn;
     };
 }
