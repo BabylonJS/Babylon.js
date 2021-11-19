@@ -145,6 +145,7 @@
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 
 ### GUI
+
 - Added moving GUI controls to a non-overlapping position function called `moveToNonOverlappedPosition` in `AdvancedDynamicTexture`([RolandCsibrei](https://github.com/RolandCsibrei))
 - Allow Chrome to copy the GUI snippet id to the clipboard ([BlakeOne](https://github.com/BlakeOne))
 - Added a `FocusableButton` gui control to simplify creating menus with keyboard navigation ([Flux159](https://github.com/Flux159))
@@ -207,6 +208,7 @@
 - Detach the non-vr camera from the canvas when entering XR and re-attach when leaving ([RaananW](https://github.com/RaananW))
 - New experimental walking locomotion feature for VR sessions ([syntheticmagus](https://github.com/syntheticmagus))
 - Updated `SixDofDragBehavior` to support XR motion controller specific rotation options when one is used, allowing for 1:1 mesh rotation with controllers ([rickfromwork](https://github.com/rickfromwork))
+- Allow customizing the selection and laser point meshes of the pointer selection feature ([#11487](https://github.com/BabylonJS/Babylon.js/issues/11487)) ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
