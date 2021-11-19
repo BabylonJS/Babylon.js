@@ -4,8 +4,8 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { RegisterClass } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
-import { NodeMaterialConnectionPoint } from "..";
 import { Nullable } from "../../../types";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 
 /**
  * Custom block created from user-defined json
