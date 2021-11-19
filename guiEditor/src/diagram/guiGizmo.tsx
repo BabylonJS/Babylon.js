@@ -147,8 +147,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 scalePoint.style.left = finalResult.x + "px";
                 scalePoint.style.top = finalResult.y + "px";
+                
+                //scalePoint.style.display = finalResult.x < 0 || finalResult.y < 0 ? "none" : "flex" ;
+                
                 const rotate = this.getRotation(node) * (180/Math.PI);
-                scalePoint.style.transform= 'rotate('+rotate+'deg) * translate(-50%, -50%);'; 
+                scalePoint.style.transform= 'translate(-50%, -50%) rotate('+rotate+'deg)'; 
                 ++index;
 
             });
