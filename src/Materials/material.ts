@@ -992,7 +992,7 @@ export class Material implements IAnimatable {
             return true;
         }
 
-        const userInfo: MaterialEventInfoGetDisableAlphaBlending= {
+        const userInfo: MaterialEventInfoGetDisableAlphaBlending = {
             disableAlphaBlending: false
         };
 

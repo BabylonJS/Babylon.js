@@ -186,6 +186,10 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
         return true;
     }
 
+    /**
+     * Collects all define names.
+     * @param names The array to append to.
+     */
     public collectDefineNames(names: string[]): void {
         for (const key of Object.keys(modelDefines)) {
             if (key[0] === "_") {
