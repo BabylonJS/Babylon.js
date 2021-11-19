@@ -110,6 +110,7 @@ export class DetailMapConfiguration implements IMaterialPlugin {
 
     /**
      * Instantiate a new detail map
+     * @param material The material implementing this plugin.
      */
     constructor(material: PBRBaseMaterial | StandardMaterial) {
         this._material = material;
@@ -129,14 +130,13 @@ export class DetailMapConfiguration implements IMaterialPlugin {
      * Gets whether the submesh is ready to be used or not.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
+     * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
-
-        const engine = scene.getEngine();
 
         if (defines._areTexturesDirty && scene.texturesEnabled) {
             if (engine.getCaps().standardDerivatives && this._texture && MaterialFlags.DetailTextureEnabled) {
@@ -168,6 +168,7 @@ export class DetailMapConfiguration implements IMaterialPlugin {
      * Update the defines for detail map usage
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
+     * @param mesh the mesh being rendered
      */
     public prepareDefines(defines: MaterialDetailMapDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
