@@ -761,9 +761,12 @@ export class Material implements IAnimatable {
         this._dirtyCallbacks = {};
 
         this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_LightDirtyFlag] = this._markAllSubMeshesAsLightsDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_FresnelDirtyFlag] = this._markAllSubMeshesAsFresnelDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_AttributesDirtyFlag] = this._markAllSubMeshesAsAttributesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag] = this._markAllSubMeshesAsMiscDirty.bind(this);
         this._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag] = this._markAllSubMeshesAsPrePassDirty.bind(this);
         this._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
-        // TODO: need to add all dirty callbacks
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();

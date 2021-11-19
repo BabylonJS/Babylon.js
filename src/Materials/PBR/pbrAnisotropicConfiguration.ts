@@ -102,9 +102,10 @@ export class PBRAnisotropicConfiguration implements IMaterialPlugin {
     }
 
     /**
-     * Initializes this plugin.
-     * @param scene The scene
-     * @param dirtyCallbacks
+     * Initialize the plugin.
+     *
+     * @param scene defines the scene the material belongs to.
+     * @param dirtyCallbacks The list of dirty callbacks.
      */
     public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
         this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];

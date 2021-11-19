@@ -26,7 +26,7 @@ export interface IMaterialPlugin {
     /**
      * True if alpha blending should be disabled.
      */
-     disableAlphaBlending?: boolean;
+    disableAlphaBlending?: boolean;
 
     /**
      * Initialize the plugin.
