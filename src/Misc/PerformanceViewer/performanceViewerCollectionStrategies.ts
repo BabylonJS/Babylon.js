@@ -47,6 +47,7 @@ export class PerfCollectionStrategy {
 
     /**
      * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+     * Needs the experimental compute pressure API.
      * @returns the initializer for the cpu utilization strategy
      */
     public static CpuStrategy(): PerfStrategyInitialization {
