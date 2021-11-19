@@ -19,8 +19,6 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.target = NodeMaterialBlockTargets.Vertex;
-
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("worldViewProjection", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector2);
