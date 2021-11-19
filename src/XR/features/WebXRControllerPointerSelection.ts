@@ -511,10 +511,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             if (!controllerData.pick) {
                 return;
             }
-            if (controllerData.screenCoordinates) {
-                pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                pointerEventInit.screenY = controllerData.screenCoordinates.y;
-            }
+            this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
             controllerData.laserPointer.material!.alpha = 0;
             discMesh.isVisible = false;
             if (controllerData.pick.hit) {
@@ -577,10 +574,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pointerType: "xr",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (controllerData.screenCoordinates) {
-                pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                pointerEventInit.screenY = controllerData.screenCoordinates.y;
-            }
+            this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
             if (!controllerData.pick || (this._options.disablePointerUpOnTouchOut && downTriggered)) {
                 return;
             }
@@ -595,10 +589,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
         });
         xrController.onDisposeObservable.addOnce(() => {
-            if (controllerData.screenCoordinates) {
-                pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                pointerEventInit.screenY = controllerData.screenCoordinates.y;
-            }
+            this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
             if (controllerData.pick && downTriggered && !this._options.disablePointerUpOnTouchOut) {
                 this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                 controllerData.finalPointerUpTriggered = true;
@@ -620,10 +611,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
 
             if (controllerData.pick) {
-                if (controllerData.screenCoordinates) {
-                    pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                    pointerEventInit.screenY = controllerData.screenCoordinates.y;
-                }
+                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
@@ -641,10 +629,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         const pressed = component.changes.pressed.current;
                         if (controllerData.pick) {
                             if (this._options.enablePointerSelectionOnAllControllers || xrController.uniqueId === this._attachedController) {
-                                if (controllerData.screenCoordinates) {
-                                    pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                                    pointerEventInit.screenY = controllerData.screenCoordinates.y;
-                                }
+                                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                                 if (pressed) {
                                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
@@ -672,10 +657,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
-                if (controllerData.screenCoordinates) {
-                    pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                    pointerEventInit.screenY = controllerData.screenCoordinates.y;
-                }
+                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
@@ -684,10 +666,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             };
 
             const selectEndListener = (event: XRInputSourceEvent) => {
-                if (controllerData.screenCoordinates) {
-                    pointerEventInit.screenX = controllerData.screenCoordinates.x;
-                    pointerEventInit.screenY = controllerData.screenCoordinates.y;
-                }
+                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
@@ -744,6 +723,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     pointerId: controllerData.id,
                     pointerType: "xr",
                 };
+                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
             }
 
@@ -843,6 +823,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             distance *= -1;
         }
         _laserPointer.position.z = distance / 2 + 0.05;
+    }
+
+    private _augmentPointerInit(pointerEventInit: PointerEventInit, id: number, screenCoordinates?: { x: number; y: number; }): void {
+        pointerEventInit.pointerId = id;
+        pointerEventInit.pointerType = "xr";
+        if(screenCoordinates) {
+            pointerEventInit.screenX = screenCoordinates.x;
+            pointerEventInit.screenY = screenCoordinates.y;
+        }
     }
 
     /** @hidden */
