@@ -2,6 +2,7 @@ import { Container } from "babylonjs-gui/2D/controls/container";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import * as React from "react";
 import { GlobalState } from "../globalState";
+import { Tools } from "../tools";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 
@@ -76,7 +77,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private updateNodeOutline(guiControl: Control) {
         guiControl.isHighlighted = this._outlines;
         guiControl.highlightLineWidth = 5;
-        if (this.props.globalState.workbench.isContainer(guiControl)) {
+        if (Tools.isContainer(guiControl)) {
             (guiControl as Container).children.forEach((child) => {
                 this.updateNodeOutline(child);
             });

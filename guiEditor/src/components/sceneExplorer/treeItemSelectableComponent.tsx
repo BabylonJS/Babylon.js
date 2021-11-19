@@ -159,7 +159,7 @@ export class TreeItemSelectableComponent extends React.Component<
         let className = "itemContainer"; //setting class name plus whatever extras based on states
         className += this.state.isSelected && this.props.globalState.draggedControl === null ? " selected" : "";
         className += this.state.isHovered && this.props.globalState.draggedControl === null ? " hover" : "";
-        className += this.dragOverHover && this.state.dragOverLocation == DragOverLocation.CENTER && this.props.globalState.workbench.isContainer(entity) ? " parent" : "";
+        className += this.dragOverHover && this.state.dragOverLocation == DragOverLocation.CENTER && Tools.isContainer(entity) ? " parent" : "";
         className += this.props.globalState.draggedControl === this.props.entity ? " dragged" : "";
         className +=
             this.dragOverHover && this.state.dragOverLocation == DragOverLocation.ABOVE && this.props.globalState.draggedControl != null && entity.parent ? " seAbove" : "";
@@ -221,7 +221,7 @@ export class TreeItemSelectableComponent extends React.Component<
         const rect = target.getBoundingClientRect();
         const y = event.clientY - rect.top;
 
-        if (this.props.globalState.workbench.isContainer(this.props.entity)) {
+        if (Tools.isContainer(this.props.entity)) {
             if (y < CONTROL_HEIGHT / 3) {
                 //split in thirds
                 this.setState({ dragOverLocation: DragOverLocation.ABOVE });

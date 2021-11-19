@@ -12,6 +12,7 @@ import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { Tools } from "../../../../tools";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -317,7 +318,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
-                {(control as any).color !== undefined && (
+                {((control as any).color !== undefined && control.typeName !== "Image" &&
+                 control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
                     <Color3LineComponent
                         iconLabel={"Color"}
                         icon={colorIcon}
@@ -388,7 +390,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     target={control}
                     propertyName="shadowBlur"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                /> 
+                { (Tools.isContainer(control) || control.typeName === "TextBlock") && <>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -433,6 +436,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
+                </>}
             </div>
         );
     }
