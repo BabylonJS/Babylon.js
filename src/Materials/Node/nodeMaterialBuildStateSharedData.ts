@@ -8,6 +8,7 @@ import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
 import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
 import { Scene } from '../../scene';
 import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
+import { Immutable } from "../../types";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -27,6 +28,11 @@ export class NodeMaterialBuildStateSharedData {
      * Gets the varying declaration string
      */
     public varyingDeclaration = "";
+
+    /**
+     * List of the fragment output nodes
+     */
+    public fragmentOutputNodes: Immutable<Array<NodeMaterialBlock>>;
 
     /**
      * Input blocks

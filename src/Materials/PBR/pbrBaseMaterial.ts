@@ -224,6 +224,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
@@ -1302,7 +1303,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
 
-        fallbackRank = PBRAnisotropicConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
+        fallbackRank = PBRClearCoatConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = PBRAnisotropicConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = PBRSubSurfaceConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = PBRSheenConfiguration.AddFallbacks(defines, fallbacks, fallbackRank);

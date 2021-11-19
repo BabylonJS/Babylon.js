@@ -1,7 +1,6 @@
-
 import * as React from "react";
-import { GlobalState } from '../../globalState';
-import * as ReactDOM from 'react-dom';
+import { GlobalState } from "../../globalState";
+import * as ReactDOM from "react-dom";
 
 require("./log.scss");
 
@@ -10,13 +9,10 @@ interface ILogComponentProps {
 }
 
 export class LogEntry {
-    constructor(public message: string, public isError: boolean) {
-
-    }
+    constructor(public message: string, public isError: boolean) {}
 }
 
 export class LogComponent extends React.Component<ILogComponentProps, { logs: LogEntry[] }> {
-
     constructor(props: ILogComponentProps) {
         super(props);
 
@@ -24,8 +20,8 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     componentDidMount() {
-        this.props.globalState.onLogRequiredObservable.add(log => {
-            let newLogArray = this.state.logs.map(number => number);
+        this.props.globalState.onLogRequiredObservable.add((log) => {
+            let newLogArray = this.state.logs.map((number) => number);
             newLogArray.push(log);
             this.setState({ logs: newLogArray });
         });
@@ -47,16 +43,14 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
         var s = today.getSeconds();
 
         return (
-            <div id="log-console" ref={"log-console"} >
-                {
-                    this.state.logs.map((l, i) => {
-                        return (
-                            <div key={i} className={"log" + (l.isError ? " error" : "")}>
-                                {h + ":" + m + ":" + s+ ": " + l.message}
-                            </div>
-                        )
-                    })
-                }
+            <div id="log-console" ref={"log-console"}>
+                {this.state.logs.map((l, i) => {
+                    return (
+                        <div key={i} className={"log" + (l.isError ? " error" : "")}>
+                            {h + ":" + m + ":" + s + ": " + l.message}
+                        </div>
+                    );
+                })}
             </div>
         );
     }

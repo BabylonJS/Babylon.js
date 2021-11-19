@@ -934,15 +934,12 @@ export class Tools {
     }
 
     /**
-     * Gets the absolute url.
-     * @param url the input url
-     * @return the absolute url
+     * Function used to get the absolute url. Override for custom implementation.
      */
-    public static GetAbsoluteUrl(url: string): string {
-        const a = document.createElement("a");
-        a.href = url;
-        return a.href;
-    }
+    public static GetAbsoluteUrl: (url: string) => string =
+        (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
+        (typeof URL === "function" && typeof location === "object") ? (url) => new URL(url, location.origin).href :
+        (url) => { throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context."); };
 
     // Logs
     /**

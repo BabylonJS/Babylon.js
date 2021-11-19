@@ -16,7 +16,7 @@ export class IndentedTextLineComponent extends React.Component<IIndentedTextLine
 
     onLink() {
         if (this.props.url) {
-            window.open(this.props.url, '_blank');
+            window.open(this.props.url, "_blank");
             return;
         }
         if (!this.props.onLink) {
@@ -30,15 +30,15 @@ export class IndentedTextLineComponent extends React.Component<IIndentedTextLine
         if (this.props.onLink || this.props.url) {
             return (
                 <div className="link-value" title={this.props.value} onClick={() => this.onLink()}>
-                    {this.props.url ? "doc" : (this.props.value || "no name")}
+                    {this.props.url ? "doc" : this.props.value || "no name"}
                 </div>
-            )
+            );
         }
         return (
             <div className="value" title={this.props.value} style={{ color: this.props.color ? this.props.color : "" }}>
                 {this.props.value || "no name"}
             </div>
-        )
+        );
     }
 
     render() {

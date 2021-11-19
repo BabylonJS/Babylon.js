@@ -1,4 +1,5 @@
 import { Observable } from "../../Misc/observable";
+import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType } from "../InputDevices/deviceEnums";
 import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "../Interfaces/inputInterfaces";
@@ -20,8 +21,8 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
 
     private _nativeInput: INativeInput;
 
-    public constructor(nativeInput: INativeInput) {
-        this._nativeInput = nativeInput;
+    public constructor(nativeInput?: INativeInput) {
+        this._nativeInput = nativeInput || this._createDummyNativeInput();
         this.onDeviceConnectedObservable = new Observable<{ deviceType: DeviceType; deviceSlot: number; }>();
         this.onDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType; deviceSlot: number; }>();
         this.onInputChangedObservable = new Observable<IDeviceEvent>();
@@ -84,5 +85,22 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
         this.onDeviceConnectedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
         this.onInputChangedObservable.clear();
+    }
+
+    /**
+     * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
+     * @returns Object with dummy functions
+     */
+    private _createDummyNativeInput() {
+        let nativeInput = {
+            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => { },
+            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => { },
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => { },
+            pollInput: () => { return 0; },
+            isDeviceAvailable: () => { return false; },
+            dispose: () => { },
+        };
+
+        return nativeInput;
     }
 }

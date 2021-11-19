@@ -177,6 +177,43 @@ hr.ge {
         grid-template-columns: auto auto auto auto auto auto;
     }
 
+    
+    .ge-grid-divider {
+        display: grid;
+        grid-template-columns: 150px 1fr auto;
+        
+        .textLine {
+            grid-column: auto;
+           
+        }
+    }
+
+    .ge-grid-button-divider {
+        display: grid;
+        grid-template-columns: 60px 60px 60px 60px;
+    }
+
+    .ge-grid-remove {
+        display: grid;
+        background-color: #c2c2c2;
+        margin-bottom: 5px;
+        filter: invert(1);
+    }
+
+    .ge-grid-edit {
+        display: grid;
+        background-color: #878787;
+        margin-bottom: 5px;
+        filter: invert(1);
+
+    }
+  
+    .ge-grid {
+        display: grid;
+        margin-bottom: 5px;
+    }
+
+
     .textInputLine {
         user-select: none;
         padding-left: $line-padding-left;
@@ -459,6 +496,75 @@ hr.ge {
             &.active {
                 background-color: white;
             }
+        }
+    }
+
+    .command-button-alt {
+        cursor: pointer;
+        width: 40px;
+        margin-left: 5px;
+        margin-right: 5px;
+        .command-label {
+            display: none;
+        }        
+
+        background-color: white;
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+        &:hover {
+            background-color: #c2c2c2;
+            filter: invert(1);
+        } 
+    }
+
+    .command-button-alt-disabled {
+        cursor: pointer;
+        pointer-events: none;
+        width: 40px;
+        margin-left: 5px;
+        margin-right: 5px;
+        .command-label {
+            display: none;
+        }        
+
+        background-color: white;
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+
+        img {
+            filter: invert(1);
+        }
+    }
+
+    
+    .command-button-alt-active {
+        cursor: pointer;
+        pointer-events: none;
+        width: 40px;
+        margin-left: 5px;
+        margin-right: 5px;
+        .command-label {
+            display: none;
+        }        
+
+        background-color: #c2c2c2;
+        filter: invert(1);
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
         }
     }
 
@@ -901,13 +1007,21 @@ hr.ge {
     
     .textLine {
         padding-left: $line-padding-left;
-        padding-bottom: 5px;
-        padding-top: 5px;
+        padding-bottom: $line-padding-bottom;
+        padding-top: $line-padding-top;
         height: auto;
         display: grid;
-        grid-template-columns: 1fr auto;
-
+        grid-template-columns: auto auto 2fr 1fr;
         .label {
+            grid-column: 2;
+            padding-left: 5px;
+            padding-top: 4px;
+            display: flex;
+            align-items: left;
+            min-width: 15px;
+        }
+
+        .img {
             grid-column: 1;
             display: flex;
             align-items: center;
@@ -928,7 +1042,8 @@ hr.ge {
         }
 
         .value {
-            grid-column: 2;
+            display: none;
+            grid-column: 3;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;

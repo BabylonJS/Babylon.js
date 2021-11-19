@@ -2,8 +2,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
-import { Popup } from "../src/sharedComponents/popup"
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { Popup } from "../src/sharedComponents/popup";
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
 import { PreviewType } from './components/preview/previewType';
@@ -13,10 +13,10 @@ import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialMo
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
-    nodeMaterial: NodeMaterial,
-    hostElement?: HTMLElement,
+    nodeMaterial: NodeMaterial;
+    hostElement?: HTMLElement;
     customSave?: { label: string, action: (data: string) => Promise<void> };
-    customLoadObservable?: Observable<any>
+    customLoadObservable?: Observable<any>;
 }
 
 /**
@@ -58,12 +58,12 @@ export class NodeEditor {
         ReactDOM.render(graphEditor, hostElement);
 
         if (options.customLoadObservable) {
-            options.customLoadObservable.add(data => {
+            options.customLoadObservable.add((data) => {
                 SerializationTools.Deserialize(data, globalState);
                 globalState.mode = options.nodeMaterial.mode;
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
-            })
+            });
         }
 
         this._CurrentState = globalState;
@@ -79,7 +79,7 @@ export class NodeEditor {
                 if (popupWindow) {
                     popupWindow.close();
                 }
-            })
+            });
             window.onbeforeunload = () => {
                 var popupWindow = (Popup as any)["node-editor"];
                 if (popupWindow) {
@@ -95,4 +95,3 @@ export class NodeEditor {
         });
     }
 }
-

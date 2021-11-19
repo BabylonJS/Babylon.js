@@ -123,6 +123,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
     public MULTIVIEW = false;
 

@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1266,7 +1266,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         this._isDirty = false;
         this._render();
-        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
     };
     AdvancedDynamicTexture.prototype._render = function () {
         var textureSize = this.getSize();
@@ -1730,6 +1730,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     };
     /** Define the Uurl to load snippets */
     AdvancedDynamicTexture.SnippetUrl = "https://snippet.babylonjs.com";
+    /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+    AdvancedDynamicTexture.AllowGPUOptimizations = true;
     return AdvancedDynamicTexture;
 }(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DynamicTexture"]));
 

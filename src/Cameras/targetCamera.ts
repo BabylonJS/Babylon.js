@@ -420,7 +420,7 @@ export class TargetCamera extends Camera {
         if (this.rotationQuaternion && this._cachedQuaternionRotationZ != this.rotationQuaternion.z) {
             this._rotateUpVectorWithCameraRotationMatrix();
             this._cachedQuaternionRotationZ = this.rotationQuaternion.z;
-        } else if (this._cachedRotationZ != this.rotation.z) {
+        } else if (this._cachedRotationZ !== this.rotation.z) {
             this._rotateUpVectorWithCameraRotationMatrix();
             this._cachedRotationZ = this.rotation.z;
         }

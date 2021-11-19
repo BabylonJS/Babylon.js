@@ -5,16 +5,16 @@ import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { CommonPostProcessPropertyGridComponent } from './commonPostProcessPropertyGridComponent';
-import { GlobalState } from '../../../../globalState';
-import { LineContainerComponent } from '../../../../../sharedUiComponents/lines/lineContainerComponent';
-import { ButtonLineComponent } from '../../../../../sharedUiComponents/lines/buttonLineComponent';
+import { CommonPostProcessPropertyGridComponent } from "./commonPostProcessPropertyGridComponent";
+import { GlobalState } from "../../../../globalState";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
 
 interface IPostProcessPropertyGridComponentProps {
     globalState: GlobalState;
-    postProcess: PostProcess,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    postProcess: PostProcess;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
@@ -22,7 +22,7 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
         super(props);
     }
 
-    edit() {        
+    edit() {
         const postProcess = this.props.postProcess;
         postProcess.nodeMaterialSource!.edit();
     }
@@ -32,13 +32,17 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
 
         return (
             <div className="pane">
-                <CommonPostProcessPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} postProcess={postProcess} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                {
-                    postProcess.nodeMaterialSource &&
+                <CommonPostProcessPropertyGridComponent
+                    globalState={this.props.globalState}
+                    lockObject={this.props.lockObject}
+                    postProcess={postProcess}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                {postProcess.nodeMaterialSource && (
                     <LineContainerComponent title="CONFIGURATION" selection={this.props.globalState}>
                         <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
-                    </LineContainerComponent>                
-                }
+                    </LineContainerComponent>
+                )}
             </div>
         );
     }

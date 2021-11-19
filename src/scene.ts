@@ -2823,6 +2823,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
+     * Gets a texture using its name
+     * @param name defines the texture's name
+     * @return the texture or null if none found.
+     */
+     public getTextureByName(name: string): Nullable<BaseTexture> {
+        for (var index = 0; index < this.textures.length; index++) {
+            if (this.textures[index].name === name) {
+                return this.textures[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a camera using its Id
      * @param id defines the Id to look for
      * @returns the camera or null if not found

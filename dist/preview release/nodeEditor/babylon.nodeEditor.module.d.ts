@@ -81,8 +81,10 @@ declare module "babylonjs-node-editor/blockTools" {
     import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
     import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
     import { CloudBlock } from 'babylonjs/Materials/Node/Blocks/cloudBlock';
+    import { VoronoiNoiseBlock } from 'babylonjs/Materials/Node/Blocks/voronoiNoiseBlock';
+    import { ScreenSpaceBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSpaceBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): CloudBlock | MatrixBuilderBlock | DesaturateBlock | RefractBlock | ReflectBlock | DerivativeBlock | Rotate2dBlock | NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | ModBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | PBRMetallicRoughnessBlock | SheenBlock | AnisotropyBlock | ReflectionBlock | ClearCoatBlock | RefractionBlock | SubSurfaceBlock | CurrentScreenBlock | ParticleTextureBlock | ParticleRampGradientBlock | ParticleBlendMultiplyBlock | FragCoordBlock | ScreenSizeBlock | SceneDepthBlock | ConditionalBlock | ImageSourceBlock | null;
+        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): VoronoiNoiseBlock | ScreenSpaceBlock | CloudBlock | MatrixBuilderBlock | DesaturateBlock | RefractBlock | ReflectBlock | DerivativeBlock | Rotate2dBlock | NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | ModBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | PBRMetallicRoughnessBlock | SheenBlock | AnisotropyBlock | ReflectionBlock | ClearCoatBlock | RefractionBlock | SubSurfaceBlock | CurrentScreenBlock | ParticleTextureBlock | ParticleRampGradientBlock | ParticleBlendMultiplyBlock | FragCoordBlock | ScreenSizeBlock | SceneDepthBlock | ConditionalBlock | ImageSourceBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -439,12 +441,12 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
 declare module "babylonjs-node-editor/diagram/graphCanvas" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
-    import { Nullable } from 'babylonjs/types';
+    import { Nullable } from "babylonjs/types";
     import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
-    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    import { NodeMaterialConnectionPoint } from "babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
     import { IEditorData, IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
     import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
@@ -587,7 +589,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/floatPropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IFloatPropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -693,7 +695,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector2LineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/vector2PropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IVector2PropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -779,7 +781,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/colorPicker/colorPicker
 }
 declare module "babylonjs-node-editor/sharedComponents/colorPickerComponent" {
     import * as React from "react";
-    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    import { Color4, Color3 } from "babylonjs/Maths/math.color";
     import { GlobalState } from "babylonjs-node-editor/globalState";
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
@@ -839,7 +841,7 @@ declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/color3PropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IColor3PropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -888,7 +890,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector3LineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/vector3PropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IVector3PropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -939,7 +941,7 @@ declare module "babylonjs-node-editor/sharedComponents/vector4LineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/vector4PropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IVector4PropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -1020,7 +1022,7 @@ declare module "babylonjs-node-editor/sharedComponents/matrixLineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/matrixPropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IMatrixPropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -1145,10 +1147,10 @@ declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComp
     export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
         forceRebuild(notifiers?: {
-            "rebuild"?: boolean;
-            "update"?: boolean;
-            "activatePreviewCommand"?: boolean;
-            "callback"?: (scene: Scene) => void;
+            rebuild?: boolean;
+            update?: boolean;
+            activatePreviewCommand?: boolean;
+            callback?: (scene: Scene) => void;
         }): void;
         render(): JSX.Element;
     }
@@ -1190,7 +1192,7 @@ declare module "babylonjs-node-editor/sharedComponents/color4LineComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/properties/color4PropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IColor4PropertyTabComponentProps {
         globalState: GlobalState;
         inputBlock: InputBlock;
@@ -1222,9 +1224,9 @@ declare module "babylonjs-node-editor/diagram/properties/transformNodePropertyCo
     }
 }
 declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
     interface IGradientStepComponentProps {
         globalState: GlobalState;
         step: GradientBlockColorStep;
@@ -1258,7 +1260,7 @@ declare module "babylonjs-node-editor/sharedComponents/buttonLineComponent" {
 }
 declare module "babylonjs-node-editor/diagram/properties/gradientNodePropertyComponent" {
     import * as React from "react";
-    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         private onValueChangedObserver;
@@ -1305,12 +1307,12 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
 declare module "babylonjs-node-editor/diagram/properties/texturePropertyTabComponent" {
     import * as React from "react";
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
-    import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
-    import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
-    import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
-    import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
-    import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+    import { ReflectionTextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock";
+    import { ReflectionBlock } from "babylonjs/Materials/Node/Blocks/PBR/reflectionBlock";
+    import { RefractionBlock } from "babylonjs/Materials/Node/Blocks/PBR/refractionBlock";
+    import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
+    import { CurrentScreenBlock } from "babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock";
+    import { ParticleTextureBlock } from "babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock";
     type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
     type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | ParticleTextureBlock;
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
@@ -1356,7 +1358,7 @@ declare module "babylonjs-node-editor/diagram/properties/conditionalNodeProperty
 declare module "babylonjs-node-editor/diagram/properties/imageSourcePropertyTabComponent" {
     import * as React from "react";
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
+    import { ImageSourceBlock } from "babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock";
     export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
     }> {
@@ -1790,7 +1792,7 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
 declare module "babylonjs-node-editor/components/propertyTab/inputsPropertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface IInputsPropertyTabComponentProps {
         globalState: GlobalState;
         inputs: InputBlock[];
@@ -1857,10 +1859,10 @@ declare module "babylonjs-node-editor/diagram/properties/nodePortPropertyCompone
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { Nullable } from 'babylonjs/types';
+    import { Nullable } from "babylonjs/types";
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     interface IPropertyTabComponentProps {
@@ -2002,8 +2004,8 @@ declare module "babylonjs-node-editor/sharedComponents/popup" {
 declare module "babylonjs-node-editor/graphEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-    import { Nullable } from 'babylonjs/types';
+    import { NodeMaterialBlock } from "babylonjs/Materials/Node/nodeMaterialBlock";
+    import { Nullable } from "babylonjs/types";
     import { IEditorData } from "babylonjs-node-editor/nodeLocationInfo";
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
@@ -2199,7 +2201,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/numericInputCompo
 }
 declare module "babylonjs-node-editor/sharedUiComponents/lines/colorPickerComponent" {
     import * as React from "react";
-    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    import { Color4, Color3 } from "babylonjs/Maths/math.color";
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
         linearHint?: boolean;
@@ -2271,7 +2273,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/color3LineCompone
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedUiComponents/propertyChangedEvent";
-    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
     import { LockObject } from "babylonjs-node-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     export interface IColor3LineComponentProps {
         label: string;
@@ -2520,7 +2522,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/iSelectedLineCont
     }
 }
 declare module "babylonjs-node-editor/sharedUiComponents/lines/iconButtonLineComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     export interface IIconButtonLineComponentProps {
         icon: string;
         onClick: () => void;
@@ -3076,7 +3078,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.CloudBlock | BABYLON.MatrixBuilderBlock | BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | BABYLON.SceneDepthBlock | BABYLON.ConditionalBlock | BABYLON.ImageSourceBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.VoronoiNoiseBlock | BABYLON.ScreenSpaceBlock | BABYLON.CloudBlock | BABYLON.MatrixBuilderBlock | BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | BABYLON.SceneDepthBlock | BABYLON.ConditionalBlock | BABYLON.ImageSourceBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -4012,10 +4014,10 @@ declare module NODEEDITOR {
     export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
         forceRebuild(notifiers?: {
-            "rebuild"?: boolean;
-            "update"?: boolean;
-            "activatePreviewCommand"?: boolean;
-            "callback"?: (scene: BABYLON.Scene) => void;
+            rebuild?: boolean;
+            update?: boolean;
+            activatePreviewCommand?: boolean;
+            callback?: (scene: BABYLON.Scene) => void;
         }): void;
         render(): JSX.Element;
     }

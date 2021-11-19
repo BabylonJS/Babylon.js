@@ -7,6 +7,7 @@ import { Constants } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { RegisterClass } from '../../Misc/typeStore';
+import { Observable } from "../../Misc/observable";
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -37,7 +38,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _prefilterOnLoad: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
-    private _onLoad: Nullable<() => void> = null;
+    private _onLoad: () => void;
     private _onError: Nullable<() => void> = null;
 
     /**
@@ -103,6 +104,11 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<HDRCubeTexture> = new Observable<HDRCubeTexture>();
+
+    /**
      * Instantiates an HDRTexture from the following parameters.
      *
      * @param url The location of the HDR raw data (Panorama stored in RGBE format)
@@ -127,7 +133,13 @@ export class HDRCubeTexture extends BaseTexture {
         this.isCube = true;
         this._textureMatrix = Matrix.Identity();
         this._prefilterOnLoad = prefilterOnLoad;
-        this._onLoad = onLoad;
+        this._onLoad = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
         this._onError = onError;
         this.gammaSpace = gammaSpace;
 
@@ -143,11 +155,11 @@ export class HDRCubeTexture extends BaseTexture {
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
-        } else if (onLoad) {
+        } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                Tools.SetImmediate(() => this._onLoad());
             } else {
-                this._texture.onLoadedObservable.add(onLoad);
+                this._texture.onLoadedObservable.add(this._onLoad);
             }
         }
     }
@@ -326,6 +338,14 @@ export class HDRCubeTexture extends BaseTexture {
         if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
             this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
         }
+    }
+
+    /**
+     * Dispose the texture and release its associated resources.
+     */
+    public dispose(): void {
+        this.onLoadObservable.clear();
+        super.dispose();
     }
 
     /**

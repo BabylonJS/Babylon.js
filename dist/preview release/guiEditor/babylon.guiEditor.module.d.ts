@@ -118,7 +118,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        createGUICanvas(): void;
+        createGUICanvas(): Promise<void>;
         addControls(scene: Scene, camera: ArcRotateCamera): void;
         getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane): Vector3;
         panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3): Vector3;
@@ -546,7 +546,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/colorPicker/colorPicker"
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/colorPickerComponent" {
     import * as React from "react";
-    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    import { Color4, Color3 } from "babylonjs/Maths/math.color";
     export interface IColorPickerComponentProps {
         value: Color4 | Color3;
         linearHint?: boolean;
@@ -575,7 +575,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/color3LineComponen
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
-    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
     import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     export interface IColor3LineComponentProps {
         label: string;
@@ -1092,7 +1092,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/extensionsComponen
 declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/controlTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import * as React from 'react';
+    import * as React from "react";
     import { DragOverLocation, GlobalState } from "babylonjs-gui-editor/globalState";
     interface IControlTreeItemComponentProps {
         control: Control;
@@ -1360,7 +1360,7 @@ declare module "babylonjs-gui-editor/guiEditor" {
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: IGUIEditorOptions): void;
+        static Show(options: IGUIEditorOptions): Promise<void>;
     }
 }
 declare module "babylonjs-gui-editor/index" {
@@ -1714,7 +1714,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/hexLineComponent" 
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/iconButtonLineComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     export interface IIconButtonLineComponentProps {
         icon: string;
         onClick: () => void;
@@ -2289,7 +2289,7 @@ declare module GUIEDITOR {
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        createGUICanvas(): void;
+        createGUICanvas(): Promise<void>;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
         getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
@@ -3340,7 +3340,7 @@ declare module GUIEDITOR {
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: IGUIEditorOptions): void;
+        static Show(options: IGUIEditorOptions): Promise<void>;
     }
 }
 declare module GUIEDITOR {

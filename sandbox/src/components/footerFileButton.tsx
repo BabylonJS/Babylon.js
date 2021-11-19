@@ -1,16 +1,15 @@
 import * as React from "react";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 interface IFooterFileButtonProps {
     globalState: GlobalState;
     enabled: boolean;
     icon: any;
     label: string;
-    onFilesPicked: (evt: Event,files: FileList | null) => void;
+    onFilesPicked: (evt: Event, files: FileList | null) => void;
 }
 
 export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
-
     onFilePicked(evt: React.ChangeEvent<HTMLInputElement>) {
         this.props.onFilesPicked(evt.nativeEvent, evt.target.files);
     }
@@ -22,9 +21,9 @@ export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
 
         return (
             <div className="custom-upload" title={this.props.label}>
-                <img src={this.props.icon}/>
-                <input type="file" id="files" multiple onChange={evt => this.onFilePicked(evt)}/>
+                <img src={this.props.icon} />
+                <input type="file" id="files" multiple onChange={(evt) => this.onFilePicked(evt)} />
             </div>
-        )
+        );
     }
 }

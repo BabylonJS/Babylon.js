@@ -13,12 +13,12 @@ interface IHexLineComponentProps {
     replaySourceReplacement?: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
-    step?: string,
+    step?: string;
     digits?: number;
     useEuler?: boolean;
-    min?: number
-    icon? : string;
-    iconLabel? : string;
+    min?: number;
+    icon?: string;
+    iconLabel?: string;
 }
 
 export class HexLineComponent extends React.Component<IHexLineComponentProps, { value: string }> {
@@ -45,7 +45,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        const newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3)) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -66,26 +66,22 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             object: this.props.replaySourceReplacement ?? this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
-    convertToHexString(valueString: string): string
-    {
-        while(valueString.length < 10)
-        {
+    convertToHexString(valueString: string): string {
+        while (valueString.length < 10) {
             valueString += "0";
         }
         return valueString;
     }
 
     updateValue(valueString: string, raisePropertyChanged: boolean) {
-
-        if(valueString.substr(0,2) != "0x") {
-            if(valueString.substr(0,1) != "0") {
+        if (valueString.substr(0, 2) != "0x") {
+            if (valueString.substr(0, 1) != "0") {
                 valueString = "0x" + valueString;
-            }
-            else {
+            } else {
                 valueString = "0x" + valueString.substr(1);
             }
         }
@@ -94,8 +90,8 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
         if (valueSubstr != "" && /^[0-9A-Fa-f]+$/g.test(valueSubstr) == false) {
             return;
         }
-    
-        if(valueString.length > 10) {
+
+        if (valueString.length > 10) {
             return;
         }
 
@@ -108,7 +104,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             if (valueAsNumber < this.props.min) {
                 valueAsNumber = this.props.min;
                 valueString = valueAsNumber.toString();
-            }            
+            }
         }
 
         this._localChange = true;
@@ -118,14 +114,11 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
         }
 
         this.setState({ value: valueString });
-        if(raisePropertyChanged)
-        {
+        if (raisePropertyChanged) {
             this._propertyChange = true;
             this.props.target[this.props.propertyName] = valueAsNumber;
             this.raiseOnPropertyChanged(valueAsNumber, this._store);
-        }
-        else
-        {
+        } else {
             this._propertyChange = false;
         }
 
@@ -145,45 +138,46 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
     }
 
     render() {
-        
-        let valueAsHex : string;
-        if(this._propertyChange)
-        {
+        let valueAsHex: string;
+        if (this._propertyChange) {
             let valueAsNumber = parseInt(this.state.value);
             valueAsHex = valueAsNumber.toString(16);
             let hex0String = "";
-            for (let i = 0; i < 8 - valueAsHex.length; i++) { //padding the '0's
+            for (let i = 0; i < 8 - valueAsHex.length; i++) {
+                //padding the '0's
                 hex0String += "0";
             }
             valueAsHex = "0x" + hex0String + valueAsHex.toUpperCase();
-        }
-        else
-        {
+        } else {
             valueAsHex = this.state.value;
         }
 
         return (
             <div>
-                {
-                    !this.props.useEuler &&
+                {!this.props.useEuler && (
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
+                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                         <div className="label" title={this.props.label}>
                             {this.props.label}
                         </div>
                         <div className="value">
-                            <input type="string" className="hex-input" value={valueAsHex} onBlur={() => this.unlock()} onFocus={() => this.lock()} 
-                            onChange={evt => this.updateValue(evt.target.value, false)}
-                            onKeyDown={evt => {
-                                if (evt.keyCode !== 13) {
-                                    return;
-                                }
-                                this.updateValue(this.state.value, true);
-                            }}
+                            <input
+                                type="string"
+                                className="hex-input"
+                                value={valueAsHex}
+                                onBlur={() => this.unlock()}
+                                onFocus={() => this.lock()}
+                                onChange={(evt) => this.updateValue(evt.target.value, false)}
+                                onKeyDown={(evt) => {
+                                    if (evt.keyCode !== 13) {
+                                        return;
+                                    }
+                                    this.updateValue(this.state.value, true);
+                                }}
                             />
                         </div>
                     </div>
-                }
+                )}
             </div>
         );
     }

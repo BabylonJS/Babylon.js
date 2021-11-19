@@ -10,20 +10,16 @@ interface ISaveAnimationComponentProps {
     context: Context;
 }
 
-interface ISaveAnimationComponentState {
-}
+interface ISaveAnimationComponentState {}
 
-export class SaveAnimationComponent extends React.Component<
-ISaveAnimationComponentProps,
-ISaveAnimationComponentState
-> {
-    private _selectedAnimations: Animation[] = [];    
+export class SaveAnimationComponent extends React.Component<ISaveAnimationComponentProps, ISaveAnimationComponentState> {
+    private _selectedAnimations: Animation[] = [];
     private _root: React.RefObject<HTMLDivElement>;
 
     constructor(props: ISaveAnimationComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
 
         this._root = React.createRef();
 
@@ -39,8 +35,8 @@ ISaveAnimationComponentState
     }
 
     private _getJson() {
-        let json: { animations: any[]} = {
-            animations: []
+        let json: { animations: any[] } = {
+            animations: [],
         };
 
         for (var animation of this._selectedAnimations) {
@@ -73,14 +69,17 @@ ISaveAnimationComponentState
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                             regex: new RegExp(oldId, "g"),
-                            replace: this.props.context.snippetId
+                            replace: this.props.context.snippetId,
                         });
                     }
 
-                    hostDocument.defaultView!.alert("Animations saved with ID: " +  this.props.context.snippetId);
-                }
-                else {
-                    hostDocument.defaultView!.alert(`Unable to save your animations. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB). Please try reducing the number of animations or the number of keys per animation and try again.`);
+                    hostDocument.defaultView!.alert("Animations saved with ID: " + this.props.context.snippetId);
+                } else {
+                    hostDocument.defaultView!.alert(
+                        `Unable to save your animations. It may be too large (${(dataToSend.payload.length / 1024).toFixed(
+                            2
+                        )} KB). Please try reducing the number of animations or the number of keys per animation and try again.`
+                    );
                 }
             }
         };
@@ -89,18 +88,18 @@ ISaveAnimationComponentState
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
         var dataToSend = {
-            payload : JSON.stringify({
-                animations: json
+            payload: JSON.stringify({
+                animations: json,
             }),
             name: "",
             description: "",
-            tags: ""
+            tags: "",
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
     }
 
-    public saveToFile() {        
+    public saveToFile() {
         StringTools.DownloadAsFile(this._root.current!.ownerDocument, this._getJson(), "animations.json");
     }
 
@@ -108,16 +107,16 @@ ISaveAnimationComponentState
         return (
             <div id="save-animation-pane" ref={this._root}>
                 <div id="save-animation-list">
-                {
-                    this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
-                        let animation = this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : a as Animation;
+                    {this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
+                        let animation = this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
 
                         return (
-                            <div className="save-animation-list-entry" key={i} >
-                                <input 
-                                    type="checkbox" value={animation.name}
+                            <div className="save-animation-list-entry" key={i}>
+                                <input
+                                    type="checkbox"
+                                    value={animation.name}
                                     defaultChecked={true}
-                                    onClick={evt => {
+                                    onClick={(evt) => {
                                         if (evt.currentTarget.checked) {
                                             this._selectedAnimations.push(animation);
                                         } else {
@@ -132,27 +131,31 @@ ISaveAnimationComponentState
                                 {animation.name}
                             </div>
                         );
-                    })
-                }
+                    })}
                 </div>
                 <div id="save-animation-buttons">
-                    <button className="simple-button" id="save-snippet" type="button" onClick={() => {
-                        this.saveToSnippetServer();
-                    }}>
+                    <button
+                        className="simple-button"
+                        id="save-snippet"
+                        type="button"
+                        onClick={() => {
+                            this.saveToSnippetServer();
+                        }}
+                    >
                         Save Snippet
                     </button>
-                    <button className="simple-button" id="save-file" type="button" onClick={() => {
-                        this.saveToFile();
-                    }}>
+                    <button
+                        className="simple-button"
+                        id="save-file"
+                        type="button"
+                        onClick={() => {
+                            this.saveToFile();
+                        }}
+                    >
                         Save File
                     </button>
                 </div>
-                {
-                    this.props.context.snippetId &&
-                    <div id="save-animation-snippet">
-                        Snippet ID: {this.props.context.snippetId}
-                    </div>
-                }
+                {this.props.context.snippetId && <div id="save-animation-snippet">Snippet ID: {this.props.context.snippetId}</div>}
             </div>
         );
     }

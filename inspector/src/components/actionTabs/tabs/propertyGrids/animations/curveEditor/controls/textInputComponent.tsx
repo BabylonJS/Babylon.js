@@ -11,7 +11,7 @@ interface ITextInputComponentProps {
     value: string;
     isNumber?: boolean;
     complement?: string;
-    onValueAsNumberChanged?: (value: number) => void;
+    onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
 }
 
 interface ITextInputComponentState {
@@ -19,16 +19,13 @@ interface ITextInputComponentState {
     isFocused: boolean;
 }
 
-export class TextInputComponent extends React.Component<
-ITextInputComponentProps,
-ITextInputComponentState
-> {
+export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
     private _lastKnownGoodValue: string;
 
     constructor(props: ITextInputComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value, isFocused: false};
+        this.state = { value: this.props.value, isFocused: false };
     }
 
     private _onChange(value: string) {
@@ -37,60 +34,76 @@ ITextInputComponentState
 
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
-                    this.props.onValueAsNumberChanged(valueAsNumber);
+                    this.props.onValueAsNumberChanged(valueAsNumber, true);
                 }
                 this._lastKnownGoodValue = valueAsNumber.toString();
-            } else if (value !== "-") {
+            } else if (value !== "-" && value !== "") {
                 return;
             }
         }
 
-        this.setState({value: value});
         this._lastKnownGoodValue = value;
+        this.setState({ value: value });
     }
 
     private _onBlur() {
+        this.props.context.focusedInput = false;
+
         if (this.props.isNumber) {
             let valueAsNumber = parseFloat(this.state.value);
 
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
-                    this.props.onValueAsNumberChanged(valueAsNumber);
+                    this.props.onValueAsNumberChanged(valueAsNumber, false);
                 }
-                this.setState({value: valueAsNumber.toString(), isFocused: false});
+                this.setState({ value: valueAsNumber.toString(), isFocused: false });
             } else {
-                this.setState({value: this._lastKnownGoodValue, isFocused: false});
+                this.setState({ value: this._lastKnownGoodValue, isFocused: false });
             }
             return;
         }
 
-        this.setState({isFocused: false});
+        this.setState({ isFocused: false });
     }
 
     private _onFocus() {
-        this.setState({isFocused: true});
+        this.props.context.focusedInput = true;
+        this.setState({ isFocused: true });
     }
 
     shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState) {
         if (newProps !== this.props) {
             newState.value = newProps.value;
         }
-        
+
         return true;
+    }
+
+    private _onKeyPress(evt: React.KeyboardEvent<HTMLInputElement>) {
+        if (evt.key === "Enter") {
+            let valueAsNumber = parseFloat(this.state.value);
+
+            if (!isNaN(valueAsNumber)) {
+                if (this.props.onValueAsNumberChanged) {
+                    this.props.onValueAsNumberChanged(valueAsNumber, false);
+                }
+            }
+        }
     }
 
     public render() {
         return (
-            <input 
+            <input
                 type="text"
                 title={this.props.tooltip}
                 onFocus={() => this._onFocus()}
                 onBlur={() => this._onBlur()}
-                className={"text-input" + (this.props.className ? " " + this.props.className : "")} 
-                onChange={evt => this._onChange(this.props.complement ? evt.target.value.replace(this.props.complement, "") : evt.target.value)}
+                className={"text-input" + (this.props.className ? " " + this.props.className : "")}
+                onChange={(evt) => this._onChange(this.props.complement ? evt.target.value.replace(this.props.complement, "") : evt.target.value)}
+                onKeyPress={(evt) => this._onKeyPress(evt)}
                 value={(this.state.value || "") + (!this.state.isFocused && this.props.complement ? this.props.complement : "")}
-                id={this.props.id}>
-            </input>
+                id={this.props.id}
+            ></input>
         );
     }
 }

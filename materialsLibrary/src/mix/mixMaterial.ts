@@ -44,6 +44,7 @@ class MixMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public MIXMAP2 = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();

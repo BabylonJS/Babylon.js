@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 const downArrow = require("../../imgs/downArrow.svg");
 
 interface ILineContainerComponentProps {
@@ -30,11 +30,9 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
 
         return (
             <div className="header" onClick={() => this.switchExpandedState()}>
-                <div className="title">
-                    {this.props.title}
-                </div>
+                <div className="title">{this.props.title}</div>
                 <div className={className}>
-                    <img className="img" title={this.props.title} src={downArrow}/>
+                    <img className="img" title={this.props.title} src={downArrow} />
                 </div>
             </div>
         );
@@ -44,11 +42,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         if (!this.state.isExpanded) {
             return (
                 <div className="paneContainer">
-                    <div className="paneContainer-content">
-                        {
-                            this.renderHeader()
-                        }
-                    </div>
+                    <div className="paneContainer-content">{this.renderHeader()}</div>
                 </div>
             );
         }
@@ -56,12 +50,8 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         return (
             <div className="paneContainer">
                 <div className="paneContainer-content">
-                    {
-                        this.renderHeader()
-                    }
-                    <div className="paneList">
-                        {this.props.children}
-                    </div >
+                    {this.renderHeader()}
+                    <div className="paneList">{this.props.children}</div>
                 </div>
             </div>
         );

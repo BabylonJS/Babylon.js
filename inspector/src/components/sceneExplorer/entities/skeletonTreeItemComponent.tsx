@@ -1,14 +1,14 @@
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { faSkull } from '@fortawesome/free-solid-svg-icons';
+import { faSkull } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Skeleton } from 'babylonjs/Bones/skeleton';
+import { Skeleton } from "babylonjs/Bones/skeleton";
 
 interface ISkeletonTreeItemComponentProps {
-    skeleton: Skeleton,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    skeleton: Skeleton;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onClick: () => void;
 }
 
 export class SkeletonTreeItemComponent extends React.Component<ISkeletonTreeItemComponentProps> {
@@ -16,16 +16,13 @@ export class SkeletonTreeItemComponent extends React.Component<ISkeletonTreeItem
         super(props);
     }
 
-
     render() {
         const skeleton = this.props.skeleton;
         return (
             <div className="skeletonTools">
                 <TreeItemLabelComponent label={skeleton.name || "no name"} onClick={() => this.props.onClick()} icon={faSkull} color="gray" />
-                {
-                    <ExtensionsComponent target={skeleton} extensibilityGroups={this.props.extensibilityGroups} />
-                }
+                {<ExtensionsComponent target={skeleton} extensibilityGroups={this.props.extensibilityGroups} />}
             </div>
-        )
+        );
     }
 }

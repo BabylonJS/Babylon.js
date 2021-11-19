@@ -25,7 +25,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         if (props.getSelection) {
             return props.getSelection(props.target);
         }
-        return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+        return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     }
 
     constructor(props: IOptionsLineComponentProps) {
@@ -61,7 +61,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             object: this.props.target,
             property: this.props.propertyName!,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -87,17 +87,16 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             <div className="listLine">
                 <div className="label" title={this.props.label}>
                     {this.props.label}
-
                 </div>
                 <div className={"options" + (this.props.className ? " " + this.props.className : "")}>
-                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
-                        {
-                            this.props.options.map(option => {
-                                return (
-                                    <option key={option.label} value={option.value} title={option.label}>{option.label}</option>
-                                )
-                            })
-                        }
+                    <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
+                        {this.props.options.map((option) => {
+                            return (
+                                <option key={option.label} value={option.value} title={option.label}>
+                                    {option.label}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
             </div>

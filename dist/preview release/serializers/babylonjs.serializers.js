@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2192,7 +2192,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -3540,13 +3539,8 @@ var _Exporter = /** @class */ (function () {
             }
             // Transform
             var matrix = node.getWorldMatrix();
-            var matrixToLeftHanded = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Compose(this._convertToRightHandedSystem ? new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, 1, 1) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].One(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].Identity(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero());
-            var matrixProduct = matrix.multiply(matrixToLeftHanded);
-            var matrixIdentity = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].IdentityReadOnly;
-            for (var i = 0; i < 16; i++) {
-                if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Epsilon"]) {
-                    return false;
-                }
+            if (matrix.determinant() === 1) {
+                return false;
             }
             // Geometry
             if ((node instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"] && node.geometry !== null) ||

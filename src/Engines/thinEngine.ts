@@ -183,14 +183,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-alpha.60";
+        return "babylonjs@5.0.0-alpha.61";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-alpha.60";
+        return "5.0.0-alpha.61";
     }
 
     /**
@@ -925,7 +925,8 @@ export class ThinEngine {
         const versionToLog = `Babylon.js v${ThinEngine.Version}`;
         console.log(versionToLog + ` - ${this.description}`);
 
-        if (this._renderingCanvas) {
+        // Check setAttribute in case of workers
+        if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
             this._renderingCanvas.setAttribute('data-engine', versionToLog);
         }
     }
