@@ -21,6 +21,7 @@ import { WebXRAbstractMotionController } from "../motionController/webXRAbstract
 import { WebXRCamera } from "../webXRCamera";
 import { Node } from "../../node";
 import { Viewport } from "../../Maths/math.viewport";
+import { Mesh } from "../../Meshes/mesh";
 
 /**
  * Options interface for the pointer selection module
@@ -103,6 +104,20 @@ export interface IWebXRControllerPointerSelectionOptions {
      * The maximum distance of the pointer selection feature. Defaults to 100.
      */
     maxPointerDistance?: number;
+
+    /**
+     * A function that will be called when a new selection mesh is generated.
+     * This function should return a mesh that will be used as the selection mesh.
+     * The default is a torus with a 0.01 diameter and 0.0075 thickness .
+     */
+    customSelectionMeshGenerator?: () => Mesh;
+
+    /**
+     * A function that will be called when a new laser pointer mesh is generated.
+     * This function should return a mesh that will be used as the laser pointer mesh.
+     * The height (y) of the mesh must be 1.
+     */
+    customLasterPointerMeshGenerator?: () => AbstractMesh;
 }
 
 /**
@@ -709,7 +724,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _generateNewMeshPair(meshParent: Node) {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const laserPointer = CreateCylinder(
+        const laserPointer = this._options.customLasterPointerMeshGenerator ? this._options.customLasterPointerMeshGenerator() : CreateCylinder(
             "laserPointer",
             {
                 height: 1,
@@ -728,9 +743,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointer.rotation.x = Math.PI / 2;
         this._updatePointerDistance(laserPointer, 1);
         laserPointer.isPickable = false;
+        laserPointer.isVisible = false;
 
         // Create a gaze tracker for the  XR controller
-        const selectionMesh = CreateTorus(
+        const selectionMesh = this._options.customSelectionMeshGenerator ? this._options.customSelectionMeshGenerator() : CreateTorus(
             "gazeTracker",
             {
                 diameter: 0.0035 * 3,
