@@ -197,12 +197,18 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
 
     /**
      * Instantiate a new instance of clear coat configuration.
-     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+     * @param material The material implementing this plugin.
      */
      constructor(material: PBRBaseMaterial) {
         this._material = material;
     }
 
+    /**
+     * Initialize the plugin.
+     *
+     * @param scene defines the scene the material belongs to.
+     * @param dirtyCallbacks The list of dirty callbacks
+     */
     public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
         this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -211,6 +217,7 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
      * Specifies that the submesh is ready to be used.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
+     * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
      public isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {

@@ -333,11 +333,18 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
 
     /**
      * Instantiate a new instance of subsurface configuration.
+     * @param material The material implementing this plugin.
      */
     constructor(material: PBRBaseMaterial) {
         this._material = material;
     }
 
+    /**
+     * Initialize the plugin.
+     *
+     * @param scene defines the scene the material belongs to.
+     * @param dirtyCallbacks The list of dirty callbacks
+     */
     public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
         this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
         this._internalMarkScenePrePassDirty = dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
@@ -348,6 +355,7 @@ export class PBRSubSurfaceConfiguration implements IMaterialPlugin {
      * Gets whether the submesh is ready to be used or not.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
+     * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene, engine: Engine): boolean {
