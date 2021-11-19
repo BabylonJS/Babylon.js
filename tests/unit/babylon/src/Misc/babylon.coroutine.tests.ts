@@ -142,7 +142,7 @@
         });
 
         it('should be able to make an asynchronous function from a coroutine', async () => {
-            const asyncFunction = BABYLON.makeAsyncFunction(function* (value: number): BABYLON.AsyncCoroutine<number> {
+            const asyncFunction = BABYLON.makeAsyncFunction(function* (value: number) {
                 yield Promise.resolve();
                 return value;
             }, BABYLON.inlineScheduler);
@@ -151,3 +151,4 @@
         });
     });
  });
+ 
