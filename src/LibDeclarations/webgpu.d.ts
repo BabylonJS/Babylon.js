@@ -718,7 +718,8 @@ declare class GPUCommandEncoder implements GPUObjectBase {
     fillBuffer(
         destination: GPUBuffer,
         destinationOffset: GPUSize64,
-        size: GPUSize64);
+        size: GPUSize64
+    ): void;
 
     pushDebugGroup(groupLabel: string): void;
     popDebugGroup(): void;

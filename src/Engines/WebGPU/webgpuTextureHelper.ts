@@ -456,7 +456,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.EACRG11Unorm:
             case WebGPUConstants.TextureFormat.EACRG11Snorm:
                 return { width: 4, height: 4, length: 16 };
-                
+
             // ASTC compressed formats usable if "texture-compression-astc" is both
             // supported by the device/user agent and enabled in requestDevice.
             case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
