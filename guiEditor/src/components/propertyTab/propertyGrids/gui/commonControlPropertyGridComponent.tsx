@@ -12,7 +12,6 @@ import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
-import { Tools } from "../../../../tools";
 import { Container } from "babylonjs-gui/2D/controls/container";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");

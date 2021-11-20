@@ -5,7 +5,6 @@ import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";
 import { DragOverLocation, GlobalState } from "../../../../globalState";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { Tools } from "../../../../tools";
 import { Container } from "babylonjs-gui/2D/controls/container";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");

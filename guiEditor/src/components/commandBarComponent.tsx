@@ -2,7 +2,6 @@ import { Container } from "babylonjs-gui/2D/controls/container";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { Tools } from "../tools";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 
