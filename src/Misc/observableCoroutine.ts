@@ -1,19 +1,49 @@
-import { Nullable } from "../types";
 import { Observable } from "./observable";
+import { AsyncCoroutine, CoroutineStep, CoroutineScheduler, runCoroutineAsync, inlineScheduler } from "./coroutine";
+
+function createObservableScheduler<T>(observable: Observable<any>) {
+    const coroutines = new Array<AsyncCoroutine<T>>();
+    const onSuccesses = new Array<(stepResult: CoroutineStep<T>) => void>();
+    const onErrors = new Array<(stepError: any) => void>();
+
+    const observer = observable.add(() => {
+        const count = coroutines.length;
+        for (let i = 0; i < count; i++) {
+            inlineScheduler(coroutines.pop()!, onSuccesses.pop()!, onErrors.pop()!);
+        }
+    });
+
+    const scheduler = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
+        coroutines.push(coroutine);
+        onSuccesses.push(onSuccess);
+        onErrors.push(onError);
+    };
+
+    scheduler.dispose = () => {
+        observable.remove(observer);
+    };
+
+    return scheduler;
+}
 
 declare module "./observable" {
     export interface Observable<T> {
         /**
-         * Internal list of iterators and promise resolvers associated with coroutines.
+         * Internal observable based coroutine scheduler instance.
          */
-        coroutineIterators: Nullable<Array<{ iterator: Iterator<void | Promise<void>, void, void>, resolver: () => void, rejecter: () => void, paused: boolean }>>;
+        coroutineScheduler: CoroutineScheduler<void> | undefined;
+
+        /**
+         * Internal AbortController for in flight coroutines.
+         */
+        coroutineAbortController: AbortController | undefined;
 
         /**
          * Runs a coroutine asynchronously on this observable
-         * @param coroutineIterator the iterator resulting from having started the coroutine
+         * @param coroutine the iterator resulting from having started the coroutine
          * @returns a promise which will be resolved when the coroutine finishes or rejected if the coroutine is cancelled
          */
-        runCoroutineAsync(coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void>;
+        runCoroutineAsync(coroutine: AsyncCoroutine<void>): Promise<void>;
 
         /**
          * Cancels all coroutines currently running on this observable
@@ -22,47 +52,19 @@ declare module "./observable" {
     }
 }
 
-Observable.prototype.runCoroutineAsync = function (coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void> {
-    if (!this.coroutineIterators) {
-        this.coroutineIterators = [];
-
-        this.add(() => {
-            for (let idx = this.coroutineIterators!.length - 1; idx >= 0; --idx) {
-                if (this.coroutineIterators![idx].paused) {
-                    continue;
-                }
-
-                const next = this.coroutineIterators![idx].iterator.next();
-
-                if (next.value) {
-                    const coroutine = this.coroutineIterators![idx];
-                    coroutine.paused = true;
-                    next.value.then(() => {
-                        coroutine.paused = false;
-                    });
-                }
-
-                if (next.done) {
-                    this.coroutineIterators![idx].resolver();
-                    this.coroutineIterators!.splice(idx, 1);
-                }
-            }
-        });
+Observable.prototype.runCoroutineAsync = function(coroutine: AsyncCoroutine<void>) {
+    if (!this.coroutineScheduler) {
+        this.coroutineScheduler = createObservableScheduler(this);
     }
 
-    return new Promise((resolver, rejecter) => {
-        this.coroutineIterators?.push({
-            iterator: coroutineIterator,
-            resolver: resolver,
-            rejecter: rejecter,
-            paused: false
-        });
-    });
+    if (!this.coroutineAbortController) {
+        this.coroutineAbortController = new AbortController();
+    }
+
+    return runCoroutineAsync(coroutine, this.coroutineScheduler, this.coroutineAbortController.signal);
 };
 
-Observable.prototype.cancelAllCoroutines = function (): void {
-    this.coroutineIterators!.forEach((coroutine) => {
-        coroutine.rejecter();
-    });
-    this.coroutineIterators = [];
+Observable.prototype.cancelAllCoroutines = function() {
+    this.coroutineAbortController?.abort();
+    this.coroutineAbortController = undefined;
 };
