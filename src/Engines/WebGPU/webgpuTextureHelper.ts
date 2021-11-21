@@ -271,6 +271,44 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC4RSnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1UnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.EACR11Unorm:
+            case WebGPUConstants.TextureFormat.EACR11Snorm:
+            case WebGPUConstants.TextureFormat.EACRG11Unorm:
+            case WebGPUConstants.TextureFormat.EACRG11Snorm:
+            case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC5x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x4UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC5x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC6x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC6x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x10UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC12x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x10UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC12x12Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x12UnormSRGB:
                 return Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
             // One component = 16 bits
@@ -402,6 +440,67 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 8 };
+
+            // ETC2 compressed formats usable if "texture-compression-etc2" is both
+            // supported by the device/user agent and enabled in requestDevice.
+            case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1UnormSRGB:
+            case WebGPUConstants.TextureFormat.EACR11Unorm:
+            case WebGPUConstants.TextureFormat.EACR11Snorm:
+                return { width: 4, height: 4, length: 8 };
+
+            case WebGPUConstants.TextureFormat.ETC2RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.EACRG11Unorm:
+            case WebGPUConstants.TextureFormat.EACRG11Snorm:
+                return { width: 4, height: 4, length: 16 };
+
+            // ASTC compressed formats usable if "texture-compression-astc" is both
+            // supported by the device/user agent and enabled in requestDevice.
+            case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB:
+                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC5x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x4UnormSRGB:
+                return { width: 5, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC5x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x5UnormSRGB:
+                return { width: 5, height: 5, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC6x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x5UnormSRGB:
+                return { width: 6, height: 5, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC6x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x6UnormSRGB:
+                return { width: 6, height: 6, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC8x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x5UnormSRGB:
+                return { width: 8, height: 5, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC8x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x6UnormSRGB:
+                return { width: 8, height: 6, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC8x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x8UnormSRGB:
+                return { width: 8, height: 8, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC10x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x5UnormSRGB:
+                return { width: 10, height: 5, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC10x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x6UnormSRGB:
+                return { width: 10, height: 6, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC10x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x8UnormSRGB:
+                return { width: 10, height: 8, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC10x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x10UnormSRGB:
+                return { width: 10, height: 10, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC12x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x10UnormSRGB:
+                return { width: 12, height: 10, length: 16 };
+            case WebGPUConstants.TextureFormat.ASTC12x12Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x12UnormSRGB:
+                return { width: 12, height: 12, length: 16 };
         }
 
         return { width: 1, height: 1, length: 4 };
@@ -466,6 +565,46 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
+
+            case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1UnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.EACR11Unorm:
+            case WebGPUConstants.TextureFormat.EACR11Snorm:
+            case WebGPUConstants.TextureFormat.EACRG11Unorm:
+            case WebGPUConstants.TextureFormat.EACRG11Snorm:
+
+            case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC5x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x4UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC5x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC6x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC6x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x10UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC12x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x10UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC12x12Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x12UnormSRGB:
                 return true;
         }
 
@@ -494,7 +633,11 @@ export class WebGPUTextureHelper {
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC1RGBAUnorm;
-        }
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB : WebGPUConstants.TextureFormat.ASTC4x4Unorm;
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB : WebGPUConstants.TextureFormat.ETC2RGB8Unorm;
+            }
 
         switch (type) {
             case Constants.TEXTURETYPE_BYTE:
@@ -665,6 +808,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.Depth32Float:
             case WebGPUConstants.TextureFormat.Stencil8:
             case WebGPUConstants.TextureFormat.Depth24Plus:
+            case WebGPUConstants.TextureFormat.EACR11Unorm:
+            case WebGPUConstants.TextureFormat.EACR11Snorm:
                 return 1;
 
             case WebGPUConstants.TextureFormat.RG8Unorm:
@@ -682,12 +827,16 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RG32Sint:
             case WebGPUConstants.TextureFormat.RG32Float:
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+            case WebGPUConstants.TextureFormat.EACRG11Unorm:
+            case WebGPUConstants.TextureFormat.EACRG11Snorm:
                 return 2;
 
             case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
             case WebGPUConstants.TextureFormat.BC6HRGBFloat:
+            case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB:
                 return 3;
 
             case WebGPUConstants.TextureFormat.RGBA8Unorm:
@@ -712,6 +861,38 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGBA32Uint:
             case WebGPUConstants.TextureFormat.RGBA32Sint:
             case WebGPUConstants.TextureFormat.RGBA32Float:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGB8A1UnormSRGB:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8Unorm:
+            case WebGPUConstants.TextureFormat.ETC2RGBA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC5x4Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x4UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC5x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC5x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC6x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC6x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC6x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC8x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC8x8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x5Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x5UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x6Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x6UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x8Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x8UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC10x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC10x10UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC12x10Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x10UnormSRGB:
+            case WebGPUConstants.TextureFormat.ASTC12x12Unorm:
+            case WebGPUConstants.TextureFormat.ASTC12x12UnormSRGB:
                 return 4;
         }
 
@@ -857,10 +1038,6 @@ export class WebGPUTextureHelper {
 
     public createTexture(imageBitmap: ImageBitmap | { width: number, height: number, layers: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, is3D = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
         sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1, additionalUsages = 0): GPUTexture {
-        if (sampleCount > 1) {
-            // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
-            sampleCount = 4;
-        }
 
         const layerCount = (imageBitmap as any).layers || 1;
         let textureSize = {
@@ -901,10 +1078,6 @@ export class WebGPUTextureHelper {
 
     public createCubeTexture(imageBitmaps: ImageBitmap[] | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
         sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1, additionalUsages = 0): GPUTexture {
-        if (sampleCount > 1) {
-            // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
-            sampleCount = 4;
-        }
 
         const width = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
@@ -1159,14 +1332,15 @@ export class WebGPUTextureHelper {
         const blockInformation = WebGPUTextureHelper._GetBlockInformationFromFormat(format);
         const gpuOrHdwTexture = WebGPUTextureHelper._IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture) : texture;
 
-        const textureCopyView: GPUImageCopyTexture = {
+        const textureCopyView: GPUImageCopyTextureTagged = {
             texture: gpuTexture,
             origin: {
                 x: offsetX,
                 y: offsetY,
                 z: Math.max(faceIndex, 0)
             },
-            mipLevel: mipLevel
+            mipLevel: mipLevel,
+            premultipliedAlpha: premultiplyAlpha,
         };
 
         const textureExtent = {
@@ -1223,7 +1397,9 @@ export class WebGPUTextureHelper {
         } else {
             imageBitmap = imageBitmap as (ImageBitmap | HTMLCanvasElement | OffscreenCanvas);
 
-            if (invertY || premultiplyAlpha) {
+            if (invertY) {
+                textureCopyView.premultipliedAlpha = false; // we are going to handle premultiplyAlpha ourselves
+
                 // we must preprocess the image
                 if (WebGPUTextureHelper._IsInternalTexture(texture) && offsetX === 0 && offsetY === 0 && width === texture.width && height === texture.height) {
                     // optimization when the source image is the same size than the destination texture and offsets X/Y == 0:
