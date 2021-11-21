@@ -54952,11 +54952,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "TwirlBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TwirlBlock"]("Twirl");
             case "VoronoiNoiseBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VoronoiNoiseBlock"]("VoronoiNoise");
             case "ScreenSpaceBlock":
@@ -55783,6 +55786,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 "Rotate2dBlock",
                 "TransformBlock",
                 "ScreenSpaceBlock",
+                "TwirlBlock"
             ],
             Matrices: [
                 "Matrix",
@@ -56040,6 +56044,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         CloudBlock: "Generate Fractal Brownian Motion Clouds",
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
+        TwirlBlock: "Apply a twirl rotation"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
