@@ -28,74 +28,55 @@ enum StatePosition {
     NumStates = 12
 }
 
+// only renderable color/depth/stencil formats are listed here because we use textureFormatToIndex only to map renderable textures
 const textureFormatToIndex: { [name: string]: number } = {
     "": 0,
     "r8unorm": 1,
-    "r8snorm": 2,
-    "r8uint": 3,
-    "r8sint": 4,
+    "r8uint": 2,
+    "r8sint": 3,
 
-    "r16uint": 5,
-    "r16sint": 6,
-    "r16float": 7,
-    "rg8unorm": 8,
-    "rg8snorm": 9,
-    "rg8uint": 10,
-    "rg8sint": 11,
+    "r16uint": 4,
+    "r16sint": 5,
+    "r16float": 6,
+    "rg8unorm": 7,
+    "rg8uint": 8,
+    "rg8sint": 9,
 
-    "r32uint": 12,
-    "r32sint": 13,
-    "r32float": 14,
-    "rg16uint": 15,
-    "rg16sint": 16,
-    "rg16float": 17,
-    "rgba8unorm": 18,
-    "rgba8unorm-srgb": 19,
-    "rgba8snorm": 20,
-    "rgba8uint": 21,
-    "rgba8sint": 22,
-    "bgra8unorm": 23,
-    "bgra8unorm-srgb": 24,
+    "r32uint": 10,
+    "r32sint": 11,
+    "r32float": 12,
+    "rg16uint": 13,
+    "rg16sint": 14,
+    "rg16float": 15,
+    "rgba8unorm": 16,
+    "rgba8unorm-srgb": 17,
+    "rgba8uint": 18,
+    "rgba8sint": 19,
+    "bgra8unorm": 20,
+    "bgra8unorm-srgb": 21,
 
-    "rgb9e5ufloat": 25,
-    "rgb10a2unorm": 26,
-    "rg11b10ufloat": 27,
+    "rgb10a2unorm": 22,
 
-    "rg32uint": 28,
-    "rg32sint": 29,
-    "rg32float": 30,
-    "rgba16uint": 31,
-    "rgba16sint": 32,
-    "rgba16float": 33,
+    "rg32uint": 23,
+    "rg32sint": 24,
+    "rg32float": 25,
+    "rgba16uint": 26,
+    "rgba16sint": 27,
+    "rgba16float": 28,
 
-    "rgba32uint": 34,
-    "rgba32sint": 35,
-    "rgba32float": 36,
+    "rgba32uint": 29,
+    "rgba32sint": 30,
+    "rgba32float": 31,
 
-    "stencil8": 37,
-    "depth16unorm": 38,
-    "depth24plus": 39,
-    "depth24plus-stencil8": 40,
-    "depth32float": 41,
+    "stencil8": 32,
+    "depth16unorm": 33,
+    "depth24plus": 34,
+    "depth24plus-stencil8": 35,
+    "depth32float": 36,
 
-    "bc1-rgba-unorm": 42,
-    "bc1-rgba-unorm-srgb": 43,
-    "bc2-rgba-unorm": 44,
-    "bc2-rgba-unorm-srgb": 45,
-    "bc3-rgba-unorm": 46,
-    "bc3-rgba-unorm-srgb": 47,
-    "bc4-r-unorm": 48,
-    "bc4-r-snorm": 49,
-    "bc5-rg-unorm": 50,
-    "bc5-rg-snorm": 51,
-    "bc6h-rgb-ufloat": 52,
-    "bc6h-rgb-float": 53,
-    "bc7-rgba-unorm": 54,
-    "bc7-rgba-unorm-srgb": 55,
+    "depth24unorm-stencil8": 37,
 
-    "depth24unorm-stencil8": 56,
-
-    "depth32float-stencil8": 57,
+    "depth32float-stencil8": 38,
 };
 
 const alphaBlendFactorToIndex: { [name: number]: number } = {
@@ -200,7 +181,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._parameter = { token: undefined, pipeline: null };
         this.disabled = false;
         this.vertexBuffers = [];
-        this._kMaxVertexBufferStride = 2048; // TODO WEBGPU: get this value from device.limits.maxVertexBufferArrayStride
+        this._kMaxVertexBufferStride = device.limits.maxVertexBufferArrayStride || 2048;
         this.reset();
     }
 
@@ -360,10 +341,9 @@ export abstract class WebGPUCacheRenderPipeline {
 
     public setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void {
         if (attachments.length > 10) {
-            // If we want more than 10 attachments we need to change this method but 10 seems plenty
-            // Note we can do better without changing this method if only dealing with texture formats that can be used as output attachments
-            // It could allow to use 5 bits (or even less) to code a texture format. For the time being, we use 6 bits as we need 58 different values (2^6=64)
-            // so we can encode 5 texture formats in 32 bits
+            // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty
+            // As we need 39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
+            // We are using 2x32 bit values to handle 10 textures
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
         (this.mrtAttachments as any) = attachments;
