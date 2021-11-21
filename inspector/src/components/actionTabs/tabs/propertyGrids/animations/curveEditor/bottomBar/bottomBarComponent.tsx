@@ -42,9 +42,9 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
             this.props.context.clipLength = newClipLength;
 
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            const keyAlreadyExists = this._getKeyAtFrame(newClipLength) !== null;
+            const keyAlreadyExists = this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                this.props.context.onNewKeyPointRequired.notifyObservers();
+                this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
             this.setState({ clipLength: newClipLength.toFixed(0) });
@@ -55,9 +55,9 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
             this.props.context.clipLength = newClipLength;
 
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            const keyAlreadyExists = this._getKeyAtFrame(newClipLength) !== null;
+            const keyAlreadyExists = this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                this.props.context.onNewKeyPointRequired.notifyObservers();
+                this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
             this.props.context.toKey = Math.min(this.props.context.toKey, this.props.context.clipLength);
@@ -75,16 +75,6 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
             this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
         }
         this.setState({ clipLength: newClipLength.toFixed(0) });
-    }
-
-    private _getKeyAtFrame(frameNumber: number) {
-        const keys = this.props.context.activeAnimations[0].getKeys();
-        for (let key of keys) {
-            if (Math.floor(frameNumber - key.frame) === 0) {
-                return key;
-            }
-        }
-        return null;
     }
 
     componentWillUnmount() {

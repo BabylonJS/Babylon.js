@@ -54,6 +54,7 @@ const DecisionTree: IDecisionTree = {
             },
             no: {
                 cap: "etc1",
+                alpha: false,
                 yes: {
                     transcodeFormat: transcodeTarget.ETC1_RGB,
                     engineFormat: COMPRESSED_RGB_ETC1_WEBGL,
@@ -240,10 +241,10 @@ export class TranscodeDecisionTree {
                 condition = condition && this._options[node.option];
             }
             if (node.alpha !== undefined) {
-                condition = condition && this._hasAlpha;
+                condition = condition && this._hasAlpha === node.alpha;
             }
             if (node.needsPowerOfTwo !== undefined) {
-                condition = condition && this._isPowerOfTwo;
+                condition = condition && this._isPowerOfTwo === node.needsPowerOfTwo;
             }
 
             this._parseNode(condition ? node.yes! : node.no!);

@@ -1277,7 +1277,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onValueSet: Observable<number>;
         onValueManuallyEntered: Observable<number>;
         onFrameRequired: Observable<void>;
-        onNewKeyPointRequired: Observable<void>;
+        onCreateOrUpdateKeyPointRequired: Observable<void>;
         onFlattenTangentRequired: Observable<void>;
         onLinearTangentRequired: Observable<void>;
         onBreakTangentRequired: Observable<void>;
@@ -1318,6 +1318,15 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         getAnimationSortIndex(animation: Animation): number;
         getPrevKey(): Nullable<number>;
         getNextKey(): Nullable<number>;
+        /**
+         * If any current active animation has a key at the received frameNumber,
+         * return the index of the animation in the active animation array, and
+         * the index of the frame on the animation.
+         */
+        getKeyAtAnyFrameIndex(frameNumber: number): {
+            animationIndex: number;
+            keyIndex: number;
+        } | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent" {
@@ -1447,7 +1456,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onClipLengthDecreasedObserver;
         constructor(props: IBottomBarComponentProps);
         private _changeClipLength;
-        private _getKeyAtFrame;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -6098,7 +6106,7 @@ declare module INSPECTOR {
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
-        onNewKeyPointRequired: BABYLON.Observable<void>;
+        onCreateOrUpdateKeyPointRequired: BABYLON.Observable<void>;
         onFlattenTangentRequired: BABYLON.Observable<void>;
         onLinearTangentRequired: BABYLON.Observable<void>;
         onBreakTangentRequired: BABYLON.Observable<void>;
@@ -6139,6 +6147,15 @@ declare module INSPECTOR {
         getAnimationSortIndex(animation: BABYLON.Animation): number;
         getPrevKey(): BABYLON.Nullable<number>;
         getNextKey(): BABYLON.Nullable<number>;
+        /**
+         * If any current active animation has a key at the received frameNumber,
+         * return the index of the animation in the active animation array, and
+         * the index of the frame on the animation.
+         */
+        getKeyAtAnyFrameIndex(frameNumber: number): {
+            animationIndex: number;
+            keyIndex: number;
+        } | null;
     }
 }
 declare module INSPECTOR {
@@ -6253,7 +6270,6 @@ declare module INSPECTOR {
         private _onClipLengthDecreasedObserver;
         constructor(props: IBottomBarComponentProps);
         private _changeClipLength;
-        private _getKeyAtFrame;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
