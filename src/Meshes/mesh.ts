@@ -2135,10 +2135,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         const engine = scene.getEngine();
-        const useReverseDepthBuffer = engine.useReverseDepthBuffer;
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
-        if (!useReverseDepthBuffer && this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
+        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
             oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
