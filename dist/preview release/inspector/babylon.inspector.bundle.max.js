@@ -47434,9 +47434,9 @@ var BottomBarComponent = /** @class */ (function (_super) {
             // New clip length is greater than current clip length: add a key frame at the new clip length location with the same value as the previous frame
             _this.props.context.clipLength = newClipLength;
             _this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            var keyAlreadyExists = _this._getKeyAtFrame(newClipLength) !== null;
+            var keyAlreadyExists = _this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                _this.props.context.onNewKeyPointRequired.notifyObservers();
+                _this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
             _this.setState({ clipLength: newClipLength.toFixed(0) });
         });
@@ -47444,9 +47444,9 @@ var BottomBarComponent = /** @class */ (function (_super) {
             // New clip length is smaller than current clip length: move the playing range to the new clip length
             _this.props.context.clipLength = newClipLength;
             _this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            var keyAlreadyExists = _this._getKeyAtFrame(newClipLength) !== null;
+            var keyAlreadyExists = _this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                _this.props.context.onNewKeyPointRequired.notifyObservers();
+                _this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
             _this.props.context.toKey = Math.min(_this.props.context.toKey, _this.props.context.clipLength);
             _this.props.context.onRangeUpdated.notifyObservers();
@@ -47463,16 +47463,6 @@ var BottomBarComponent = /** @class */ (function (_super) {
             this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
         }
         this.setState({ clipLength: newClipLength.toFixed(0) });
-    };
-    BottomBarComponent.prototype._getKeyAtFrame = function (frameNumber) {
-        var keys = this.props.context.activeAnimations[0].getKeys();
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-            var key = keys_1[_i];
-            if (Math.floor(frameNumber - key.frame) === 0) {
-                return key;
-            }
-        }
-        return null;
     };
     BottomBarComponent.prototype.componentWillUnmount = function () {
         if (this._onAnimationsLoadedObserver) {
@@ -47791,7 +47781,7 @@ var Context = /** @class */ (function () {
         this.onValueSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onCreateOrUpdateKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onBreakTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47976,6 +47966,31 @@ var Context = /** @class */ (function () {
             nextKey = this.toKey;
         }
         return nextKey;
+    };
+    /**
+     * If any current active animation has a key at the received frameNumber,
+     * return the index of the animation in the active animation array, and
+     * the index of the frame on the animation.
+     */
+    Context.prototype.getKeyAtAnyFrameIndex = function (frameNumber) {
+        if (!this.animations || !this.animations.length || !this.activeAnimations || !this.activeAnimations.length) {
+            return null;
+        }
+        var animIdx = 0;
+        for (var _i = 0, _a = this.activeAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            var keys = animation.getKeys();
+            var idx = 0;
+            for (var _b = 0, keys_3 = keys; _b < keys_3.length; _b++) {
+                var key = keys_3[_b];
+                if (Math.floor(frameNumber - key.frame) === 0) {
+                    return { animationIndex: animIdx, keyIndex: idx };
+                }
+                idx++;
+            }
+            animIdx++;
+        }
+        return null;
     };
     return Context;
 }());
@@ -48691,8 +48706,8 @@ var GraphComponent = /** @class */ (function (_super) {
             }
             _this.props.context.onActiveAnimationChanged.notifyObservers();
         });
-        // New keypoint
-        _this.props.context.onNewKeyPointRequired.add(function () {
+        // Create or Update keypoint
+        _this.props.context.onCreateOrUpdateKeyPointRequired.add(function () {
             if (_this.props.context.activeAnimations.length === 0) {
                 return;
             }
@@ -48726,44 +48741,56 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
                 var leftKey = keys[indexToAdd];
                 var rightKey = keys[indexToAdd + 1];
-                var newKey = {
-                    frame: currentFrame,
-                    value: value,
-                };
-                if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
-                    var derivative = null;
-                    var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
-                    var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
-                    switch (currentAnimation.dataType) {
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                    }
-                    if (derivative !== null) {
-                        newKey.inTangent = derivative;
-                        newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
-                    }
+                if (Math.floor(currentFrame - (leftKey === null || leftKey === void 0 ? void 0 : leftKey.frame)) === 0) {
+                    // Key already exists, update it
+                    leftKey.value = value;
                 }
-                keys.splice(indexToAdd + 1, 0, newKey);
+                else if (Math.floor(rightKey.frame - currentFrame) === 0) {
+                    // Key already exists, update it
+                    rightKey.value = value;
+                }
+                else {
+                    // Key doesn't exist, create it (same operations) as
+                    // the new key listener
+                    var newKey = {
+                        frame: currentFrame,
+                        value: value,
+                    };
+                    if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                        var derivative = null;
+                        var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                        var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                        switch (currentAnimation.dataType) {
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                        }
+                        if (derivative !== null) {
+                            newKey.inTangent = derivative;
+                            newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
+                        }
+                    }
+                    keys.splice(indexToAdd + 1, 0, newKey);
+                }
                 currentAnimation.setKeys(keys);
             }
             _this._evaluateKeys(false, false);
@@ -51443,7 +51470,7 @@ var TopBarComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "top-bar-parent-name" }, this.props.context.title),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: hasActiveAnimations ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: hasActiveAnimations ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
