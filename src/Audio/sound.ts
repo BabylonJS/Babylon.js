@@ -628,7 +628,7 @@ export class Sound {
         if (newPosition.equals(this._position)) {
             return;
         }
-        this._position = newPosition;
+        this._position.copyFrom(newPosition);
 
         if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
