@@ -7,13 +7,12 @@ import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
-import { ProcessingOptions, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
+import { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
 import { ShaderStore as EngineShaderStore } from '../Engines/shaderStore';
 import { ShaderLanguage } from "./shaderLanguage";
-import { MaterialCustomCodeFunction } from "./materialEvent";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -72,11 +71,11 @@ export interface IEffectCreationOptions {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: Nullable<MaterialCustomCodeFunction>;
+    processFinalCode?: Nullable<ShaderCustomProcessingFunction>;
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
      */
-    processCodeAfterIncludes?: Nullable<MaterialCustomCodeFunction>;
+    processCodeAfterIncludes?: Nullable<ShaderCustomProcessingFunction>;
     /**
      * Is this effect rendering to several color attachments ?
      */
@@ -231,8 +230,8 @@ export class Effect implements IDisposable {
         this.name = baseName;
         this._key = key;
 
-        let processCodeAfterIncludes: MaterialCustomCodeFunction | undefined = undefined;
-        let processFinalCode: Nullable<MaterialCustomCodeFunction> = null;
+        let processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
+        let processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;

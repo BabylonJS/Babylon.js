@@ -201,11 +201,10 @@ export class StandardMaterialDefines extends MaterialDefines
 
     /**
      * Initializes the PBR Material defines.
-     * @param keysFromPlugins The plugin keys
+     * @param externalProperties The external properties
      */
-    constructor(keysFromPlugins?: string[]) {
-        super();
-        this._keysFromPlugins = keysFromPlugins;
+    constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
+        super(externalProperties);
         this.rebuild();
     }
 

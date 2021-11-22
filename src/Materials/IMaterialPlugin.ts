@@ -74,10 +74,10 @@ export interface IMaterialPlugin {
     getCustomCode?(shaderType: string): Nullable<{ [pointName: string]: string }>;
 
     /**
-     * Collects all define names.
-     * @param names The array to append to.
+     * Collects all defines.
+     * @param defines The array to append to.
      */
-    collectDefineNames?(names: string[]): void;
+    collectDefines?(defines: { [name: string]: { type: string, default: any } }): void;
 
     /**
      * Checks to see if a texture is used in the material.

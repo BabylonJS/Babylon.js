@@ -261,23 +261,13 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public DEBUGMODE = 0;
 
-    protected _keysFromPlugins?: string[];
-
     /**
      * Initializes the PBR Material defines.
-     * @param keysFromPlugins The plugin keys
+     * @param externalProperties The external properties
      */
-    constructor(keysFromPlugins?: string[]) {
-        super();
-        this._keysFromPlugins = keysFromPlugins;
+    constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
+        super(externalProperties);
         this.rebuild();
-    }
-
-    public rebuild() {
-        super.rebuild();
-        if (this._keysFromPlugins) {
-            this._keys.push(...this._keysFromPlugins);
-        }
     }
 
     /**
@@ -1432,7 +1422,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var join = defines.toString();
 
-        const customCodeInfo: MaterialEventInfoInjectCustomCode = { customCode: (shaderType: string, code: string) => '' };
+        const customCodeInfo: MaterialEventInfoInjectCustomCode = { customCode: undefined };
         Material.OnEventObservable.notifyObservers(
             this,
             MaterialEvent.InjectCustomCode,

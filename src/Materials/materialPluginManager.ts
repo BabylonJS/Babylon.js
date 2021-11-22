@@ -1,3 +1,4 @@
+import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 import { EventState } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Nullable } from "../types";
@@ -21,8 +22,7 @@ import { MaterialEvent,
     MaterialEventInfoHardBindForSubMesh,
     MaterialEventInfoBindForSubMesh,
     MaterialEventInfoGetAnimatables,
-    MaterialEventInfoGetActiveTextures,
-    MaterialCustomCodeFunction
+    MaterialEventInfoGetActiveTextures
 } from "./materialEvent";
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -85,7 +85,7 @@ function _Initialize(): void {
         }
 
         if (eventState.mask & MaterialEvent.CollectDefineNames) {
-            (eventState.userInfo as MaterialEventInfoCollectDefineNames).defineNames = CollectDefineNames(material);
+            (eventState.userInfo as MaterialEventInfoCollectDefineNames).defines = CollectDefines(material);
         }
 
         if (eventState.mask & MaterialEvent.HasRenderTargetTextures) {
@@ -98,10 +98,6 @@ function _Initialize(): void {
         if (eventState.mask & MaterialEvent.IsReadyForSubMesh) {
             const info = (eventState.userInfo as MaterialEventInfoIsReadyForSubMesh);
             info.isReadyForSubMesh = IsReadyForSubMesh(material, info.defines, info.scene, info.engine);
-        }
-        if (eventState.mask & MaterialEvent.CollectDefineNames) {
-            const info = (eventState.userInfo as MaterialEventInfoCollectDefineNames);
-            info.defineNames = CollectDefineNames(material);
         }
         if (eventState.mask & MaterialEvent.FillRenderTargetTextures) {
             const info = (eventState.userInfo as MaterialEventInfoFillRenderTargetTextures);
@@ -234,7 +230,7 @@ function _AddPluginToMaterial(material: Material, propertyName: string, factory:
  * @param material The material to inject code into.
  * @returns The code injector function.
  */
-function InjectCustomCode(material: Material): MaterialCustomCodeFunction {
+function InjectCustomCode(material: Material): ShaderCustomProcessingFunction {
     return (shaderType: string, code: string) => {
         const points = material._codeInjectionPoints?.[shaderType];
         if (!points) {
@@ -361,12 +357,12 @@ function IsReadyForSubMesh(material: Material, defines: MaterialDefines, scene: 
  * @param material The material
  * @return A list of defined names.
  */
-function CollectDefineNames(material: Material): string[] | undefined {
-    const names: string[] = [];
+function CollectDefines(material: Material): { [name: string]: { type: string, default: any } } | undefined {
+    const defines: { [name: string]: { type: string, default: any } } = {};
     for (const plugin of material._plugins) {
-        plugin.collectDefineNames?.(names);
+        plugin.collectDefines?.(defines);
     }
-    return names.length > 0 ? names : undefined;
+    return Object.keys(defines).length > 0 ? defines : undefined;
 }
 
 /**
