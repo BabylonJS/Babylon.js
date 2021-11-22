@@ -621,7 +621,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         } else {
             let block: NodeMaterialBlock;
             if (customBlockData) {
-                block = new CustomBlock();
+                block = new CustomBlock("");
                 (block as CustomBlock).options = customBlockData;
             } else {
                 block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;
