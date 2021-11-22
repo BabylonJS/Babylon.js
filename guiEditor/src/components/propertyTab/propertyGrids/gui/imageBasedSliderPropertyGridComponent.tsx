@@ -8,6 +8,10 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
+
+const thumbImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/thumbImageLinkIcon.svg");
+const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 
 interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSlider: ImageBasedSlider;
@@ -31,7 +35,36 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <hr />
-                <TextLineComponent label="IMAGE BASE SLIDER" value=" " color="grey"></TextLineComponent>
+                <TextLineComponent label="IMAGE LINKS" value=" " color="grey"></TextLineComponent>
+                <TextInputLineComponent
+                    icon={clipContentsIcon}
+                    lockObject={this.props.lockObject}
+                    iconLabel="Thumb Image Link"
+                    target={imageBasedSlider.thumbImage}
+                    label=""
+                    propertyName="source"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <TextInputLineComponent
+                    icon={clipContentsIcon}
+                    lockObject={this.props.lockObject}
+                    iconLabel="Value Bar Image Link"
+                    target={imageBasedSlider.valueBarImage}
+                    label=""
+                    propertyName="source"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <TextInputLineComponent
+                    icon={clipContentsIcon}
+                    lockObject={this.props.lockObject}
+                    iconLabel="Background Image Link"
+                    target={imageBasedSlider.backgroundImage}
+                    label=""
+                    propertyName="source"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <hr />
+                <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
                 <CheckBoxLineComponent
                     label="Display thumb"
                     target={imageBasedSlider}

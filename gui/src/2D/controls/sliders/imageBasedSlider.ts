@@ -12,7 +12,6 @@ import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
  */
 export class ImageBasedSlider extends BaseSlider {
     /** @hidden */
-    public _children = new Array<Image>();
     private _backgroundImage: Image;
     private _thumbImage: Image;
     private _valueBarImage: Image;
@@ -32,25 +31,6 @@ export class ImageBasedSlider extends BaseSlider {
         this._markAsDirty();
     }
 
-    /** Gets the list of children */
-    public get children(): Image[] {
-        return this._children;
-    }
-    
-    private _addToChildren(image: Image) : ImageBasedSlider {
-        if (!image) {
-            return this;
-        }
-
-        var index = this._children.indexOf(image);
-
-        if (index !== -1) {
-            return this;
-        }
-        this._children.push(image);
-        return this;
-    }
-
     /**
      * Gets or sets the image used to render the background
      */
@@ -68,7 +48,6 @@ export class ImageBasedSlider extends BaseSlider {
         if (value && !value.isLoaded) {
             value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
         }
-        this._addToChildren(value);
 
         this._markAsDirty();
     }
@@ -90,7 +69,6 @@ export class ImageBasedSlider extends BaseSlider {
         if (value && !value.isLoaded) {
             value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
         }
-        this._addToChildren(value);
 
         this._markAsDirty();
     }
@@ -112,7 +90,6 @@ export class ImageBasedSlider extends BaseSlider {
         if (value && !value.isLoaded) {
             value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
         }
-        this._addToChildren(value);
 
         this._markAsDirty();
     }
