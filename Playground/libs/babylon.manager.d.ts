@@ -30,6 +30,10 @@ declare module BABYLON {
         static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
+        /** Register handler that is triggered before the main scene render loop (engine.html) */
+        static OnPreRenderLoopObservable: Observable<void>;
+        /** Register handler that is triggered before the main scene render loop (engine.html) */
+        static OnPostRenderLoopObservable: Observable<void>;
         /** Register handler that is triggered when then engine has been resized (engine.html) */
         static OnEngineResizeObservable: Observable<Engine>;
         /** Register handler that is triggered when the scene has been loaded (engine.html) */
