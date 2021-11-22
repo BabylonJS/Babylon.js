@@ -21,7 +21,7 @@ export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
 
         return (
             <div className="custom-upload" title={this.props.label}>
-                <img src={this.props.icon} />
+                <img src={this.props.icon} width={"30px"} />
                 <input type="file" id="files" multiple onChange={(evt) => this.onFilePicked(evt)} />
             </div>
         );

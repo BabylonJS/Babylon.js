@@ -22,7 +22,7 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
                 title={`${this.props.tooltip} ${this.props.shortcut ? " (" + this.props.shortcut + ")" : ""}`}
             >
                 <div className={`command-button-icon ${this.props.isActive ? "active" : ""}`}>
-                    <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="white" className={this.props.isActive ? "active" : ""} />
+                    <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} color="white" className={this.props.isActive ? "active" : ""} />
                 </div>
                 <div className="command-label">{this.props.tooltip}</div>
             </div>

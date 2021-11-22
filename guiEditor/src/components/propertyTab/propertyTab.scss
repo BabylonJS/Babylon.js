@@ -685,6 +685,8 @@ hr.ge {
             grid-column: 2;
             display: flex;
             align-items: center;
+            min-width: 100px;
+            margin-left: 15px;
         }
         
         .img {
@@ -698,7 +700,7 @@ hr.ge {
             display: flex;
             align-items: center;
             padding-left: 15px;
-
+            
             .lbl {
                 position: relative;
                 display: block;

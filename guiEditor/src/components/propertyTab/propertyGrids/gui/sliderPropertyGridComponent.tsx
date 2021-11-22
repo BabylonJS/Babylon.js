@@ -14,7 +14,7 @@ const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.s
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
 const horizontalMarginIcon: string = require("../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg");
 const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
-const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
+const verticalSliderIcon: string = require("../../../../sharedUiComponents/imgs/verticalSliderIcon.svg");
 const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 
 interface ISliderPropertyGridComponentProps {
@@ -71,7 +71,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                 />
                 <CheckBoxLineComponent
                     iconLabel={"Vertical"}
-                    icon={vAlignCenterIcon}
+                    icon={verticalSliderIcon}
                     label="VERTICAL"
                     target={slider}
                     propertyName="isVertical"

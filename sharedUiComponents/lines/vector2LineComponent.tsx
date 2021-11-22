@@ -90,7 +90,7 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
 
         return (
             <div className="vector3Line">
-                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 <div className="firstLine" title={this.props.label}>
                     <div className="label">{this.props.label}</div>
                     <div className="vector">{`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}`}</div>

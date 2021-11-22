@@ -111,7 +111,7 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
         return (
             <div className="vector3Line">
                 <div className="firstLine">
-                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                    {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
