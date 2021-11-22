@@ -12,6 +12,7 @@ import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { ReactNode } from "react";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -22,6 +23,8 @@ export class GlobalState {
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
     public onNewSceneObservable = new Observable<Scene>();
     public sceneImportDefaults: { [key: string]: any } = {};
+
+    public onPopupRenderObservable = new Observable<Nullable<() => ReactNode>>();
 
     public validationResults: Nullable<IGLTFValidationResults> = null;
     public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();

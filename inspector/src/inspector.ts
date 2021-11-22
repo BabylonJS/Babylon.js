@@ -13,6 +13,7 @@ import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorer
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
+import { PersistentPopupHostComponent } from "./components/persistentPopupHostComponent";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -31,6 +32,8 @@ export class Inspector {
     private static _SceneExplorerWindow: Window;
     private static _ActionTabsWindow: Window;
     private static _EmbedHostWindow: Window;
+
+    private static _PopupHost: Nullable<HTMLElement>;
 
     private static _Scene: Scene;
     private static _OpenedPane = 0;
@@ -112,6 +115,10 @@ export class Inspector {
             if (!options.overlay) {
                 this._SceneExplorerHost.style.position = "relative";
             }
+
+            this._PopupHost = parentControlExplorer.ownerDocument!.createElement("div");
+            this._PopupHost.id = "popup-host";
+            this._PopupHost.style.position = "absolute";
         }
 
         // Scene
@@ -153,6 +160,8 @@ export class Inspector {
                 },
             });
             ReactDOM.render(sceneExplorerElement, this._SceneExplorerHost);
+            const popupElement = React.createElement(PersistentPopupHostComponent, {globalState: this._GlobalState});
+            ReactDOM.render(popupElement, this._PopupHost);
         }
     }
 
