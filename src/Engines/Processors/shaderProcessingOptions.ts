@@ -1,6 +1,10 @@
 import { IShaderProcessor } from './iShaderProcessor';
 import { Nullable } from '../../types';
-import { MaterialCustomCodeFunction } from '../../Materials/materialEvent';
+
+/**
+ * Function for custom code generation
+ */
+export type ShaderCustomProcessingFunction = (shaderType: string, code: string) => string;
 
 /** @hidden */
 export interface ShaderProcessingContext { }
@@ -21,5 +25,5 @@ export interface ProcessingOptions {
     processingContext: Nullable<ShaderProcessingContext>;
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
-    processCodeAfterIncludes?: MaterialCustomCodeFunction;
+    processCodeAfterIncludes?: ShaderCustomProcessingFunction;
 }

@@ -1,3 +1,4 @@
+import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 import { SmartArray } from "../Misc/smartArray";
 
 declare type Engine = import("../Engines/engine").Engine;
@@ -11,11 +12,6 @@ declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
 declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
-
-/**
- * Type for material custom code generators.
- */
-export type MaterialCustomCodeFunction = (shaderType: string, code: string) => string;
 
 /**
  * Flags to filter observables in events for material plugins.
@@ -122,7 +118,7 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
     /**
      * Force disposal of the associated textures.
      */
-    forceDisposeTextures: boolean;
+    forceDisposeTextures?: boolean;
 }
 
 /**
@@ -178,7 +174,7 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
     /**
      * List of define names
      */
-    defineNames: string[] | undefined;
+    defines: { [name: string]: { type: string, default: any } } | undefined;
 }
 
 /**
@@ -232,11 +228,11 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
 /**
  * Material event info interface.
  */
- export interface MaterialEventInfoInjectCustomCode {
+export interface MaterialEventInfoInjectCustomCode {
     /**
      * The customCode function to inject code.
      */
-    customCode: MaterialCustomCodeFunction;
+    customCode?: ShaderCustomProcessingFunction;
 }
 
 /**

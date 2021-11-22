@@ -26,7 +26,8 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { IMaterialPlugin } from "./IMaterialPlugin";
-import { MaterialCustomCodeFunction, MaterialEvent, MaterialEventInfoBindForSubMesh, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetActiveTextures, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture, MaterialEventInfoIsReadyForSubMesh } from "./materialEvent";
+import { MaterialEvent, MaterialEventInfoAddUniforms, MaterialEventInfoAddSamplers, MaterialEventInfoBindForSubMesh, MaterialEventInfoDisposed, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetActiveTextures, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture, MaterialEventInfoIsReadyForSubMesh } from "./materialEvent";
+import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -57,7 +58,7 @@ export interface ICustomShaderNameResolveOptions {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: Nullable<MaterialCustomCodeFunction>;
+    processFinalCode?: Nullable<ShaderCustomProcessingFunction>;
 }
 
 /**
@@ -184,12 +185,6 @@ export class Material implements IAnimatable {
      * Static since it can be called before the constructor.
      */
     public static OnEventObservable = new Observable<Material>();
-
-    // object used by OnEventObservable.notifyObservers to pass data to and from the observers
-    private static _EventInfo: any = {
-        disableAlphaBlending: false,
-        forceDisposeTextures: false,
-    };
 
     /**
      * Custom callback helping to override the default shader used in the material.
@@ -367,19 +362,17 @@ export class Material implements IAnimatable {
      * Gets a boolean indicating that current material needs to register RTT
      */
     public get hasRenderTargetTextures(): boolean {
-        const userInfo: MaterialEventInfoHasRenderTargetTextures = {
-            hasRenderTargetTextures: false
-        };
+        this._eventInfo.hasRenderTargetTextures = false;
 
         Material.OnEventObservable.notifyObservers(
             this,
             MaterialEvent.HasRenderTargetTextures,
             undefined,
             undefined,
-            userInfo
+            this._eventInfo
         );
 
-        return userInfo.hasRenderTargetTextures;
+        return this._eventInfo.hasRenderTargetTextures;
     }
 
     /**
@@ -747,7 +740,18 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
 
-    protected _defineNamesFromPlugins?: string[];
+    protected _defineNamesFromPlugins?: { [name: string]: { type: string, default: any } };
+    protected _eventInfo: MaterialEventInfoAddUniforms & MaterialEventInfoAddSamplers & MaterialEventInfoGetDisableAlphaBlending & MaterialEventInfoDisposed & MaterialEventInfoHasRenderTargetTextures & MaterialEventInfoCollectDefineNames & MaterialEventInfoIsReadyForSubMesh = {
+        uniforms: [],
+        samplers: [],
+        disableAlphaBlending: false,
+        forceDisposeTextures: false,
+        hasRenderTargetTextures: false,
+        defines: undefined as any,
+        isReadyForSubMesh: false,
+        scene: undefined as any,
+        engine: undefined as any,
+    };
 
     /**
      * Creates a material instance
@@ -794,17 +798,14 @@ export class Material implements IAnimatable {
         Material.OnEventObservable.notifyObservers(this, MaterialEvent.Created);
 
         // TODO: _defineNamesFromPlugins needs to be updated with `MaterialPluginManager.AddPluginToMaterial` too
-        const collectDefineNamesInfo: MaterialEventInfoCollectDefineNames = {
-            defineNames: undefined
-        };
         Material.OnEventObservable.notifyObservers(
             this,
             MaterialEvent.CollectDefineNames,
             undefined,
             undefined,
-            collectDefineNamesInfo
+            this._eventInfo,
         );
-        this._defineNamesFromPlugins = collectDefineNamesInfo.defineNames;
+        this._defineNamesFromPlugins = this._eventInfo.defines;
     }
 
     /**
@@ -875,22 +876,20 @@ export class Material implements IAnimatable {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
-        const isReadyForSubMeshInfo: MaterialEventInfoIsReadyForSubMesh = {
-            isReadyForSubMesh: false,
-            defines,
-            scene,
-            engine
-        };
+        this._eventInfo.isReadyForSubMesh = false;
+        this._eventInfo.defines = defines;
+        this._eventInfo.scene = scene;
+        this._eventInfo.engine = engine;
 
         Material.OnEventObservable.notifyObservers(
             this,
             MaterialEvent.IsReadyForSubMesh,
             undefined,
             undefined,
-            isReadyForSubMeshInfo
+            this._eventInfo,
         );
 
-        return isReadyForSubMeshInfo.isReadyForSubMesh;
+        return this._eventInfo.isReadyForSubMesh;
     }
 
     /**
@@ -954,11 +953,11 @@ export class Material implements IAnimatable {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
-        Material._EventInfo.disableAlphaBlending = false;
-        Material.OnEventObservable.notifyObservers(this, MaterialEvent.GetDisableAlphaBlending, undefined, undefined, Material._EventInfo);
+        this._eventInfo.disableAlphaBlending = false;
+        Material.OnEventObservable.notifyObservers(this, MaterialEvent.GetDisableAlphaBlending, undefined, undefined, this._eventInfo);
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
             this._transparencyMode === Material.MATERIAL_ALPHATEST ||
-            Material._EventInfo.disableAlphaBlending);
+            this._eventInfo.disableAlphaBlending);
     }
 
     /**
@@ -995,19 +994,17 @@ export class Material implements IAnimatable {
             return true;
         }
 
-        const userInfo: MaterialEventInfoGetDisableAlphaBlending = {
-            disableAlphaBlending: false
-        };
+        this._eventInfo.disableAlphaBlending = false;
 
         Material.OnEventObservable.notifyObservers(
             this,
             MaterialEvent.GetDisableAlphaBlending,
             undefined,
             undefined,
-            userInfo
+            this._eventInfo
         );
 
-        if (userInfo.disableAlphaBlending) {
+        if (this._eventInfo.disableAlphaBlending) {
             return false;
         }
 
@@ -1577,8 +1574,8 @@ export class Material implements IAnimatable {
         // Remove from scene
         scene.removeMaterial(this);
 
-        Material._EventInfo.forceDisposeTextures = forceDisposeTextures;
-        Material.OnEventObservable.notifyObservers(this, MaterialEvent.Disposed, undefined, undefined, Material._EventInfo);
+        this._eventInfo.forceDisposeTextures = forceDisposeTextures;
+        Material.OnEventObservable.notifyObservers(this, MaterialEvent.Disposed, undefined, undefined, this._eventInfo);
 
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);

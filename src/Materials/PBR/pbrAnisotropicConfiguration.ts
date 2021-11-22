@@ -112,16 +112,20 @@ export class PBRAnisotropicConfiguration implements IMaterialPlugin {
     }
 
     /**
-     * Collects all define names.
-     * @param names The array to append to.
+     * Collects all defines.
+     * @param defines The object to append to.
      */
-    public collectDefineNames(names: string[]): void {
+    public collectDefines(defines: { [name: string]: { type: string, default: any } }): void {
         for (const key of Object.keys(modelDefines)) {
             if (key[0] === "_") {
                 continue;
             }
 
-            names.push(key);
+            const type = typeof (modelDefines[key]);
+            defines[key] = {
+                type: type === "number" ? "number" : type === "string" ? "string" : "object",
+                default: modelDefines[key],
+            };
         }
     }
 
