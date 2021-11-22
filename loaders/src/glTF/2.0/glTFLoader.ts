@@ -115,7 +115,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _gltf: IGLTF;
     private _bin: Nullable<IDataBuffer>;
     private _babylonScene: Scene;
-    private _rootBabylonMesh?: Mesh;
+    private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
@@ -212,7 +212,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         (this._gltf as any) = null;
         (this._babylonScene as any) = null;
-        (this._rootBabylonMesh as any) = null;
+        this._rootBabylonMesh = null;
 
         this._parent.dispose();
     }
@@ -506,9 +506,7 @@ export class GLTFLoader implements IGLTFLoader {
             for (let index of scene.nodes) {
                 const node = ArrayItem.Get(`${context}/nodes/${index}`, this._gltf.nodes, index);
                 promises.push(this.loadNodeAsync(`/nodes/${node.index}`, node, (babylonMesh) => {
-                    if (this._rootBabylonMesh) {
-                        babylonMesh.parent = this._rootBabylonMesh;
-                    }
+                    babylonMesh.parent = this._rootBabylonMesh;
                 }));
             }
         }
@@ -1115,9 +1113,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = false;
 
         // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-        if (this._rootBabylonMesh) {
-            babylonSkeleton.overrideMesh = this._rootBabylonMesh;
-        }
+        babylonSkeleton.overrideMesh = this._rootBabylonMesh;
 
         this._loadBones(context, skin, babylonSkeleton);
         assignSkeleton(babylonSkeleton);
