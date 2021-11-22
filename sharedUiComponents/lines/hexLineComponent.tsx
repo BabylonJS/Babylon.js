@@ -156,7 +156,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             <div>
                 {!this.props.useEuler && (
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                        {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                         <div className="label" title={this.props.label}>
                             {this.props.label}
                         </div>

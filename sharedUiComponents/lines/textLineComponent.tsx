@@ -53,7 +53,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
     render() {
         return (
             <div className={this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "")}>
-                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 <div className="label" title={this.props.tooltip ?? this.props.label ?? ""}>
                     {this.props.label ?? ""}
                 </div>
