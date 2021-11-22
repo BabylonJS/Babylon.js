@@ -667,14 +667,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
         } else {
-            const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
-
-            if (bvaManager && bvaManager.isEnabled) {
-                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            }
-            else {
-                defines.push("#define NUM_BONE_INFLUENCERS 0");
-            }
+            defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
         // Morph
