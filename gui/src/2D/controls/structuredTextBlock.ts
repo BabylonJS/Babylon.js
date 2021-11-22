@@ -758,12 +758,19 @@ export class StructuredTextBlock extends Control {
 
             if (
                 last.color === part.color
+                && last.underline === part.underline
+                && last.lineThrough === part.lineThrough
+                && last.frame === part.frame && (! part.frame || (
+                    last.frameColor === part.frameColor
+                    && last.frameCornerRadius === part.frameCornerRadius
+                    && last.frameOutlineWidth === part.frameOutlineWidth
+                    && last.frameOutlineColor === part.frameOutlineColor
+                ))
+                && last.fontStyle === part.fontStyle
+                && last.fontWeight === part.fontWeight
                 && last.outlineWidth === part.outlineWidth && last.outlineColor === part.outlineColor
                 && last.shadowColor === part.shadowColor && last.shadowBlur === part.shadowBlur
                 && last.shadowOffsetX === part.shadowOffsetX && last.shadowOffsetY === part.shadowOffsetY
-                && last.underline === part.underline
-                && last.lineThrough === part.lineThrough
-                && last.fontStyle === part.fontStyle && last.fontWeight === part.fontWeight
             ) {
                 lastInserted.text += part.text;
                 lastInserted.width = (lastInserted.width || 0) + (part.width || 0);   // It's never undefined here, but it's needed to please tsc
