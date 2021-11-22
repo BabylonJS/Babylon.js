@@ -657,7 +657,16 @@ export class Engine extends ThinEngine {
         };
 
         this._onCanvasPointerOut = (ev) => {
-            this.onCanvasPointerOutObservable.notifyObservers(ev);
+            let rect = this.getInputElementClientRect();
+            console.log(rect);
+            if (rect) {
+                let pointerX = ev.clientX - rect.left;
+                let pointerY = ev.clientY - rect.top;
+                if (pointerX < 0 || pointerX > rect.width || pointerY < 0 || pointerY > rect.height) {
+                    console.log(pointerX + ", " + pointerY);
+                    this.onCanvasPointerOutObservable.notifyObservers(ev);
+                }
+            }
         };
 
         if (IsWindowObjectExist()) {
