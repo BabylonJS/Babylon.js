@@ -1,15 +1,16 @@
 import * as React from "react";
-import { PopupComponent } from "./popupComponent";
+import { PopupComponent, IPopupComponentProps } from "./popupComponent";
 import { Nullable } from "babylonjs/types";
 import { GlobalState } from "./globalState";
 import { Observer } from "babylonjs/Misc/observable";
 
 interface IPersistentPopupHostComponentProps {
-    globalState?: GlobalState;
+    globalState: GlobalState;
 }
 
 interface IPersistentPopupHostComponentState {
-    renderFunction?: Nullable<() => React.ReactNode>;
+    popupProps: IPopupComponentProps,
+    popupContentRenderFunction: Nullable<() => React.ReactNode>;
 }
 
 /**
@@ -17,28 +18,50 @@ interface IPersistentPopupHostComponentState {
  * @param props 
  */
 export class PersistentPopupHostComponent extends React.Component<IPersistentPopupHostComponentProps, IPersistentPopupHostComponentState> {
-    private _renderFunctionChangeObserver?: Nullable<Observer<Nullable<() => React.ReactNode>>>;
+    private _renderFunctionChangeObserver: Nullable<Observer<Nullable<() => React.ReactNode>>>;
+    private _popupPropsChangeObserver: Nullable<Observer<IPopupComponentProps>>;
 
     constructor(props : IPersistentPopupHostComponentProps) {
         super(props);
 
-        this.state = {};
+        this.state = {
+            popupProps: {
+                id: "inspector",
+                title: "Inspector",
+                size: {width: 1024, height: 512},
+                onClose: () => {
+                    this.setState({popupContentRenderFunction: null});
+                }
+            },
+            popupContentRenderFunction: null
+        };
 
-        this._renderFunctionChangeObserver = this.props.globalState?.onPopupRenderObservable.add((renderFunction) => {
-            this.setState({renderFunction});
+        this._renderFunctionChangeObserver = this.props.globalState.onPopupContentRenderChangedObservable.add((popupContentRenderFunction) => {
+            this.setState({popupContentRenderFunction});
+        });
+
+        this._popupPropsChangeObserver = this.props.globalState.onPopupPropsChangedObservable.add((popupProps) => {
+            popupProps.onClose = (window) => {
+                this.setState({popupContentRenderFunction: null});
+                popupProps.onClose(window);
+            }
+            this.setState({popupProps});
         });
     }
 
     componentWillUnmount() {
         if (this._renderFunctionChangeObserver) {
-            this.props.globalState?.onPopupRenderObservable.remove(this._renderFunctionChangeObserver!);
+            this.props.globalState.onPopupContentRenderChangedObservable.remove(this._renderFunctionChangeObserver);
+        }
+        if (this._popupPropsChangeObserver) {
+            this.props.globalState.onPopupPropsChangedObservable.remove(this._popupPropsChangeObserver);
         }
     }
 
     render() {
         return (
-            this.state.renderFunction ? <PopupComponent id="test" title="test" size={{width: 100, height: 100}} onClose={() => {}}>
-                {this.state.renderFunction()}
+            this.state.popupContentRenderFunction ? <PopupComponent {...this.state.popupProps}>
+                {this.state.popupContentRenderFunction()}
             </PopupComponent> : null
         )
     }

@@ -13,6 +13,7 @@ import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { ReactNode } from "react";
+import { IPopupComponentProps } from "./popupComponent";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -24,7 +25,8 @@ export class GlobalState {
     public onNewSceneObservable = new Observable<Scene>();
     public sceneImportDefaults: { [key: string]: any } = {};
 
-    public onPopupRenderObservable = new Observable<Nullable<() => ReactNode>>();
+    public onPopupPropsChangedObservable = new Observable<IPopupComponentProps>();
+    public onPopupContentRenderChangedObservable = new Observable<Nullable<() => ReactNode>>();
 
     public validationResults: Nullable<IGLTFValidationResults> = null;
     public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();
