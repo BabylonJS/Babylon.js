@@ -24,5 +24,9 @@ void main(void) {
         #endif
     #endif
 
+    #if LDR
+        baseColor = clamp(baseColor, 0., 1.0);
+    #endif
+
     gl_FragColor = baseColor;
 }
