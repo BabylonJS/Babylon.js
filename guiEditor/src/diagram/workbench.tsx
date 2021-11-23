@@ -26,6 +26,7 @@ import { Tools } from "../tools";
 import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
+import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -692,7 +693,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.isUp = true;
     }
 
-    public async createGUICanvas() {
+    public createGUICanvas() {
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
         this._canvas = canvas;
@@ -721,7 +722,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.addControl(this.artBoardBackground);
 
         const nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
-        await nodeMaterial.loadAsync("GUIEditorNodeMaterial.json");
+        nodeMaterial.loadFromSerialization(GUIEditorNodeMaterial);
 
         nodeMaterial.build(true);
         this._textureMesh.material = nodeMaterial;
