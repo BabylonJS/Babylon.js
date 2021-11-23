@@ -161,6 +161,14 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
+     * Force-reset the last interaction time
+     * @param customTime an optional time that will be used instead of the current last interaction time. For example `Date.now()`
+     */
+    public resetLastInteractionTime(customTime?: number): void {
+        this._lastInteractionTime = customTime ?? PrecisionDate.Now;
+    }
+
+    /**
      * Returns true if user is scrolling.
      * @return true if user is scrolling.
      */
