@@ -679,11 +679,9 @@ export class VertexData {
 
     /**
      * Serializes the VertexData
-     * @returns a serialized object
+     * @param serializationObject defines the object which will receive the serialization data
      */
-    public serialize(): any {
-        var serializationObject = this.serialize();
-
+    public serialize(serializationObject: any): any {
         if (this.positions) {
             serializationObject.positions = this.positions;
         }
@@ -743,8 +741,6 @@ export class VertexData {
         }
 
         serializationObject.indices = this.indices;
-
-        return serializationObject;
     }
 
     // Statics
