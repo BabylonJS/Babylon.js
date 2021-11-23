@@ -177,6 +177,10 @@ hr.ge {
         grid-template-columns: auto auto auto auto auto auto;
     }
 
+    .ge-divider-short {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
     
     .ge-grid-divider {
         display: grid;
