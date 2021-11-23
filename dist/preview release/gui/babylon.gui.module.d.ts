@@ -853,6 +853,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -7901,6 +7903,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
