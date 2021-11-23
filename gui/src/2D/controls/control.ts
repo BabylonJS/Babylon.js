@@ -99,6 +99,8 @@ export class Control {
     private _enterCount = -1;
     private _doNotRender = false;
     private _downPointerIds: { [id: number]: boolean } = {};
+    private _evaluatedMeasure = new Measure(0, 0, 0, 0);
+    private _evaluatedParentMeasure = new Measure(0, 0, 0, 0);
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
@@ -1617,32 +1619,27 @@ export class Control {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
-        let evaluatedMeasure = new Measure(0, 0, 0, 0);
-        this._currentMeasure.transformToRef(this._transformMatrix, evaluatedMeasure);
-
-        let evaluatedParentMeasure = new Measure(0, 0, 0, 0);
-        const parentMatrix = this.parent?._transformMatrix;
-        if (parentMatrix)
-            parentMeasure.transformToRef(parentMatrix, evaluatedParentMeasure);
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
 
         if (this.parent && this.parent.clipChildren) {
+            parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
-            if (evaluatedMeasure.left > evaluatedParentMeasure.left + evaluatedParentMeasure.width) {
+            if (this._evaluatedMeasure.left > this._evaluatedParentMeasure.left + this._evaluatedParentMeasure.width) {
                 this._isClipped = true;
                 return;
             }
 
-            if (evaluatedMeasure.left + evaluatedMeasure.width < evaluatedParentMeasure.left) {
+            if (this._evaluatedMeasure.left + this._evaluatedMeasure.width < this._evaluatedParentMeasure.left) {
                 this._isClipped = true;
                 return;
             }
 
-            if (evaluatedMeasure.top > evaluatedParentMeasure.top + evaluatedParentMeasure.height) {
+            if (this._evaluatedMeasure.top > this._evaluatedParentMeasure.top + this._evaluatedParentMeasure.height) {
                 this._isClipped = true;
                 return;
             }
 
-            if (evaluatedMeasure.top + evaluatedMeasure.height < evaluatedParentMeasure.top) {
+            if (this._evaluatedMeasure.top + this._evaluatedMeasure.height < this._evaluatedParentMeasure.top) {
                 this._isClipped = true;
                 return;
             }
