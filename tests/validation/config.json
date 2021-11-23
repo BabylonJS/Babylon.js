@@ -1375,6 +1375,11 @@
             "renderCount": 5,
             "playgroundId": "#6GFJNR#152",
             "referenceImage": "customMatDepthRenderer.png"
+        },
+        {
+            "title": "StructuredTextBlock",
+            "playgroundId": "#RISVJ8#19",
+            "referenceImage": "StructuredTextBlock.png"
         }
     ]
 }
