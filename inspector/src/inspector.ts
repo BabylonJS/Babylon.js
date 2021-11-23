@@ -116,9 +116,6 @@ export class Inspector {
                 this._SceneExplorerHost.style.position = "relative";
             }
 
-            this._PopupHost = parentControlExplorer.ownerDocument!.createElement("div");
-            this._PopupHost.id = "popup-host";
-            this._PopupHost.style.position = "absolute";
         }
 
         // Scene
@@ -160,8 +157,6 @@ export class Inspector {
                 },
             });
             ReactDOM.render(sceneExplorerElement, this._SceneExplorerHost);
-            const popupElement = React.createElement(PersistentPopupHostComponent, {globalState: this._GlobalState});
-            ReactDOM.render(popupElement, this._PopupHost);
         }
     }
 
@@ -182,9 +177,19 @@ export class Inspector {
             if (!options.overlay) {
                 this._ActionTabsHost.style.position = "relative";
             }
+
+            this._PopupHost = parentControlActions.ownerDocument!.createElement("div");
+            this._PopupHost.id = "popup-host";
+            this._PopupHost.style.position = "absolute";
         }
 
         if (this._ActionTabsHost) {
+
+            if (this._PopupHost) {
+                const popupElement = React.createElement(PersistentPopupHostComponent, {globalState: this._GlobalState});
+                ReactDOM.render(popupElement, this._PopupHost);
+            }
+
             this._OpenedPane++;
             const actionTabsElement = React.createElement(ActionTabsComponent, {
                 globalState: this._GlobalState,
@@ -216,6 +221,12 @@ export class Inspector {
 
                     if (options.popup) {
                         this._ActionTabsWindow.close();
+                    }
+
+                    // Clean up popup host once the Action Tabs are closed.
+                    if (this._PopupHost) {
+                        ReactDOM.unmountComponentAtNode(this._PopupHost);
+                        this._RemoveElementFromDOM(this._PopupHost);
                     }
                 },
                 initialTab: options.initialTab,
