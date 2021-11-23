@@ -38,6 +38,7 @@ export class SubEmitter {
      * How much of the attached particles speed should be added to the sub emitted particle (default: 0)
      */
     public inheritedVelocityAmount = 0;
+
     /**
      * Creates a sub emitter
      * @param particleSystem the particle system to be used by the sub emitter
@@ -52,6 +53,7 @@ export class SubEmitter {
         if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
             const internalClass = GetClass("BABYLON.AbstractMesh");
             particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
+            particleSystem._disposeEmitterOnDispose = true;
         }
     }
     /**

@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1266,7 +1266,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         this._isDirty = false;
         this._render();
-        this.update(this.applyYInversionOnUpdate, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
     };
     AdvancedDynamicTexture.prototype._render = function () {
         var textureSize = this.getSize();
@@ -1730,6 +1730,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     };
     /** Define the Uurl to load snippets */
     AdvancedDynamicTexture.SnippetUrl = "https://snippet.babylonjs.com";
+    /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+    AdvancedDynamicTexture.AllowGPUOptimizations = true;
     return AdvancedDynamicTexture;
 }(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DynamicTexture"]));
 
@@ -4233,6 +4235,8 @@ var Control = /** @class */ (function () {
         this._enterCount = -1;
         this._doNotRender = false;
         this._downPointerIds = {};
+        this._evaluatedMeasure = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
+        this._evaluatedParentMeasure = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
         this._isEnabled = true;
         this._disabledColor = "#9a9a9a";
         this._disabledColorItem = "#6a6a6a";
@@ -5641,21 +5645,23 @@ var Control = /** @class */ (function () {
         }
     };
     Control.prototype._evaluateClippingState = function (parentMeasure) {
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
+            parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
-            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+            if (this._evaluatedMeasure.left > this._evaluatedParentMeasure.left + this._evaluatedParentMeasure.width) {
                 this._isClipped = true;
                 return;
             }
-            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+            if (this._evaluatedMeasure.left + this._evaluatedMeasure.width < this._evaluatedParentMeasure.left) {
                 this._isClipped = true;
                 return;
             }
-            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+            if (this._evaluatedMeasure.top > this._evaluatedParentMeasure.top + this._evaluatedParentMeasure.height) {
                 this._isClipped = true;
                 return;
             }
-            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+            if (this._evaluatedMeasure.top + this._evaluatedMeasure.height < this._evaluatedParentMeasure.top) {
                 this._isClipped = true;
                 return;
             }

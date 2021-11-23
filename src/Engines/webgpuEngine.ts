@@ -776,7 +776,7 @@ export class WebGPUEngine extends Engine {
             etc1: null,
             etc2: null,
             bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined,
-            maxAnisotropy: 16,
+            maxAnisotropy: 4, // the spec only supports values of 1 and 4
             uintIndices: true,
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
@@ -1653,8 +1653,6 @@ export class WebGPUEngine extends Engine {
         const results = new Array(attributesNames.length);
         const gpuPipelineContext = (pipelineContext as WebGPUPipelineContext);
 
-        // TODO WEBGPU. Hard coded for WebGPU until an introspection lib is available.
-        // Should be done at processing time, not need to double the work in here.
         for (let i = 0; i < attributesNames.length; i++) {
             const attributeName = attributesNames[i];
             const attributeLocation = gpuPipelineContext.shaderProcessingContext.availableAttributes[attributeName];

@@ -32,7 +32,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
      * @param options Define rendertarget options
      */
     constructor(engine: ThinEngine, size: TextureSize, options: RenderTargetCreationOptions) {
-        super(null, false);
+        super(null);
         this._engine = engine;
         this._renderTargetOptions = options;
         this.resize(size);
