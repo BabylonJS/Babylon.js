@@ -161,7 +161,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
     }
 
-    private static _GetExtensionMetadata(rootMesh: Mesh): Nullable<IExtensionMetadata> {
+    private static _GetExtensionMetadata(rootMesh: Nullable<Mesh>): Nullable<IExtensionMetadata> {
         return rootMesh?.metadata?.gltf?.[NAME] || null;
     }
 
@@ -185,7 +185,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
 
                     const root = this._loader.rootBabylonMesh;
-                    const metadata = (root.metadata = root.metadata || {});
+                    const metadata = (root ? root.metadata = root.metadata || {} : {});
                     const gltf = (metadata.gltf = metadata.gltf || {});
                     const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
 
@@ -223,7 +223,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                     while (metadata === null);
 
                                     // Need to clone the metadata on the root (first time only)
-                                    if (metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
+                                    if (root && metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
                                         // Copy main metadata
                                         newRoot.metadata = {};
                                         for (var key in root.metadata) {
