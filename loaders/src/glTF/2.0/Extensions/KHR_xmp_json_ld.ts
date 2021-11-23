@@ -41,6 +41,10 @@ export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
      * Called after the loader state changes to LOADING.
      */
     public onLoading(): void {
+        if (this._loader.rootBabylonMesh === null) {
+            return;
+        }
+
         const xmp_gltf = (this._loader.gltf.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Gltf);
         const xmp_node = (this._loader.gltf.asset?.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Node);
         if (xmp_gltf && xmp_node) {

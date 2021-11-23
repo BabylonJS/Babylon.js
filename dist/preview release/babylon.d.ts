@@ -38361,24 +38361,26 @@ declare module BABYLON {
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          * @returns a new matrix as a left-handed perspective projection matrix
          */
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number): Matrix;
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): Matrix;
         /**
          * Stores a left-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          */
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number): void;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): void;
         /**
          * Stores a left-handed perspective projection into a given matrix with depth reversed
          * @param fov defines the horizontal field of view
@@ -38396,24 +38398,26 @@ declare module BABYLON {
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          * @returns a new matrix as a right-handed perspective projection matrix
          */
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number): Matrix;
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): Matrix;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          */
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number): void;
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): void;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
@@ -51283,6 +51287,11 @@ declare module BABYLON {
          * Detaches the behavior from its current arc rotate camera.
          */
         detach(): void;
+        /**
+         * Force-reset the last interaction time
+         * @param customTime an optional time that will be used instead of the current last interaction time. For example `Date.now()`
+         */
+        resetLastInteractionTime(customTime?: number): void;
         /**
          * Returns true if user is scrolling.
          * @return true if user is scrolling.
@@ -77023,6 +77032,36 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Custom block created from user-defined json
+     */
+    export class CustomBlock extends NodeMaterialBlock {
+        private _options;
+        private _code;
+        /**
+         * Gets or sets the options for this custom block
+         */
+        get options(): any;
+        set options(options: any);
+        /**
+         * Creates a new CustomBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        private _deserializeOptions;
+        private _findInputByName;
     }
 }
 declare module BABYLON {

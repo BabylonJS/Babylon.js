@@ -682,7 +682,7 @@ export class VertexData {
      * @returns a serialized object
      */
     public serialize(): any {
-        var serializationObject = this.serialize();
+        var serializationObject: any = {};
 
         if (this.positions) {
             serializationObject.positions = this.positions;

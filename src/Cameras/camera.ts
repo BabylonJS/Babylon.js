@@ -828,7 +828,7 @@ export class Camera extends Node {
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number, reverseDepthBufferMode: boolean) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
@@ -842,7 +842,8 @@ export class Camera extends Node {
                 this._projectionMatrix,
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
-                this.projectionPlaneTilt);
+                this.projectionPlaneTilt,
+                engine.useReverseDepthBuffer);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
