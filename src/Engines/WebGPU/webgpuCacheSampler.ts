@@ -62,6 +62,8 @@ export class WebGPUCacheSampler {
     }
 
     public static GetSamplerHashCode(sampler: TextureSampler): number {
+        // The WebGPU spec currently only allows values 1 and 4 for anisotropy
+        const anisotropy = sampler._cachedAnisotropicFilteringLevel && sampler._cachedAnisotropicFilteringLevel > 1 ? 4 : 1;
         let code =
             filterToBits[sampler.samplingMode] +
             comparisonFunctionToBits[(sampler._comparisonFunction || 0x0202) - 0x0200 + 1] +
@@ -70,7 +72,7 @@ export class WebGPUCacheSampler {
             ((sampler._cachedWrapV ?? 1) << 10) +
             ((sampler._cachedWrapR ?? 1) << 12) +
             ((sampler.useMipMaps ? 1 : 0) << 14) + // need to factor this in because _getSamplerFilterDescriptor depends on samplingMode AND useMipMaps!
-            ((sampler._cachedAnisotropicFilteringLevel ?? 1) << 15);
+            (anisotropy << 15);
 
         return code;
     }
@@ -236,7 +238,8 @@ export class WebGPUCacheSampler {
     }
 
     private static _GetSamplerDescriptor(sampler: TextureSampler): GPUSamplerDescriptor {
-        const anisotropy = sampler.useMipMaps ? (sampler._cachedAnisotropicFilteringLevel ?? 1) : 1;
+        // The WebGPU spec currently only allows values 1 and 4 for anisotropy
+        const anisotropy = sampler.useMipMaps && sampler._cachedAnisotropicFilteringLevel && sampler._cachedAnisotropicFilteringLevel > 1 ? 4 : 1;
         const filterDescriptor = this._GetSamplerFilterDescriptor(sampler, anisotropy);
         return {
             ...filterDescriptor,

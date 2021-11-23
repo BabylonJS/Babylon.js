@@ -104,7 +104,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
                     globalState={this.props.globalState}
                     context={this.props.context}
                     icon={newKeyIcon}
-                    onClick={() => this.props.context.onNewKeyPointRequired.notifyObservers()}
+                    onClick={() => this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers()}
                 />
                 <ActionButtonComponent
                     tooltip="Frame canvas"
