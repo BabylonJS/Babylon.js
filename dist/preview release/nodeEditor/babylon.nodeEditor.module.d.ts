@@ -1743,6 +1743,7 @@ declare module "babylonjs-node-editor/sharedComponents/draggableLineWithButtonCo
         iconImage: any;
         onIconClick: (value: string) => void;
         iconTitle: string;
+        lenSuffixToRemove?: number;
     }
     export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
         constructor(props: IDraggableLineWithButtonComponent);
@@ -1782,11 +1783,14 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
         private _onResetRequiredObserver;
         private static _Tooltips;
         private _customFrameList;
+        private _customBlockList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        loadCustomBlock(file: File): void;
+        removeCustomBlock(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -4514,6 +4518,7 @@ declare module NODEEDITOR {
         iconImage: any;
         onIconClick: (value: string) => void;
         iconTitle: string;
+        lenSuffixToRemove?: number;
     }
     export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
         constructor(props: IDraggableLineWithButtonComponent);
@@ -4550,11 +4555,14 @@ declare module NODEEDITOR {
         private _onResetRequiredObserver;
         private static _Tooltips;
         private _customFrameList;
+        private _customBlockList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
         loadCustomFrame(file: File): void;
         removeItem(value: string): void;
+        loadCustomBlock(file: File): void;
+        removeCustomBlock(value: string): void;
         render(): JSX.Element;
     }
 }
