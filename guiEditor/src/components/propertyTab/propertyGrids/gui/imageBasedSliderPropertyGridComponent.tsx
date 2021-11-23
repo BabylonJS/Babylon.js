@@ -4,14 +4,13 @@ import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyCha
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
 
 const thumbImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/thumbImageLinkIcon.svg");
-const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
+const valueBarImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/valueBarImageLinkIcon.svg");
+const sliderBackgroundImageIcon: string = require("../../../../sharedUiComponents/imgs/sliderBackgroundImageIcon.svg");
 
 interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSlider: ImageBasedSlider;
@@ -37,7 +36,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                 <hr />
                 <TextLineComponent label="IMAGE LINKS" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent
-                    icon={clipContentsIcon}
+                    icon={thumbImageLinkIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Thumb Image Link"
                     target={imageBasedSlider.thumbImage}
@@ -46,7 +45,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <TextInputLineComponent
-                    icon={clipContentsIcon}
+                    icon={valueBarImageLinkIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Value Bar Image Link"
                     target={imageBasedSlider.valueBarImage}
@@ -55,7 +54,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <TextInputLineComponent
-                    icon={clipContentsIcon}
+                    icon={sliderBackgroundImageIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Background Image Link"
                     target={imageBasedSlider.backgroundImage}
@@ -63,56 +62,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <hr />
-                <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent
-                    label="Display thumb"
-                    target={imageBasedSlider}
-                    propertyName="displayThumb"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <CheckBoxLineComponent label="Vertical" target={imageBasedSlider} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent
-                    label="Thumb clamped"
-                    target={imageBasedSlider}
-                    propertyName="isThumbClamped"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Bar offset"
-                    target={imageBasedSlider}
-                    propertyName="barOffset"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Thumb width"
-                    target={imageBasedSlider}
-                    propertyName="thumbWidth"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <FloatLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Minimum"
-                    target={imageBasedSlider}
-                    propertyName="minimum"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <FloatLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Maximum"
-                    target={imageBasedSlider}
-                    propertyName="maximum"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <FloatLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Value"
-                    target={imageBasedSlider}
-                    propertyName="value"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <SliderPropertyGridComponent slider={imageBasedSlider} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

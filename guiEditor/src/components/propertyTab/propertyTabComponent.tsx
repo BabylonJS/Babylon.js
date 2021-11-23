@@ -10,7 +10,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
+import { SliderGenericPropertyGridComponent } from "./propertyGrids/gui/sliderGenericPropertyGridComponent";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
 import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
@@ -289,7 +289,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Slider": {
                 const slider = this.state.currentNode as Slider;
                 return (
-                    <SliderPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    <SliderGenericPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                 );
             }
             case "ImageBasedSlider": {
