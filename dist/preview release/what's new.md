@@ -59,6 +59,7 @@
 - Extended functionality for pointer move with scene pointerMoveTrianglePredicate ([phaselock](https://github.com/lockphase))
 - Added the ability to load a GUI from the snippet server and project it onto a mesh ([PirateJC](https://github.com/piratejc))
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
+- Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
