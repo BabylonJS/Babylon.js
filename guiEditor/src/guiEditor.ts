@@ -61,7 +61,7 @@ export class GUIEditor {
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            await globalState.workbench.createGUICanvas();
+            globalState.workbench.createGUICanvas();
             if (options.currentSnippetToken) {
                 try {
                     await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -69,7 +69,6 @@ export class GUIEditor {
                 } catch (error) {
                     //swallow and continue
                 }
-
             }
         }
 
