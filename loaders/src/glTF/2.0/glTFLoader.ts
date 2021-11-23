@@ -185,8 +185,8 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * The root Babylon mesh when loading the asset.
      */
-    public get rootBabylonMesh(): Mesh {
-        return this._rootBabylonMesh!;
+    public get rootBabylonMesh(): Nullable<Mesh> {
+        return this._rootBabylonMesh;
     }
 
     /** @hidden */
