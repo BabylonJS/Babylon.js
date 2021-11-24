@@ -192,7 +192,7 @@ export class StandardMaterialDefines extends MaterialDefines
     public EXPOSURE = false;
 
     /**
-     * Initializes the PBR Material defines.
+     * Initializes the Standard Material defines.
      * @param externalProperties The external properties
      */
     constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {

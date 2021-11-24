@@ -82,7 +82,7 @@ uniform Material {
     vec3 vSphericalYZ;
     vec3 vSphericalZX;
 
-    #define PLUGIN_UBO_DECLARATION
+    #define ADDITIONAL_UBO_DECLARATION
 };
 
 #include<sceneUboDeclaration>

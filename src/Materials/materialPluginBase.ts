@@ -37,6 +37,8 @@ export class MaterialPluginBase {
     /**
      * Creates a new material plugin
      * @param material parent material of the plugin
+     * @param name name of the plugin
+     * @param priority priority of the plugin
      * @param defines list of defines used by the plugin. The value of the property is the default value for this property
      */
     constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }) {

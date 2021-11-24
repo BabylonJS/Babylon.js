@@ -1011,14 +1011,6 @@ export class UniformBuffer {
     }
 
     /**
-     * The current effect.
-     * @returns The current effect.
-     */
-    public getEffect(): Effect {
-        return this._currentEffect;
-    }
-
-    /**
      * Disposes the uniform buffer.
      */
     public dispose(): void {

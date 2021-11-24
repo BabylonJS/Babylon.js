@@ -45,4 +45,4 @@ uniform mat4 reflectionMatrix;
 	uniform float pointSize;
 #endif
 
-#define PLUGIN_VERTEX_INPUTS_DECLARATION
+#define ADDITIONAL_VERTEX_DECLARATION
