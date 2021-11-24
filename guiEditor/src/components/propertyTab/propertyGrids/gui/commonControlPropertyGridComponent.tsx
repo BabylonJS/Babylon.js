@@ -382,6 +382,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
+                <div className="ge-divider-short">
                 <FloatLineComponent
                     iconLabel={"Shadow Blur"}
                     icon={shadowBlurIcon}
@@ -391,6 +392,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     propertyName="shadowBlur"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 /> 
+                </div>
                 { (control instanceof Container || control.typeName === "TextBlock") && <>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>

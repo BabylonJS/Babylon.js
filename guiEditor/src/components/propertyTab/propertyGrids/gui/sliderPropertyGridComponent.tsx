@@ -52,7 +52,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                 <CheckBoxLineComponent
                     iconLabel={"Display thumb"}
                     icon={showThumbIcon}
-                    label="DISPOLAY THUMB"
+                    label="DISPLAY THUMB"
                     target={slider}
                     propertyName="displayThumb"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
