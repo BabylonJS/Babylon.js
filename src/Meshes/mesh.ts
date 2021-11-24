@@ -3,6 +3,7 @@ import { Tools, AsyncLoop } from "../Misc/tools";
 import { IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
+import { Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
@@ -2134,10 +2135,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         const engine = scene.getEngine();
-        const useReverseDepthBuffer = engine.useReverseDepthBuffer;
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
-        if (!useReverseDepthBuffer && this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
+        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
             oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
@@ -4289,8 +4289,41 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         allow32BitsIndices?: boolean,
         meshSubclass?: Mesh,
         subdivideWithSubMeshes?: boolean,
-        multiMultiMaterials?: boolean
-    ): Nullable<Mesh> {
+        multiMultiMaterials?: boolean,
+    ) {
+        return runCoroutineSync(Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, false));
+    }
+
+    /**
+     * Merge the array of meshes into a single mesh for performance reasons.
+     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
+     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
+     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @returns a new mesh
+     */
+    public static MergeMeshesAsync(
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices?: boolean,
+        meshSubclass?: Mesh,
+        subdivideWithSubMeshes?: boolean,
+        multiMultiMaterials?: boolean,
+    ) {
+        return runCoroutineAsync(Mesh._MergeMeshesCoroutine(meshes, disposeSource, allow32BitsIndices, meshSubclass, subdivideWithSubMeshes, multiMultiMaterials, true), createYieldingScheduler());
+    }
+
+    private static *_MergeMeshesCoroutine(
+        meshes: Array<Mesh>,
+        disposeSource = true,
+        allow32BitsIndices: boolean | undefined,
+        meshSubclass: Mesh | undefined,
+        subdivideWithSubMeshes: boolean | undefined,
+        multiMultiMaterials: boolean | undefined,
+        isAsync: boolean,
+    ): Coroutine<Nullable<Mesh>> {
         // Remove any null/undefined entries from the mesh array
         meshes = meshes.filter(Boolean);
 
@@ -4372,13 +4405,34 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             vertexData.transform(wm);
             return vertexData;
         };
-        const vertexData = getVertexDataFromMesh(source).merge(meshes.slice(1).map((mesh) => getVertexDataFromMesh(mesh)), allow32BitsIndices);
+
+        const sourceVertexData = getVertexDataFromMesh(source);
+        if (isAsync) { yield; }
+
+        const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
+        for (let i = 1; i < meshes.length; i++) {
+            meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
+            if (isAsync) { yield; }
+        }
+
+        const mergeCoroutine = sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices, isAsync);
+        let mergeCoroutineStep = mergeCoroutine.next();
+        while (!mergeCoroutineStep.done) {
+            if (isAsync) { yield; }
+            mergeCoroutineStep = mergeCoroutine.next();
+        }
+        const vertexData = mergeCoroutineStep.value;
 
         if (!meshSubclass) {
             meshSubclass = new Mesh(source.name + "_merged", source.getScene());
         }
 
-        (<VertexData>vertexData).applyToMesh(meshSubclass);
+        const applyToCoroutine = vertexData._applyToCoroutine(meshSubclass, undefined, isAsync);
+        let applyToCoroutineStep = applyToCoroutine.next();
+        while (!applyToCoroutineStep.done) {
+            if (isAsync) { yield; }
+            applyToCoroutineStep = applyToCoroutine.next();
+        }
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;

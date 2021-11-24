@@ -47,6 +47,7 @@ export class PerfCollectionStrategy {
 
     /**
      * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+     * Needs the experimental compute pressure API.
      * @returns the initializer for the cpu utilization strategy
      */
     public static CpuStrategy(): PerfStrategyInitialization {
@@ -345,11 +346,11 @@ export class PerfCollectionStrategy {
         return (scene) => {
             let startTime = PrecisionDate.Now;
             let timeTaken = 0;
-            const onBeforeSpritesObserver = scene.onBeforeSpritesRenderingObservable.add(() => {
+            const onBeforeSpritesObserver = scene.onBeforeSpritesRenderingObservable?.add(() => {
                 startTime = PrecisionDate.Now;
             });
 
-            const onAfterSpritesObserver = scene.onAfterSpritesRenderingObservable.add(() => {
+            const onAfterSpritesObserver = scene.onAfterSpritesRenderingObservable?.add(() => {
                 timeTaken = PrecisionDate.Now - startTime;
             });
 
@@ -357,8 +358,8 @@ export class PerfCollectionStrategy {
                 id: "sprites time",
                 getData: () => timeTaken,
                 dispose: () => {
-                    scene.onBeforeSpritesRenderingObservable.remove(onBeforeSpritesObserver);
-                    scene.onAfterSpritesRenderingObservable.remove(onAfterSpritesObserver);
+                    scene.onBeforeSpritesRenderingObservable?.remove(onBeforeSpritesObserver);
+                    scene.onAfterSpritesRenderingObservable?.remove(onAfterSpritesObserver);
                 },
             };
         };
@@ -399,11 +400,11 @@ export class PerfCollectionStrategy {
         return (scene) => {
             let startTime = PrecisionDate.Now;
             let timeTaken = 0;
-            const onBeforePhysicsObserver = scene.onBeforePhysicsObservable.add(() => {
+            const onBeforePhysicsObserver = scene.onBeforePhysicsObservable?.add(() => {
                 startTime = PrecisionDate.Now;
             });
 
-            const onAfterPhysicsObserver = scene.onAfterPhysicsObservable.add(() => {
+            const onAfterPhysicsObserver = scene.onAfterPhysicsObservable?.add(() => {
                 timeTaken = PrecisionDate.Now - startTime;
             });
 
@@ -411,8 +412,8 @@ export class PerfCollectionStrategy {
                 id: "physics time",
                 getData: () => timeTaken,
                 dispose: () => {
-                    scene.onBeforePhysicsObservable.remove(onBeforePhysicsObserver);
-                    scene.onAfterPhysicsObservable.remove(onAfterPhysicsObserver);
+                    scene.onBeforePhysicsObservable?.remove(onBeforePhysicsObserver);
+                    scene.onAfterPhysicsObservable?.remove(onAfterPhysicsObserver);
                 },
             };
         };

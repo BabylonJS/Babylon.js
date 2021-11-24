@@ -3064,9 +3064,8 @@ declare module BABYLON {
          * Base class of all the textures in babylon.
          * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
          * @param internalTexture Define the internalTexture to wrap
-         * @param createTexture Defines wether the internal texture should be created
          */
-        constructor(internalTexture: Nullable<InternalTexture>, createTexture?: boolean);
+        constructor(internalTexture: Nullable<InternalTexture>);
         /**
          * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
          * @returns true if fully ready
@@ -4866,6 +4865,52 @@ declare module BABYLON {
         static Color3: Color3[];
         static Color4: Color4[];
     }
+}
+declare module BABYLON {
+    /**
+     * A Coroutine<T> is the intersection of:
+     * 1. An Iterator that yields void, returns a T, and is not passed values with calls to next.
+     * 2. An IterableIterator of void (since it only yields void).
+     */
+    type CoroutineBase<TStep, TReturn> = Iterator<TStep, TReturn, void> & IterableIterator<TStep>;
+    /** @hidden */
+    export type Coroutine<T> = CoroutineBase<void, T>;
+    /** @hidden */
+    export type AsyncCoroutine<T> = CoroutineBase<void | Promise<void>, T>;
+    /** @hidden */
+    export type CoroutineStep<T> = IteratorResult<void, T>;
+    /** @hidden */
+    export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+    /** @hidden */
+    export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void): void;
+    /** @hidden */
+    export function createYieldingScheduler<T>(yieldAfterMS?: number): (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+    /** @hidden */
+    export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal): void;
+    /** @hidden */
+    export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: AbortSignal): T;
+    /** @hidden */
+    export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T>;
+    /** @hidden */
+    type ExtractCoroutineReturnType<T> = T extends Coroutine<infer TReturn> ? TReturn : never;
+    /** @hidden */
+    type ExtractAsyncCoroutineReturnType<T> = T extends Coroutine<infer TReturn> ? Promise<TReturn> : T extends AsyncCoroutine<infer TReturn> ? Promise<TReturn> : never;
+    /**
+     * Given a function that returns a Coroutine<T>, produce a function with the same parameters that returns a T.
+     * The returned function runs the coroutine synchronously.
+     * @param coroutineFactory A function that returns a Coroutine<T>.
+     * @returns A function that runs the coroutine synchronously.
+     * @hidden
+     */
+    export function makeSyncFunction<TCoroutineFactory extends (...params: any[]) => Coroutine<unknown>, TReturn extends ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn;
+    /**
+     * Given a function that returns a Coroutine<T>, product a function with the same parameters that returns a Promise<T>.
+     * The returned function runs the coroutine asynchronously, yield control of the execution context occasionally to enable a more responsive experience.
+     * @param coroutineFactory A function that returns a Coroutine<T>.
+     * @returns A function that runs the coroutine asynchronously.
+     * @hidden
+     */
+    export function makeAsyncFunction<TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<unknown>, TReturn extends ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<unknown>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn;
 }
 declare module BABYLON {
     /**
@@ -29893,6 +29938,18 @@ declare module BABYLON {
          * @returns a new mesh
          */
         static MergeMeshes(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean, multiMultiMaterials?: boolean): Nullable<Mesh>;
+        /**
+         * Merge the array of meshes into a single mesh for performance reasons.
+         * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
+         * @param disposeSource when true (default), dispose of the vertices from the source meshes
+         * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
+         * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
+         * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
+         * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+         * @returns a new mesh
+         */
+        static MergeMeshesAsync(meshes: Array<Mesh>, disposeSource?: boolean, allow32BitsIndices?: boolean, meshSubclass?: Mesh, subdivideWithSubMeshes?: boolean, multiMultiMaterials?: boolean): Promise<any>;
+        private static _MergeMeshesCoroutine;
         /** @hidden */
         addInstance(instance: InstancedMesh): void;
         /** @hidden */
@@ -30317,7 +30374,9 @@ declare module BABYLON {
          * @returns VertexData.
          */
         updateGeometry(geometry: Geometry): VertexData;
-        private _applyTo;
+        private readonly _applyTo;
+        /** @hidden */
+        _applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean | undefined, isAsync: boolean): Coroutine<VertexData>;
         private _update;
         private static _TransformVector3Coordinates;
         private static _TransformVector3Normals;
@@ -30336,6 +30395,8 @@ declare module BABYLON {
          * @returns the modified VertexData
          */
         merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData;
+        /** @hidden */
+        _mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices: boolean | undefined, isAsync: boolean): Coroutine<VertexData>;
         private static _mergeElement;
         private _validate;
         /**
@@ -38300,24 +38361,26 @@ declare module BABYLON {
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          * @returns a new matrix as a left-handed perspective projection matrix
          */
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number): Matrix;
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): Matrix;
         /**
          * Stores a left-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          */
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number): void;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): void;
         /**
          * Stores a left-handed perspective projection into a given matrix with depth reversed
          * @param fov defines the horizontal field of view
@@ -38335,24 +38398,26 @@ declare module BABYLON {
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          * @returns a new matrix as a right-handed perspective projection matrix
          */
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number): Matrix;
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): Matrix;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          */
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number): void;
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): void;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
@@ -42329,8 +42394,9 @@ declare module BABYLON {
              * @param premulAlpha defines if alpha is stored as premultiplied
              * @param format defines the format of the data
              * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+             * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
              */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            updateDynamicTexture(texture: Nullable<InternalTexture>, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas, invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean, allowGPUOptimization?: boolean): void;
         }
 }
 declare module BABYLON {
@@ -46559,6 +46625,7 @@ declare module BABYLON {
         static FpsStrategy(): PerfStrategyInitialization;
         /**
          * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+         * Needs the experimental compute pressure API.
          * @returns the initializer for the cpu utilization strategy
          */
         static CpuStrategy(): PerfStrategyInitialization;
@@ -51220,6 +51287,11 @@ declare module BABYLON {
          * Detaches the behavior from its current arc rotate camera.
          */
         detach(): void;
+        /**
+         * Force-reset the last interaction time
+         * @param customTime an optional time that will be used instead of the current last interaction time. For example `Date.now()`
+         */
+        resetLastInteractionTime(customTime?: number): void;
         /**
          * Returns true if user is scrolling.
          * @return true if user is scrolling.
@@ -57762,8 +57834,9 @@ declare module BABYLON {
          * Updates the texture
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
          * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
+         * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
          */
-        update(invertY?: boolean, premulAlpha?: boolean): void;
+        update(invertY?: boolean, premulAlpha?: boolean, allowGPUOptimization?: boolean): void;
         /**
          * Draws text onto the texture
          * @param text defines the text to be drawn
@@ -58108,6 +58181,18 @@ declare module BABYLON {
          * The maximum distance of the pointer selection feature. Defaults to 100.
          */
         maxPointerDistance?: number;
+        /**
+         * A function that will be called when a new selection mesh is generated.
+         * This function should return a mesh that will be used as the selection mesh.
+         * The default is a torus with a 0.01 diameter and 0.0075 thickness .
+         */
+        customSelectionMeshGenerator?: () => Mesh;
+        /**
+         * A function that will be called when a new laser pointer mesh is generated.
+         * This function should return a mesh that will be used as the laser pointer mesh.
+         * The height (y) of the mesh must be 1.
+         */
+        customLasterPointerMeshGenerator?: () => AbstractMesh;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -58218,6 +58303,7 @@ declare module BABYLON {
         private _generateNewMeshPair;
         private _pickingMoved;
         private _updatePointerDistance;
+        private _augmentPointerInit;
         /** @hidden */
         get lasterPointerDefaultColor(): Color3;
     }
@@ -64349,12 +64435,14 @@ declare module BABYLON {
     }
     /** @hidden */
     export enum FeatureName {
-        DepthClamping = "depth-clamping",
+        DepthClipControl = "depth-clip-control",
         Depth24UnormStencil8 = "depth24unorm-stencil8",
         Depth32FloatStencil8 = "depth32float-stencil8",
-        PipelineStatisticsQuery = "pipeline-statistics-query",
         TextureCompressionBC = "texture-compression-bc",
-        TimestampQuery = "timestamp-query"
+        TextureCompressionETC2 = "texture-compression-etc2",
+        TextureCompressionASTC = "texture-compression-astc",
+        TimestampQuery = "timestamp-query",
+        IndirectFirstInstance = "indirect-first-instance"
     }
     /** @hidden */
     export enum BufferUsage {
@@ -64403,7 +64491,10 @@ declare module BABYLON {
         StencilOnly = "stencil-only",
         DepthOnly = "depth-only"
     }
-    /** @hidden */
+    /**
+     * Comments taken from https://github.com/gfx-rs/wgpu/blob/master/wgpu-types/src/lib.rs
+     * @hidden
+     */
     export enum TextureFormat {
         R8Unorm = "r8unorm",
         R8Snorm = "r8snorm",
@@ -64460,6 +64551,44 @@ declare module BABYLON {
         BC6HRGBFloat = "bc6h-rgb-float",
         BC7RGBAUnorm = "bc7-rgba-unorm",
         BC7RGBAUnormSRGB = "bc7-rgba-unorm-srgb",
+        ETC2RGB8Unorm = "etc2-rgb8unorm",
+        ETC2RGB8UnormSRGB = "etc2-rgb8unorm-srgb",
+        ETC2RGB8A1Unorm = "etc2-rgb8a1unorm",
+        ETC2RGB8A1UnormSRGB = "etc2-rgb8a1unorm-srgb",
+        ETC2RGBA8Unorm = "etc2-rgba8unorm",
+        ETC2RGBA8UnormSRGB = "etc2-rgba8unorm-srgb",
+        EACR11Unorm = "eac-r11unorm",
+        EACR11Snorm = "eac-r11snorm",
+        EACRG11Unorm = "eac-rg11unorm",
+        EACRG11Snorm = "eac-rg11snorm",
+        ASTC4x4Unorm = "astc-4x4-unorm",
+        ASTC4x4UnormSRGB = "astc-4x4-unorm-srgb",
+        ASTC5x4Unorm = "astc-5x4-unorm",
+        ASTC5x4UnormSRGB = "astc-5x4-unorm-srgb",
+        ASTC5x5Unorm = "astc-5x5-unorm",
+        ASTC5x5UnormSRGB = "astc-5x5-unorm-srgb",
+        ASTC6x5Unorm = "astc-6x5-unorm",
+        ASTC6x5UnormSRGB = "astc-6x5-unorm-srgb",
+        ASTC6x6Unorm = "astc-6x6-unorm",
+        ASTC6x6UnormSRGB = "astc-6x6-unorm-srgb",
+        ASTC8x5Unorm = "astc-8x5-unorm",
+        ASTC8x5UnormSRGB = "astc-8x5-unorm-srgb",
+        ASTC8x6Unorm = "astc-8x6-unorm",
+        ASTC8x6UnormSRGB = "astc-8x6-unorm-srgb",
+        ASTC8x8Unorm = "astc-8x8-unorm",
+        ASTC8x8UnormSRGB = "astc-8x8-unorm-srgb",
+        ASTC10x5Unorm = "astc-10x5-unorm",
+        ASTC10x5UnormSRGB = "astc-10x5-unorm-srgb",
+        ASTC10x6Unorm = "astc-10x6-unorm",
+        ASTC10x6UnormSRGB = "astc-10x6-unorm-srgb",
+        ASTC10x8Unorm = "astc-10x8-unorm",
+        ASTC10x8UnormSRGB = "astc-10x8-unorm-srgb",
+        ASTC10x10Unorm = "astc-10x10-unorm",
+        ASTC10x10UnormSRGB = "astc-10x10-unorm-srgb",
+        ASTC12x10Unorm = "astc-12x10-unorm",
+        ASTC12x10UnormSRGB = "astc-12x10-unorm-srgb",
+        ASTC12x12Unorm = "astc-12x12-unorm",
+        ASTC12x12UnormSRGB = "astc-12x12-unorm-srgb",
         Depth24UnormStencil8 = "depth24unorm-stencil8",
         Depth32FloatStencil8 = "depth32float-stencil8"
     }
@@ -64627,6 +64756,16 @@ declare module BABYLON {
         Instance = "instance"
     }
     /** @hidden */
+    export enum ComputePassTimestampLocation {
+        Beginning = "beginning",
+        End = "end"
+    }
+    /** @hidden */
+    export enum RenderPassTimestampLocation {
+        Beginning = "beginning",
+        End = "end"
+    }
+    /** @hidden */
     export enum LoadOp {
         Load = "load"
     }
@@ -64638,16 +64777,7 @@ declare module BABYLON {
     /** @hidden */
     export enum QueryType {
         Occlusion = "occlusion",
-        PipelineStatistics = "pipeline-statistics",
         Timestamp = "timestamp"
-    }
-    /** @hidden */
-    export enum PipelineStatisticName {
-        VertexShaderInvocations = "vertex-shader-invocations",
-        ClipperInvocations = "clipper-invocations",
-        ClipperPrimitivesOut = "clipper-primitives-out",
-        FragmentShaderInvocations = "fragment-shader-invocations",
-        ComputeShaderInvocations = "compute-shader-invocations"
     }
     /** @hidden */
     export enum CanvasCompositingAlphaMode {
@@ -65312,14 +65442,33 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class WebGPUHardwareTexture implements HardwareTextureWrapper {
-        /** @hidden */
+        /**
+         * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
+         * The index in this array is the current layer we are rendering into
+         * @hidden
+        */
         _bundleLists: WebGPUBundleList[];
-        /** @hidden */
+        /**
+         * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
+         * @hidden
+         */
         _currentLayer: number;
-        /** @hidden */
+        /**
+         * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
+         * @hidden
+         */
         _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
         /** @hidden */
         _mipmapGenBindGroup: GPUBindGroup[][];
+        /**
+         * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
+         * @hidden
+         */
+        _copyInvertYTempTexture?: GPUTexture;
+        /** @hidden */
+        _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
+        /** @hidden */
+        _copyInvertYBindGroupd: GPUBindGroup;
         private _webgpuTexture;
         private _webgpuMSAATexture;
         get underlyingResource(): Nullable<GPUTexture>;
@@ -65396,7 +65545,7 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number;
-        invertYPreMultiplyAlpha(gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder): void;
+        invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -65412,7 +65561,7 @@ declare module BABYLON {
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
         updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
+        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>, noDataConversion?: boolean): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;
@@ -76482,6 +76631,53 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to generate a twirl
+     */
+    export class TwirlBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new TwirlBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        get input(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the strength component
+         */
+        get strength(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the center component
+         */
+        get center(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the offset component
+         */
+        get offset(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x output component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y output component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -76836,6 +77032,36 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Custom block created from user-defined json
+     */
+    export class CustomBlock extends NodeMaterialBlock {
+        private _options;
+        private _code;
+        /**
+         * Gets or sets the options for this custom block
+         */
+        get options(): any;
+        set options(options: any);
+        /**
+         * Creates a new CustomBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        private _deserializeOptions;
+        private _findInputByName;
     }
 }
 declare module BABYLON {
@@ -87426,20 +87652,19 @@ declare module BABYLON {
 declare module BABYLON {
         interface Observable<T> {
             /**
-             * Internal list of iterators and promise resolvers associated with coroutines.
+             * Internal observable based coroutine scheduler instance.
              */
-            coroutineIterators: Nullable<Array<{
-                iterator: Iterator<void | Promise<void>, void, void>;
-                resolver: () => void;
-                rejecter: () => void;
-                paused: boolean;
-            }>>;
+            coroutineScheduler: CoroutineScheduler<void> | undefined;
+            /**
+             * Internal AbortController for in flight coroutines.
+             */
+            coroutineAbortController: AbortController | undefined;
             /**
              * Runs a coroutine asynchronously on this observable
-             * @param coroutineIterator the iterator resulting from having started the coroutine
+             * @param coroutine the iterator resulting from having started the coroutine
              * @returns a promise which will be resolved when the coroutine finishes or rejected if the coroutine is cancelled
              */
-            runCoroutineAsync(coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void>;
+            runCoroutineAsync(coroutine: AsyncCoroutine<void>): Promise<void>;
             /**
              * Cancels all coroutines currently running on this observable
              */
@@ -90665,12 +90890,14 @@ interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
 }
 
 type GPUFeatureName =
-    | "depth-clamping"
+    | "depth-clip-control"
     | "depth24unorm-stencil8"
     | "depth32float-stencil8"
-    | "pipeline-statistics-query"
     | "texture-compression-bc"
-    | "timestamp-query";
+    | "texture-compression-etc2"
+    | "texture-compression-astc"
+    | "timestamp-query"
+    | "indirect-first-instance";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
@@ -90848,6 +91075,50 @@ type GPUTextureFormat =
     | "bc6h-rgb-float"
     | "bc7-rgba-unorm"
     | "bc7-rgba-unorm-srgb"
+
+    // ETC2 compressed formats usable if "texture-compression-etc2" is both
+    // supported by the device/user agent and enabled in requestDevice.
+    | "etc2-rgb8unorm"
+    | "etc2-rgb8unorm-srgb"
+    | "etc2-rgb8a1unorm"
+    | "etc2-rgb8a1unorm-srgb"
+    | "etc2-rgba8unorm"
+    | "etc2-rgba8unorm-srgb"
+    | "eac-r11unorm"
+    | "eac-r11snorm"
+    | "eac-rg11unorm"
+    | "eac-rg11snorm"
+
+    // ASTC compressed formats usable if "texture-compression-astc" is both
+    // supported by the device/user agent and enabled in requestDevice.
+    | "astc-4x4-unorm"
+    | "astc-4x4-unorm-srgb"
+    | "astc-5x4-unorm"
+    | "astc-5x4-unorm-srgb"
+    | "astc-5x5-unorm"
+    | "astc-5x5-unorm-srgb"
+    | "astc-6x5-unorm"
+    | "astc-6x5-unorm-srgb"
+    | "astc-6x6-unorm"
+    | "astc-6x6-unorm-srgb"
+    | "astc-8x5-unorm"
+    | "astc-8x5-unorm-srgb"
+    | "astc-8x6-unorm"
+    | "astc-8x6-unorm-srgb"
+    | "astc-8x8-unorm"
+    | "astc-8x8-unorm-srgb"
+    | "astc-10x5-unorm"
+    | "astc-10x5-unorm-srgb"
+    | "astc-10x6-unorm"
+    | "astc-10x6-unorm-srgb"
+    | "astc-10x8-unorm"
+    | "astc-10x8-unorm-srgb"
+    | "astc-10x10-unorm"
+    | "astc-10x10-unorm-srgb"
+    | "astc-12x10-unorm"
+    | "astc-12x10-unorm-srgb"
+    | "astc-12x12-unorm"
+    | "astc-12x12-unorm-srgb"
 
     // "depth24unorm-stencil8" feature
     | "depth24unorm-stencil8"
@@ -91075,8 +91346,8 @@ interface GPUPrimitiveState {
     frontFace?: GPUFrontFace; /* default="ccw" */
     cullMode?: GPUCullMode; /* default="none" */
 
-    // Enable depth clamping (requires "depth-clamping" feature)
-    clampDepth?: boolean; /* default=false */
+    // Requires "depth-clip-control" feature.
+    unclippedDepth?: boolean; /* default=false */
 }
 
 type GPUFrontFace = "ccw" | "cw";
@@ -91224,8 +91495,6 @@ interface GPUVertexAttribute {
 declare class GPUCommandBuffer implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
-
-    readonly executionTime: Promise<number>;
 }
 
 interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
@@ -91260,6 +91529,11 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
+    fillBuffer(
+        destination: GPUBuffer,
+        destinationOffset: GPUSize64,
+        size: GPUSize64
+    ): void;
 
     pushDebugGroup(groupLabel: string): void;
     popDebugGroup(): void;
@@ -91279,7 +91553,6 @@ declare class GPUCommandEncoder implements GPUObjectBase {
 }
 
 interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
-    measureExecutionTime?: boolean; /* default=false */
 }
 
 interface GPUImageDataLayout {
@@ -91353,15 +91626,23 @@ declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePas
     dispatch(x: GPUSize32, y?: GPUSize32 /* default=1 */, z?: GPUSize32 /* default=1 */): void;
     dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 
-    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-    endPipelineStatisticsQuery(): void;
-
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-
     endPass(): void;
 }
 
+type GPUComputePassTimestampLocation =
+    | "beginning"
+    | "end";
+
+interface GPUComputePassTimestampWrite {
+    querySet: GPUQuerySet;
+    queryIndex: GPUSize32;
+    location: GPUComputePassTimestampLocation;
+}
+
+type GPUComputePassTimestampWrites = Array<GPUComputePassTimestampWrite>;
+
 interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
+    timestampWrites?: GPUComputePassTimestampWrites; /* default=[] */
 }
 
 interface GPURenderEncoderBase {
@@ -91445,19 +91726,27 @@ declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePass
     beginOcclusionQuery(queryIndex: GPUSize32): void;
     endOcclusionQuery(): void;
 
-    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-    endPipelineStatisticsQuery(): void;
-
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-
     executeBundles(bundles: GPURenderBundle[]): void;
     endPass(): void;
 }
+
+type GPURenderPassTimestampLocation =
+    | "beginning"
+    | "end";
+
+interface GPURenderPassTimestampWrite {
+    querySet: GPUQuerySet;
+    queryIndex: GPUSize32;
+    location: GPURenderPassTimestampLocation;
+}
+
+type GPURenderPassTimestampWrites = Array<GPURenderPassTimestampWrite>;
 
 interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
     colorAttachments: GPURenderPassColorAttachment[];
     depthStencilAttachment?: GPURenderPassDepthStencilAttachment;
     occlusionQuerySet?: GPUQuerySet;
+    timestampWrites?: GPURenderPassTimestampWrites; /* default=[] */
 }
 
 interface GPURenderPassColorAttachment {
@@ -91549,12 +91838,6 @@ interface GPURenderBundleEncoderDescriptor extends GPURenderPassLayout {
     stencilReadOnly?: boolean; /* default=false */
 }
 
-// @todo: to be removed
-interface GPUImageBitmapCopyView {
-    imageBitmap: ImageBitmap;
-    origin?: GPUOrigin2D;
-}
-
 declare class GPUQueue implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -91578,13 +91861,6 @@ declare class GPUQueue implements GPUObjectBase {
         size: GPUExtent3D
     ): void;
 
-    // @todo: to be removed
-    copyImageBitmapToTexture(
-        source: GPUImageBitmapCopyView,
-        destination: GPUImageCopyTexture,
-        copySize: GPUExtent3D
-    ): void;
-
     copyExternalImageToTexture(
         source: GPUImageCopyExternalImage,
         destination: GPUImageCopyTextureTagged,
@@ -91602,17 +91878,9 @@ declare class GPUQuerySet implements GPUObjectBase {
 interface GPUQuerySetDescriptor extends GPUObjectDescriptorBase {
     type: GPUQueryType;
     count: GPUSize32;
-    pipelineStatistics?: GPUPipelineStatisticName[]; /* default=[] */
 }
 
-type GPUQueryType = "occlusion" | "pipeline-statistics" | "timestamp";
-
-type GPUPipelineStatisticName =
-    | "vertex-shader-invocations"
-    | "clipper-invocations"
-    | "clipper-primitives-out"
-    | "fragment-shader-invocations"
-    | "compute-shader-invocations";
+type GPUQueryType = "occlusion" | "timestamp";
 
 declare class GPUCanvasContext {
     private __brand: void;
