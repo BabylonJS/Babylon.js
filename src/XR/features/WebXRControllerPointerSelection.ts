@@ -22,6 +22,7 @@ import { WebXRCamera } from "../webXRCamera";
 import { Node } from "../../node";
 import { Viewport } from "../../Maths/math.viewport";
 import { Mesh } from "../../Meshes/mesh";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Options interface for the pointer selection module
@@ -717,28 +718,32 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
 
         this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
-            if (!this._controllers[xrControllerUniqueId].finalPointerUpTriggered) {
-                // Stay safe and fire a pointerup, in case it wasn't already triggered
-                const pointerEventInit: PointerEventInit = {
-                    pointerId: controllerData.id,
-                    pointerType: "xr",
-                };
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
-            }
-
-            controllerData.selectionMesh.dispose();
-            controllerData.laserPointer.dispose();
-            // remove from the map
-            delete this._controllers[xrControllerUniqueId];
-            if (this._attachedController === xrControllerUniqueId) {
-                // check for other controllers
-                const keys = Object.keys(this._controllers);
-                if (keys.length) {
-                    this._attachedController = keys[0];
-                } else {
-                    this._attachedController = "";
+            try {
+                if (!controllerData.finalPointerUpTriggered) {
+                    // Stay safe and fire a pointerup, in case it wasn't already triggered
+                    const pointerEventInit: PointerEventInit = {
+                        pointerId: controllerData.id,
+                        pointerType: "xr",
+                    };
+                    this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
+                    this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
                 }
+
+                controllerData.selectionMesh.dispose();
+                controllerData.laserPointer.dispose();
+                // remove from the map
+                delete this._controllers[xrControllerUniqueId];
+                if (this._attachedController === xrControllerUniqueId) {
+                    // check for other controllers
+                    const keys = Object.keys(this._controllers);
+                    if (keys.length) {
+                        this._attachedController = keys[0];
+                    } else {
+                        this._attachedController = "";
+                    }
+                }
+            } catch (e) {
+                Tools.Warn("controller already detached.");
             }
         });
     }
