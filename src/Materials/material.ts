@@ -25,8 +25,8 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
-import { IMaterialPlugin } from "./IMaterialPlugin";
-import { MaterialEvent, MaterialEventInfoAddUniforms, MaterialEventInfoAddSamplers, MaterialEventInfoBindForSubMesh, MaterialEventInfoDisposed, MaterialEventInfoCollectDefineNames, MaterialEventInfoGetActiveTextures, MaterialEventInfoGetDisableAlphaBlending, MaterialEventInfoHasRenderTargetTextures, MaterialEventInfoHasTexture, MaterialEventInfoIsReadyForSubMesh } from "./materialEvent";
+import { MaterialEvent,
+    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines } from "./materialEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -181,8 +181,7 @@ export class Material implements IAnimatable {
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
 
     /**
-     * Event observable. Used by the MaterialPluginManager.
-     * Static since it can be called before the constructor.
+     * Event observable which raises global events common to all materials (like MaterialEvent.Created)
      */
     public static OnEventObservable = new Observable<Material>();
 
@@ -363,15 +362,7 @@ export class Material implements IAnimatable {
      */
     public get hasRenderTargetTextures(): boolean {
         this._eventInfo.hasRenderTargetTextures = false;
-
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.HasRenderTargetTextures,
-            undefined,
-            undefined,
-            this._eventInfo
-        );
-
+        this._notifyEvent(MaterialEvent.HasRenderTargetTextures);
         return this._eventInfo.hasRenderTargetTextures;
     }
 
@@ -721,8 +712,9 @@ export class Material implements IAnimatable {
 
     /**
      * Stores the uniform buffer
+     * @hidden
      */
-    protected _uniformBuffer: UniformBuffer;
+    public _uniformBuffer: UniformBuffer;
 
     /** @hidden */
     public _indexInSceneMaterialArray = -1;
@@ -735,24 +727,44 @@ export class Material implements IAnimatable {
 
     /** @hidden */
     public _dirtyCallbacks: { [code: number]: () => void };
-    /** @hidden */
-    public _plugins: Array<IMaterialPlugin> = [];
-    /** @hidden */
-    public _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
 
-    protected _defineNamesFromPlugins?: { [name: string]: { type: string, default: any } };
-    protected _eventInfo: MaterialEventInfoAddUniforms & MaterialEventInfoAddSamplers & MaterialEventInfoGetDisableAlphaBlending & MaterialEventInfoDisposed & MaterialEventInfoHasRenderTargetTextures & MaterialEventInfoCollectDefineNames & MaterialEventInfoIsReadyForSubMesh = {
-        uniforms: [],
-        samplers: [],
-        disableAlphaBlending: false,
-        forceDisposeTextures: false,
-        hasRenderTargetTextures: false,
-        defines: undefined as any,
+    protected _eventInfo:
+            EventInfoCreated &
+            EventInfoDisposed &
+            EventInfoHasRenderTargetTextures &
+            EventInfoHasTexture &
+            EventInfoIsReadyForSubMesh &
+            EventInfoGetDefineNames &
+            EventInfoPrepareDefines &
+            EventInfoBindForSubMesh &
+            EventInfoGetAnimatables &
+            EventInfoGetActiveTextures
+    = {
+        forceDisposeTextures: undefined,
         isReadyForSubMesh: false,
-        scene: undefined as any,
-        engine: undefined as any,
+        defines: undefined as any,
+        hasRenderTargetTextures: false,
+        subMesh: undefined as any,
+        activeTextures: undefined as any,
+        hasTexture: false,
+        texture: undefined as any,
+        animatables: undefined as any,
+        mesh: undefined as any,
     };
 
+    protected _onEventObservable = new Observable<EventInfo>();
+
+    protected _notifyEvent<T extends keyof EventMapping, U extends EventMapping[T]>(eventInfoType: T, eventInfo?: U): void {
+        if (!eventInfo) {
+            eventInfo = this._eventInfo as U;
+        }
+        this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
+    }
+
+    public registerForEvent<T extends keyof EventMapping, U extends EventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
+        this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
+    }
+    
     /**
      * Creates a material instance
      * @param name defines the name of the material
@@ -796,16 +808,6 @@ export class Material implements IAnimatable {
         }
 
         Material.OnEventObservable.notifyObservers(this, MaterialEvent.Created);
-
-        // TODO: _defineNamesFromPlugins needs to be updated with `MaterialPluginManager.AddPluginToMaterial` too
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.CollectDefineNames,
-            undefined,
-            undefined,
-            this._eventInfo,
-        );
-        this._defineNamesFromPlugins = this._eventInfo.defines;
     }
 
     /**
@@ -873,21 +875,10 @@ export class Material implements IAnimatable {
         if (!defines) {
             return false;
         }
-        const scene = this.getScene();
-        const engine = scene.getEngine();
 
-        this._eventInfo.isReadyForSubMesh = false;
+        this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
-        this._eventInfo.scene = scene;
-        this._eventInfo.engine = engine;
-
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.IsReadyForSubMesh,
-            undefined,
-            undefined,
-            this._eventInfo,
-        );
+        this._notifyEvent(MaterialEvent.IsReadyForSubMesh);
 
         return this._eventInfo.isReadyForSubMesh;
     }
@@ -953,11 +944,8 @@ export class Material implements IAnimatable {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
-        this._eventInfo.disableAlphaBlending = false;
-        Material.OnEventObservable.notifyObservers(this, MaterialEvent.GetDisableAlphaBlending, undefined, undefined, this._eventInfo);
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
-            this._transparencyMode === Material.MATERIAL_ALPHATEST ||
-            this._eventInfo.disableAlphaBlending);
+            this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
     /**
@@ -992,20 +980,6 @@ export class Material implements IAnimatable {
     public needAlphaTesting(): boolean {
         if (this._forceAlphaTest) {
             return true;
-        }
-
-        this._eventInfo.disableAlphaBlending = false;
-
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.GetDisableAlphaBlending,
-            undefined,
-            undefined,
-            this._eventInfo
-        );
-
-        if (this._eventInfo.disableAlphaBlending) {
-            return false;
         }
 
         return false;
@@ -1078,21 +1052,13 @@ export class Material implements IAnimatable {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const scene = this.getScene();
         const effect = subMesh.effect;
         if (!effect) {
             return;
         }
-        let ubo = this._uniformBuffer;
-        const engine = scene.getEngine();
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.BindForSubMesh,
-            undefined,
-            undefined,
-            { ubo, scene, engine, subMesh } as MaterialEventInfoBindForSubMesh
-        );
+        this._eventInfo.subMesh = subMesh;
+        this._notifyEvent(MaterialEvent.BindForSubMesh);
     }
 
     /**
@@ -1207,19 +1173,23 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Returns the animatable textures.
+     * @returns - Array of animatable textures.
+     */
+    public getAnimatables(): IAnimatable[] {
+        this._eventInfo.animatables = [];
+        this._notifyEvent(MaterialEvent.GetAnimatables);
+        return this._eventInfo.animatables;
+    }
+
+    /**
      * Gets the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
-        let activeTextures: BaseTexture[] = [];
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.GetActiveTextures,
-            undefined,
-            undefined,
-            { activeTextures: activeTextures } as MaterialEventInfoGetActiveTextures
-        );
-        return activeTextures;
+        this._eventInfo.activeTextures = [];
+        this._notifyEvent(MaterialEvent.GetActiveTextures);
+        return this._eventInfo.activeTextures;
     }
 
     /**
@@ -1228,20 +1198,10 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if the material uses the texture
      */
     public hasTexture(texture: BaseTexture): boolean {
-        const userInfo: MaterialEventInfoHasTexture = {
-            hasTexture: false,
-            texture
-        };
-
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.HasTexture,
-            undefined,
-            undefined,
-            userInfo
-        );
-
-        return userInfo.hasTexture;
+        this._eventInfo.hasTexture = false;
+        this._eventInfo.texture = texture;
+        this._notifyEvent(MaterialEvent.HasTexture);
+        return this._eventInfo.hasTexture;
     }
 
     /**
@@ -1435,6 +1395,26 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Resets the draw wrappers cache for all submeshes that are using this material
+     * @param func defines a function which checks material defines against the submeshes
+     */
+    public resetDrawCache(): void {
+        const meshes = this.getScene().meshes;
+        for (const mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+            for (const subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
+                    continue;
+                }
+
+                subMesh.resetDrawCache();
+            }
+        }
+    }
+
+    /**
      * Marks all submeshes of a material to indicate that their material defines need to be re-calculated
      * @param func defines a function which checks material defines against the submeshes
      */
@@ -1575,7 +1555,7 @@ export class Material implements IAnimatable {
         scene.removeMaterial(this);
 
         this._eventInfo.forceDisposeTextures = forceDisposeTextures;
-        Material.OnEventObservable.notifyObservers(this, MaterialEvent.Disposed, undefined, undefined, this._eventInfo);
+        this._notifyEvent(MaterialEvent.Disposed);
 
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);

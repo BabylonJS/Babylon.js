@@ -9,22 +9,13 @@ import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
 import { SubMesh } from '../../Meshes/subMesh';
 import { Constants } from "../../Engines/constants";
-import { IMaterialPlugin } from "../IMaterialPlugin";
-import { RegisterMaterialPlugin } from "../materialPluginManager";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
-declare type Material = import("../material").Material;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-
-RegisterMaterialPlugin("sheen", (material: Material) => {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRSheenConfiguration(material);
-    }
-    return null;
-});
+declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden
@@ -51,7 +42,7 @@ const modelDefines = new MaterialSheenDefines();
 /**
  * Define the code related to the Sheen parameters of the pbr material.
  */
-export class PBRSheenConfiguration implements IMaterialPlugin {
+export class PBRSheenConfiguration extends MaterialPluginBase {
     /**
      * Defines the priority of the plugin.
      */
@@ -150,6 +141,8 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
      * @param material The material implementing this plugin.
      */
      constructor(material: PBRBaseMaterial) {
+        super(material, new MaterialSheenDefines());
+
         this._material = material;
     }
 
@@ -170,7 +163,7 @@ export class PBRSheenConfiguration implements IMaterialPlugin {
      * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene, engine: Engine): boolean {
+    public __isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }

@@ -9,23 +9,14 @@ import { Nullable } from "../../types";
 import { SubMesh } from "../../Meshes/subMesh";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
-import { IMaterialPlugin } from "../IMaterialPlugin";
+import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
-import { RegisterMaterialPlugin } from "../materialPluginManager";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type Material = import("../material").Material;
-
-RegisterMaterialPlugin("anisotropy", (material: Material) => {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRAnisotropicConfiguration(material);
-    }
-    return null;
-});
+declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden
@@ -45,7 +36,7 @@ const modelDefines = new MaterialAnisotropicDefines();
 /**
  * Define the code related to the anisotropic parameters of the pbr material.
  */
-export class PBRAnisotropicConfiguration implements IMaterialPlugin {
+export class PBRAnisotropicConfiguration extends MaterialPluginBase {
     /**
      * Defines the priority of the plugin.
      */
@@ -98,6 +89,8 @@ export class PBRAnisotropicConfiguration implements IMaterialPlugin {
      * @param material The material implementing this plugin.
      */
     constructor(material: PBRBaseMaterial) {
+        super(material, new MaterialAnisotropicDefines());
+
         this._material = material;
     }
 
@@ -136,7 +129,7 @@ export class PBRAnisotropicConfiguration implements IMaterialPlugin {
      * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene, engine: Engine): boolean {
+    public __isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }

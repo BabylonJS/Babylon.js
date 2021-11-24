@@ -6,23 +6,15 @@ import { MaterialHelper } from './materialHelper';
 import { BaseTexture } from './Textures/baseTexture';
 import { UniformBuffer } from './uniformBuffer';
 import { IAnimatable } from '../Animations/animatable.interface';
-import { RegisterMaterialPlugin } from "./materialPluginManager";
-import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
-import { StandardMaterial } from "./standardMaterial";
 import { MaterialDefines } from "./materialDefines";
-import { IMaterialPlugin } from "./IMaterialPlugin";
+import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
-
-RegisterMaterialPlugin("detailMap", (material: Material) => {
-    if ((material instanceof PBRBaseMaterial) || (material instanceof StandardMaterial)) {
-        return new DetailMapConfiguration(material);
-    }
-    return null;
-});
+declare type StandardMaterial = import("./standardMaterial").StandardMaterial;
+declare type PBRBaseMaterial = import("./PBR/pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden
@@ -31,9 +23,6 @@ RegisterMaterialPlugin("detailMap", (material: Material) => {
     DETAIL = false;
     DETAILDIRECTUV = 0;
     DETAIL_NORMALBLENDMETHOD = 0;
-
-    /** @hidden */
-    _areTexturesDirty: boolean;
 }
 
 const modelDefines = new MaterialDetailMapDefines();
@@ -46,7 +35,7 @@ const modelDefines = new MaterialDetailMapDefines();
  *   Unreal: https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/HowTo/DetailTexturing/index.html
  *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
  */
-export class DetailMapConfiguration implements IMaterialPlugin {
+export class DetailMapConfiguration extends MaterialPluginBase {
     /**
      * Defines the priority of the plugin.
      */
@@ -113,6 +102,8 @@ export class DetailMapConfiguration implements IMaterialPlugin {
      * @param material The material implementing this plugin.
      */
     constructor(material: PBRBaseMaterial | StandardMaterial) {
+        super(material);
+
         this._material = material;
     }
 
@@ -133,7 +124,7 @@ export class DetailMapConfiguration implements IMaterialPlugin {
      * @param engine the engine this scene belongs to.
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    public isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene, engine: Engine): boolean {
+    public __isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }

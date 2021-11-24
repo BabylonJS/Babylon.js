@@ -1,11 +1,6 @@
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import { SmartArray } from "../Misc/smartArray";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Scene = import("../scene").Scene;
 declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
-declare type RenderTargetTexture = import("./Textures/renderTargetTexture").RenderTargetTexture;
-declare type Effect = import("./effect").Effect;
 declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
@@ -13,184 +8,100 @@ declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 
-/**
- * Flags to filter observables in events for material plugins.
- * @since 5.0.0
- */
- export enum MaterialEvent {
-    /**
-     * Created material event.
-     */
-    Created = 0x0001,
-    /**
-     * Called the disableAlphaBlending getter event.
-     */
-    GetDisableAlphaBlending = 0x0002,
-    /**
-     * Material disposed event.
-     */
-    Disposed = 0x0004,
-    /**
-     * HasRenderTargetTextures event.
-     */
-    HasRenderTargetTextures = 0x0008,
-    /**
-     * HasTexture event.
-     */
-    HasTexture = 0x0010,
-    /**
-     * IsReadyForSubMesh event.
-     */
-    IsReadyForSubMesh = 0x0020,
-    /**
-     * CollectDefineNames event.
-     */
-    CollectDefineNames = 0x0040,
-    /**
-     * FillRenderTargetTextures event.
-     */
-    FillRenderTargetTextures = 0x0080,
-    /**
-     * AddFallbacks event.
-     */
-    AddFallbacks = 0x0100,
-    /**
-     * AddUniforms event.
-     */
-    AddUniforms = 0x0200,
-    /**
-     * AddSamplers event.
-     */
-    AddSamplers = 0x0400,
-    /**
-     * InjectCustomCode event.
-     */
-    InjectCustomCode = 0x0800,
-    /**
-     * PrepareDefines event.
-     */
-    PrepareDefines = 0x1000,
-    /**
-     * PrepareUniformBuffer event.
-     */
-    PrepareUniformBuffer = 0x2000,
-    /**
-     * Unbind event.
-     */
-    Unbind = 0x4000,
-    /**
-     * HardBindForSubMesh event.
-     */
-    HardBindForSubMesh = 0x8000,
-    /**
-     * BindForSubMesh event.
-     */
-    BindForSubMesh = 0x010000,
-    /**
-     * GetAnimatables event.
-     */
-    GetAnimatables = 0x020000,
-    /**
-     * GetActiveTextures event.
-     */
-    GetActiveTextures = 0x040000,
+/** @hidden */
+export type EventInfo = {};
 
-    /**
-     * All material events.
-     */
-    All = 0xFFFFFF
-}
+/** @hidden */
+export type EventInfoCreated = EventInfo & {};
 
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoGetDisableAlphaBlending {
-    /**
-     * Disable alpha blending? Return value
-     */
-    disableAlphaBlending: boolean;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoDisposed {
-    /**
-     * Force disposal of the associated textures.
-     */
+/** @hidden */
+export type EventInfoDisposed = EventInfo & {
     forceDisposeTextures?: boolean;
-}
+};
 
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoHasTexture {
-    /**
-     * Whether the texture exists (return value)
-     */
-    hasTexture: boolean;
-    /**
-     * The texture being checked.
-     */
-    texture: BaseTexture;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoHasRenderTargetTextures {
-    /**
-     * Whether it has render target textures (return value)
-     */
+/** @hidden */
+export type EventInfoHasRenderTargetTextures = EventInfo & {
     hasRenderTargetTextures: boolean;
-}
+};
 
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoIsReadyForSubMesh {
-    /**
-     * Whether it's ready for SubMesh (return value)
-     */
+/** @hidden */
+export type EventInfoHasTexture = EventInfo & {
+    hasTexture: boolean;
+    texture: BaseTexture;
+};
+
+/** @hidden */
+export type EventInfoIsReadyForSubMesh = EventInfo & {
     isReadyForSubMesh: boolean;
-    /**
-     * Defines of the material we want to customize
-     */
     defines: MaterialDefines;
-    /**
-     * Defines the scene we are rendering
-     */
-    scene: Scene;
-    /**
-     * Defines the engine we are using
-     */
-    engine: Engine;
+    subMesh: SubMesh;
+};
+
+/** @hidden */
+export type EventInfoGetDefineNames = EventInfo & {
+    defineNames?: { [name: string]: { type: string; default: any } };
+};
+
+/** @hidden */
+export type EventInfoPrepareDefines = EventInfo & {
+    defines: MaterialDefines;
+    mesh: AbstractMesh;
+}
+
+/** @hidden */
+export type EventInfoBindForSubMesh = EventInfo & {
+    subMesh: SubMesh;
+};
+
+/** @hidden */
+export type EventInfoGetAnimatables = EventInfo & {
+    animatables: IAnimatable[];
+};
+
+/** @hidden */
+export type EventInfoGetActiveTextures = EventInfo & {
+    activeTextures: BaseTexture[];
+};
+
+/** @hidden */
+export type EventMapping = {
+    0x0001: EventInfoCreated;
+    0x0002: EventInfoDisposed;
+    0x0004: EventInfoHasRenderTargetTextures;
+    0x0008: EventInfoHasTexture;
+    0x0010: EventInfoIsReadyForSubMesh;
+    0x0020: EventInfoGetDefineNames;
+    0x0400: EventInfoPrepareDefines;
+    0x1000: EventInfoBindForSubMesh;
+    0x2000: EventInfoGetAnimatables;
+    0x4000: EventInfoGetActiveTextures;
+};
+
+/**
+ * @hidden
+ */
+export enum MaterialEvent {
+    Created = 0x0001,
+    Disposed = 0x0002,
+    HasRenderTargetTextures = 0x0004,
+    HasTexture = 0x0008,
+    IsReadyForSubMesh = 0x0010,
+    GetDefineNames = 0x0020,
+    AddFallbacks = 0x0040,
+    AddUniforms = 0x0080,
+    AddSamplers = 0x0100,
+    InjectCustomCode = 0x0200,
+    PrepareDefines = 0x0400,
+    PrepareUniformBuffer = 0x0800,
+    BindForSubMesh = 0x1000,
+    GetAnimatables = 0x2000,
+    GetActiveTextures = 0x4000,
 }
 
 /**
  * Material event info interface.
  */
- export interface MaterialEventInfoCollectDefineNames {
-    /**
-     * List of define names
-     */
-    defines: { [name: string]: { type: string, default: any } } | undefined;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoFillRenderTargetTextures {
-    /**
-     * Array of render target textures
-     */
-    renderTargets: SmartArray<RenderTargetTexture>;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoAddFallbacks {
+export interface MaterialEventInfoAddFallbacks {
     /**
      * Defines of the material we want to customize
      */
@@ -208,7 +119,7 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
 /**
  * Material event info interface.
  */
- export interface MaterialEventInfoAddUniforms {
+export interface MaterialEventInfoAddUniforms {
     /**
      * The list of uniform names used in the shader
      */
@@ -218,7 +129,7 @@ export interface MaterialEventInfoGetDisableAlphaBlending {
 /**
  * Material event info interface.
  */
- export interface MaterialEventInfoAddSamplers {
+export interface MaterialEventInfoAddSamplers {
     /**
      * The list of sampler (texture) names used in the shader
      */
@@ -238,105 +149,9 @@ export interface MaterialEventInfoInjectCustomCode {
 /**
  * Material event info interface.
  */
- export interface MaterialEventInfoPrepareDefines {
-    /**
-     * Defines of the material we want to customize
-     */
-    defines: MaterialDefines;
-    /**
-     * Defines the scene we are rendering
-     */
-    scene: Scene;
-    /**
-     * Defines the mesh we're rendering
-     */
-    mesh: AbstractMesh;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoPrepareUniformBuffer {
+export interface MaterialEventInfoPrepareUniformBuffer {
     /**
      * The uniform buffer being prepared
      */
     ubo: UniformBuffer;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoUnbind {
-    /**
-     * Need flag?
-     */
-    needFlag: boolean;
-    /**
-     * The effect being unbound
-     */
-    effect: Effect;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoHardBindForSubMesh {
-    /**
-     * The uniform buffer being prepared
-     */
-    ubo: UniformBuffer;
-    /**
-     * Defines the scene we are rendering
-     */
-    scene: Scene;
-    /**
-     * Defines the engine we are using
-     */
-    engine: Engine;
-    /**
-     * Defines the submesh we're rendering
-     */
-    subMesh: SubMesh;
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoBindForSubMesh {
-    /**
-     * The uniform buffer being prepared
-     */
-    ubo: UniformBuffer;
-    /**
-     * Defines the scene we are rendering
-     */
-    scene: Scene;
-    /**
-     * Defines the engine we are using
-     */
-    engine: Engine;
-    /**
-     * Defines the submesh we're rendering
-     */
-    subMesh: SubMesh;
-}
-
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoGetAnimatables {
-    /**
-     * List of animatables
-     */
-    animatables: IAnimatable[];
-}
-
-/**
- * Material event info interface.
- */
- export interface MaterialEventInfoGetActiveTextures {
-    /**
-     * List of active textures
-     */
-    activeTextures: BaseTexture[];
 }
