@@ -26,7 +26,7 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { MaterialEvent,
-    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoAddFallbacks, EventInfoAddUniformsSamplers, EventInfoPrepareUniformBuffer, EventInfoInjectCustomCode } from "./materialEvent";
+    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoAddFallbacks, EventInfoPrepareUniformBuffer, EventInfoInjectCustomCode, EventInfoGetUniformsAndSamplers } from "./materialEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -728,6 +728,9 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _dirtyCallbacks: { [code: number]: () => void };
 
+    /** @hidden */
+    public _uniformBufferLayoutBuilt = false;
+
     protected _eventInfo:
             EventInfoCreated &
             EventInfoDisposed &
@@ -736,7 +739,7 @@ export class Material implements IAnimatable {
             EventInfoIsReadyForSubMesh &
             EventInfoGetDefineNames &
             EventInfoAddFallbacks &
-            EventInfoAddUniformsSamplers &
+            EventInfoGetUniformsAndSamplers &
             EventInfoInjectCustomCode &
             EventInfoPrepareDefines &
             EventInfoPrepareUniformBuffer &
@@ -1057,6 +1060,20 @@ export class Material implements IAnimatable {
      * @param mesh defines the mesh to bind the material to
      */
     public bind(world: Matrix, mesh?: Mesh): void {
+    }
+
+    /**
+     * Initializes the uniform buffer layout for the shader.
+     */
+    public buildUniformLayout(): void {
+        const ubo = this._uniformBuffer;
+
+        this._eventInfo.ubo = ubo;
+        this._notifyEvent(MaterialEvent.PrepareUniformBuffer);
+
+        ubo.create();
+
+        this._uniformBufferLayoutBuilt = true;
     }
 
     /**

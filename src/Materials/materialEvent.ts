@@ -50,7 +50,7 @@ export type EventInfoAddFallbacks = EventInfo & {
 };
 
 /** @hidden */
-export type EventInfoAddUniformsSamplers = EventInfo & {
+export type EventInfoGetUniformsAndSamplers = EventInfo & {
     uniforms: string[];
     samplers: string[];
 };
@@ -95,7 +95,7 @@ export type EventMapping = {
     0x0010: EventInfoIsReadyForSubMesh;
     0x0020: EventInfoGetDefineNames;
     0x0040: EventInfoAddFallbacks;
-    0x0080: EventInfoAddUniformsSamplers;
+    0x0080: EventInfoGetUniformsAndSamplers;
     0x0100: EventInfoInjectCustomCode;
     0x0200: EventInfoPrepareDefines;
     0x0400: EventInfoPrepareUniformBuffer;
@@ -115,7 +115,7 @@ export enum MaterialEvent {
     IsReadyForSubMesh = 0x0010,
     GetDefineNames = 0x0020,
     AddFallbacks = 0x0040,
-    AddUniformsSamplers = 0x0080,
+    GetUniformsAndSamplers = 0x0080,
     InjectCustomCode = 0x0100,
     PrepareDefines = 0x0200,
     PrepareUniformBuffer = 0x0400,

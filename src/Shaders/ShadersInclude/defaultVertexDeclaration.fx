@@ -45,7 +45,4 @@ uniform mat4 reflectionMatrix;
 	uniform float pointSize;
 #endif
 
-#ifdef DETAIL
-uniform vec4 vDetailInfos;
-uniform mat4 detailMatrix;
-#endif
+#define PLUGIN_VERTEX_INPUTS_DECLARATION

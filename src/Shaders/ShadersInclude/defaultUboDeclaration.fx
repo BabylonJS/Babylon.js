@@ -41,8 +41,7 @@ uniform Material
 	vec4 vDiffuseColor;
 	vec3 vAmbientColor;
 
-	vec4 vDetailInfos;
-	mat4 detailMatrix;
+    #define PLUGIN_UBO_DECLARATION
 };
 
 #include<sceneUboDeclaration>

@@ -75,7 +75,7 @@ class MaterialSubSurfaceDefines extends MaterialDefines {
  * Plugin that implements the sub surface component of the PBR material
  */
 export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
-    private _material: PBRBaseMaterial;
+    protected _material: PBRBaseMaterial;
 
     private _isRefractionEnabled = false;
     /**
@@ -327,11 +327,8 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
 
     constructor(material: PBRBaseMaterial) {
-        super(material, new MaterialSubSurfaceDefines());
+        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines());
 
-        this.name = "PBRSubSurface";
-        this.priority = 130;
-        this._material = material;
         this._scene = material.getScene();
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
@@ -681,35 +678,86 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
-        uniforms.push(
-            "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
-            "vRefractionMicrosurfaceInfos", "vRefractionFilteringInfo",
-            "vRefractionInfos", "vThicknessInfos", "vRefractionIntensityInfos", "vTranslucencyIntensityInfos", "vThicknessParam",
-            "vRefractionPosition", "vRefractionSize",
-            "refractionMatrix", "thicknessMatrix", "refractionIntensityMatrix", "translucencyIntensityMatrix", "scatteringDiffusionProfile");
-
-        samplers.push("thicknessSampler", "refractionIntensitySampler", "translucencyIntensitySampler",
-            "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh");
+    public getSamplers(samplers: string[]): void {
+        samplers.push("thicknessSampler", "refractionIntensitySampler", "translucencyIntensitySampler", "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh");
     }
 
-    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
-        uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
-        uniformBuffer.addUniform("vTranslucencyIntensityInfos", 2);
-        uniformBuffer.addUniform("vRefractionInfos", 4);
-        uniformBuffer.addUniform("refractionMatrix", 16);
-        uniformBuffer.addUniform("vThicknessInfos", 2);
-        uniformBuffer.addUniform("vRefractionIntensityInfos", 2);
-        uniformBuffer.addUniform("thicknessMatrix", 16);
-        uniformBuffer.addUniform("refractionIntensityMatrix", 16);
-        uniformBuffer.addUniform("translucencyIntensityMatrix", 16);
-        uniformBuffer.addUniform("vThicknessParam", 2);
-        uniformBuffer.addUniform("vDiffusionDistance", 3);
-        uniformBuffer.addUniform("vTintColor", 4);
-        uniformBuffer.addUniform("vSubSurfaceIntensity", 3);
-        uniformBuffer.addUniform("vRefractionPosition", 3);
-        uniformBuffer.addUniform("vRefractionSize", 3);
-        uniformBuffer.addUniform("scatteringDiffusionProfile", 1);
+    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+        return {
+            ubo: [
+                { name: "vRefractionMicrosurfaceInfos", size: 4, type: "vec4" },
+                { name: "vRefractionFilteringInfo", size: 2, type: "vec2" },
+                { name: "vTranslucencyIntensityInfos", size: 2, type: "vec2" },
+                { name: "vRefractionInfos", size: 4, type: "vec4" },
+                { name: "refractionMatrix", size: 16, type: "mat4" },
+                { name: "vThicknessInfos", size: 2, type: "vec2" },
+                { name: "vRefractionIntensityInfos", size: 2, type: "vec2" },
+                { name: "thicknessMatrix", size: 16, type: "mat4" },
+                { name: "refractionIntensityMatrix", size: 16, type: "mat4" },
+                { name: "translucencyIntensityMatrix", size: 16, type: "mat4" },
+                { name: "vThicknessParam", size: 2, type: "vec2" },
+                { name: "vDiffusionDistance", size: 3, type: "vec3" },
+                { name: "vTintColor", size: 4, type: "vec4" },
+                { name: "vSubSurfaceIntensity", size: 3, type: "vec3" },
+                { name: "vRefractionPosition", size: 3, type: "vec3" },
+                { name: "vRefractionSize", size: 3, type: "vec3" },
+                { name: "scatteringDiffusionProfile", size: 1, type: "float" },
+            ],
+            vertex: `#ifdef SUBSURFACE
+                    #ifdef SS_REFRACTION
+                        uniform vec4 vRefractionInfos;
+                        uniform mat4 refractionMatrix;
+                    #endif
+                
+                    #ifdef SS_THICKNESSANDMASK_TEXTURE
+                        uniform vec2 vThicknessInfos;
+                        uniform mat4 thicknessMatrix;
+                    #endif
+                
+                    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+                        uniform vec2 vRefractionIntensityInfos;
+                        uniform mat4 refractionIntensityMatrix;
+                    #endif
+                
+                    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+                        uniform vec2 vTranslucencyIntensityInfos;
+                        uniform mat4 translucencyIntensityMatrix;
+                    #endif
+                #endif`,
+            fragment: `#ifdef SUBSURFACE
+                    #ifdef SS_REFRACTION
+                        uniform vec4 vRefractionMicrosurfaceInfos;
+                        uniform vec4 vRefractionInfos;
+                        uniform mat4 refractionMatrix;
+                        #ifdef REALTIME_FILTERING
+                            uniform vec2 vRefractionFilteringInfo;
+                        #endif
+                    #endif
+                
+                    #ifdef SS_THICKNESSANDMASK_TEXTURE
+                        uniform vec2 vThicknessInfos;
+                        uniform mat4 thicknessMatrix;
+                    #endif
+                
+                    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+                        uniform vec2 vRefractionIntensityInfos;
+                        uniform mat4 refractionIntensityMatrix;
+                    #endif
+                
+                    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+                        uniform vec2 vTranslucencyIntensityInfos;
+                        uniform mat4 translucencyIntensityMatrix;
+                    #endif
+                
+                    uniform vec2 vThicknessParam;
+                    uniform vec3 vDiffusionDistance;
+                    uniform vec4 vTintColor;
+                    uniform vec3 vSubSurfaceIntensity;
+                #endif
+                #if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
+                    uniform vec3 vRefractionPosition;
+                    uniform vec3 vRefractionSize; 
+                #endif`,
+        };
     }
 }

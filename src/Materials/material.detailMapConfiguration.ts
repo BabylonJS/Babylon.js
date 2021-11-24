@@ -1,11 +1,11 @@
 import { Nullable } from "../types";
-import { Material } from './material';
-import { serialize, expandToProperty, serializeAsTexture } from '../Misc/decorators';
-import { MaterialFlags } from './materialFlags';
-import { MaterialHelper } from './materialHelper';
-import { BaseTexture } from './Textures/baseTexture';
-import { UniformBuffer } from './uniformBuffer';
-import { IAnimatable } from '../Animations/animatable.interface';
+import { Material } from "./material";
+import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
+import { MaterialFlags } from "./materialFlags";
+import { MaterialHelper } from "./materialHelper";
+import { BaseTexture } from "./Textures/baseTexture";
+import { UniformBuffer } from "./uniformBuffer";
+import { IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";
@@ -21,8 +21,8 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
  * @param material parent material the plugin will be created for
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
- export function createDetailMapPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if ((material instanceof PBRBaseMaterial) || (material instanceof StandardMaterial)) {
+export function createDetailMapPlugin(material: Material): Nullable<MaterialPluginBase> {
+    if (material instanceof PBRBaseMaterial || material instanceof StandardMaterial) {
         return new DetailMapConfiguration(material);
     }
     return null;
@@ -31,7 +31,7 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 /**
  * @hidden
  */
- class MaterialDetailMapDefines extends MaterialDefines {
+class MaterialDetailMapDefines extends MaterialDefines {
     DETAIL = false;
     DETAILDIRECTUV = 0;
     DETAIL_NORMALBLENDMETHOD = 0;
@@ -46,8 +46,6 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
  *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
  */
 export class DetailMapConfiguration extends MaterialPluginBase {
-    private _material: PBRBaseMaterial | StandardMaterial;
-
     private _texture: Nullable<BaseTexture> = null;
     /**
      * The detail texture of the material.
@@ -106,11 +104,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
      * @param material The material implementing this plugin.
      */
     constructor(material: PBRBaseMaterial | StandardMaterial) {
-        super(material, new MaterialDetailMapDefines());
-
-        this.name = "DetailMap";
-        this.priority = 140;
-        this._material = material;
+        super(material, "DetailMap", 140, new MaterialDetailMapDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -203,14 +197,23 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         return "DetailMapConfiguration";
     }
 
-    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
-        uniforms.push("vDetailInfos");
-        uniforms.push("detailMatrix");
+    public getSamplers(samplers: string[]): void {
         samplers.push("detailSampler");
     }
 
-    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vDetailInfos", 4);
-        uniformBuffer.addUniform("detailMatrix", 16);
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+        return {
+            ubo: [
+                { name: "vDetailInfos", size: 4, type: "vec4" },
+                { name: "detailMatrix", size: 16, type: "mat4" },
+            ],
+            vertex: `#ifdef DETAIL
+                    uniform vec4 vDetailInfos;
+                    uniform mat4 detailMatrix;
+                #endif`,
+            fragment: `#ifdef DETAIL
+                    uniform vec4 vDetailInfos;
+                #endif`,
+        };
     }
 }

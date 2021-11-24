@@ -114,10 +114,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     }
 
     constructor(material: PBRBaseMaterial) {
-        super(material, new MaterialBRDFDefines());
-
-        this.name = "PBRBRDF";
-        this.priority = 90;
+        super(material, "PBRBRDF", 90, new MaterialBRDFDefines());
 
         this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
     }
