@@ -343,9 +343,9 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             }
 
             subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
-    
+
             const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
-    
+
             uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
         });
 
@@ -682,7 +682,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         samplers.push("thicknessSampler", "refractionIntensitySampler", "translucencyIntensitySampler", "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh");
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vRefractionMicrosurfaceInfos", size: 4, type: "vec4" },
@@ -708,17 +708,17 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                         uniform vec4 vRefractionInfos;
                         uniform mat4 refractionMatrix;
                     #endif
-                
+
                     #ifdef SS_THICKNESSANDMASK_TEXTURE
                         uniform vec2 vThicknessInfos;
                         uniform mat4 thicknessMatrix;
                     #endif
-                
+
                     #ifdef SS_REFRACTIONINTENSITY_TEXTURE
                         uniform vec2 vRefractionIntensityInfos;
                         uniform mat4 refractionIntensityMatrix;
                     #endif
-                
+
                     #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
                         uniform vec2 vTranslucencyIntensityInfos;
                         uniform mat4 translucencyIntensityMatrix;
@@ -733,22 +733,22 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                             uniform vec2 vRefractionFilteringInfo;
                         #endif
                     #endif
-                
+
                     #ifdef SS_THICKNESSANDMASK_TEXTURE
                         uniform vec2 vThicknessInfos;
                         uniform mat4 thicknessMatrix;
                     #endif
-                
+
                     #ifdef SS_REFRACTIONINTENSITY_TEXTURE
                         uniform vec2 vRefractionIntensityInfos;
                         uniform mat4 refractionIntensityMatrix;
                     #endif
-                
+
                     #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
                         uniform vec2 vTranslucencyIntensityInfos;
                         uniform mat4 translucencyIntensityMatrix;
                     #endif
-                
+
                     uniform vec2 vThicknessParam;
                     uniform vec3 vDiffusionDistance;
                     uniform vec4 vTintColor;
@@ -756,7 +756,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 #endif
                 #if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
                     uniform vec3 vRefractionPosition;
-                    uniform vec3 vRefractionSize; 
+                    uniform vec3 vRefractionSize;
                 #endif`,
         };
     }

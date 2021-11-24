@@ -307,7 +307,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         samplers.push("sheenSampler", "sheenRoughnessSampler");
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vSheenColor", size: 4, type: "vec4" },
@@ -320,11 +320,11 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                     #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
                         uniform vec4 vSheenInfos;
                     #endif
-                
+
                     #ifdef SHEEN_TEXTURE
                         uniform mat4 sheenMatrix;
                     #endif
-                
+
                     #ifdef SHEEN_TEXTURE_ROUGHNESS
                         uniform mat4 sheenRoughnessMatrix;
                     #endif
@@ -334,15 +334,15 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                     #ifdef SHEEN_ROUGHNESS
                         uniform float vSheenRoughness;
                     #endif
-                
+
                     #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
                         uniform vec4 vSheenInfos;
                     #endif
-                
+
                     #ifdef SHEEN_TEXTURE
                         uniform mat4 sheenMatrix;
                     #endif
-                
+
                     #ifdef SHEEN_TEXTURE_ROUGHNESS
                         uniform mat4 sheenRoughnessMatrix;
                     #endif

@@ -199,7 +199,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         samplers.push("anisotropySampler");
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vAnisotropy", size: 3, type: "vec3" },
@@ -214,7 +214,6 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
                 #endif`,
             fragment: `#ifdef ANISOTROPIC
                     uniform vec3 vAnisotropy;
-                
                     #ifdef ANISOTROPIC_TEXTURE
                         uniform vec2 vAnisotropyInfos;
                         uniform mat4 anisotropyMatrix;

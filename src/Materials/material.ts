@@ -781,7 +781,7 @@ export class Material implements IAnimatable {
     public registerForEvent<T extends keyof EventMapping, U extends EventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
         this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
     }
-    
+
     /**
      * Creates a material instance
      * @param name defines the name of the material
