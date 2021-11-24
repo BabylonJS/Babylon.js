@@ -139,11 +139,8 @@ export class MaterialPluginManager {
         });
     }
 
-    /**
-     * Adds a new plugin to the material managed by this manager
-     * @param plugin plugin to add
-     */
-    public addPlugin(plugin: MaterialPluginBase): void {
+    /** @hidden */
+    public _addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === plugin.name) {
                 throw `Plugin "${plugin.name}" already added in the material "${this._material.name}"!`;
@@ -167,28 +164,6 @@ export class MaterialPluginManager {
         } else {
             delete this._defineNamesFromPlugins;
         }
-
-        //this._material.resetDrawCache();
-    }
-
-    /**
-     * Removes a plugin from the list of the manager
-     * @param pluginName name of the plugin
-     * @param dispose true to dispose the plugin before removing it from the list, else false (default: true)
-     * @returns true if the plugin was found and has been removed, else false
-     */
-    public removePlugin(pluginName: string, dispose = true): boolean {
-        for (let i = 0; i < this._plugins.length; ++i) {
-            if (this._plugins[i].name === pluginName) {
-                if (dispose) {
-                    this._plugins[i].dispose();
-                }
-                this._plugins.splice(i, 1);
-                this._material.resetDrawCache();
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

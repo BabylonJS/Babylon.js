@@ -46,7 +46,7 @@ export class MaterialPluginBase {
         this._pluginDefineNames = defines;
         this._pluginManager = material.pluginManager;
 
-        this._pluginManager.addPlugin(this);
+        this._pluginManager._addPlugin(this);
     }
 
     /**
