@@ -10,7 +10,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
+import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
@@ -53,8 +53,8 @@ const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: 
  * @hidden
  */
 export class PBRMaterialDefines extends MaterialDefines
-    implements IImageProcessingConfigurationDefines,
-    IMaterialBRDFDefines {
+    implements IImageProcessingConfigurationDefines
+    {
     public PBR = true;
 
     public NUM_SAMPLES = "0";
@@ -160,7 +160,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public INVERTCUBICMAP = false;
     public USESPHERICALFROMREFLECTIONMAP = false;
     public USEIRRADIANCEMAP = false;
-    public SPHERICAL_HARMONICS = false;
     public USESPHERICALINVERTEX = false;
     public REFLECTIONMAP_OPPOSITEZ = false;
     public LODINREFLECTIONALPHA = false;
@@ -240,10 +239,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public FORCENORMALFORWARD = false;
 
     public SPECULARAA = false;
-
-    public BRDF_V_HEIGHT_CORRELATED = false;
-    public MS_BRDF_ENERGY_CONSERVATION = false;
-    public SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
 
     public UNLIT = false;
 
@@ -863,7 +858,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the BRDF parameters for the material.
      */
-    public readonly brdf = new PBRBRDFConfiguration(this._markAllSubMeshesAsMiscDirty.bind(this));
+    public readonly brdf: PBRBRDFConfiguration;
 
     /**
      * Defines the Sheen parameters for the material.
@@ -921,6 +916,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
+        this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
         this.anisotropy = new PBRAnisotropicConfiguration(this);
         this.sheen = new PBRSheenConfiguration(this);
@@ -1740,8 +1736,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
         this._notifyEvent(MaterialEvent.PrepareDefines);
-
-        this.brdf.prepareDefines(defines);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
