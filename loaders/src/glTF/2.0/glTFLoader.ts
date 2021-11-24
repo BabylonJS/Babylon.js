@@ -115,7 +115,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _gltf: IGLTF;
     private _bin: Nullable<IDataBuffer>;
     private _babylonScene: Scene;
-    private _rootBabylonMesh: Mesh;
+    private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
@@ -185,7 +185,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * The root Babylon mesh when loading the asset.
      */
-    public get rootBabylonMesh(): Mesh {
+    public get rootBabylonMesh(): Nullable<Mesh> {
         return this._rootBabylonMesh;
     }
 
@@ -212,7 +212,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         (this._gltf as any) = null;
         (this._babylonScene as any) = null;
-        (this._rootBabylonMesh as any) = null;
+        this._rootBabylonMesh = null;
 
         this._parent.dispose();
     }
@@ -559,8 +559,10 @@ export class GLTFLoader implements IGLTFLoader {
     private _getMeshes(): AbstractMesh[] {
         const meshes = new Array<AbstractMesh>();
 
-        // Root mesh is always first.
-        meshes.push(this._rootBabylonMesh);
+        // Root mesh is always first, if available.
+        if (this._rootBabylonMesh) {
+            meshes.push(this._rootBabylonMesh);
+        }
 
         const nodes = this._gltf.nodes;
         if (nodes) {

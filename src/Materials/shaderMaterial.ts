@@ -733,6 +733,19 @@ export class ShaderMaterial extends PushMaterial {
 
             if (bvaManager && bvaManager.isEnabled) {
                 defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+                if (this._options.uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
+                    this._options.uniforms.push("bakedVertexAnimationSettings");
+                }
+                if (this._options.uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
+                    this._options.uniforms.push("bakedVertexAnimationTextureSizeInverted");
+                }
+                if (this._options.uniforms.indexOf("bakedVertexAnimationTime") === -1) {
+                    this._options.uniforms.push("bakedVertexAnimationTime");
+                }
+
+                if (this._options.samplers.indexOf("bakedVertexAnimationTexture") === -1) {
+                    this._options.samplers.push("bakedVertexAnimationTexture");
+                }
             }
 
             MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);

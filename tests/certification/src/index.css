@@ -77,11 +77,16 @@ body {
     order: 2;
     flex-basis: 33%;
     width: 33%;
-    border: 0;
 }
 
 .diffImage {
     order: 3;
     flex-basis: 33%;
     width: 33%;
+}
+
+.renderFrame {
+    border-style: none;
+    width: 1024px;
+    height: 1024px;
 }

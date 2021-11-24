@@ -27,6 +27,7 @@ import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
 import { Observer } from "babylonjs/Misc/index";
+import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -263,7 +264,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     private updateHitTest(guiControl: Control, value: boolean) {
         guiControl.isHitTestVisible = value;
-        if (this.props.globalState.workbench.isContainer(guiControl)) {
+        if (guiControl instanceof Container) {
             (guiControl as Container).children.forEach((child) => {
                 this.updateHitTest(child, value);
             });
@@ -334,7 +335,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     private selectAllGUI(node: Control) {
         this.globalState.onSelectionChangedObservable.notifyObservers(node);
-        if (this.isContainer(node)) {
+        if (node instanceof Container) {
             (node as Container).children.forEach((child) => {
                 this.selectAllGUI(child);
             });
@@ -454,21 +455,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
-    public isContainer(guiControl: Control) {
-        switch (guiControl.typeName) {
-            case "Button":
-            case "StackPanel":
-            case "Rectangle":
-            case "Ellipse":
-            case "Grid":
-            case "ScrollViewer":
-            case "Container":
-            case "VirtualKeyboard":
-                return true;
-            default:
-                return false;
-        }
-    }
+
 
     createNewGuiNode(guiControl: Control) {
         const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
@@ -519,13 +506,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         guiControl.highlightLineWidth = 5;
         guiControl.isHighlighted = false;
-        if (this.isContainer(guiControl)) {
+        guiControl.isReadOnly = true;
+        guiControl.isHitTestVisible = true;
+        if (guiControl instanceof Container) {
             (guiControl as Container).children.forEach((child) => {
                 this.createNewGuiNode(child);
             });
         }
-        guiControl.isReadOnly = true;
-        guiControl.isHitTestVisible = true;
         return guiControl;
     }
 
@@ -540,7 +527,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 if (dropLocationControl != null) {
                     //the control you are dragging onto top
                     if (
-                        this.props.globalState.workbench.isContainer(dropLocationControl) && //dropping inside a contrainer control
+                        dropLocationControl instanceof Container && //dropping inside a contrainer control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER
                     ) {
                         draggedControlParent.removeControl(draggedControl);
@@ -752,7 +739,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.isUp = true;
     }
 
-    public async createGUICanvas() {
+    public createGUICanvas() {
         // Get the canvas element from the DOM.
         const canvas = this._rootContainer.current as HTMLCanvasElement;
         this._canvas = canvas;
@@ -783,7 +770,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.synchronizeLiveGUI();
 
         const nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
-        await nodeMaterial.loadAsync("https://gist.githubusercontent.com/darraghjburke/79fd9bddf8e871c891fc5da3ffc6d3af/raw/c98f7cd3af3a271f8cf936969578b1558db407ae/GUIEditorNodeMaterial.json");
+        nodeMaterial.loadFromSerialization(GUIEditorNodeMaterial);
 
         nodeMaterial.build(true);
         this._textureMesh.material = nodeMaterial;
