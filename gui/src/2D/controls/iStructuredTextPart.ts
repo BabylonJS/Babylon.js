@@ -1,4 +1,5 @@
 import { ICanvasGradient } from 'babylonjs/Engines/ICanvas';
+import { StructuredTextMetrics } from './structuredTextMetrics';
 
 export interface IStructuredTextPart {
     text: string;
@@ -14,7 +15,8 @@ export interface IStructuredTextPart {
     frameOutlineColor?: string;
     frameCornerRadius?: number;
 
-    // For instance, font size and family is not updatable, the whole StructuredTextBlock shares the same size and family (not useful and it introduces complexity)
+    fontFamily?: string;
+    fontSize?: string;
     fontStyle?: string;
     fontWeight?: string;
 
@@ -26,6 +28,24 @@ export interface IStructuredTextPart {
     shadowOffsetX?: number;
     shadowOffsetY?: number;
 
-    // Computed part width
-    width?: number;
+    // When set, change appearance of that part when the mouse is hovering it.
+    // Only property that does not change the metrics should ever be supported here.
+    hover?: {
+        color?: string | ICanvasGradient;
+        underline?: boolean;
+    };
+
+    // When set, call observers for a click event
+    href?: any;
+
+    // Force splitting this part into one part per character.
+    // This is useful for special effects.
+    splitIntoCharacters?: boolean;
+
+    // Computed metrics
+    metrics?: StructuredTextMetrics;
+
+    // Userland data
+    staticCustomData?: object;
+    dynamicCustomData?: object;
 }
