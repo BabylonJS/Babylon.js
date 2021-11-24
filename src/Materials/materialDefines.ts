@@ -39,6 +39,10 @@ export class MaterialDefines {
 
     [id: string]: any;
 
+    /**
+     * Creates a new instance
+     * @param externalProperties list of external properties to inject into the object
+     */
     constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
         this._externalProperties = externalProperties;
     }

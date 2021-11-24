@@ -23,7 +23,7 @@ declare type Material = import("../material").Material;
  * @param material parent material the plugin will be created for
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
-export function createClearCoatPlugin(material: Material): Nullable<MaterialPluginBase> {
+export function createPBRClearCoatPlugin(material: Material): Nullable<MaterialPluginBase> {
     if (material instanceof PBRBaseMaterial) {
         return new PBRClearCoatConfiguration(material);
     }
@@ -191,10 +191,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     constructor(material: PBRBaseMaterial) {
         super(material, new MaterialClearCoatDefines());
 
-        this.name = "ClearCoat";
+        this.name = "PBRClearCoat";
         this.priority = 100;
-
         this._material = material;
+
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
@@ -448,13 +448,6 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return "PBRClearCoatConfiguration";
     }
 
-    /**
-     * Add fallbacks to the effect fallbacks list.
-     * @param defines defines the Base texture to use.
-     * @param fallbacks defines the current fallback list.
-     * @param currentRank defines the current fallback rank.
-     * @returns the new fallback rank.
-     */
     public addFallbacks(defines: MaterialClearCoatDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.CLEARCOAT_BUMP) {
             fallbacks.addFallback(currentRank++, "CLEARCOAT_BUMP");
@@ -468,29 +461,15 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    /**
-     * Add the required uniforms to the current list.
-     * @param uniforms defines the current uniform list.
-     */
-    public addUniforms(uniforms: string[]): void {
+    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
         uniforms.push("vClearCoatTangentSpaceParams", "vClearCoatParams", "vClearCoatRefractionParams",
             "vClearCoatTintParams", "clearCoatColorAtDistance",
             "clearCoatMatrix", "clearCoatRoughnessMatrix", "clearCoatBumpMatrix", "clearCoatTintMatrix",
             "vClearCoatInfos", "vClearCoatBumpInfos", "vClearCoatTintInfos");
-    }
 
-    /**
-     * Add the required samplers to the current list.
-     * @param samplers defines the current sampler list.
-     */
-    public addSamplers(samplers: string[]): void {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
-    /**
-     * Add the required uniforms to the current buffer.
-     * @param uniformBuffer defines the current uniform buffer.
-     */
     public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vClearCoatParams", 2);
         uniformBuffer.addUniform("vClearCoatRefractionParams", 4);

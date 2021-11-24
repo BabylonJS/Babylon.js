@@ -18,13 +18,7 @@ import { Scalar } from "../../Maths/math.scalar";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
-import { EventInfo, MaterialEvent,
-    MaterialEventInfoAddFallbacks,
-    MaterialEventInfoAddSamplers,
-    MaterialEventInfoAddUniforms,
-    MaterialEventInfoInjectCustomCode,
-    MaterialEventInfoPrepareUniformBuffer
-} from "../../Materials/materialEvent";
+import { EventInfo, MaterialEvent } from "../../Materials/materialEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -909,6 +903,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
     }
 
+    /**
+     * Registers a callback for a material user event
+     * @param eventInfoType event id to register for (from the MaterialUserEvent enum)
+     * @param callback function to be called when the event is notified
+     */
     public registerForUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
         this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
     }
@@ -1269,15 +1268,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
 
-        const fallbackInfo: MaterialEventInfoAddFallbacks = { defines, fallbacks, fallbackRank };
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.AddFallbacks,
-            undefined,
-            undefined,
-            fallbackInfo
-        );
-        fallbackRank = fallbackInfo.fallbackRank;
+        this._eventInfo.fallbacks = fallbacks;
+        this._eventInfo.fallbackRank = fallbackRank;
+        this._eventInfo.defines = defines;
+        this._notifyEvent(MaterialEvent.AddFallbacks);
+        fallbackRank = this._eventInfo.fallbackRank;
 
         if (defines.ENVIRONMENTBRDF) {
             fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
@@ -1389,20 +1384,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.AddUniforms,
-            undefined,
-            undefined,
-            { uniforms } as MaterialEventInfoAddUniforms
-        );
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.AddSamplers,
-            undefined,
-            undefined,
-            { samplers } as MaterialEventInfoAddSamplers
-        );
+        this._eventInfo.uniforms = uniforms;
+        this._eventInfo.samplers = samplers;
+        this._notifyEvent(MaterialEvent.AddUniformsSamplers);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1428,14 +1412,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var join = defines.toString();
 
-        const customCodeInfo: MaterialEventInfoInjectCustomCode = { customCode: (shaderType: string, code: string) => code };
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.InjectCustomCode,
-            undefined,
-            undefined,
-            customCodeInfo
-        );
+        this._eventInfo.customCode = (shaderType: string, code: string) => code;
+        this._notifyEvent(MaterialEvent.InjectCustomCode);
 
         return engine.createEffect(shaderName, <IEffectCreationOptions>{
             attributes: attribs,
@@ -1448,7 +1426,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             onError: onError,
             indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
             processFinalCode: csnrOptions.processFinalCode,
-            processCodeAfterIncludes: customCodeInfo.customCode,
+            processCodeAfterIncludes: this._eventInfo.customCode,
             multiTarget: defines.PREPASS
         }, engine);
     }
@@ -1851,13 +1829,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectanceInfos", 2);
         ubo.addUniform("reflectanceMatrix", 16);
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.PrepareUniformBuffer,
-            undefined,
-            undefined,
-            { ubo } as MaterialEventInfoPrepareUniformBuffer
-        );
+        this._eventInfo.ubo = ubo;
+        this._notifyEvent(MaterialEvent.PrepareUniformBuffer);
 
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);

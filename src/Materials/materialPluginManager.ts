@@ -2,21 +2,22 @@ import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProc
 import { EventState } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Material } from "./material";
-import { EventInfoBindForSubMesh, EventInfoDisposed, EventInfoGetActiveTextures, EventInfoGetAnimatables, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoHasTexture, EventInfoIsReadyForSubMesh, EventInfoPrepareDefines, MaterialEvent } from "./materialEvent";
+import { EventInfoAddFallbacks, EventInfoAddUniformsSamplers, EventInfoBindForSubMesh, EventInfoDisposed, EventInfoGetActiveTextures, EventInfoGetAnimatables, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoHasTexture, EventInfoInjectCustomCode, EventInfoIsReadyForSubMesh, EventInfoPrepareDefines, EventInfoPrepareUniformBuffer, MaterialEvent } from "./materialEvent";
 
-declare type Scene = import("../scene").Scene;
-declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
-declare type MaterialDefines = import("./materialDefines").MaterialDefines;
-declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type MaterialPluginBase = import("./materialPluginBase").MaterialPluginBase;
 
 declare module "./material" {
     export interface Material {
+        /**
+         * Plugin manager for this material
+         */
         pluginManager?: MaterialPluginManager;
     }
 }
 
+/**
+ * Class that manages the plugins of a material
+ */
 export class MaterialPluginManager {
 
     protected _material: Material;
@@ -24,6 +25,10 @@ export class MaterialPluginManager {
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string, default: any } };
 
+    /**
+     * Creates a new instance of the plugin manager
+     * @param material material that this manager will manage the plugins for
+     */
     constructor(material: Material) {
         this._material = material;
 
@@ -96,8 +101,34 @@ export class MaterialPluginManager {
         material.registerForEvent(MaterialEvent.GetDefineNames, (eventData: EventInfoGetDefineNames) => {
             eventData.defineNames = this._defineNamesFromPlugins;
         });
+
+        material.registerForEvent(MaterialEvent.AddFallbacks, (eventData: EventInfoAddFallbacks) => {
+            for (const plugin of this._plugins) {
+                eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
+            }
+        });
+
+        material.registerForEvent(MaterialEvent.AddUniformsSamplers, (eventData: EventInfoAddUniformsSamplers) => {
+            for (const plugin of this._plugins) {
+                plugin.addUniformsAndSamplers(eventData.uniforms, eventData.samplers);
+            }
+        });
+
+        material.registerForEvent(MaterialEvent.PrepareUniformBuffer, (eventData: EventInfoPrepareUniformBuffer) => {
+            for (const plugin of this._plugins) {
+                plugin.prepareUniformBuffer(eventData.ubo);
+            }
+        });
+
+        material.registerForEvent(MaterialEvent.InjectCustomCode, (eventData: EventInfoInjectCustomCode) => {
+            eventData.customCode = this._injectCustomCode(eventData.customCode);
+        });
     }
 
+    /**
+     * Adds a new plugin to the material managed by this manager
+     * @param plugin plugin to add
+     */
     public addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === plugin.name) {
@@ -108,9 +139,13 @@ export class MaterialPluginManager {
         this._plugins.push(plugin);
         this._plugins.sort((a, b) => a.priority - b.priority);
 
+        this._codeInjectionPoints = {};
+
         const defineNamesFromPlugins = {};
         for (const plugin of this._plugins) {
             plugin.collectDefines(defineNamesFromPlugins);
+            this._collectPointNames("vertex", plugin.getCustomCode("vertex"));
+            this._collectPointNames("fragment", plugin.getCustomCode("fragment"));
         }
 
         if (Object.keys(defineNamesFromPlugins).length > 0) {
@@ -119,11 +154,15 @@ export class MaterialPluginManager {
             delete this._defineNamesFromPlugins;
         }
 
-        this._material.resetDrawCache();
-        //collectPointNames("vertex", plugin.getCustomCode?.("vertex"));
-        //collectPointNames("fragment", plugin.getCustomCode?.("fragment"));
+        //this._material.resetDrawCache();
     }
 
+    /**
+     * Removes a plugin from the list of the manager
+     * @param pluginName name of the plugin
+     * @param dispose true to dispose the plugin before removing it from the list, else false (default: true)
+     * @returns true if the plugin was found and has been removed, else false
+     */
     public removePlugin(pluginName: string, dispose = true): boolean {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === pluginName) {
@@ -138,6 +177,11 @@ export class MaterialPluginManager {
         return false;
     }
 
+    /**
+     * Gets a plugin from the list of plugins managed by this manager
+     * @param name name of the plugin
+     * @returns the plugin if found, else null
+     */
     public getPlugin(name: string): Nullable<MaterialPluginBase> {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === name) {
@@ -152,7 +196,6 @@ export class MaterialPluginManager {
             return;
         }
         for (const pointName in customCode) {
-            this._codeInjectionPoints = this._codeInjectionPoints || {};
             if (!this._codeInjectionPoints[shaderType]) {
                 this._codeInjectionPoints[shaderType] = {};
             }
@@ -160,8 +203,11 @@ export class MaterialPluginManager {
         }
     };
 
-    protected _injectCustomCode(): ShaderCustomProcessingFunction {
+    protected _injectCustomCode(existingCallback?: (shaderType: string, code: string) => string): ShaderCustomProcessingFunction {
         return (shaderType: string, code: string) => {
+            if (existingCallback) {
+                code = existingCallback(shaderType, code);
+            }
             const points = this._codeInjectionPoints?.[shaderType];
             if (!points) {
                 return code;
@@ -169,7 +215,7 @@ export class MaterialPluginManager {
             for (const pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._plugins) {
-                    const customCode = plugin.getCustomCode?.(shaderType);
+                    const customCode = plugin.getCustomCode(shaderType);
                     if (customCode?.[pointName]) {
                         injectedCode += customCode[pointName] + "\r\n";
                     }
@@ -199,92 +245,23 @@ let _Plugins: Array<[string, PluginMaterialFactory]> = [];
 let _Inited = false;
 
 /**
- * Initialize this class, registering an observable on Material.
- */
-function _Initialize(): void {
-    Material.OnEventObservable.add((material: Material, eventState: EventState) => {
-        if (eventState.mask & MaterialEvent.Created) {
-            InjectPlugins(material);
-        }
-    }, MaterialEvent.Created);
-
-    _Inited = true;
-}
-
-/**
- * Registers a new material plugin through a factory, or updates it. This makes the
- * plugin available to all Materials instantiated after its registration.
+ * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
  * @param pluginName The plugin name
- * @param factory The factor function, which returns a MaterialPluginBase or null if it's not applicable.
+ * @param factory The factory function which allows to create the plugin
  */
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
     if (!_Inited) {
-        _Initialize();
+        Material.OnEventObservable.add((material: Material, eventState: EventState) => {
+            for (const [_name, factory] of _Plugins) {
+                factory(material);
+            }
+        }, MaterialEvent.Created);
+        _Inited = true;
     }
     const existing = _Plugins.filter(([name, _factory]) => name === pluginName);
     if (existing.length > 0) {
         existing[0][1] = factory;
     } else {
         _Plugins.push([pluginName, factory]);
-    }
-}
-
-/**
- * Injects plugins on a material.
- * @param material The material to inject plugins into.
- */
-function InjectPlugins(material: Material): void {
-    for (const [_name, factory] of _Plugins) {
-        factory(material);
-    }
-}
-
-/**
- * Calls addFallbacks on all plugins for a given material.
- * @param material The material
- * @param defines The material defines
- * @param fallbacks The effect fallbacks
- * @param fallbackRank The fallback rank
- * @returns The updated fallbackRank
- */
-function AddFallbacks(material: Material, defines: MaterialDefines, fallbacks: EffectFallbacks, fallbackRank: number): number {
-    for (const plugin of material._plugins) {
-        if (plugin.addFallbacks) {
-            fallbackRank = plugin.addFallbacks(defines, fallbacks, fallbackRank);
-        }
-    }
-    return fallbackRank;
-}
-
-/**
- * Calls addUniforms on all plugins for a given material.
- * @param material The material
- * @param uniforms The material uniforms
- */
-function AddUniforms(material: Material, uniforms: string[]): void {
-    for (const plugin of material._plugins) {
-        plugin.addUniforms?.(uniforms);
-    }
-}
-
-/**
- * Calls addSamplers on all plugins for a given material.
- * @param material The material
- * @param uniforms The samplers
- */
-function AddSamplers(material: Material, samplers: string[]): void {
-    for (const plugin of material._plugins) {
-        plugin.addSamplers?.(samplers);
-    }
-}
-
-/**
- * Calls prepareUniformBuffer on all plugins for a given material.
- * @param material The material
- * @param ubo The uniform buffer
- */
-function PrepareUniformBuffer(material: Material, ubo: UniformBuffer): void {
-    for (const plugin of material._plugins) {
-        plugin.prepareUniformBuffer?.(ubo);
     }
 }

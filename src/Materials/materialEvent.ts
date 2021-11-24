@@ -43,10 +43,33 @@ export type EventInfoGetDefineNames = EventInfo & {
 };
 
 /** @hidden */
+export type EventInfoAddFallbacks = EventInfo & {
+    defines: MaterialDefines;
+    fallbacks: EffectFallbacks;
+    fallbackRank: number;
+};
+
+/** @hidden */
+export type EventInfoAddUniformsSamplers = EventInfo & {
+    uniforms: string[];
+    samplers: string[];
+};
+
+/** @hidden */
+export type EventInfoInjectCustomCode = EventInfo & {
+    customCode?: ShaderCustomProcessingFunction;
+}
+
+/** @hidden */
 export type EventInfoPrepareDefines = EventInfo & {
     defines: MaterialDefines;
     mesh: AbstractMesh;
-}
+};
+
+/** @hidden */
+export type EventInfoPrepareUniformBuffer = EventInfo & {
+    ubo: UniformBuffer;
+};
 
 /** @hidden */
 export type EventInfoBindForSubMesh = EventInfo & {
@@ -71,10 +94,14 @@ export type EventMapping = {
     0x0008: EventInfoHasTexture;
     0x0010: EventInfoIsReadyForSubMesh;
     0x0020: EventInfoGetDefineNames;
-    0x0400: EventInfoPrepareDefines;
-    0x1000: EventInfoBindForSubMesh;
-    0x2000: EventInfoGetAnimatables;
-    0x4000: EventInfoGetActiveTextures;
+    0x0040: EventInfoAddFallbacks;
+    0x0080: EventInfoAddUniformsSamplers;
+    0x0100: EventInfoInjectCustomCode;
+    0x0200: EventInfoPrepareDefines;
+    0x0400: EventInfoPrepareUniformBuffer;
+    0x0800: EventInfoBindForSubMesh;
+    0x1000: EventInfoGetAnimatables;
+    0x2000: EventInfoGetActiveTextures;
 };
 
 /**
@@ -88,70 +115,11 @@ export enum MaterialEvent {
     IsReadyForSubMesh = 0x0010,
     GetDefineNames = 0x0020,
     AddFallbacks = 0x0040,
-    AddUniforms = 0x0080,
-    AddSamplers = 0x0100,
-    InjectCustomCode = 0x0200,
-    PrepareDefines = 0x0400,
-    PrepareUniformBuffer = 0x0800,
-    BindForSubMesh = 0x1000,
-    GetAnimatables = 0x2000,
-    GetActiveTextures = 0x4000,
-}
-
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoAddFallbacks {
-    /**
-     * Defines of the material we want to customize
-     */
-    defines: MaterialDefines;
-    /**
-     * The effect fallbacks
-     */
-    fallbacks: EffectFallbacks;
-    /**
-     * The effect fallback rank
-     */
-    fallbackRank: number;
-}
-
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoAddUniforms {
-    /**
-     * The list of uniform names used in the shader
-     */
-    uniforms: string[];
-}
-
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoAddSamplers {
-    /**
-     * The list of sampler (texture) names used in the shader
-     */
-    samplers: string[];
-}
-
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoInjectCustomCode {
-    /**
-     * The customCode function to inject code.
-     */
-    customCode?: ShaderCustomProcessingFunction;
-}
-
-/**
- * Material event info interface.
- */
-export interface MaterialEventInfoPrepareUniformBuffer {
-    /**
-     * The uniform buffer being prepared
-     */
-    ubo: UniformBuffer;
+    AddUniformsSamplers = 0x0080,
+    InjectCustomCode = 0x0100,
+    PrepareDefines = 0x0200,
+    PrepareUniformBuffer = 0x0400,
+    BindForSubMesh = 0x0800,
+    GetAnimatables = 0x1000,
+    GetActiveTextures = 0x2000,
 }

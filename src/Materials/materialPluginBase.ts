@@ -28,7 +28,7 @@ export class MaterialPluginBase {
      * Defines the priority of the plugin. Lower numbers run first.
      */
     @serialize()
-    public priority: number;
+    public priority: number = 500;
 
     protected _pluginManager: MaterialPluginManager;
     protected _pluginDefineNames?: { [name: string]: any };
@@ -108,7 +108,7 @@ export class MaterialPluginBase {
 
             const type = typeof this._pluginDefineNames[key];
             defines[key] = {
-                type: type === "number" ? "number" : type === "string" ? "string" : "object",
+                type: type === "number" ? "number" : type === "string" ? "string" : type === "boolean" ? "boolean" : "object",
                 default: this._pluginDefineNames[key],
             };
         }
@@ -120,8 +120,7 @@ export class MaterialPluginBase {
      * @param scene defines the scene to the material belongs to.
      * @param mesh the mesh being rendered
      */
-    public prepareDefines(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {
-    }
+    public prepareDefines(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
 
     /**
      * Checks to see if a texture is used in the material.
@@ -159,25 +158,22 @@ export class MaterialPluginBase {
      * @param currentRank defines the current fallback rank.
      * @returns the new fallback rank.
      */
-    addFallbacks?(defines: MaterialDefines, fallbacks: EffectFallbacks, currentRank: number): number;
+    public addFallbacks(defines: MaterialDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+        return currentRank;
+    }
 
     /**
-     * Add the required uniforms to the current list.
+     * Add the required uniforms / samplers to the current list.
      * @param uniforms defines the current uniform list.
-     */
-    addUniforms?(uniforms: string[]): void;
-
-    /**
-     * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
-    addSamplers?(samplers: string[]): void;
+    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {}
 
     /**
      * Add the required uniforms to the current buffer.
      * @param uniformBuffer defines the current uniform buffer.
      */
-    prepareUniformBuffer?(uniformBuffer: UniformBuffer): void;
+    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {}
 
     /**
      * Makes a duplicate of the current configuration into another one.
