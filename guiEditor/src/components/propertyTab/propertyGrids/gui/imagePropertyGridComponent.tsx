@@ -55,7 +55,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 />
                 <div className="ge-divider">
                     <FloatLineComponent
-                        iconLabel={"Source Position"}
+                        iconLabel={"Crop"}
                         icon={cropIcon}
                         lockObject={this.props.lockObject}
                         label="L"
@@ -74,15 +74,16 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 <div className="ge-divider">
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
-                        label="W"
+                        label="R"
                         target={image}
                         icon={cropIcon}
+                        iconLabel={"Crop"}
                         propertyName="sourceWidth"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
-                        label="H"
+                        label="B"
                         target={image}
                         propertyName="sourceHeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}

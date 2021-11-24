@@ -33,7 +33,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                 <CheckBoxLineComponent
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
-                    label=""
+                    label="CLIP CONTENT"
                     target={ellipse}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

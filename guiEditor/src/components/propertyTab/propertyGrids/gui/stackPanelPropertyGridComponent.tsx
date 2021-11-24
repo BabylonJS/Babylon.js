@@ -32,7 +32,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CheckBoxLineComponent
                     iconLabel={"Clip children"}
                     icon={clipContentsIcon}
-                    label=""
+                    label="CLIP CHILDREN"
                     target={stackPanel}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -40,7 +40,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CheckBoxLineComponent
                     iconLabel={"Vertical"}
                     icon={verticalMarginIcon}
-                    label=""
+                    label="VERTICAL"
                     target={stackPanel}
                     propertyName="isVertical"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
