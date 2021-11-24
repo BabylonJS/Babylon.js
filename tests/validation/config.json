@@ -366,7 +366,7 @@
         },
         {
             "title": "Highlights",
-            "renderCount": 2,
+            "renderCount": 5,
             "scriptToRun": "/Demos/Highlights/highlights.js",
             "functionToCall": "CreateHighlightsScene",
             "referenceImage": "highlights.png",
