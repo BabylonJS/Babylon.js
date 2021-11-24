@@ -54,7 +54,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
             <div className="dropup">
                 {this.props.icon && (
                     <div className={"button" + (this.state.isOpen ? " active" : "")} onClick={() => this.switchDropUp()}>
-                        <img src={this.props.icon} width={"30px"} title={this.props.label} alt={this.props.label} />
+                        <img src={this.props.icon} title={this.props.label} alt={this.props.label} />
                     </div>
                 )}
                 {this.props.selectedOption && (
