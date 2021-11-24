@@ -383,13 +383,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.loadToEditor();
     }
 
-    async loadFromSnippet(snippedId: string) {
+    async loadFromSnippet(snippetId: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         if (this.props.globalState.liveGuiTexture) {
-            await this.globalState.liveGuiTexture?.parseFromSnippetAsync(snippedId, true);
+            await this.globalState.liveGuiTexture?.parseFromSnippetAsync(snippetId, true);
             this.synchronizeLiveGUI();
         } else {
-            await this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true);
+            await this.globalState.guiTexture.parseFromSnippetAsync(snippetId, true);
         }
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
