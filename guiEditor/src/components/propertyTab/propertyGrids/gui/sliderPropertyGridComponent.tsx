@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
