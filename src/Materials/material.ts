@@ -26,7 +26,7 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { MaterialEvent,
-    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines } from "./materialEvent";
+    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoAddFallbacks, EventInfoAddUniformsSamplers, EventInfoPrepareUniformBuffer, EventInfoInjectCustomCode } from "./materialEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -735,7 +735,11 @@ export class Material implements IAnimatable {
             EventInfoHasTexture &
             EventInfoIsReadyForSubMesh &
             EventInfoGetDefineNames &
+            EventInfoAddFallbacks &
+            EventInfoAddUniformsSamplers &
+            EventInfoInjectCustomCode &
             EventInfoPrepareDefines &
+            EventInfoPrepareUniformBuffer &
             EventInfoBindForSubMesh &
             EventInfoGetAnimatables &
             EventInfoGetActiveTextures
@@ -750,6 +754,11 @@ export class Material implements IAnimatable {
         texture: undefined as any,
         animatables: undefined as any,
         mesh: undefined as any,
+        fallbacks: undefined as any,
+        fallbackRank: 0,
+        uniforms: undefined as any,
+        samplers: undefined as any,
+        ubo: undefined as any,
     };
 
     protected _onEventObservable = new Observable<EventInfo>();
@@ -761,6 +770,11 @@ export class Material implements IAnimatable {
         this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
     }
 
+    /**
+     * Registers a callback for a material event
+     * @param eventInfoType event id to register for (from the MaterialEvent enum)
+     * @param callback function to be called when the event is notified
+     */
     public registerForEvent<T extends keyof EventMapping, U extends EventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
         this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
     }

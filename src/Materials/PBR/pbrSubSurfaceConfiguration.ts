@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { IAnimatable } from '../../Animations/animatable.interface';
-import { SerializationHelper, serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
+import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from '../../Maths/math.color';
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
@@ -28,7 +28,7 @@ declare type Material = import("../material").Material;
  * @param material parent material the plugin will be created for
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
- export function createSubSurfacePlugin(material: Material): Nullable<MaterialPluginBase> {
+ export function createPBRSubSurfacePlugin(material: Material): Nullable<MaterialPluginBase> {
     if (material instanceof PBRBaseMaterial) {
         return new PBRSubSurfaceConfiguration(material);
     }
@@ -329,12 +329,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     constructor(material: PBRBaseMaterial) {
         super(material, new MaterialSubSurfaceDefines());
 
+        this.name = "PBRSubSurface";
         this.priority = 130;
-
         this._material = material;
+        this._scene = material.getScene();
+
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
-        this._scene = material.getScene();
 
         material.registerForUserEvent(MaterialUserEvent.HardBindForSubMesh, (eventData: EventInfoHardBindForSubMesh) => {
             const uniformBuffer = material._uniformBuffer;
@@ -614,11 +615,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return this.isRefractionEnabled && this._linkRefractionWithTransparency;
     }
 
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
     public hasTexture(texture: BaseTexture): boolean {
         if (this._thicknessTexture === texture) {
             return true;
@@ -631,10 +627,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    /**
-     * Gets a boolean indicating that current material needs to register RTT
-     * @returns true if this uses a render target otherwise false.
-     */
     public hasRenderTargetTextures(): boolean {
         if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
             return true;
@@ -643,10 +635,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    /**
-     * Returns an array of the actively used textures.
-     * @param activeTextures Array of BaseTextures
-     */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._thicknessTexture) {
             activeTextures.push(this._thicknessTexture);
@@ -657,10 +645,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Returns the animatable textures.
-     * @param animatables Array of animatable textures.
-     */
     public getAnimatables(animatables: IAnimatable[]): void {
         if (this._thicknessTexture && this._thicknessTexture.animations && this._thicknessTexture.animations.length > 0) {
             animatables.push(this._thicknessTexture);
@@ -671,10 +655,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Disposes the resources of the material.
-     * @param forceDisposeTextures - Forces the disposal of all textures.
-     */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             if (this._thicknessTexture) {
@@ -687,21 +667,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-    * Get the current class name of the texture useful for serialization or dynamic coding.
-    * @returns "PBRSubSurfaceConfiguration"
-    */
     public getClassName(): string {
         return "PBRSubSurfaceConfiguration";
     }
 
-    /**
-     * Add fallbacks to the effect fallbacks list.
-     * @param defines defines the Base texture to use.
-     * @param fallbacks defines the current fallback list.
-     * @param currentRank defines the current fallback rank.
-     * @returns the new fallback rank.
-     */
     public addFallbacks(defines: MaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.SS_SCATTERING) {
             fallbacks.addFallback(currentRank++, "SS_SCATTERING");
@@ -712,32 +681,18 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    /**
-     * Add the required uniforms to the current list.
-     * @param uniforms defines the current uniform list.
-     */
-    public addUniforms(uniforms: string[]): void {
+    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
         uniforms.push(
             "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
             "vRefractionMicrosurfaceInfos", "vRefractionFilteringInfo",
             "vRefractionInfos", "vThicknessInfos", "vRefractionIntensityInfos", "vTranslucencyIntensityInfos", "vThicknessParam",
             "vRefractionPosition", "vRefractionSize",
             "refractionMatrix", "thicknessMatrix", "refractionIntensityMatrix", "translucencyIntensityMatrix", "scatteringDiffusionProfile");
-    }
 
-    /**
-     * Add the required samplers to the current list.
-     * @param samplers defines the current sampler list.
-     */
-    public addSamplers(samplers: string[]): void {
         samplers.push("thicknessSampler", "refractionIntensitySampler", "translucencyIntensitySampler",
             "refractionSampler", "refractionSamplerLow", "refractionSamplerHigh");
     }
 
-    /**
-     * Add the required uniforms to the current buffer.
-     * @param uniformBuffer defines the current uniform buffer.
-     */
     public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 4);
         uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
@@ -756,31 +711,5 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         uniformBuffer.addUniform("vRefractionPosition", 3);
         uniformBuffer.addUniform("vRefractionSize", 3);
         uniformBuffer.addUniform("scatteringDiffusionProfile", 1);
-    }
-
-    /**
-     * Makes a duplicate of the current configuration into another one.
-     * @param configuration define the config where to copy the info
-     */
-    public copyTo(configuration: PBRSubSurfaceConfiguration): void {
-        SerializationHelper.Clone(() => configuration, this);
-    }
-
-    /**
-     * Serializes this Sub Surface configuration.
-     * @returns - An object with the serialized config.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a anisotropy Configuration from a serialized object.
-     * @param source - Serialized object.
-     * @param scene Defines the scene we are parsing for
-     * @param rootUrl Defines the rootUrl to load from
-     */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
-        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

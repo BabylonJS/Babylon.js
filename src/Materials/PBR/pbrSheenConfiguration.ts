@@ -1,4 +1,4 @@
-import { SerializationHelper, serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Color3 } from '../../Maths/math.color';
 import { MaterialFlags } from "../../Materials/materialFlags";
@@ -11,11 +11,24 @@ import { SubMesh } from '../../Meshes/subMesh';
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
+declare type Material = import("../material").Material;
+
+/**
+ * Creates an instance of the sheen plugin
+ * @param material parent material the plugin will be created for
+ * @returns the plugin instance or null if the plugin is incompatible with material
+ */
+ export function createPBRSheenPlugin(material: Material): Nullable<MaterialPluginBase> {
+    if (material instanceof PBRBaseMaterial) {
+        return new PBRSheenConfiguration(material);
+    }
+    return null;
+}
 
 /**
  * @hidden
@@ -32,23 +45,12 @@ declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
     public SHEEN_ALBEDOSCALING = false;
     public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
     public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
-
-    /** @hidden */
-    _areTexturesDirty: boolean;
 }
-
-const modelDefines = new MaterialSheenDefines();
 
 /**
  * Define the code related to the Sheen parameters of the pbr material.
  */
 export class PBRSheenConfiguration extends MaterialPluginBase {
-    /**
-     * Defines the priority of the plugin.
-     */
-    @serialize()
-    public priority = 120;
-
     private _material: PBRBaseMaterial;
 
     private _isEnabled = false;
@@ -143,27 +145,14 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
      constructor(material: PBRBaseMaterial) {
         super(material, new MaterialSheenDefines());
 
+        this.name = "Sheen";
+        this.priority = 120;
         this._material = material;
+
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    /**
-     * Initialize the plugin.
-     *
-     * @param scene defines the scene the material belongs to.
-     * @param dirtyCallbacks The list of dirty callbacks
-     */
-    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
-        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
-    }
-
-    /**
-     * Specifies that the submesh is ready to be used.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene the material belongs to.
-     * @param engine the engine this scene belongs to.
-     * @returns - boolean indicating that the submesh is ready or not.
-     */
-    public __isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene, engine: Engine): boolean {
+    public isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -187,30 +176,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    /**
-     * Collects all defines.
-     * @param defines The object to append to.
-     */
-    public collectDefines(defines: { [name: string]: { type: string, default: any } }): void {
-        for (const key of Object.keys(modelDefines)) {
-            if (key[0] === "_") {
-                continue;
-            }
-
-            const type = typeof (modelDefines[key]);
-            defines[key] = {
-                type: type === "number" ? "number" : type === "string" ? "string" : "object",
-                default: modelDefines[key],
-            };
-        }
-    }
-
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene the material belongs to.
-     * @param mesh the mesh being rendered
-     */
     public prepareDefines(defines: MaterialSheenDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.SHEEN = this._isEnabled;
@@ -249,13 +214,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Binds the material data.
-     * @param uniformBuffer defines the Uniform buffer to fill in.
-     * @param scene defines the scene the material belongs to.
-     * @param engine the engine this scene belongs to.
-     * @param subMesh the submesh to bind data for
-     */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
@@ -305,11 +263,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
     public hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -322,10 +275,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    /**
-     * Returns an array of the actively used textures.
-     * @param activeTextures Array of BaseTextures
-     */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
@@ -336,10 +285,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Returns the animatable textures.
-     * @param animatables Array of animatable textures.
-     */
     public getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
@@ -350,10 +295,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Disposes the resources of the material.
-     * @param forceDisposeTextures - Forces the disposal of all textures.
-     */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -361,21 +302,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-    * Get the current class name of the texture useful for serialization or dynamic coding.
-    * @returns "PBRSheenConfiguration"
-    */
     public getClassName(): string {
         return "PBRSheenConfiguration";
     }
 
-    /**
-     * Add fallbacks to the effect fallbacks list.
-     * @param defines defines the Base texture to use.
-     * @param fallbacks defines the current fallback list.
-     * @param currentRank defines the current fallback rank.
-     * @returns the new fallback rank.
-     */
     public addFallbacks(defines: MaterialSheenDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.SHEEN) {
             fallbacks.addFallback(currentRank++, "SHEEN");
@@ -383,58 +313,17 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    /**
-     * Add the required uniforms to the current list.
-     * @param uniforms defines the current uniform list.
-     */
-    public addUniforms(uniforms: string[]): void {
+    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
         uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix", "sheenRoughnessMatrix");
+        samplers.push("sheenSampler");
+        samplers.push("sheenRoughnessSampler");
     }
 
-    /**
-     * Add the required uniforms to the current buffer.
-     * @param uniformBuffer defines the current uniform buffer.
-     */
     public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vSheenColor", 4);
         uniformBuffer.addUniform("vSheenRoughness", 1);
         uniformBuffer.addUniform("vSheenInfos", 4);
         uniformBuffer.addUniform("sheenMatrix", 16);
         uniformBuffer.addUniform("sheenRoughnessMatrix", 16);
-    }
-
-    /**
-     * Add the required samplers to the current list.
-     * @param samplers defines the current sampler list.
-     */
-    public addSamplers(samplers: string[]): void {
-        samplers.push("sheenSampler");
-        samplers.push("sheenRoughnessSampler");
-    }
-
-    /**
-     * Makes a duplicate of the current configuration into another one.
-     * @param sheenConfiguration define the config where to copy the info
-     */
-    public copyTo(sheenConfiguration: PBRSheenConfiguration): void {
-        SerializationHelper.Clone(() => sheenConfiguration, this);
-    }
-
-    /**
-     * Serializes this BRDF configuration.
-     * @returns - An object with the serialized config.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a anisotropy Configuration from a serialized object.
-     * @param source - Serialized object.
-     * @param scene Defines the scene we are parsing for
-     * @param rootUrl Defines the rootUrl to load from
-     */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
-        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

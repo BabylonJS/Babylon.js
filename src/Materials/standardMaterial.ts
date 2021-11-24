@@ -17,13 +17,7 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
-import { EventInfo, MaterialEvent,
-    MaterialEventInfoAddFallbacks,
-    MaterialEventInfoAddSamplers,
-    MaterialEventInfoAddUniforms,
-    MaterialEventInfoInjectCustomCode,
-    MaterialEventInfoPrepareUniformBuffer,
-} from "./materialEvent";
+import { EventInfo, MaterialEvent } from "./materialEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -41,8 +35,7 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
 import { EventInfoHardBindForSubMesh, MaterialUserEvent, UserEventMapping } from "./materialUserEvent";
-
-declare type DetailMapConfiguration = import("./material.detailMapConfiguration").DetailMapConfiguration;
+import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -760,6 +753,11 @@ export class StandardMaterial extends PushMaterial {
         this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
     }
 
+    /**
+     * Registers a callback for a material user event
+     * @param eventInfoType event id to register for (from the MaterialUserEvent enum)
+     * @param callback function to be called when the event is notified
+     */
     public registerForUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
         this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
     }
@@ -774,6 +772,8 @@ export class StandardMaterial extends PushMaterial {
      */
     constructor(name: string, scene: Scene) {
         super(name, scene);
+
+        this.detailMap = new DetailMapConfiguration(this);
 
         this.buildUniformLayout();
 
@@ -1204,14 +1204,10 @@ export class StandardMaterial extends PushMaterial {
                 fallbacks.addFallback(0, "LOGARITHMICDEPTH");
             }
 
-            const fallbackInfo: MaterialEventInfoAddFallbacks = { defines, fallbacks, fallbackRank: 0 };
-            Material.OnEventObservable.notifyObservers(
-                this,
-                MaterialEvent.AddFallbacks,
-                undefined,
-                undefined,
-                fallbackInfo
-            );
+            this._eventInfo.fallbacks = fallbacks;
+            this._eventInfo.fallbackRank = 0;
+            this._eventInfo.defines = defines;
+            this._notifyEvent(MaterialEvent.AddFallbacks);
 
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
@@ -1289,20 +1285,9 @@ export class StandardMaterial extends PushMaterial {
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
-            Material.OnEventObservable.notifyObservers(
-                this,
-                MaterialEvent.AddUniforms,
-                undefined,
-                undefined,
-                { uniforms } as MaterialEventInfoAddUniforms
-            );
-            Material.OnEventObservable.notifyObservers(
-                this,
-                MaterialEvent.AddSamplers,
-                undefined,
-                undefined,
-                { samplers } as MaterialEventInfoAddSamplers
-            );
+            this._eventInfo.uniforms = uniforms;
+            this._eventInfo.samplers = samplers;
+            this._notifyEvent(MaterialEvent.AddUniformsSamplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1328,14 +1313,8 @@ export class StandardMaterial extends PushMaterial {
 
             var join = defines.toString();
 
-            const customCodeInfo: MaterialEventInfoInjectCustomCode = { customCode: (shaderType: string, code: string) => code };
-            Material.OnEventObservable.notifyObservers(
-                this,
-                MaterialEvent.InjectCustomCode,
-                undefined,
-                undefined,
-                customCodeInfo
-            );
+            this._eventInfo.customCode = (shaderType: string, code: string) => code;
+            this._notifyEvent(MaterialEvent.InjectCustomCode);
 
             let previousEffect = subMesh.effect;
             let effect = scene.getEngine().createEffect(shaderName, <IEffectCreationOptions>{
@@ -1349,7 +1328,7 @@ export class StandardMaterial extends PushMaterial {
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 processFinalCode: csnrOptions.processFinalCode,
-                processCodeAfterIncludes: customCodeInfo.customCode,
+                processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS
             }, engine);
 
@@ -1435,13 +1414,8 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vDiffuseColor", 4);
         ubo.addUniform("vAmbientColor", 3);
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.PrepareUniformBuffer,
-            undefined,
-            undefined,
-            { ubo } as MaterialEventInfoPrepareUniformBuffer
-        );
+        this._eventInfo.ubo = ubo;
+        this._notifyEvent(MaterialEvent.PrepareUniformBuffer);
 
         ubo.create();
     }
