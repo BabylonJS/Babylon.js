@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Inspector } from "../inspector";
 
-interface IPopupComponentProps {
+export interface IPopupComponentProps {
     id: string;
     title: string;
     size: { width: number; height: number };
