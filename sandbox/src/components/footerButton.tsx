@@ -17,7 +17,7 @@ export class FooterButton extends React.Component<IFooterButtonProps> {
 
         return (
             <div className="button" onClick={() => this.props.onClick()}>
-                <img src={this.props.icon} width={"30px"} alt={this.props.label} title={this.props.label} />
+                <img src={this.props.icon} alt={this.props.label} title={this.props.label} />
             </div>
         );
     }

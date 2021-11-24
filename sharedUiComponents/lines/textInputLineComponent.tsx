@@ -91,7 +91,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     render() {
         return (
             <div className="textInputLine">
-                {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
+                {this.props.icon && <img src={this.props.icon}  title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 {(!this.props.icon || (this.props.icon && this.props.label != "")) && (
                     <div className="label" title={this.props.label}>
                         {this.props.label}

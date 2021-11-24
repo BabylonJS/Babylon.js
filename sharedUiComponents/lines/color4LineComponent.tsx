@@ -166,7 +166,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         return (
             <div className="color3Line">
                 <div className="firstLine">
-                    {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                    {this.props.icon && <img src={this.props.icon}  title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>

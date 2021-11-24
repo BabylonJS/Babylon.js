@@ -11,7 +11,6 @@ import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
  * Class used to create slider controls based on images
  */
 export class ImageBasedSlider extends BaseSlider {
-    /** @hidden */
     private _backgroundImage: Image;
     private _thumbImage: Image;
     private _valueBarImage: Image;

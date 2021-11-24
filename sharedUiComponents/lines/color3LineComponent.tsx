@@ -206,7 +206,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         return (
             <div className="color3Line">
                 <div className="firstLine" title={this.props.label}>
-                    {this.props.icon && <img src={this.props.icon} width={"30px"} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                    {this.props.icon && <img src={this.props.icon}  title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                     <div className="label">{this.props.label}</div>
                     <div className="color3">
                         <ColorPickerLineComponent
