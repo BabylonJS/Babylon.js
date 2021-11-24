@@ -26,7 +26,7 @@ import { Tools } from "../tools";
 import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
-import { Observer } from "babylonjs/Misc/index";
+import { Observer } from "babylonjs/Misc/observable";
 import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
 require("./workbenchCanvas.scss");
 
