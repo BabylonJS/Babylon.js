@@ -270,7 +270,13 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                    <ButtonLineComponent label="Edit" onClick={() => this.openTextureEditor()} />
+                    <ButtonLineComponent label="Edit" onClick={() => {
+                        if (this.props.texture instanceof AdvancedDynamicTexture) {
+                            (this.props.texture as AdvancedDynamicTexture).edit();
+                        } else {
+                            this.openTextureEditor();
+                        }
+                    }} />
                     <TextInputLineComponent
                         label="URL"
                         value={textureUrl}
