@@ -101,4 +101,4 @@ uniform vec2 vReflectionInfos;
 
 #endif
 
-#define PLUGIN_FRAGMENT_INPUTS_DECLARATION
+#define ADDITIONAL_FRAGMENT_DECLARATION

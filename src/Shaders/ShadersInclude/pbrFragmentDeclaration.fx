@@ -68,7 +68,7 @@ uniform mat4 view;
     #endif
 #endif
 
-#define PLUGIN_FRAGMENT_INPUTS_DECLARATION
+#define ADDITIONAL_FRAGMENT_DECLARATION
 
 #ifdef PREPASS
     #ifdef SS_SCATTERING

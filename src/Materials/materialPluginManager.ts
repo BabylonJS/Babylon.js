@@ -32,6 +32,7 @@ declare module "./material" {
 
 /**
  * Class that manages the plugins of a material
+ * @since 5.0
  */
 export class MaterialPluginManager {
     protected _material: Material;
@@ -231,13 +232,13 @@ export class MaterialPluginManager {
                 code = existingCallback(shaderType, code);
             }
             if (this._uboDeclaration) {
-                code = code.replace("#define PLUGIN_UBO_DECLARATION", this._uboDeclaration);
+                code = code.replace("#define ADDITIONAL_UBO_DECLARATION", this._uboDeclaration);
             }
             if (this._vertexDeclaration) {
-                code = code.replace("#define PLUGIN_VERTEX_INPUTS_DECLARATION", this._vertexDeclaration);
+                code = code.replace("#define ADDITIONAL_VERTEX_DECLARATION", this._vertexDeclaration);
             }
             if (this._fragmentDeclaration) {
-                code = code.replace("#define PLUGIN_FRAGMENT_INPUTS_DECLARATION", this._fragmentDeclaration);
+                code = code.replace("#define ADDITIONAL_FRAGMENT_DECLARATION", this._fragmentDeclaration);
             }
             const points = this._codeInjectionPoints?.[shaderType];
             if (!points) {

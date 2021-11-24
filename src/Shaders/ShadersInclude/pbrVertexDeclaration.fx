@@ -60,7 +60,7 @@ uniform float pointSize;
     uniform mat4 reflectionMatrix;
 #endif
 
-#define PLUGIN_VERTEX_INPUTS_DECLARATION
+#define ADDITIONAL_VERTEX_DECLARATION
 
 #ifdef NORMAL
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
