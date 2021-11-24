@@ -25,42 +25,11 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IPointerEvent, IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 
-declare var GUIEDITOR: any;
-declare var BABYLON: any;
-
-/**
- * Interface used to configure the GUI editor
- */
- export interface IGUIEditorOptions {
-    /** Define the URl to load GUI editor script */
-    editorURL?: string;
-}
-
 /**
  * Class used to create texture to support 2D GUI elements
  * @see https://doc.babylonjs.com/how_to/gui
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
-    /** Define the Url to load GUI editor script */
-    public static EditorURL = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
-
-    private BJSGUIEDITOR = this._getGlobalGUIEditor();
-
-    /** Get the inspector from bundle or global */
-    private _getGlobalGUIEditor(): any {
-        // UMD Global name detection from Webpack Bundle UMD Name.
-        if (typeof GUIEDITOR !== 'undefined') {
-            return GUIEDITOR;
-        }
-
-        // In case of module let's check the global emitted from the editor entry point.
-        if (typeof BABYLON !== 'undefined' && typeof BABYLON.GUIEditor !== 'undefined') {
-            return BABYLON;
-        }
-
-        return undefined;
-    }
-
     /** Define the Uurl to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
 
@@ -593,39 +562,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onEndLayoutObservable.clear();
         super.dispose();
     }
-
-    /** Creates the GUI editor window. */
-    private _createGUIEditor() {
-        this.BJSGUIEDITOR.GUIEditor.Show({
-            liveGuiTexture: this
-        });
-    }
-
-    /**
-     * Launch the GUI editor
-     * @param config Define the configuration of the editor
-     * @return a promise fulfilled when the GUI editor is visible
-     */
-     public edit(config?: IGUIEditorOptions): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.BJSGUIEDITOR = this.BJSGUIEDITOR || this._getGlobalGUIEditor();
-            if (typeof this.BJSGUIEDITOR == 'undefined') {
-                const editorUrl = config && config.editorURL ? config.editorURL : AdvancedDynamicTexture.EditorURL;
-
-                // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
-                    this.BJSGUIEDITOR = this.BJSGUIEDITOR || this._getGlobalGUIEditor();
-                    this._createGUIEditor();
-                    resolve();
-                });
-            } else {
-                // Otherwise creates the editor
-                this._createGUIEditor();
-                resolve();
-            }
-        });
-    }
-
     private _onResize(): void {
         let scene = this.getScene();
         if (!scene) {
