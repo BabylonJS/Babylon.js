@@ -10,6 +10,7 @@ import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { GUITools } from "./guiTools";
 
 interface IAdvancedDynamicTextureTreeItemComponentProps {
     texture: AdvancedDynamicTexture;
@@ -67,7 +68,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
                 <div
                     className={"icon edit"}
-                    onClick={() => this.props.texture.edit()}
+                    onClick={() => GUITools.EditAdvancedDynamicTexture(this.props.texture)}
                     title="Edit"
                 >
                     <FontAwesomeIcon icon={faPen} />
