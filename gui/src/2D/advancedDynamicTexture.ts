@@ -1178,8 +1178,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const resultScene = result.getScene();
         if(adaptiveScaling && resultScene) {
-            result._rootContainer.scaleX = 1 / resultScene.getEngine().getHardwareScalingLevel();
-            result._rootContainer.scaleY = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            result._rootContainer.scaleX = newScale;
+            result._rootContainer.scaleY = newScale;
         }
 
         // Attach
