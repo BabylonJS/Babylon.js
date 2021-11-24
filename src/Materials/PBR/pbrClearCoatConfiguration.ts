@@ -1,5 +1,5 @@
 import { Nullable } from "../../types";
-import { SerializationHelper, serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
+import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from '../../Maths/math.color';
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
@@ -9,9 +9,8 @@ import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
 import { SubMesh } from '../../Meshes/subMesh';
 import { Constants } from "../../Engines/constants";
-import { IMaterialPlugin } from "../IMaterialPlugin";
-import { RegisterMaterialPlugin } from "../materialPluginManager";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
@@ -19,12 +18,17 @@ declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type Material = import("../material").Material;
 
-RegisterMaterialPlugin("clearCoat", (material: Material) => {
+/**
+ * Creates an instance of the clear coat plugin
+ * @param material parent material the plugin will be created for
+ * @returns the plugin instance or null if the plugin is incompatible with material
+ */
+export function createClearCoatPlugin(material: Material): Nullable<MaterialPluginBase> {
     if (material instanceof PBRBaseMaterial) {
         return new PBRClearCoatConfiguration(material);
     }
     return null;
-});
+}
 
 /**
  * @hidden
@@ -46,23 +50,12 @@ export class MaterialClearCoatDefines extends MaterialDefines {
     public CLEARCOAT_TINT_TEXTURE = false;
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
     public CLEARCOAT_TINT_GAMMATEXTURE = false;
-
-    /** @hidden */
-    _areTexturesDirty: boolean;
 }
 
-const modelDefines = new MaterialClearCoatDefines();
-
 /**
- * Define the code related to the clear coat parameters of the pbr material.
+ * Plugin that implements the clear coat component of the PBR material
  */
-export class PBRClearCoatConfiguration implements IMaterialPlugin{
-    /**
-     * Defines the priority of the plugin.
-     */
-    @serialize()
-    public priority = 100;
-
+export class PBRClearCoatConfiguration extends MaterialPluginBase {
     private _material: PBRBaseMaterial;
 
     /**
@@ -195,32 +188,17 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    /**
-     * Instantiate a new instance of clear coat configuration.
-     * @param material The material implementing this plugin.
-     */
-     constructor(material: PBRBaseMaterial) {
+    constructor(material: PBRBaseMaterial) {
+        super(material, new MaterialClearCoatDefines());
+
+        this.name = "ClearCoat";
+        this.priority = 100;
+
         this._material = material;
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    /**
-     * Initialize the plugin.
-     *
-     * @param scene defines the scene the material belongs to.
-     * @param dirtyCallbacks The list of dirty callbacks
-     */
-    public initialize(scene: Scene, dirtyCallbacks: { [code: number]: () => void }): void {
-        this._internalMarkAllSubMeshesAsTexturesDirty = dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
-    }
-
-    /**
-     * Specifies that the submesh is ready to be used.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene the material belongs to.
-     * @param engine the engine this scene belongs to.
-     * @returns - boolean indicating that the submesh is ready or not.
-     */
-     public isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
+    public isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -258,12 +236,6 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         return true;
     }
 
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene to the material belongs to.
-     * @param mesh the mesh being rendered
-     */
     public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
@@ -322,14 +294,7 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         }
     }
 
-    /**
-     * Binds the material data.
-     * @param uniformBuffer defines the Uniform buffer to fill in.
-     * @param scene defines the scene the material belongs to.
-     * @param engine the engine this scene belongs to.
-     * @param subMesh the submesh to bind data for
-     */
-     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }
@@ -414,11 +379,6 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         }
     }
 
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
     public hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -439,10 +399,6 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         return false;
     }
 
-    /**
-     * Returns an array of the actively used textures.
-     * @param activeTextures Array of BaseTextures
-     */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
@@ -461,10 +417,6 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         }
     }
 
-    /**
-     * Returns the animatable textures.
-     * @param animatables Array of animatable textures.
-     */
     public getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
@@ -483,10 +435,6 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         }
     }
 
-    /**
-     * Disposes the resources of the material.
-     * @param forceDisposeTextures - Forces the disposal of all textures.
-     */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
@@ -496,10 +444,6 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         }
     }
 
-    /**
-    * Get the current class name of the texture useful for serialization or dynamic coding.
-    * @returns "PBRClearCoatConfiguration"
-    */
     public getClassName(): string {
         return "PBRClearCoatConfiguration";
     }
@@ -560,49 +504,5 @@ export class PBRClearCoatConfiguration implements IMaterialPlugin{
         uniformBuffer.addUniform("clearCoatColorAtDistance", 1);
         uniformBuffer.addUniform("vClearCoatTintInfos", 2);
         uniformBuffer.addUniform("clearCoatTintMatrix", 16);
-    }
-
-    /**
-     * Makes a duplicate of the current configuration into another one.
-     * @param clearCoatConfiguration define the config where to copy the info
-     */
-    public copyTo(clearCoatConfiguration: PBRClearCoatConfiguration): void {
-        SerializationHelper.Clone(() => clearCoatConfiguration, this);
-    }
-
-    /**
-     * Serializes this clear coat configuration.
-     * @returns - An object with the serialized config.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a anisotropy Configuration from a serialized object.
-     * @param source - Serialized object.
-     * @param scene Defines the scene we are parsing for
-     * @param rootUrl Defines the rootUrl to load from
-     */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
-        SerializationHelper.Parse(() => this, source, scene, rootUrl);
-    }
-
-    /**
-     * Collects all defines.
-     * @param defines The object to append to.
-     */
-    public collectDefines(defines: { [name: string]: { type: string, default: any } }): void {
-        for (const key of Object.keys(modelDefines)) {
-            if (key[0] === "_") {
-                continue;
-            }
-
-            const type = typeof (modelDefines[key]);
-            defines[key] = {
-                type: type === "number" ? "number" : type === "string" ? "string" : "object",
-                default: modelDefines[key],
-            };
-        }
     }
 }

@@ -17,11 +17,11 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
-import { MaterialEvent,
+import { EventInfo, MaterialEvent,
+    MaterialEventInfoAddFallbacks,
     MaterialEventInfoAddSamplers,
     MaterialEventInfoAddUniforms,
-    MaterialEventInfoGetAnimatables,
-    MaterialEventInfoPrepareDefines,
+    MaterialEventInfoInjectCustomCode,
     MaterialEventInfoPrepareUniformBuffer,
 } from "./materialEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
@@ -40,6 +40,7 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
+import { EventInfoHardBindForSubMesh, MaterialUserEvent, UserEventMapping } from "./materialUserEvent";
 
 declare type DetailMapConfiguration = import("./material.detailMapConfiguration").DetailMapConfiguration;
 
@@ -197,8 +198,6 @@ export class StandardMaterialDefines extends MaterialDefines
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;
 
-    protected _keysFromPlugins?: string[];
-
     /**
      * Initializes the PBR Material defines.
      * @param externalProperties The external properties
@@ -206,13 +205,6 @@ export class StandardMaterialDefines extends MaterialDefines
     constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
         super(externalProperties);
         this.rebuild();
-    }
-
-    public rebuild() {
-        super.rebuild();
-        if (this._keysFromPlugins) {
-            this._keys.push(...this._keysFromPlugins);
-        }
     }
 
     public setReflectionMode(modeToEnable: string) {
@@ -757,6 +749,21 @@ export class StandardMaterial extends PushMaterial {
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _useLogarithmicDepth: boolean;
 
+    protected _eventInfoSTD: EventInfoHardBindForSubMesh = {
+        subMesh: undefined as any,
+    };
+
+    protected _notifyUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T]>(eventInfoType: T, eventInfo?: U): void {
+        if (!eventInfo) {
+            eventInfo = this._eventInfoSTD as U;
+        }
+        this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
+    }
+
+    public registerForUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
+        this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
+    }
+
     /**
      * Instantiates a new standard material.
      * This is the default material used in Babylon. It is the best trade off between quality
@@ -891,7 +898,8 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new StandardMaterialDefines(this._defineNamesFromPlugins);
+            this._notifyEvent(MaterialEvent.GetDefineNames);
+            subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
         var scene = this.getScene();
@@ -1149,13 +1157,9 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.PrepareDefines,
-            undefined,
-            undefined,
-            { defines, scene, mesh } as MaterialEventInfoPrepareDefines
-        );
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._notifyEvent(MaterialEvent.PrepareDefines);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1199,6 +1203,15 @@ export class StandardMaterial extends PushMaterial {
             if (defines.LOGARITHMICDEPTH) {
                 fallbacks.addFallback(0, "LOGARITHMICDEPTH");
             }
+
+            const fallbackInfo: MaterialEventInfoAddFallbacks = { defines, fallbacks, fallbackRank: 0 };
+            Material.OnEventObservable.notifyObservers(
+                this,
+                MaterialEvent.AddFallbacks,
+                undefined,
+                undefined,
+                fallbackInfo
+            );
 
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
@@ -1315,6 +1328,15 @@ export class StandardMaterial extends PushMaterial {
 
             var join = defines.toString();
 
+            const customCodeInfo: MaterialEventInfoInjectCustomCode = { customCode: (shaderType: string, code: string) => code };
+            Material.OnEventObservable.notifyObservers(
+                this,
+                MaterialEvent.InjectCustomCode,
+                undefined,
+                undefined,
+                customCodeInfo
+            );
+
             let previousEffect = subMesh.effect;
             let effect = scene.getEngine().createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
@@ -1327,6 +1349,7 @@ export class StandardMaterial extends PushMaterial {
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 processFinalCode: csnrOptions.processFinalCode,
+                processCodeAfterIncludes: customCodeInfo.customCode,
                 multiTarget: defines.PREPASS
             }, engine);
 
@@ -1471,7 +1494,11 @@ export class StandardMaterial extends PushMaterial {
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         mesh.transferToEffect(world);
 
-        // PrePass
+        // Binding unconditionally
+        this._uniformBuffer.bindToEffect(effect, "Material");
+
+        this._eventInfoSTD.subMesh = subMesh;
+        this._notifyUserEvent(MaterialUserEvent.HardBindForSubMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
@@ -1486,8 +1513,6 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.BindBonesParameters(mesh, effect);
         let ubo = this._uniformBuffer;
         if (mustRebind) {
-            ubo.bindToEffect(effect, "Material");
-
             this.bindViewProjection(effect);
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
 
@@ -1760,13 +1785,8 @@ export class StandardMaterial extends PushMaterial {
             results.push(this._refractionTexture);
         }
 
-        Material.OnEventObservable.notifyObservers(
-            this,
-            MaterialEvent.GetAnimatables,
-            undefined,
-            undefined,
-            { animatables: results } as MaterialEventInfoGetAnimatables
-        );
+        this._eventInfo.animatables = results;
+        this._notifyEvent(MaterialEvent.GetAnimatables);
 
         return results;
     }
