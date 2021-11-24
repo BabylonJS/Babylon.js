@@ -77,6 +77,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pasted: boolean;
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
+    private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     public get globalState() {
         return this.props.globalState;
     }
@@ -354,6 +355,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
         if (this.props.globalState.liveGuiTexture) {
             this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
+            this.props.globalState.guiTexture.onBeginRenderObservable.remove(this._guiRenderObserver);
             this.props.globalState.guiTexture.getDescendants(false).forEach(control => {
                 if (!control.metadata || !control.metadata.guiEditor) {
                     return;
@@ -799,7 +801,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
             let doRerender = true;
-            this.globalState.guiTexture.onBeginRenderObservable.add(() => {
+            this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(() => {
                 if (doRerender) {
                     this.globalState.liveGuiTexture?.markAsDirty();
                 }
