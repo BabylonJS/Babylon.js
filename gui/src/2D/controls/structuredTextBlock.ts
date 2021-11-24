@@ -110,6 +110,7 @@ export class StructuredTextBlock extends Control {
             return;
         }
         this._structuredText = value ;
+        this._characterCount = this._structuredText.reduce((count, part) => count + part.text.length, 0);
         this._markLinesAsDirty();
         this._markAsDirty();
         this.onTextChangedObservable.notifyObservers(this);
@@ -653,10 +654,8 @@ export class StructuredTextBlock extends Control {
         const lines: StructuredTextLines = [];
         let _currentLine: StructuredText = [];
         const _lines: Array<StructuredText> = [ _currentLine ];
-        this._characterCount = 0;
 
         for (let _part of this._structuredText) {
-            this._characterCount += _part.text.length;
             if (_part.text.includes('\n')) {
                 for (let _splitted of _part.text.split('\n')) {
                     _newPart = Object.assign({} , _part);
