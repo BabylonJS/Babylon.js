@@ -210,7 +210,17 @@ export class MaterialPluginManager {
                     }
                 }
                 if (injectedCode.length > 0) {
-                    code = code.replace("#define " + pointName, "\r\n" + injectedCode);
+                    if (pointName.charAt(0) === "!") {
+                        // pointName is a regular expression
+                        const rx = new RegExp(pointName.substring(1), "g");
+                        let match = rx.exec(code);
+                        while (match !== null) {
+                            code = code.replace(match[0], injectedCode);
+                            match = rx.exec(code);
+                        }
+                    } else {
+                        code = code.replace("#define " + pointName, "\r\n" + injectedCode);
+                    }
                 }
             }
             return code;
