@@ -282,7 +282,8 @@ export class Inspector {
                         this._EmbedHostWindow.close();
                     }
 
-                    this._GlobalState.onEmbedHostClosedObservable.notifyObservers();
+                    this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
+                    this._GlobalState.onActionTabsClosedObservable.notifyObservers();
                 },
                 initialTab: options.initialTab,
             });
@@ -398,7 +399,8 @@ export class Inspector {
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
-                this._EmbedHostWindow.addEventListener("beforeunload", () => this._GlobalState.onEmbedHostClosedObservable.notifyObservers());
+                this._EmbedHostWindow.addEventListener("beforeunload", () => this._GlobalState.onSceneExplorerClosedObservable.notifyObservers());
+                this._EmbedHostWindow.addEventListener("beforeunload", () => this._GlobalState.onActionTabsClosedObservable.notifyObservers());
             } else {
                 if (!rootElement) {
                     return;
@@ -555,12 +557,12 @@ export class Inspector {
             this._RemoveElementFromDOM(this._ActionTabsHost);
 
             this._ActionTabsHost = null;
-            this._GlobalState.onEmbedHostClosedObservable.notifyObservers();
+            this._GlobalState.onActionTabsClosedObservable.notifyObservers();
         }
-
+        
         if (this._SceneExplorerHost) {
             ReactDOM.unmountComponentAtNode(this._SceneExplorerHost);
-
+            
             if (this._SceneExplorerHost.parentElement) {
                 this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
             }
@@ -568,15 +570,16 @@ export class Inspector {
             this._SceneExplorerHost = null;
             this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
-
+        
         if (this._EmbedHost) {
             ReactDOM.unmountComponentAtNode(this._EmbedHost);
-
+            
             if (this._EmbedHost.parentElement) {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
             }
             this._EmbedHost = null;
-            this._GlobalState.onEmbedHostClosedObservable.notifyObservers();
+            this._GlobalState.onActionTabsClosedObservable.notifyObservers();
+            this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
 
         Inspector._OpenedPane = 0;
@@ -590,24 +593,23 @@ export class Inspector {
 
     private static _OnSceneExplorerClosedObserver: Nullable<Observer<void>>;
     private static _OnActionTabsClosedObserver: Nullable<Observer<void>>;
-    private static _OnEmbedHostClosedObserver: Nullable<Observer<void>>;
 
     public static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement) {
         if (this._PersistentPopupHost) {
             this._ClosePersistentPopup();
         }
+
         this._PersistentPopupHost = hostElement.ownerDocument.createElement("div");
         const popupElement = React.createElement(PopupComponent, config.props, config.children);
         ReactDOM.render(popupElement, this._PersistentPopupHost);
-        if (config.closeWhenActionTabsCloses || config.closeWhenSceneExplorerCloses) {
-            this._OnEmbedHostClosedObserver = this._GlobalState.onEmbedHostClosedObservable.add(() => this._ClosePersistentPopup());
-            if (config.closeWhenSceneExplorerCloses) {
-                this._OnSceneExplorerClosedObserver = this._GlobalState.onSceneExplorerClosedObservable.add(() => this._ClosePersistentPopup());
-            }
-            if (config.closeWhenActionTabsCloses) {
-                this._OnActionTabsClosedObserver = this._GlobalState.onActionTabsClosedObservable.add(() => this._ClosePersistentPopup());
-            }
-        }     
+
+        if (config.closeWhenSceneExplorerCloses) {
+            this._OnSceneExplorerClosedObserver = this._GlobalState.onSceneExplorerClosedObservable.add(() => this._ClosePersistentPopup());
+        }
+        if (config.closeWhenActionTabsCloses) {
+            this._OnActionTabsClosedObserver = this._GlobalState.onActionTabsClosedObservable.add(() => this._ClosePersistentPopup());
+        }
+          
     }
 
     public static _ClosePersistentPopup() {
@@ -621,9 +623,6 @@ export class Inspector {
         }
         if (this._OnActionTabsClosedObserver) {
             this._GlobalState.onActionTabsClosedObservable.remove(this._OnActionTabsClosedObserver);
-        }
-        if (this._OnEmbedHostClosedObserver) {
-            this._GlobalState.onEmbedHostClosedObservable.remove(this._OnEmbedHostClosedObserver);
         }
     }
 }
