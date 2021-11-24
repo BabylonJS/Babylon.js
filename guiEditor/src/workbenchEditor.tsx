@@ -55,6 +55,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
+        this.props.globalState.onPopupClosedObservable.addOnce(() => {
+            this.componentWillUnmount();
+        });
     }
 
     componentWillUnmount() {

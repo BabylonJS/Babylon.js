@@ -26,6 +26,7 @@ import { Tools } from "../tools";
 import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
+import { Observer } from "babylonjs/Misc/index";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -74,6 +75,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
     private _engine: Engine;
+    private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     public get globalState() {
         return this.props.globalState;
     }
@@ -88,6 +90,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     constructor(props: IWorkbenchComponentProps) {
         super(props);
+        this._rootContainer = React.createRef();
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
 
         props.globalState.onSelectionChangedObservable.add((selection) => {
@@ -223,6 +226,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (!this.props.globalState.lockObject.lock) {
                 this._selectedGuiNodes.forEach((guiNode) => {
                     if (guiNode !== this.globalState.guiTexture.getChildren()[0]) {
+                        this.props.globalState.guiTexture.removeControl(guiNode);
+                        this.props.globalState.liveGuiTexture?.removeControl(guiNode);
                         guiNode.dispose();
                     }
                 });
@@ -346,18 +351,45 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
+        if (this.props.globalState.liveGuiTexture) {
+            this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
+            this.props.globalState.guiTexture.getDescendants(false).forEach(control => {
+                if (!control.metadata || !control.metadata.guiEditor) {
+                    return;
+                }
+                control.onPointerUpObservable.remove(control.metadata.onPointerUp);
+                control.onPointerDownObservable.remove(control.metadata.onPointerDown);
+                control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
+                control.onPointerOutObservable.remove(control.metadata.onPointerOut);
+                control.onDisposeObservable.remove(control.metadata.onDispose);
+                control.highlightLineWidth = control.metadata.highlightLineWidth;
+                control.isHighlighted = control.metadata.isHighlighted;
+                control.metadata = control.metadata.metadata;
+            })
+
+        }
         this._engine.dispose();
     }
 
     loadFromJson(serializationObject: any) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject, true);
+        if (this.props.globalState.liveGuiTexture) {
+            this.globalState.liveGuiTexture?.parseContent(serializationObject, true);
+            this.synchronizeLiveGUI();
+        } else {
+            this.globalState.guiTexture.parseContent(serializationObject, true);
+        }
         this.loadToEditor();
     }
 
     async loadFromSnippet(snippedId: string) {
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        await this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true);
+        if (this.props.globalState.liveGuiTexture) {
+            await this.globalState.liveGuiTexture?.parseFromSnippetAsync(snippedId, true);
+            this.synchronizeLiveGUI();
+        } else {
+            await this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true);
+        }
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
             this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
@@ -414,6 +446,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     appendBlock(guiElement: Control) {
+        if (this.globalState.liveGuiTexture) {
+            this.globalState.liveGuiTexture.addControl(guiElement);
+        }
         var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
@@ -436,12 +471,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     createNewGuiNode(guiControl: Control) {
-        guiControl.highlightLineWidth = 5;
-        guiControl.onPointerUpObservable.add((evt) => {
+        const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
         });
 
-        guiControl.onPointerDownObservable.add((evt) => {
+        const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
                 this.isSelected(true, guiControl);
@@ -449,26 +483,42 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        guiControl.onPointerEnterObservable.add((evt) => {
+        const onPointerEnter = guiControl.onPointerEnterObservable.add((evt) => {
             if (this._isOverGUINode.indexOf(guiControl) === -1) {
                 this._isOverGUINode.push(guiControl);
             }
         });
 
-        guiControl.onPointerOutObservable.add((evt) => {
+        const onPointerOut = guiControl.onPointerOutObservable.add((evt) => {
             const index = this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 this._isOverGUINode.splice(index, 1);
             }
         });
 
-        guiControl.onDisposeObservable.add((evt) => {
+        const onDispose = guiControl.onDisposeObservable.add((evt) => {
             const index = this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 this._isOverGUINode.splice(index, 1);
             }
         });
-
+        // use metadata to keep track of things we need to cleanup/restore when the gui editor closes
+        // also stores the old metadata
+        guiControl.metadata = {
+            guiEditor: true,
+            metadata: guiControl.metadata,
+            isHighlighted: guiControl.isHighlighted,
+            highlightLineWidth: guiControl.highlightLineWidth,
+            isReadOnly: guiControl.isReadOnly,
+            isHitTestVisible: guiControl.isHitTestVisible,
+            onPointerUp,
+            onPointerDown,
+            onPointerEnter,
+            onPointerOut,
+            onDispose
+        }
+        guiControl.highlightLineWidth = 5;
+        guiControl.isHighlighted = false;
         if (this.isContainer(guiControl)) {
             (guiControl as Container).children.forEach((child) => {
                 this.createNewGuiNode(child);
@@ -643,10 +693,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    componentDidMount() {
-        this._rootContainer = React.createRef();
-    }
-
     onMove(evt: React.PointerEvent) {
         var pos = this.getGroundPosition();
         // Move or guiNodes
@@ -708,7 +754,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public async createGUICanvas() {
         // Get the canvas element from the DOM.
-        const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
+        const canvas = this._rootContainer.current as HTMLCanvasElement;
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
         this._engine = new Engine(canvas);
@@ -720,7 +766,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        let textureSize = 1024;
+        const textureSize = 1024;
         this._textureMesh = CreateGround("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
@@ -734,8 +780,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.globalState.guiTexture.addControl(this.artBoardBackground);
 
+        this.synchronizeLiveGUI();
+
         const nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
-        await nodeMaterial.loadAsync("GUIEditorNodeMaterial.json");
+        await nodeMaterial.loadAsync("https://gist.githubusercontent.com/darraghjburke/79fd9bddf8e871c891fc5da3ffc6d3af/raw/c98f7cd3af3a271f8cf936969578b1558db407ae/GUIEditorNodeMaterial.json");
 
         nodeMaterial.build(true);
         this._textureMesh.material = nodeMaterial;
@@ -754,9 +802,27 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._scene.doNotHandleCursors = true;
 
         // Watch for browser/canvas resize events
-        window.addEventListener("resize", () => {
+        this.globalState.hostWindow.addEventListener("resize", () => {
             this._engine.resize();
         });
+        this._engine.resize();
+
+        // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
+        // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
+        // to prevent an infite loop, we flip a boolean flag
+        if (this.globalState.liveGuiTexture) {
+            let doRerender = true;
+            this.globalState.guiTexture.onBeginRenderObservable.add(() => {
+                if (doRerender) {
+                    this.globalState.liveGuiTexture?.markAsDirty();
+                }
+                doRerender = true;
+            });
+            this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(() => {
+                this.globalState.guiTexture?.markAsDirty();
+                doRerender = false;
+            });
+        }
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(
             `Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the "Give feedback" button in the menu. `
@@ -766,6 +832,19 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
+    // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
+    synchronizeLiveGUI() {
+        if (this.globalState.liveGuiTexture) {
+            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
+            this.globalState.liveGuiTexture.getChildren().forEach(child => {
+                child.getDescendants(true).forEach(desc => {
+                    this.globalState.liveGuiTexture?.removeControl(desc);
+                    this.appendBlock(desc);
+                })
+            })
+        }
     }
 
     //Add map-like controls to an ArcRotate camera
