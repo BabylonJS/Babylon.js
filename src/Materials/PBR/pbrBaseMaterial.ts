@@ -1051,9 +1051,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        const scene = this.getScene();
-        const engine = scene.getEngine();
-
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1073,6 +1070,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
+
+        const scene = this.getScene();
+        const engine = scene.getEngine();
 
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
@@ -1755,6 +1755,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             useInstances: false,
             ...options
         };
+
+        if (!this._uniformBufferLayoutBuilt) {
+            this.buildUniformLayout();
+        }
 
         this._notifyEvent(MaterialEvent.GetDefineNames);
         const defines = new PBRMaterialDefines(this._eventInfo.defineNames);

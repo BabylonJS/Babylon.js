@@ -461,7 +461,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vClearCoatParams", size: 2, type: "vec2" },
@@ -481,20 +481,20 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                     #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
                         uniform vec4 vClearCoatInfos;
                     #endif
-                
+
                     #ifdef CLEARCOAT_TEXTURE
                         uniform mat4 clearCoatMatrix;
                     #endif
-                
+
                     #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
                         uniform mat4 clearCoatRoughnessMatrix;
                     #endif
-                
+
                     #ifdef CLEARCOAT_BUMP
                         uniform vec2 vClearCoatBumpInfos;
                         uniform mat4 clearCoatBumpMatrix;
                     #endif
-                
+
                     #ifdef CLEARCOAT_TINT_TEXTURE
                         uniform vec2 vClearCoatTintInfos;
                         uniform mat4 clearCoatTintMatrix;
@@ -503,29 +503,29 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
             fragment: `#ifdef CLEARCOAT
                     uniform vec2 vClearCoatParams;
                     uniform vec4 vClearCoatRefractionParams;
-                
+
                     #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
                         uniform vec4 vClearCoatInfos;
                     #endif
-                
+
                     #ifdef CLEARCOAT_TEXTURE
                         uniform mat4 clearCoatMatrix;
                     #endif
-                
+
                     #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
                         uniform mat4 clearCoatRoughnessMatrix;
                     #endif
-                
+
                     #ifdef CLEARCOAT_BUMP
                         uniform vec2 vClearCoatBumpInfos;
                         uniform vec2 vClearCoatTangentSpaceParams;
                         uniform mat4 clearCoatBumpMatrix;
                     #endif
-                
+
                     #ifdef CLEARCOAT_TINT
                         uniform vec4 vClearCoatTintParams;
                         uniform float clearCoatColorAtDistance;
-                
+
                         #ifdef CLEARCOAT_TINT_TEXTURE
                             uniform vec2 vClearCoatTintInfos;
                             uniform mat4 clearCoatTintMatrix;

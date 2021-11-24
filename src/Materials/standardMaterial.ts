@@ -889,9 +889,6 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
-        const scene = this.getScene();
-        const engine = scene.getEngine();
-
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -907,10 +904,13 @@ export class StandardMaterial extends PushMaterial {
             subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
+        var scene = this.getScene();
         var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
+
+        var engine = scene.getEngine();
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
