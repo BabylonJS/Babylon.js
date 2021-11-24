@@ -29,10 +29,10 @@ declare var GUIEDITOR: any;
 declare var BABYLON: any;
 
 /**
- * Interface used to configure the node material editor
+ * Interface used to configure the GUI editor
  */
  export interface IGUIEditorOptions {
-    /** Define the URl to load node editor script */
+    /** Define the URl to load GUI editor script */
     editorURL?: string;
 }
 
@@ -41,7 +41,7 @@ declare var BABYLON: any;
  * @see https://doc.babylonjs.com/how_to/gui
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
-    /** Define the Url to load node editor script */
+    /** Define the Url to load GUI editor script */
     public static EditorURL = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
 
     private BJSGUIEDITOR = this._getGlobalGUIEditor();
@@ -602,9 +602,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * Launch the node material editor
+     * Launch the GUI editor
      * @param config Define the configuration of the editor
-     * @return a promise fulfilled when the node editor is visible
+     * @return a promise fulfilled when the GUI editor is visible
      */
      public edit(config?: IGUIEditorOptions): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -627,7 +627,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     private _onResize(): void {
-        console.log("on resize");
         let scene = this.getScene();
         if (!scene) {
             return;
