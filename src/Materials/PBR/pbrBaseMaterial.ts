@@ -923,8 +923,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.subSurface = new PBRSubSurfaceConfiguration(this);
         this.detailMap = new DetailMapConfiguration(this);
 
-        this.buildUniformLayout();
-
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
@@ -1053,6 +1051,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        const scene = this.getScene();
+        const engine = scene.getEngine();
+
+        if (!this._uniformBufferLayoutBuilt) {
+            this.buildUniformLayout();
+        }
+
         if (subMesh.effect && this.isFrozen) {
             if (subMesh.effect._wasPreviouslyReady) {
                 return true;
@@ -1068,9 +1073,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
-
-        const scene = this.getScene();
-        const engine = scene.getEngine();
 
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
@@ -1382,7 +1384,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._eventInfo.uniforms = uniforms;
         this._eventInfo.samplers = samplers;
-        this._notifyEvent(MaterialEvent.AddUniformsSamplers);
+        this._notifyEvent(MaterialEvent.GetUniformsAndSamplers);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1408,7 +1410,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var join = defines.toString();
 
-        this._eventInfo.customCode = (shaderType: string, code: string) => code;
+        this._eventInfo.customCode = undefined;
         this._notifyEvent(MaterialEvent.InjectCustomCode);
 
         return engine.createEffect(shaderName, <IEffectCreationOptions>{
@@ -1823,9 +1825,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectanceInfos", 2);
         ubo.addUniform("reflectanceMatrix", 16);
 
-        this._eventInfo.ubo = ubo;
-        this._notifyEvent(MaterialEvent.PrepareUniformBuffer);
-
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);
         ubo.addUniform("vSphericalL10", 3);
@@ -1846,7 +1845,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vSphericalYZ", 3);
         ubo.addUniform("vSphericalZX", 3);
 
-        ubo.create();
+        super.buildUniformLayout();
     }
 
     /**

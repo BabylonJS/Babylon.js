@@ -45,8 +45,6 @@ export class MaterialAnisotropicDefines extends MaterialDefines {
  * Plugin that implements the anisotropic component of the PBR material
  */
 export class PBRAnisotropicConfiguration extends MaterialPluginBase {
-    private _material: PBRBaseMaterial;
-
     private _isEnabled = false;
     /**
      * Defines if the anisotropy is enabled in the material.
@@ -86,16 +84,8 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    /**
-     * Instantiate a new instance of anisotropy configuration.
-     * @param material The material implementing this plugin.
-     */
     constructor(material: PBRBaseMaterial) {
-        super(material, new MaterialAnisotropicDefines());
-
-        this.name = "PBRAnisotropic";
-        this.priority = 110;
-        this._material = material;
+        super(material, "PBRAnisotropic", 110, new MaterialAnisotropicDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -205,14 +195,31 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
-        uniforms.push("vAnisotropy", "vAnisotropyInfos", "anisotropyMatrix");
+    public getSamplers(samplers: string[]): void {
         samplers.push("anisotropySampler");
     }
 
-    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vAnisotropy", 3);
-        uniformBuffer.addUniform("vAnisotropyInfos", 2);
-        uniformBuffer.addUniform("anisotropyMatrix", 16);
+    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+        return {
+            ubo: [
+                { name: "vAnisotropy", size: 3, type: "vec3" },
+                { name: "vAnisotropyInfos", size: 2, type: "vec2" },
+                { name: "anisotropyMatrix", size: 16, type: "mat4" },
+            ],
+            vertex: `#ifdef ANISOTROPIC
+                    #ifdef ANISOTROPIC_TEXTURE
+                        uniform vec2 vAnisotropyInfos;
+                        uniform mat4 anisotropyMatrix;
+                    #endif
+                #endif`,
+            fragment: `#ifdef ANISOTROPIC
+                    uniform vec3 vAnisotropy;
+                
+                    #ifdef ANISOTROPIC_TEXTURE
+                        uniform vec2 vAnisotropyInfos;
+                        uniform mat4 anisotropyMatrix;
+                    #endif
+                #endif`,
+        };
     }
 }

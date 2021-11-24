@@ -4,7 +4,7 @@ import { Nullable } from "../types";
 import { Material } from "./material";
 import {
     EventInfoAddFallbacks,
-    EventInfoAddUniformsSamplers,
+    EventInfoGetUniformsAndSamplers,
     EventInfoBindForSubMesh,
     EventInfoDisposed,
     EventInfoGetActiveTextures,
@@ -38,6 +38,11 @@ export class MaterialPluginManager {
     protected _plugins: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };
+    protected _uboDeclaration: string;
+    protected _vertexDeclaration: string;
+    protected _fragmentDeclaration: string;
+    protected _uniformList: string[];
+    protected _samplerList: string[];
 
     /**
      * Creates a new instance of the plugin manager
@@ -122,15 +127,39 @@ export class MaterialPluginManager {
             }
         });
 
-        material.registerForEvent(MaterialEvent.AddUniformsSamplers, (eventData: EventInfoAddUniformsSamplers) => {
-            for (const plugin of this._plugins) {
-                plugin.addUniformsAndSamplers(eventData.uniforms, eventData.samplers);
+        material.registerForEvent(MaterialEvent.GetUniformsAndSamplers, (eventData: EventInfoGetUniformsAndSamplers) => {
+            if (this._uniformList.length > 0) {
+                eventData.uniforms.push(...this._uniformList);
+            }
+            if (this._samplerList.length > 0) {
+                eventData.samplers.push(...this._samplerList);
             }
         });
 
         material.registerForEvent(MaterialEvent.PrepareUniformBuffer, (eventData: EventInfoPrepareUniformBuffer) => {
+            this._uboDeclaration = "";
+            this._vertexDeclaration = "";
+            this._fragmentDeclaration = "";
+            this._uniformList = [];
+            this._samplerList = [];
             for (const plugin of this._plugins) {
-                plugin.prepareUniformBuffer(eventData.ubo);
+                const uniforms = plugin.getUniforms();
+                if (uniforms) {
+                    if (uniforms.ubo) {
+                        for (const uniform of uniforms.ubo) {
+                            eventData.ubo.addUniform(uniform.name, uniform.size);
+                            this._uboDeclaration += `${uniform.type} ${uniform.name};\r\n`;
+                            this._uniformList.push(uniform.name);
+                        }
+                    }
+                    if (uniforms.vertex) {
+                        this._vertexDeclaration += uniforms.vertex + "\r\n";
+                    }
+                    if (uniforms.fragment) {
+                        this._fragmentDeclaration += uniforms.fragment + "\r\n";
+                    }
+                }
+                plugin.getSamplers(this._samplerList);
             }
         });
 
@@ -143,8 +172,12 @@ export class MaterialPluginManager {
     public _addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === plugin.name) {
-                throw `Plugin "${plugin.name}" already added in the material "${this._material.name}"!`;
+                throw `Plugin "${plugin.name}" already added to the material "${this._material.name}"!`;
             }
+        }
+
+        if (this._material._uniformBufferLayoutBuilt) {
+            throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
         }
 
         this._plugins.push(plugin);
@@ -196,6 +229,15 @@ export class MaterialPluginManager {
         return (shaderType: string, code: string) => {
             if (existingCallback) {
                 code = existingCallback(shaderType, code);
+            }
+            if (this._uboDeclaration) {
+                code = code.replace("#define PLUGIN_UBO_DECLARATION", this._uboDeclaration);
+            }
+            if (this._vertexDeclaration) {
+                code = code.replace("#define PLUGIN_VERTEX_INPUTS_DECLARATION", this._vertexDeclaration);
+            }
+            if (this._fragmentDeclaration) {
+                code = code.replace("#define PLUGIN_FRAGMENT_INPUTS_DECLARATION", this._fragmentDeclaration);
             }
             const points = this._codeInjectionPoints?.[shaderType];
             if (!points) {
@@ -263,4 +305,11 @@ export function RegisterMaterialPlugin(pluginName: string, factory: PluginMateri
     } else {
         _Plugins.push([pluginName, factory]);
     }
+}
+
+/**
+ * Clear the list of global plugins
+ */
+export function UnregisterAllMaterialPlugins(): void {
+    _Plugins.length = 0;
 }

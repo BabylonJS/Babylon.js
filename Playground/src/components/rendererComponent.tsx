@@ -5,7 +5,8 @@ import { Nullable } from "babylonjs/types";
 import { Scene } from "babylonjs/scene";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { WebGPUEngine } from "babylonjs";
+import { WebGPUEngine } from "babylonjs/Engines/webgpuEngine";
+import { UnregisterAllMaterialPlugins } from "babylonjs/Materials/materialPluginManager";
 
 require("../scss/rendering.scss");
 
@@ -102,6 +103,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private async _compileAndRunAsync() {
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
+
+        UnregisterAllMaterialPlugins();
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 

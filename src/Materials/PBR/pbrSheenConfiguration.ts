@@ -51,8 +51,6 @@ declare type Material = import("../material").Material;
  * Define the code related to the Sheen parameters of the pbr material.
  */
 export class PBRSheenConfiguration extends MaterialPluginBase {
-    private _material: PBRBaseMaterial;
-
     private _isEnabled = false;
     /**
      * Defines if the material uses sheen.
@@ -138,16 +136,8 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    /**
-     * Instantiate a new instance of sheen configuration.
-     * @param material The material implementing this plugin.
-     */
-     constructor(material: PBRBaseMaterial) {
-        super(material, new MaterialSheenDefines());
-
-        this.name = "Sheen";
-        this.priority = 120;
-        this._material = material;
+    constructor(material: PBRBaseMaterial) {
+        super(material, "Sheen", 120, new MaterialSheenDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -313,17 +303,50 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
-        uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix", "sheenRoughnessMatrix");
-        samplers.push("sheenSampler");
-        samplers.push("sheenRoughnessSampler");
+    public getSamplers(samplers: string[]): void {
+        samplers.push("sheenSampler", "sheenRoughnessSampler");
     }
 
-    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vSheenColor", 4);
-        uniformBuffer.addUniform("vSheenRoughness", 1);
-        uniformBuffer.addUniform("vSheenInfos", 4);
-        uniformBuffer.addUniform("sheenMatrix", 16);
-        uniformBuffer.addUniform("sheenRoughnessMatrix", 16);
+    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+        return {
+            ubo: [
+                { name: "vSheenColor", size: 4, type: "vec4" },
+                { name: "vSheenRoughness", size: 1, type: "float" },
+                { name: "vSheenInfos", size: 4, type: "vec4" },
+                { name: "sheenMatrix", size: 16, type: "mat4" },
+                { name: "sheenRoughnessMatrix", size: 16, type: "mat4" },
+            ],
+            vertex: `#ifdef SHEEN
+                    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+                        uniform vec4 vSheenInfos;
+                    #endif
+                
+                    #ifdef SHEEN_TEXTURE
+                        uniform mat4 sheenMatrix;
+                    #endif
+                
+                    #ifdef SHEEN_TEXTURE_ROUGHNESS
+                        uniform mat4 sheenRoughnessMatrix;
+                    #endif
+                #endif`,
+            fragment: `#ifdef SHEEN
+                    uniform vec4 vSheenColor;
+                    #ifdef SHEEN_ROUGHNESS
+                        uniform float vSheenRoughness;
+                    #endif
+                
+                    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+                        uniform vec4 vSheenInfos;
+                    #endif
+                
+                    #ifdef SHEEN_TEXTURE
+                        uniform mat4 sheenMatrix;
+                    #endif
+                
+                    #ifdef SHEEN_TEXTURE_ROUGHNESS
+                        uniform mat4 sheenRoughnessMatrix;
+                    #endif
+                #endif`,
+        };
     }
 }

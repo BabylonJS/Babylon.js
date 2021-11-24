@@ -775,8 +775,6 @@ export class StandardMaterial extends PushMaterial {
 
         this.detailMap = new DetailMapConfiguration(this);
 
-        this.buildUniformLayout();
-
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
         this.prePassConfiguration = new PrePassConfiguration();
@@ -891,6 +889,13 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+        const scene = this.getScene();
+        const engine = scene.getEngine();
+
+        if (!this._uniformBufferLayoutBuilt) {
+            this.buildUniformLayout();
+        }
+
         if (subMesh.effect && this.isFrozen) {
             if (subMesh.effect._wasPreviouslyReady) {
                 return true;
@@ -902,13 +907,10 @@ export class StandardMaterial extends PushMaterial {
             subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
-        var scene = this.getScene();
         var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
-
-        var engine = scene.getEngine();
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
@@ -1287,7 +1289,7 @@ export class StandardMaterial extends PushMaterial {
 
             this._eventInfo.uniforms = uniforms;
             this._eventInfo.samplers = samplers;
-            this._notifyEvent(MaterialEvent.AddUniformsSamplers);
+            this._notifyEvent(MaterialEvent.GetUniformsAndSamplers);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1313,7 +1315,7 @@ export class StandardMaterial extends PushMaterial {
 
             var join = defines.toString();
 
-            this._eventInfo.customCode = (shaderType: string, code: string) => code;
+            this._eventInfo.customCode = undefined;
             this._notifyEvent(MaterialEvent.InjectCustomCode);
 
             let previousEffect = subMesh.effect;
@@ -1372,7 +1374,7 @@ export class StandardMaterial extends PushMaterial {
      */
     public buildUniformLayout(): void {
         // Order is important !
-        let ubo = this._uniformBuffer;
+        const ubo = this._uniformBuffer;
         ubo.addUniform("diffuseLeftColor", 4);
         ubo.addUniform("diffuseRightColor", 4);
         ubo.addUniform("opacityParts", 4);
@@ -1414,10 +1416,7 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vDiffuseColor", 4);
         ubo.addUniform("vAmbientColor", 3);
 
-        this._eventInfo.ubo = ubo;
-        this._notifyEvent(MaterialEvent.PrepareUniformBuffer);
-
-        ubo.create();
+        super.buildUniformLayout();
     }
 
     /**

@@ -30,6 +30,7 @@ export class MaterialPluginBase {
     @serialize()
     public priority: number = 500;
 
+    protected _material: Material;
     protected _pluginManager: MaterialPluginManager;
     protected _pluginDefineNames?: { [name: string]: any };
 
@@ -38,7 +39,11 @@ export class MaterialPluginBase {
      * @param material parent material of the plugin
      * @param defines list of defines used by the plugin. The value of the property is the default value for this property
      */
-    constructor(material: Material, defines?: { [key: string]: any }) {
+    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }) {
+        this._material = material;
+        this.name = name;
+        this.priority = priority;
+
         if (!material.pluginManager) {
             material.pluginManager = new MaterialPluginManager(material);
         }
@@ -163,17 +168,18 @@ export class MaterialPluginBase {
     }
 
     /**
-     * Add the required uniforms / samplers to the current list.
-     * @param uniforms defines the current uniform list.
-     * @param samplers defines the current sampler list.
+     * Gets the samplers used by the plugin.
+     * @param samplers list that the sampler names should be added to.
      */
-    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {}
+    public getSamplers(samplers: string[]): void {}
 
     /**
-     * Add the required uniforms to the current buffer.
-     * @param uniformBuffer defines the current uniform buffer.
+     * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
+     * @returns the description of the uniforms
      */
-    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {}
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+        return {};
+    }
 
     /**
      * Makes a duplicate of the current configuration into another one.

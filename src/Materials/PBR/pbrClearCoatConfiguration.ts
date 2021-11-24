@@ -56,7 +56,7 @@ export class MaterialClearCoatDefines extends MaterialDefines {
  * Plugin that implements the clear coat component of the PBR material
  */
 export class PBRClearCoatConfiguration extends MaterialPluginBase {
-    private _material: PBRBaseMaterial;
+    protected _material: PBRBaseMaterial;
 
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
@@ -189,11 +189,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     }
 
     constructor(material: PBRBaseMaterial) {
-        super(material, new MaterialClearCoatDefines());
-
-        this.name = "PBRClearCoat";
-        this.priority = 100;
-        this._material = material;
+        super(material, "PBRClearCoat", 100, new MaterialClearCoatDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -461,27 +457,81 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    public addUniformsAndSamplers(uniforms: string[], samplers: string[]): void {
-        uniforms.push("vClearCoatTangentSpaceParams", "vClearCoatParams", "vClearCoatRefractionParams",
-            "vClearCoatTintParams", "clearCoatColorAtDistance",
-            "clearCoatMatrix", "clearCoatRoughnessMatrix", "clearCoatBumpMatrix", "clearCoatTintMatrix",
-            "vClearCoatInfos", "vClearCoatBumpInfos", "vClearCoatTintInfos");
-
+    public getSamplers(samplers: string[]): void {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
-    public prepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vClearCoatParams", 2);
-        uniformBuffer.addUniform("vClearCoatRefractionParams", 4);
-        uniformBuffer.addUniform("vClearCoatInfos", 4);
-        uniformBuffer.addUniform("clearCoatMatrix", 16);
-        uniformBuffer.addUniform("clearCoatRoughnessMatrix", 16);
-        uniformBuffer.addUniform("vClearCoatBumpInfos", 2);
-        uniformBuffer.addUniform("vClearCoatTangentSpaceParams", 2);
-        uniformBuffer.addUniform("clearCoatBumpMatrix", 16);
-        uniformBuffer.addUniform("vClearCoatTintParams", 4);
-        uniformBuffer.addUniform("clearCoatColorAtDistance", 1);
-        uniformBuffer.addUniform("vClearCoatTintInfos", 2);
-        uniformBuffer.addUniform("clearCoatTintMatrix", 16);
+    public getUniforms(): { ubo?: Array<{ name: string, size: number, type: string }>, vertex?: string, fragment?: string } {
+        return {
+            ubo: [
+                { name: "vClearCoatParams", size: 2, type: "vec2" },
+                { name: "vClearCoatRefractionParams", size: 4, type: "vec4" },
+                { name: "vClearCoatInfos", size: 4, type: "vec4" },
+                { name: "clearCoatMatrix", size: 16, type: "mat4" },
+                { name: "clearCoatRoughnessMatrix", size: 16, type: "mat4" },
+                { name: "vClearCoatBumpInfos", size: 2, type: "vec2" },
+                { name: "vClearCoatTangentSpaceParams", size: 2, type: "vec2" },
+                { name: "clearCoatBumpMatrix", size: 16, type: "mat4" },
+                { name: "vClearCoatTintParams", size: 4, type: "vec4" },
+                { name: "clearCoatColorAtDistance", size: 1, type: "float" },
+                { name: "vClearCoatTintInfos", size: 2, type: "vec2" },
+                { name: "clearCoatTintMatrix", size: 16, type: "mat4" },
+            ],
+            vertex: `#ifdef CLEARCOAT
+                    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+                        uniform vec4 vClearCoatInfos;
+                    #endif
+                
+                    #ifdef CLEARCOAT_TEXTURE
+                        uniform mat4 clearCoatMatrix;
+                    #endif
+                
+                    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+                        uniform mat4 clearCoatRoughnessMatrix;
+                    #endif
+                
+                    #ifdef CLEARCOAT_BUMP
+                        uniform vec2 vClearCoatBumpInfos;
+                        uniform mat4 clearCoatBumpMatrix;
+                    #endif
+                
+                    #ifdef CLEARCOAT_TINT_TEXTURE
+                        uniform vec2 vClearCoatTintInfos;
+                        uniform mat4 clearCoatTintMatrix;
+                    #endif
+                #endif`,
+            fragment: `#ifdef CLEARCOAT
+                    uniform vec2 vClearCoatParams;
+                    uniform vec4 vClearCoatRefractionParams;
+                
+                    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+                        uniform vec4 vClearCoatInfos;
+                    #endif
+                
+                    #ifdef CLEARCOAT_TEXTURE
+                        uniform mat4 clearCoatMatrix;
+                    #endif
+                
+                    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+                        uniform mat4 clearCoatRoughnessMatrix;
+                    #endif
+                
+                    #ifdef CLEARCOAT_BUMP
+                        uniform vec2 vClearCoatBumpInfos;
+                        uniform vec2 vClearCoatTangentSpaceParams;
+                        uniform mat4 clearCoatBumpMatrix;
+                    #endif
+                
+                    #ifdef CLEARCOAT_TINT
+                        uniform vec4 vClearCoatTintParams;
+                        uniform float clearCoatColorAtDistance;
+                
+                        #ifdef CLEARCOAT_TINT_TEXTURE
+                            uniform vec2 vClearCoatTintInfos;
+                            uniform mat4 clearCoatTintMatrix;
+                        #endif
+                    #endif
+                #endif`,
+        };
     }
 }
