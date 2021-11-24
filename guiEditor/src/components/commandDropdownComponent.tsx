@@ -57,7 +57,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                     >
                         {this.props.icon && (
                             <div className="command-dropdown-icon">
-                                <img src={this.props.icon}/>
+                                <img src={this.props.icon} />
                             </div>
                         )}
                         {!this.props.icon && <div className="command-dropdown-active"></div>}
