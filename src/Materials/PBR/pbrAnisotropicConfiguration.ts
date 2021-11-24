@@ -7,8 +7,8 @@ import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { SubMesh } from "../../Meshes/subMesh";
-import { IAnimatable } from '../../Animations/animatable.interface';
-import { EffectFallbacks } from '../effectFallbacks';
+import { IAnimatable } from "../../Animations/animatable.interface";
+import { EffectFallbacks } from "../effectFallbacks";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
@@ -24,7 +24,7 @@ declare type Material = import("../material").Material;
  * @param material parent material the plugin will be created for
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
- export function createPBRAnisotropicPlugin(material: Material): Nullable<MaterialPluginBase> {
+export function createPBRAnisotropicPlugin(material: Material): Nullable<MaterialPluginBase> {
     if (material instanceof PBRBaseMaterial) {
         return new PBRAnisotropicConfiguration(material);
     }
@@ -135,8 +135,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
                     }
                 }
             }
-        }
-        else {
+        } else {
             defines.ANISOTROPIC = false;
             defines.ANISOTROPIC_TEXTURE = false;
         }

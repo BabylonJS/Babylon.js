@@ -58,7 +58,7 @@ export type EventInfoAddUniformsSamplers = EventInfo & {
 /** @hidden */
 export type EventInfoInjectCustomCode = EventInfo & {
     customCode?: ShaderCustomProcessingFunction;
-}
+};
 
 /** @hidden */
 export type EventInfoPrepareDefines = EventInfo & {

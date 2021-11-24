@@ -2,7 +2,22 @@ import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProc
 import { EventState } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Material } from "./material";
-import { EventInfoAddFallbacks, EventInfoAddUniformsSamplers, EventInfoBindForSubMesh, EventInfoDisposed, EventInfoGetActiveTextures, EventInfoGetAnimatables, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoHasTexture, EventInfoInjectCustomCode, EventInfoIsReadyForSubMesh, EventInfoPrepareDefines, EventInfoPrepareUniformBuffer, MaterialEvent } from "./materialEvent";
+import {
+    EventInfoAddFallbacks,
+    EventInfoAddUniformsSamplers,
+    EventInfoBindForSubMesh,
+    EventInfoDisposed,
+    EventInfoGetActiveTextures,
+    EventInfoGetAnimatables,
+    EventInfoGetDefineNames,
+    EventInfoHasRenderTargetTextures,
+    EventInfoHasTexture,
+    EventInfoInjectCustomCode,
+    EventInfoIsReadyForSubMesh,
+    EventInfoPrepareDefines,
+    EventInfoPrepareUniformBuffer,
+    MaterialEvent,
+} from "./materialEvent";
 
 declare type MaterialPluginBase = import("./materialPluginBase").MaterialPluginBase;
 
@@ -19,11 +34,10 @@ declare module "./material" {
  * Class that manages the plugins of a material
  */
 export class MaterialPluginManager {
-
     protected _material: Material;
     protected _plugins: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
-    protected _defineNamesFromPlugins?: { [name: string]: { type: string, default: any } };
+    protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };
 
     /**
      * Creates a new instance of the plugin manager
@@ -201,7 +215,7 @@ export class MaterialPluginManager {
             }
             this._codeInjectionPoints[shaderType][pointName] = true;
         }
-    };
+    }
 
     protected _injectCustomCode(existingCallback?: (shaderType: string, code: string) => string): ShaderCustomProcessingFunction {
         return (shaderType: string, code: string) => {
