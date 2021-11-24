@@ -21,7 +21,7 @@ export class ValueLineComponent extends React.Component<IValueLineComponentProps
 
         return (
             <div className="textLine">
-                {this.props.icon && <img src={this.props.icon}  title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
