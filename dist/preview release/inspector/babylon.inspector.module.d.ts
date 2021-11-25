@@ -74,6 +74,8 @@ declare module "babylonjs-inspector/components/globalState" {
         enableLightGizmo(light: Light, enable?: boolean): void;
         cameraGizmos: Array<CameraGizmo>;
         enableCameraGizmo(camera: Camera, enable?: boolean): void;
+        onSceneExplorerClosedObservable: Observable<void>;
+        onActionTabsClosedObservable: Observable<void>;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/paneComponent" {
@@ -552,7 +554,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
 }
 declare module "babylonjs-inspector/components/popupComponent" {
     import * as React from "react";
-    interface IPopupComponentProps {
+    export interface IPopupComponentProps {
         id: string;
         title: string;
         size: {
@@ -4832,21 +4834,32 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     }
 }
 declare module "babylonjs-inspector/inspector" {
+    import * as React from "react";
     import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
     import { Observable } from "babylonjs/Misc/observable";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { IPopupComponentProps } from "babylonjs-inspector/components/popupComponent";
+    export interface IPersistentPopupConfiguration {
+        props: IPopupComponentProps;
+        children: React.ReactNode;
+        closeWhenSceneExplorerCloses?: boolean;
+        closeWhenActionTabsCloses?: boolean;
+    }
     export class Inspector {
         private static _SceneExplorerHost;
         private static _ActionTabsHost;
         private static _EmbedHost;
         private static _NewCanvasContainer;
+        private static _PersistentPopupHost;
         private static _SceneExplorerWindow;
         private static _ActionTabsWindow;
         private static _EmbedHostWindow;
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
+        private static _OnSceneExplorerClosedObserver;
+        private static _OnActionTabsClosedObserver;
         static OnSelectionChangeObservable: Observable<any>;
         static OnPropertyChangedObservable: Observable<PropertyChangedEvent>;
         private static _GlobalState;
@@ -4866,6 +4879,8 @@ declare module "babylonjs-inspector/inspector" {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+        static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement): void;
+        static _ClosePersistentPopup(): void;
     }
 }
 declare module "babylonjs-inspector/index" {
@@ -4997,6 +5012,8 @@ declare module INSPECTOR {
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;
         enableCameraGizmo(camera: BABYLON.Camera, enable?: boolean): void;
+        onSceneExplorerClosedObservable: BABYLON.Observable<void>;
+        onActionTabsClosedObservable: BABYLON.Observable<void>;
     }
 }
 declare module INSPECTOR {
@@ -5452,7 +5469,7 @@ declare module INSPECTOR {
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
 declare module INSPECTOR {
-    interface IPopupComponentProps {
+    export interface IPopupComponentProps {
         id: string;
         title: string;
         size: {
@@ -8994,17 +9011,26 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IPersistentPopupConfiguration {
+        props: IPopupComponentProps;
+        children: React.ReactNode;
+        closeWhenSceneExplorerCloses?: boolean;
+        closeWhenActionTabsCloses?: boolean;
+    }
     export class Inspector {
         private static _SceneExplorerHost;
         private static _ActionTabsHost;
         private static _EmbedHost;
         private static _NewCanvasContainer;
+        private static _PersistentPopupHost;
         private static _SceneExplorerWindow;
         private static _ActionTabsWindow;
         private static _EmbedHostWindow;
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
+        private static _OnSceneExplorerClosedObserver;
+        private static _OnActionTabsClosedObserver;
         static OnSelectionChangeObservable: BABYLON.Observable<any>;
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
@@ -9024,6 +9050,8 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+        static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement): void;
+        static _ClosePersistentPopup(): void;
     }
 }
 declare module INSPECTOR {
