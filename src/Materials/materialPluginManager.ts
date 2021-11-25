@@ -309,7 +309,22 @@ export function RegisterMaterialPlugin(pluginName: string, factory: PluginMateri
 }
 
 /**
- * Clear the list of global plugins
+ * Removes a material plugin from the list of global plugins.
+ * @param pluginName The plugin name
+ * @returns true if the plugin has been removed, else false
+ */
+export function UnregisterMaterialPlugin(pluginName: string): boolean {
+    for (let i = 0; i < _Plugins.length; ++i) {
+        if (_Plugins[i][0] === pluginName) {
+            _Plugins.splice(i, 1);
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Clear the list of global material plugins
  */
 export function UnregisterAllMaterialPlugins(): void {
     _Plugins.length = 0;
