@@ -14,7 +14,6 @@ export class ImageBasedSlider extends BaseSlider {
     private _backgroundImage: Image;
     private _thumbImage: Image;
     private _valueBarImage: Image;
-
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     @serialize()
