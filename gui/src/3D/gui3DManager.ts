@@ -79,6 +79,14 @@ export class GUI3DManager implements IDisposable {
         }
     }
 
+    private _scaleControl(control: Control3D, scale: number) {
+     //   control.scaling.scaleInPlace(scaleRatio);
+
+       // if (newScale !== 1) {
+            control._isScaledByManager = true;
+      //  }
+    }
+
     /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public get useRealisticScaling() {
         return this.controlScaling === 0.032;
@@ -217,8 +225,10 @@ export class GUI3DManager implements IDisposable {
      */
     public addControl(control: Control3D): GUI3DManager {
         this._rootContainer.addControl(control);
-        control.scaling.scaleInPlace(this._customControlScaling);
-        control._isScaledByManager = true;
+        if (this._customControlScaling !== 1) {
+            control.scaling.scaleInPlace(this._customControlScaling);
+            control._isScaledByManager = true;
+        }
         return this;
     }
 
