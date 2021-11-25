@@ -3,8 +3,7 @@ import { EventState } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Material } from "./material";
 import {
-    EventInfoAddFallbacks,
-    EventInfoGetUniformsAndSamplers,
+    EventInfoPrepareEffect,
     EventInfoBindForSubMesh,
     EventInfoDisposed,
     EventInfoGetActiveTextures,
@@ -12,7 +11,6 @@ import {
     EventInfoGetDefineNames,
     EventInfoHasRenderTargetTextures,
     EventInfoHasTexture,
-    EventInfoInjectCustomCode,
     EventInfoIsReadyForSubMesh,
     EventInfoPrepareDefines,
     EventInfoPrepareUniformBuffer,
@@ -122,19 +120,17 @@ export class MaterialPluginManager {
             eventData.defineNames = this._defineNamesFromPlugins;
         });
 
-        material.registerForEvent(MaterialEvent.AddFallbacks, (eventData: EventInfoAddFallbacks) => {
+        material.registerForEvent(MaterialEvent.PrepareEffect, (eventData: EventInfoPrepareEffect) => {
             for (const plugin of this._plugins) {
                 eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
             }
-        });
-
-        material.registerForEvent(MaterialEvent.GetUniformsAndSamplers, (eventData: EventInfoGetUniformsAndSamplers) => {
             if (this._uniformList.length > 0) {
                 eventData.uniforms.push(...this._uniformList);
             }
             if (this._samplerList.length > 0) {
                 eventData.samplers.push(...this._samplerList);
             }
+            eventData.customCode = this._injectCustomCode(eventData.customCode);
         });
 
         material.registerForEvent(MaterialEvent.PrepareUniformBuffer, (eventData: EventInfoPrepareUniformBuffer) => {
@@ -162,10 +158,6 @@ export class MaterialPluginManager {
                 }
                 plugin.getSamplers(this._samplerList);
             }
-        });
-
-        material.registerForEvent(MaterialEvent.InjectCustomCode, (eventData: EventInfoInjectCustomCode) => {
-            eventData.customCode = this._injectCustomCode(eventData.customCode);
         });
     }
 

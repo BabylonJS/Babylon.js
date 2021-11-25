@@ -1206,11 +1206,6 @@ export class StandardMaterial extends PushMaterial {
                 fallbacks.addFallback(0, "LOGARITHMICDEPTH");
             }
 
-            this._eventInfo.fallbacks = fallbacks;
-            this._eventInfo.fallbackRank = 0;
-            this._eventInfo.defines = defines;
-            this._notifyEvent(MaterialEvent.AddFallbacks);
-
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
             if (defines.SPECULARTERM) {
@@ -1287,9 +1282,13 @@ export class StandardMaterial extends PushMaterial {
 
             var uniformBuffers = ["Material", "Scene", "Mesh"];
 
+            this._eventInfo.fallbacks = fallbacks;
+            this._eventInfo.fallbackRank = 0;
+            this._eventInfo.defines = defines;
             this._eventInfo.uniforms = uniforms;
             this._eventInfo.samplers = samplers;
-            this._notifyEvent(MaterialEvent.GetUniformsAndSamplers);
+            this._eventInfo.customCode = undefined;
+            this._notifyEvent(MaterialEvent.PrepareEffect);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1314,9 +1313,6 @@ export class StandardMaterial extends PushMaterial {
             }
 
             var join = defines.toString();
-
-            this._eventInfo.customCode = undefined;
-            this._notifyEvent(MaterialEvent.InjectCustomCode);
 
             let previousEffect = subMesh.effect;
             let effect = scene.getEngine().createEffect(shaderName, <IEffectCreationOptions>{

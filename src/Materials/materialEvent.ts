@@ -43,21 +43,13 @@ export type EventInfoGetDefineNames = EventInfo & {
 };
 
 /** @hidden */
-export type EventInfoAddFallbacks = EventInfo & {
+export type EventInfoPrepareEffect = EventInfo & {
     defines: MaterialDefines;
     fallbacks: EffectFallbacks;
     fallbackRank: number;
-};
-
-/** @hidden */
-export type EventInfoGetUniformsAndSamplers = EventInfo & {
+    customCode?: ShaderCustomProcessingFunction;
     uniforms: string[];
     samplers: string[];
-};
-
-/** @hidden */
-export type EventInfoInjectCustomCode = EventInfo & {
-    customCode?: ShaderCustomProcessingFunction;
 };
 
 /** @hidden */
@@ -90,18 +82,16 @@ export type EventInfoGetActiveTextures = EventInfo & {
 export type EventMapping = {
     0x0001: EventInfoCreated;
     0x0002: EventInfoDisposed;
-    0x0004: EventInfoHasRenderTargetTextures;
-    0x0008: EventInfoHasTexture;
+    0x0004: EventInfoGetDefineNames;
+    0x0008: EventInfoPrepareUniformBuffer;
     0x0010: EventInfoIsReadyForSubMesh;
-    0x0020: EventInfoGetDefineNames;
-    0x0040: EventInfoAddFallbacks;
-    0x0080: EventInfoGetUniformsAndSamplers;
-    0x0100: EventInfoInjectCustomCode;
-    0x0200: EventInfoPrepareDefines;
-    0x0400: EventInfoPrepareUniformBuffer;
-    0x0800: EventInfoBindForSubMesh;
-    0x1000: EventInfoGetAnimatables;
-    0x2000: EventInfoGetActiveTextures;
+    0x0020: EventInfoPrepareDefines;
+    0x0040: EventInfoBindForSubMesh;
+    0x0080: EventInfoPrepareEffect;
+    0x0100: EventInfoGetAnimatables;
+    0x0200: EventInfoGetActiveTextures;
+    0x0400: EventInfoHasTexture;
+    0x0800: EventInfoHasRenderTargetTextures;
 };
 
 /**
@@ -110,16 +100,14 @@ export type EventMapping = {
 export enum MaterialEvent {
     Created = 0x0001,
     Disposed = 0x0002,
-    HasRenderTargetTextures = 0x0004,
-    HasTexture = 0x0008,
+    GetDefineNames = 0x0004,
+    PrepareUniformBuffer = 0x0008,
     IsReadyForSubMesh = 0x0010,
-    GetDefineNames = 0x0020,
-    AddFallbacks = 0x0040,
-    GetUniformsAndSamplers = 0x0080,
-    InjectCustomCode = 0x0100,
-    PrepareDefines = 0x0200,
-    PrepareUniformBuffer = 0x0400,
-    BindForSubMesh = 0x0800,
-    GetAnimatables = 0x1000,
-    GetActiveTextures = 0x2000,
+    PrepareDefines = 0x0020,
+    BindForSubMesh = 0x0040,
+    PrepareEffect = 0x0080,
+    GetAnimatables = 0x0100,
+    GetActiveTextures = 0x0200,
+    HasTexture = 0x0400,
+    HasRenderTargetTextures = 0x0800,
 }

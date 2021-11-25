@@ -26,7 +26,7 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { MaterialEvent,
-    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoAddFallbacks, EventInfoPrepareUniformBuffer, EventInfoInjectCustomCode, EventInfoGetUniformsAndSamplers } from "./materialEvent";
+    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoPrepareEffect, EventInfoPrepareUniformBuffer } from "./materialEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -738,9 +738,7 @@ export class Material implements IAnimatable {
             EventInfoHasTexture &
             EventInfoIsReadyForSubMesh &
             EventInfoGetDefineNames &
-            EventInfoAddFallbacks &
-            EventInfoGetUniformsAndSamplers &
-            EventInfoInjectCustomCode &
+            EventInfoPrepareEffect &
             EventInfoPrepareDefines &
             EventInfoPrepareUniformBuffer &
             EventInfoBindForSubMesh &
