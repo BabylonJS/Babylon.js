@@ -405,8 +405,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     loadToEditor() {
         const size = this.globalState.guiTexture.getSize();
         this.resizeGuiTexture(new Vector2(size.width, size.height));
-        var children = this.globalState.guiTexture.getChildren();
-        children[0].children.forEach((guiElement) => {
+        this.globalState.guiTexture.rootContainer.children.forEach((guiElement) => {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
                 this.artBoardBackground = guiElement as Rectangle;
                 return;
@@ -456,8 +455,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
     }
-
-
 
     createNewGuiNode(guiControl: Control) {
         const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
@@ -510,11 +507,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.isHighlighted = false;
         guiControl.isReadOnly = true;
         guiControl.isHitTestVisible = true;
-        if (guiControl instanceof Container) {
-            (guiControl as Container).children.forEach((child) => {
-                this.createNewGuiNode(child);
-            });
-        }
+        guiControl.getDescendants(true).forEach((child) => {
+            this.createNewGuiNode(child);
+        });
         return guiControl;
     }
 
@@ -827,11 +822,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     synchronizeLiveGUI() {
         if (this.globalState.liveGuiTexture) {
             this.props.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
-            this.globalState.liveGuiTexture.getChildren().forEach(child => {
-                child.getDescendants(true).forEach(desc => {
-                    this.globalState.liveGuiTexture?.removeControl(desc);
-                    this.appendBlock(desc);
-                })
+            this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(desc => {
+                this.globalState.liveGuiTexture?.removeControl(desc);
+                this.appendBlock(desc);
             })
         }
     }
