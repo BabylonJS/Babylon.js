@@ -20,6 +20,7 @@ const gridIcon: string = require("../public/imgs/gridIcon.svg");
 const stackPanelIcon: string = require("../public/imgs/stackPanelIcon.svg");
 const textBoxIcon: string = require("../public/imgs/textBoxIcon.svg");
 const sliderIcon: string = require("../public/imgs/sliderIcon.svg");
+const imageBasedSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
 const buttonIcon: string = require("../public/imgs/buttonIcon.svg");
 const passwordFieldIcon: string = require("../public/imgs/passwordFieldIcon.svg");
 const checkboxIcon: string = require("../public/imgs/checkboxIcon.svg");
@@ -398,6 +399,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: sliderIcon,
                 onClick: () => {
                     this.onCreate("Slider");
+                },
+            },
+            {
+                label: "ImageBasedSlider",
+                icon: imageBasedSliderIcon,
+                onClick: () => {
+                    this.onCreate("ImageBasedSlider");
                 },
             },
             {

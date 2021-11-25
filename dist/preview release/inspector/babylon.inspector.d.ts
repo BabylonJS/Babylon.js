@@ -62,6 +62,8 @@ declare module INSPECTOR {
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;
         enableCameraGizmo(camera: BABYLON.Camera, enable?: boolean): void;
+        onSceneExplorerClosedObservable: BABYLON.Observable<void>;
+        onActionTabsClosedObservable: BABYLON.Observable<void>;
     }
 }
 declare module INSPECTOR {
@@ -517,7 +519,7 @@ declare module INSPECTOR {
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
 declare module INSPECTOR {
-    interface IPopupComponentProps {
+    export interface IPopupComponentProps {
         id: string;
         title: string;
         size: {
@@ -4059,17 +4061,26 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IPersistentPopupConfiguration {
+        props: IPopupComponentProps;
+        children: React.ReactNode;
+        closeWhenSceneExplorerCloses?: boolean;
+        closeWhenActionTabsCloses?: boolean;
+    }
     export class Inspector {
         private static _SceneExplorerHost;
         private static _ActionTabsHost;
         private static _EmbedHost;
         private static _NewCanvasContainer;
+        private static _PersistentPopupHost;
         private static _SceneExplorerWindow;
         private static _ActionTabsWindow;
         private static _EmbedHostWindow;
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
+        private static _OnSceneExplorerClosedObserver;
+        private static _OnActionTabsClosedObserver;
         static OnSelectionChangeObservable: BABYLON.Observable<any>;
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
@@ -4089,6 +4100,8 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+        static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement): void;
+        static _ClosePersistentPopup(): void;
     }
 }
 declare module INSPECTOR {

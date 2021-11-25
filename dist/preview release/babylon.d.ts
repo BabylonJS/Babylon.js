@@ -72250,6 +72250,14 @@ declare module BABYLON {
          * The rendering group to draw the layer in.
          */
         renderingGroupId: number;
+        /**
+         * Forces the merge step to be done in ldr (clamp values > 1)
+         */
+        ldrMerge?: boolean;
+        /**
+         * Defines the blend mode used by the merge
+         */
+        alphaBlendingMode?: number;
     }
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
