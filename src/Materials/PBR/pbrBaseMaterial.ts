@@ -2225,7 +2225,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns - Array of animatable textures.
      */
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        var results = super.getAnimatables();
 
         if (this._albedoTexture && this._albedoTexture.animations && this._albedoTexture.animations.length > 0) {
             results.push(this._albedoTexture);
@@ -2261,9 +2261,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
             results.push(this._lightmapTexture);
         }
-
-        this._eventInfo.animatables = results;
-        this._notifyEvent(MaterialEvent.GetAnimatables);
 
         return results;
     }
