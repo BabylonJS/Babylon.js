@@ -1,25 +1,11 @@
 import { Constants } from "../../Engines/constants";
 import { serialize, expandToProperty } from "../../Misc/decorators";
 import { Scene } from "../../scene";
-import { Nullable } from "../../types";
 import { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type Material = import("../material").Material;
-
-/**
- * Creates an instance of the brdf plugin
- * @param material parent material the plugin will be created for
- * @returns the plugin instance or null if the plugin is incompatible with material
- */
-export function createPBRBRDFPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRBRDFConfiguration(material);
-    }
-    return null;
-}
 
 /**
  * @hidden

@@ -11,24 +11,11 @@ import { SubMesh } from '../../Meshes/subMesh';
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type Material = import("../material").Material;
-
-/**
- * Creates an instance of the sheen plugin
- * @param material parent material the plugin will be created for
- * @returns the plugin instance or null if the plugin is incompatible with material
- */
- export function createPBRSheenPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRSheenConfiguration(material);
-    }
-    return null;
-}
+declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden

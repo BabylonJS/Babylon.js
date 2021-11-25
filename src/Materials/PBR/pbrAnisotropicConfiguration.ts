@@ -12,24 +12,11 @@ import { EffectFallbacks } from "../effectFallbacks";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type Material = import("../material").Material;
-
-/**
- * Creates an instance of the anisotropic plugin
- * @param material parent material the plugin will be created for
- * @returns the plugin instance or null if the plugin is incompatible with material
- */
-export function createPBRAnisotropicPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRAnisotropicConfiguration(material);
-    }
-    return null;
-}
+declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden

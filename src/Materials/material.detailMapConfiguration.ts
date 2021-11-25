@@ -9,24 +9,12 @@ import { IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";
-import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
-import { StandardMaterial } from "./standardMaterial";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
-
-/**
- * Creates an instance of the detail map plugin
- * @param material parent material the plugin will be created for
- * @returns the plugin instance or null if the plugin is incompatible with material
- */
-export function createDetailMapPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial || material instanceof StandardMaterial) {
-        return new DetailMapConfiguration(material);
-    }
-    return null;
-}
+declare type StandardMaterial = import("./standardMaterial").StandardMaterial;
+declare type PBRBaseMaterial = import("./PBR/pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden
