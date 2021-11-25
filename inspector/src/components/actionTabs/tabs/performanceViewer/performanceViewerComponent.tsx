@@ -56,9 +56,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         setIsLoaded(false);
     };
 
-    const onPerformanceButtonClick = () => {
-        setIsLoaded(false);
-        setIsOpen(true);
+    const startPerformanceViewerPopup = () => {
         if (performanceCollector) {
             Inspector._CreatePersistentPopup({
                 props: {
@@ -71,6 +69,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 children: <PerformanceViewerPopupComponent scene={scene} layoutObservable={layoutObservable} returnToLiveObservable={returnToLiveObservable} performanceCollector={performanceCollector}/>
             }, document.body);
         }
+    }
+
+    const onPerformanceButtonClick = () => {
+        setIsLoaded(false);
+        setIsOpen(true);
+        startPerformanceViewerPopup();
     };
 
     const onLoadClick = (file: File) => {
@@ -85,18 +89,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                 setIsOpen(false);
                 setIsLoaded(false);
             } else {
-                if (performanceCollector) {
-                    Inspector._CreatePersistentPopup({
-                        props: {
-                            id: "performance-viewer",
-                            title: "Realtime Performance Viewer",
-                            onClose: onClosePerformanceViewer,
-                            onResize: onResize,
-                            size: initialWindowSize
-                        },
-                        children: <PerformanceViewerPopupComponent scene={scene} layoutObservable={layoutObservable} returnToLiveObservable={returnToLiveObservable} performanceCollector={performanceCollector}/>
-                    }, document.body);
-                }
+                startPerformanceViewerPopup();
             }
         });
     };
