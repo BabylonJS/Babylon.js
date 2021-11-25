@@ -72,7 +72,7 @@ export enum HandConstraintVisibility {
 type HandPoseInfo = {
     position: Vector3;
     quaternion: Quaternion;
-    id: number;
+    id: string;
 };
 
 /**
