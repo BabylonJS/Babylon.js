@@ -206,19 +206,6 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
                 { name: "vAnisotropyInfos", size: 2, type: "vec2" },
                 { name: "anisotropyMatrix", size: 16, type: "mat4" },
             ],
-            vertex: `#ifdef ANISOTROPIC
-                    #ifdef ANISOTROPIC_TEXTURE
-                        uniform vec2 vAnisotropyInfos;
-                        uniform mat4 anisotropyMatrix;
-                    #endif
-                #endif`,
-            fragment: `#ifdef ANISOTROPIC
-                    uniform vec3 vAnisotropy;
-                    #ifdef ANISOTROPIC_TEXTURE
-                        uniform vec2 vAnisotropyInfos;
-                        uniform mat4 anisotropyMatrix;
-                    #endif
-                #endif`,
         };
     }
 }

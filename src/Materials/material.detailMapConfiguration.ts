@@ -207,13 +207,6 @@ export class DetailMapConfiguration extends MaterialPluginBase {
                 { name: "vDetailInfos", size: 4, type: "vec4" },
                 { name: "detailMatrix", size: 16, type: "mat4" },
             ],
-            vertex: `#ifdef DETAIL
-                    uniform vec4 vDetailInfos;
-                    uniform mat4 detailMatrix;
-                #endif`,
-            fragment: `#ifdef DETAIL
-                    uniform vec4 vDetailInfos;
-                #endif`,
         };
     }
 }

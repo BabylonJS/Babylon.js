@@ -703,61 +703,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 { name: "vRefractionSize", size: 3, type: "vec3" },
                 { name: "scatteringDiffusionProfile", size: 1, type: "float" },
             ],
-            vertex: `#ifdef SUBSURFACE
-                    #ifdef SS_REFRACTION
-                        uniform vec4 vRefractionInfos;
-                        uniform mat4 refractionMatrix;
-                    #endif
-
-                    #ifdef SS_THICKNESSANDMASK_TEXTURE
-                        uniform vec2 vThicknessInfos;
-                        uniform mat4 thicknessMatrix;
-                    #endif
-
-                    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-                        uniform vec2 vRefractionIntensityInfos;
-                        uniform mat4 refractionIntensityMatrix;
-                    #endif
-
-                    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-                        uniform vec2 vTranslucencyIntensityInfos;
-                        uniform mat4 translucencyIntensityMatrix;
-                    #endif
-                #endif`,
-            fragment: `#ifdef SUBSURFACE
-                    #ifdef SS_REFRACTION
-                        uniform vec4 vRefractionMicrosurfaceInfos;
-                        uniform vec4 vRefractionInfos;
-                        uniform mat4 refractionMatrix;
-                        #ifdef REALTIME_FILTERING
-                            uniform vec2 vRefractionFilteringInfo;
-                        #endif
-                    #endif
-
-                    #ifdef SS_THICKNESSANDMASK_TEXTURE
-                        uniform vec2 vThicknessInfos;
-                        uniform mat4 thicknessMatrix;
-                    #endif
-
-                    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-                        uniform vec2 vRefractionIntensityInfos;
-                        uniform mat4 refractionIntensityMatrix;
-                    #endif
-
-                    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-                        uniform vec2 vTranslucencyIntensityInfos;
-                        uniform mat4 translucencyIntensityMatrix;
-                    #endif
-
-                    uniform vec2 vThicknessParam;
-                    uniform vec3 vDiffusionDistance;
-                    uniform vec4 vTintColor;
-                    uniform vec3 vSubSurfaceIntensity;
-                #endif
-                #if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
-                    uniform vec3 vRefractionPosition;
-                    uniform vec3 vRefractionSize;
-                #endif`,
         };
     }
 }
