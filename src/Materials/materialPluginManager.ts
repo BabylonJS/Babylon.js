@@ -274,16 +274,9 @@ export class MaterialPluginManager {
 /**
  * Type for plugin material factories.
  */
-type PluginMaterialFactory = (material: Material) => Nullable<MaterialPluginBase>;
+export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPluginBase>;
 
-/**
- * List of registered plugin material factories.
- */
 let _Plugins: Array<[string, PluginMaterialFactory]> = [];
-
-/**
- * Flag for the plugin manager initialization code.
- */
 let _Inited = false;
 
 /**
