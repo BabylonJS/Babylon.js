@@ -12,15 +12,18 @@ export class ButtonLineComponent extends React.Component<IButtonLineComponentPro
     }
 
     render() {
-
         return (
             <div className={"buttonLine" + (this.props.isDisabled ? " disabled" : "")}>
-                <button onClick={() => {
-                    if (this.props.isDisabled) {
-                        return;
-                    }
-                    this.props.onClick();
-                }}>{this.props.label}</button>
+                <button
+                    onClick={() => {
+                        if (this.props.isDisabled) {
+                            return;
+                        }
+                        this.props.onClick();
+                    }}
+                >
+                    {this.props.label}
+                </button>
             </div>
         );
     }

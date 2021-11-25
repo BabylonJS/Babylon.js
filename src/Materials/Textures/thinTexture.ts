@@ -150,11 +150,10 @@ export class ThinTexture {
      * Base class of all the textures in babylon.
      * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
      * @param internalTexture Define the internalTexture to wrap
-     * @param createTexture Defines wether the internal texture should be created
      */
-    constructor(internalTexture: Nullable<InternalTexture>, createTexture = true) {
+    constructor(internalTexture: Nullable<InternalTexture>) {
         this._texture = internalTexture;
-        if (this._texture && createTexture) {
+        if (this._texture) {
             this._engine = this._texture.getEngine();
         }
     }

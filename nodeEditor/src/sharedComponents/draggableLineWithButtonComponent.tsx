@@ -6,6 +6,7 @@ export interface IDraggableLineWithButtonComponent {
     iconImage: any;
     onIconClick: (value: string) => void;
     iconTitle: string;
+    lenSuffixToRemove?: number;
 }
 
 export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
@@ -13,17 +14,25 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
         super(props);
     }
 
-    render() { 
+    render() {
         return (
-            <div className="draggableLine withButton" 
+            <div
+                className="draggableLine withButton"
                 title={this.props.tooltip}
                 draggable={true}
-                onDragStart={event => {
+                onDragStart={(event) => {
                     event.dataTransfer.setData("babylonjs-material-node", this.props.data);
-                }}>
-                {this.props.data.substr(0, this.props.data.length - 6)}
-                <div className="icon" onClick={() => { this.props.onIconClick(this.props.data); }} title={this.props.iconTitle}>
-                    <img className="img" title={this.props.iconTitle} src={this.props.iconImage}/>
+                }}
+            >
+                {this.props.data.substr(0, this.props.data.length - (this.props.lenSuffixToRemove ?? 6))}
+                <div
+                    className="icon"
+                    onClick={() => {
+                        this.props.onIconClick(this.props.data);
+                    }}
+                    title={this.props.iconTitle}
+                >
+                    <img className="img" title={this.props.iconTitle} src={this.props.iconImage} />
                 </div>
             </div>
         );

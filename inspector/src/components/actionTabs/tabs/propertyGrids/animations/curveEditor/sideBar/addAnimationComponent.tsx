@@ -13,13 +13,10 @@ interface IAddAnimationComponentProps {
 }
 
 interface IAddAnimationComponentState {
-    customPropertyMode: boolean
+    customPropertyMode: boolean;
 }
 
-export class AddAnimationComponent extends React.Component<
-    IAddAnimationComponentProps,
-    IAddAnimationComponentState
-> {
+export class AddAnimationComponent extends React.Component<IAddAnimationComponentProps, IAddAnimationComponentState> {
     private _root: React.RefObject<HTMLDivElement>;
     private _displayName: React.RefObject<HTMLInputElement>;
     private _property: React.RefObject<HTMLInputElement>;
@@ -40,7 +37,7 @@ export class AddAnimationComponent extends React.Component<
         this._propertylement = React.createRef();
     }
 
-    public createNew() {        
+    public createNew() {
         const context = this.props.context;
         const document = this._displayName.current!.ownerDocument;
         const displayName = this._displayName.current!.value;
@@ -57,9 +54,13 @@ export class AddAnimationComponent extends React.Component<
             document.defaultView!.alert("Please define a property");
             return;
         }
-        
-        const fps = this.props.context.animations && this.props.context.animations.length ? 
-            (this.props.context.useTargetAnimations ? (this.props.context.animations[0] as TargetedAnimation).animation.framePerSecond : (this.props.context.animations[0] as Animation).framePerSecond) : 60;
+
+        const fps =
+            this.props.context.animations && this.props.context.animations.length
+                ? this.props.context.useTargetAnimations
+                    ? (this.props.context.animations[0] as TargetedAnimation).animation.framePerSecond
+                    : (this.props.context.animations[0] as Animation).framePerSecond
+                : 60;
         let dataType = 0;
         let loopMode = 0;
         let defaultValue0: any;
@@ -95,13 +96,13 @@ export class AddAnimationComponent extends React.Component<
                 defaultValue0 = Color3.Black();
                 defaultValue1 = Color3.White();
                 break;
-            }                                                
+            }
             case "Color4": {
                 dataType = Animation.ANIMATIONTYPE_COLOR4;
                 defaultValue0 = new Color4(0, 0, 0, 0);
                 defaultValue1 = new Color4(1, 1, 1, 1);
                 break;
-            }            
+            }
         }
 
         switch (loopModeValue) {
@@ -123,12 +124,12 @@ export class AddAnimationComponent extends React.Component<
         let keys: IAnimationKey[] = [];
         keys.push({
             frame: context.referenceMinFrame,
-            value: defaultValue0
+            value: defaultValue0,
         });
 
         keys.push({
             frame: context.referenceMaxFrame,
-            value: defaultValue1
+            value: defaultValue1,
         });
 
         animation.setKeys(keys);
@@ -136,7 +137,7 @@ export class AddAnimationComponent extends React.Component<
         context.stop();
 
         if (!context.animations || context.animations.length === 0) {
-            context.animations = [];            
+            context.animations = [];
             if (context.target) {
                 context.target.animations = context.animations as Animation[];
             }
@@ -147,7 +148,7 @@ export class AddAnimationComponent extends React.Component<
         }
         context.activeAnimations.push(animation);
         context.prepare();
-        context.onActiveAnimationChanged.notifyObservers();            
+        context.onActiveAnimationChanged.notifyObservers();
         context.onAnimationsLoaded.notifyObservers();
     }
 
@@ -166,7 +167,6 @@ export class AddAnimationComponent extends React.Component<
     }
 
     public render() {
-
         const types = ["Float", "Vector2", "Vector3", "Quaternion", "Color3", "Color4"];
         const loopModes = ["Cycle", "Relative", "Constant"];
         const modes = ["Custom", "List"];
@@ -191,8 +191,8 @@ export class AddAnimationComponent extends React.Component<
 
                     if (properties.indexOf(property) !== -1) {
                         continue;
-                    }                 
-                    
+                    }
+
                     if (!descriptor.writable && !descriptor.set) {
                         continue;
                     }
@@ -217,9 +217,9 @@ export class AddAnimationComponent extends React.Component<
             }
 
             if (this._propertylement.current) {
-                inferredType = this.getInferredType()
+                inferredType = this.getInferredType();
             } else {
-                inferredType = this.getInferredType(properties[0])
+                inferredType = this.getInferredType(properties[0]);
             }
         }
 
@@ -227,27 +227,20 @@ export class AddAnimationComponent extends React.Component<
 
         return (
             <div id="add-animation-pane" ref={this._root}>
-                <div id="add-animation-display-name-label">
-                    Display Name
-                </div>                
-                <div id="add-animation-mode-label">
-                    Mode
-                </div>     
-                <div id="add-animation-property-label">
-                    Property
-                </div>                
-                <div id="add-animation-type-label">
-                    Type
-                </div>
-                <div id="add-animation-loop-mode-label">
-                    Loop Mode
-                </div>
-                <input type="text" id="add-animation-name" ref={this._displayName} className="input-text" defaultValue=""/>
-                <select id="add-animation-mode" className="option" 
+                <div id="add-animation-display-name-label">Display Name</div>
+                <div id="add-animation-mode-label">Mode</div>
+                <div id="add-animation-property-label">Property</div>
+                <div id="add-animation-type-label">Type</div>
+                <div id="add-animation-loop-mode-label">Loop Mode</div>
+                <input type="text" id="add-animation-name" ref={this._displayName} className="input-text" defaultValue="" />
+                <select
+                    id="add-animation-mode"
+                    className="option"
                     value={this.state.customPropertyMode ? "Custom" : "List"}
-                    onChange={evt => {
-                        this.setState({customPropertyMode: evt.currentTarget.value === "Custom"});
-                    }}>
+                    onChange={(evt) => {
+                        this.setState({ customPropertyMode: evt.currentTarget.value === "Custom" });
+                    }}
+                >
                     {modes.map((mode, i) => {
                         return (
                             <option key={mode + i} value={mode} title={mode}>
@@ -256,10 +249,9 @@ export class AddAnimationComponent extends React.Component<
                         );
                     })}
                 </select>
-                {
-                    customPropertyMode &&
+                {customPropertyMode && (
                     <>
-                        <input type="text" id="add-animation-property" ref={this._property} className="input-text" defaultValue=""/>
+                        <input type="text" id="add-animation-property" ref={this._property} className="input-text" defaultValue="" />
                         <select id="add-animation-type" className="option" ref={this._typeElement}>
                             {types.map((type, i) => {
                                 return (
@@ -270,13 +262,17 @@ export class AddAnimationComponent extends React.Component<
                             })}
                         </select>
                     </>
-                }
-                {
-                    !customPropertyMode &&
+                )}
+                {!customPropertyMode && (
                     <>
-                        <select id="add-animation-property" className="option" ref={this._propertylement} onClick={() => {
+                        <select
+                            id="add-animation-property"
+                            className="option"
+                            ref={this._propertylement}
+                            onClick={() => {
                                 this.forceUpdate();
-                            }}>
+                            }}
+                        >
                             {properties.map((property, i) => {
                                 return (
                                     <option key={property + i} value={property} title={property}>
@@ -285,13 +281,9 @@ export class AddAnimationComponent extends React.Component<
                                 );
                             })}
                         </select>
-                        <div id="add-animation-type">        
-                            {
-                                inferredType
-                            }                 
-                        </div>
+                        <div id="add-animation-type">{inferredType}</div>
                     </>
-                }
+                )}
 
                 <select id="add-animation-loop-mode" className="option" ref={this._loopModeElement}>
                     {loopModes.map((loopMode, i) => {
@@ -304,7 +296,7 @@ export class AddAnimationComponent extends React.Component<
                 </select>
                 <button className="simple-button" id="add-animation" type="button" onClick={() => this.createNew()}>
                     Create
-                </button>              
+                </button>
             </div>
         );
     }

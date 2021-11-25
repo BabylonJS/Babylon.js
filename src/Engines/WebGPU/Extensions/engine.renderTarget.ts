@@ -110,11 +110,6 @@ WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrappe
 
     samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
-    if (samples > 1) {
-        // TODO WEBGPU for the time being, Chrome only accepts values of 1 or 4
-        samples = 4;
-    }
-
     this._textureHelper.createMSAATexture(rtWrapper.texture, samples);
 
     if (rtWrapper._depthStencilTexture) {

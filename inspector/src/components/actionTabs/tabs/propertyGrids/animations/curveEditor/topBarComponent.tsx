@@ -28,10 +28,7 @@ interface ITopBarComponentState {
     editControlsVisible: boolean;
 }
 
-export class TopBarComponent extends React.Component<
-ITopBarComponentProps,
-ITopBarComponentState
-> {
+export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
     private _onFrameSetObserver: Nullable<Observer<number>>;
     private _onValueSetObserver: Nullable<Observer<number>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
@@ -40,23 +37,23 @@ ITopBarComponentState
     constructor(props: ITopBarComponentProps) {
         super(props);
 
-        this.state = {keyFrameValue: "", keyValue: "", editControlsVisible: false };
+        this.state = { keyFrameValue: "", keyValue: "", editControlsVisible: false };
 
-        this._onFrameSetObserver = this.props.context.onFrameSet.add(newFrameValue => {
-            this.setState({keyFrameValue: newFrameValue.toFixed(0)});
+        this._onFrameSetObserver = this.props.context.onFrameSet.add((newFrameValue) => {
+            this.setState({ keyFrameValue: newFrameValue.toFixed(0) });
         });
 
-        this._onValueSetObserver = this.props.context.onValueSet.add(newValue => {
-            this.setState({keyValue: newValue.toFixed(2)});
+        this._onValueSetObserver = this.props.context.onValueSet.add((newValue) => {
+            this.setState({ keyValue: newValue.toFixed(2) });
         });
 
         this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
-            this.setState({keyFrameValue: "", keyValue: ""});
+            this.setState({ keyFrameValue: "", keyValue: "" });
         });
 
         this.onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
-            this.setState({keyFrameValue: "", keyValue: "", editControlsVisible: this.props.context.activeKeyPoints?.length === 1});
-        })
+            this.setState({ keyFrameValue: "", keyValue: "", editControlsVisible: this.props.context.activeKeyPoints?.length === 1 });
+        });
     }
 
     componentWillUnmount() {
@@ -78,61 +75,90 @@ ITopBarComponentState
         const hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (
             <div id="top-bar">
-                <img id="top-bar-logo" src={logoIcon}/>
-                <div id="top-bar-parent-name">
-                    {this.props.context.title}
-                </div>
-                <TextInputComponent 
+                <img id="top-bar-logo" src={logoIcon} />
+                <div id="top-bar-parent-name">{this.props.context.title}</div>
+                <TextInputComponent
                     className={hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled"}
                     isNumber={true}
                     value={this.state.keyFrameValue}
                     tooltip="Frame"
                     id="key-frame"
-                    onValueAsNumberChanged={newValue => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
-                    globalState={this.props.globalState} context={this.props.context} />  
-                <TextInputComponent 
+                    onValueAsNumberChanged={(newValue) => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                />
+                <TextInputComponent
                     className={hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled"}
                     isNumber={true}
                     value={this.state.keyValue}
                     tooltip="Value"
                     id="key-value"
-                    onValueAsNumberChanged={newValue => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
-                    globalState={this.props.globalState} context={this.props.context} />  
-                <ActionButtonComponent                     
+                    onValueAsNumberChanged={(newValue) => this.props.context.onValueManuallyEntered.notifyObservers(newValue)}
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                />
+                <ActionButtonComponent
                     className={hasActiveAnimations ? "" : "disabled"}
                     tooltip="New key"
-                    id="new-key" globalState={this.props.globalState} context={this.props.context} 
-                    icon={newKeyIcon} onClick={() => this.props.context.onNewKeyPointRequired.notifyObservers()}/>                
-                <ActionButtonComponent 
+                    id="new-key"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={newKeyIcon}
+                    onClick={() => this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers()}
+                />
+                <ActionButtonComponent
                     tooltip="Frame canvas"
-                    id="frame-canvas" globalState={this.props.globalState} context={this.props.context} 
-                    icon={frameIcon} onClick={() => this.props.context.onFrameRequired.notifyObservers()}/>
-                <ActionButtonComponent                         
+                    id="frame-canvas"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={frameIcon}
+                    onClick={() => this.props.context.onFrameRequired.notifyObservers()}
+                />
+                <ActionButtonComponent
                     className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
                     tooltip="Flatten tangent"
-                    id="flatten-tangent" globalState={this.props.globalState} context={this.props.context} 
-                    icon={flatTangentIcon} onClick={() => this.props.context.onFlattenTangentRequired.notifyObservers()}/>
-                <ActionButtonComponent 
+                    id="flatten-tangent"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={flatTangentIcon}
+                    onClick={() => this.props.context.onFlattenTangentRequired.notifyObservers()}
+                />
+                <ActionButtonComponent
                     className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
                     tooltip="Linear tangent"
-                    id="linear-tangent" globalState={this.props.globalState} context={this.props.context} 
-                    icon={linearTangentIcon} onClick={() => this.props.context.onLinearTangentRequired.notifyObservers()}/>
-                <ActionButtonComponent 
+                    id="linear-tangent"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={linearTangentIcon}
+                    onClick={() => this.props.context.onLinearTangentRequired.notifyObservers()}
+                />
+                <ActionButtonComponent
                     className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
                     tooltip="Break tangent"
-                    id="break-tangent" globalState={this.props.globalState} context={this.props.context} 
-                    icon={breakTangentIcon} onClick={() => this.props.context.onBreakTangentRequired.notifyObservers()}/>
-                <ActionButtonComponent 
+                    id="break-tangent"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={breakTangentIcon}
+                    onClick={() => this.props.context.onBreakTangentRequired.notifyObservers()}
+                />
+                <ActionButtonComponent
                     className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
                     tooltip="Unify tangent"
-                    id="unify-tangent" globalState={this.props.globalState} context={this.props.context} 
-                    icon={unifyTangentIcon} onClick={() => this.props.context.onUnifyTangentRequired.notifyObservers()}/>
+                    id="unify-tangent"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={unifyTangentIcon}
+                    onClick={() => this.props.context.onUnifyTangentRequired.notifyObservers()}
+                />
                 <ActionButtonComponent
                     className={this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled"}
                     tooltip="Step tangent"
-                    id="step-tangent" globalState={this.props.globalState} context={this.props.context}
-                    icon={stepTangentIcon} onClick={() => this.props.context.onStepTangentRequired.notifyObservers()}
-                />                            
+                    id="step-tangent"
+                    globalState={this.props.globalState}
+                    context={this.props.context}
+                    icon={stepTangentIcon}
+                    onClick={() => this.props.context.onStepTangentRequired.notifyObservers()}
+                />
             </div>
         );
     }

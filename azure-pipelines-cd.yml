@@ -57,3 +57,18 @@ jobs:
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# gui-editor
+  - script: 'npm install --prefix Tools/Gulp && npx gulp guiEditor --gulpfile ./Tools/Gulp/gulpfile.js'
+    displayName: 'gulp build guiEditor'
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=6c059fae-a89c-4e0f-81be-7bf990854167'
+    displayName: 'netlify link guiEditor'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=guiEditor/public'
+    displayName: 'netlify deploy guiEditor'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)

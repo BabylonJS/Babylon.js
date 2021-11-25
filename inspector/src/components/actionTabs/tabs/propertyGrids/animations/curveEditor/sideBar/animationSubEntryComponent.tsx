@@ -20,10 +20,7 @@ interface IAnimationSubEntryComponentState {
     isSelected: boolean;
 }
 
-export class AnimationSubEntryComponent extends React.Component<
-IAnimationSubEntryComponentProps,
-IAnimationSubEntryComponentState
-> {
+export class AnimationSubEntryComponent extends React.Component<IAnimationSubEntryComponentProps, IAnimationSubEntryComponentState> {
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
     private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
 
@@ -42,7 +39,7 @@ IAnimationSubEntryComponentState
 
         this.state = { isSelected: isSelected };
 
-        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(animation => {
+        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add((animation) => {
             this.forceUpdate();
         });
 
@@ -51,16 +48,18 @@ IAnimationSubEntryComponentState
 
             if (this.props.context.activeKeyPoints) {
                 for (let activeKeyPoint of this.props.context.activeKeyPoints) {
-                    if (activeKeyPoint.props.curve.animation === this.props.animation 
-                        && activeKeyPoint.props.channel === this.props.color 
-                        && this.props.context.activeAnimations.indexOf(this.props.animation) !== -1) {
+                    if (
+                        activeKeyPoint.props.curve.animation === this.props.animation &&
+                        activeKeyPoint.props.channel === this.props.color &&
+                        this.props.context.activeAnimations.indexOf(this.props.animation) !== -1
+                    ) {
                         isSelected = true;
                         break;
                     }
                 }
             }
 
-            this.setState({isSelected: isSelected});
+            this.setState({ isSelected: isSelected });
         });
     }
 
@@ -94,25 +93,24 @@ IAnimationSubEntryComponentState
     }
 
     public render() {
-        let isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 
-                        && (this.props.context.isChannelEnabled(this.props.animation, this.props.color));
+        let isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 && this.props.context.isChannelEnabled(this.props.animation, this.props.color);
         return (
             <>
                 <div className={"animation-entry" + (isActive ? " isActive" : "")}>
-                    {
-                        this.state.isSelected &&
+                    {this.state.isSelected && (
                         <div className="animation-active-indicator">
-                            <img src={selectedIcon}/>
+                            <img src={selectedIcon} />
                         </div>
-                    }
-                    <div 
-                        className="animation-name" 
-                        style={
-                            {
-                                color: this.props.color
-                            }
-                        }
-                        onClick={evt => this._activate(evt)}>{this.props.subName}</div>
+                    )}
+                    <div
+                        className="animation-name"
+                        style={{
+                            color: this.props.color,
+                        }}
+                        onClick={(evt) => this._activate(evt)}
+                    >
+                        {this.props.subName}
+                    </div>
                 </div>
             </>
         );
