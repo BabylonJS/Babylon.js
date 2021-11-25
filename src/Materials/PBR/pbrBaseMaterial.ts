@@ -1266,12 +1266,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
 
-        this._eventInfo.fallbacks = fallbacks;
-        this._eventInfo.fallbackRank = fallbackRank;
-        this._eventInfo.defines = defines;
-        this._notifyEvent(MaterialEvent.AddFallbacks);
-        fallbackRank = this._eventInfo.fallbackRank;
-
         if (defines.ENVIRONMENTBRDF) {
             fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
         }
@@ -1382,9 +1376,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
+        this._eventInfo.fallbacks = fallbacks;
+        this._eventInfo.fallbackRank = fallbackRank;
+        this._eventInfo.defines = defines;
         this._eventInfo.uniforms = uniforms;
         this._eventInfo.samplers = samplers;
-        this._notifyEvent(MaterialEvent.GetUniformsAndSamplers);
+        this._eventInfo.customCode = undefined;
+        this._notifyEvent(MaterialEvent.PrepareEffect);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1409,9 +1407,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         var join = defines.toString();
-
-        this._eventInfo.customCode = undefined;
-        this._notifyEvent(MaterialEvent.InjectCustomCode);
 
         return engine.createEffect(shaderName, <IEffectCreationOptions>{
             attributes: attribs,
