@@ -348,6 +348,8 @@ declare module BABYLON.GUI {
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
         /** Define the Uurl to load snippets */
         static SnippetUrl: string;
+        /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+        static AllowGPUOptimizations: boolean;
         /** Snippet ID if the content was created from the snippet server */
         snippetId: string;
         private _isDirty;
@@ -814,6 +816,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;

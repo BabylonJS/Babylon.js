@@ -587,8 +587,30 @@ class NativePipelineContext implements IPipelineContext {
 class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public override readonly _engine: NativeEngine;
 
-    public _framebuffer: Nullable<WebGLFramebuffer> = null;
-    public _framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
+    private __framebuffer: Nullable<WebGLFramebuffer> = null;
+    private __framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
+
+    public get _framebuffer(): Nullable<WebGLFramebuffer> {
+        return this.__framebuffer;
+    }
+
+    public set _framebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        if (this.__framebuffer) {
+            this._engine._releaseFramebufferObjects(this.__framebuffer);
+        }
+        this.__framebuffer = framebuffer;
+    }
+
+    public get _framebufferDepthStencil(): Nullable<WebGLFramebuffer> {
+        return this.__framebufferDepthStencil;
+    }
+
+    public set _framebufferDepthStencil(framebufferDepthStencil: Nullable<WebGLFramebuffer>) {
+        if (this.__framebufferDepthStencil) {
+            this._engine._releaseFramebufferObjects(this.__framebufferDepthStencil);
+        }
+        this.__framebufferDepthStencil = framebufferDepthStencil;
+    }
 
     constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: NativeEngine) {
         super(isMulti, isCube, size, engine);
@@ -596,14 +618,8 @@ class NativeRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     public dispose(disposeOnlyFramebuffers = false): void {
-        if (this._framebuffer) {
-            this._engine._releaseFramebufferObjects(this._framebuffer);
-            this._framebuffer = null;
-        }
-        if (this._framebufferDepthStencil) {
-            this._engine._releaseFramebufferObjects(this._framebufferDepthStencil);
-            this._framebufferDepthStencil = null;
-        }
+        this._framebuffer = null;
+        this._framebufferDepthStencil = null;
 
         super.dispose(disposeOnlyFramebuffers);
     }

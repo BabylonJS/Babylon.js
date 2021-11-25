@@ -657,7 +657,17 @@ export class Engine extends ThinEngine {
         };
 
         this._onCanvasPointerOut = (ev) => {
-            this.onCanvasPointerOutObservable.notifyObservers(ev);
+            // Check for canvas and if there is a canvas, make sure that this callback is only fired when the cursor exits the canvas
+            // Note: This is a workaround for a bug with Safari
+            let rect = this.getInputElementClientRect();
+
+            if (rect) {
+                let pointerX = ev.clientX - rect.left;
+                let pointerY = ev.clientY - rect.top;
+                if (pointerX < 0 || pointerX > rect.width || pointerY < 0 || pointerY > rect.height) {
+                    this.onCanvasPointerOutObservable.notifyObservers(ev);
+                }
+            }
         };
 
         if (IsWindowObjectExist()) {

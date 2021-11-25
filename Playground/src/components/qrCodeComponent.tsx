@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 require("../scss/qrCode.scss");
 
@@ -9,16 +9,15 @@ interface IQRCodeComponentProps {
     globalState: GlobalState;
 }
 
-export class QRCodeComponent extends React.Component<IQRCodeComponentProps, {isVisible: boolean}> {    
-  
+export class QRCodeComponent extends React.Component<IQRCodeComponentProps, { isVisible: boolean }> {
     public constructor(props: IQRCodeComponentProps) {
         super(props);
-        this.state = {isVisible: false};
+        this.state = { isVisible: false };
 
-        this.props.globalState.onQRCodeRequiredObservable.add(value => {
-            this.setState({isVisible: value});
-        })
-    }    
+        this.props.globalState.onQRCodeRequiredObservable.add((value) => {
+            this.setState({ isVisible: value });
+        });
+    }
 
     componentDidUpdate() {
         this._syncQRCOde();
@@ -31,7 +30,6 @@ export class QRCodeComponent extends React.Component<IQRCodeComponentProps, {isV
 
         document.getElementById("qr-code-image")!.innerHTML = "";
         $("#qr-code-image").qrcode({ text: "https://playground.babylonjs.com/frame.html" + location.hash });
-
     }
 
     public render() {
@@ -39,10 +37,9 @@ export class QRCodeComponent extends React.Component<IQRCodeComponentProps, {isV
             return null;
         }
         return (
-            <div className="qr-code" onClick={() => this.setState({isVisible: false})}>
-                <div id="qr-code-image">
-                </div>
+            <div className="qr-code" onClick={() => this.setState({ isVisible: false })}>
+                <div id="qr-code-image"></div>
             </div>
-        )
+        );
     }
 }

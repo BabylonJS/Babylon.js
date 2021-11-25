@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { ColorComponentEntry } from './colorComponentEntry';
-import { HexColor } from './hexColor';
+import { ColorComponentEntry } from "./colorComponentEntry";
+import { HexColor } from "./hexColor";
 
 require("./colorPicker.scss");
 
@@ -9,10 +9,10 @@ require("./colorPicker.scss");
  * Interface used to specify creation options for color picker
  */
 export interface IColorPickerProps {
-    color: Color3 | Color4,
-    linearhint?: boolean,
-    debugMode?: boolean,
-    onColorChanged?: (color: Color3 | Color4) => void
+    color: Color3 | Color4;
+    linearhint?: boolean;
+    debugMode?: boolean;
+    onColorChanged?: (color: Color3 | Color4) => void;
 }
 
 /**
@@ -35,19 +35,16 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     constructor(props: IColorPickerProps) {
         super(props);
         if (this.props.color instanceof Color4) {
-            this.state = {color: new Color3(this.props.color.r, this.props.color.g, this.props.color.b), alpha: this.props.color.a};
+            this.state = { color: new Color3(this.props.color.r, this.props.color.g, this.props.color.b), alpha: this.props.color.a };
         } else {
-            this.state = {color : this.props.color.clone(), alpha: 1};
+            this.state = { color: this.props.color.clone(), alpha: 1 };
         }
         this._saturationRef = React.createRef();
         this._hueRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState) {
-        return (
-            nextProps.color.toHexString() !== this.props.color.toHexString() ||
-            nextState.color.toHexString() !== this.props.color.toHexString()
-        );
+        return nextProps.color.toHexString() !== this.props.color.toHexString() || nextState.color.toHexString() !== this.props.color.toHexString();
     }
 
     onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
@@ -75,7 +72,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
-    
+
     onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>) {
         this._isHuePointerDown = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
@@ -91,9 +88,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     private _evaluateSaturation(evt: React.PointerEvent<HTMLDivElement>) {
         let left = evt.nativeEvent.offsetX;
         let top = evt.nativeEvent.offsetY;
-      
-        const saturation =  Math.min(1, Math.max(0.0001, left / this._saturationRef.current!.clientWidth));
-        const value = Math.min(1, Math.max(0.0001, 1 - (top / this._saturationRef.current!.clientHeight)));
+
+        const saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current!.clientWidth));
+        const value = Math.min(1, Math.max(0.0001, 1 - top / this._saturationRef.current!.clientHeight));
 
         if (this.props.debugMode) {
             console.log("Saturation: " + saturation);
@@ -102,12 +99,12 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
         let hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
-        this.setState({color: this.state.color});
+        this.setState({ color: this.state.color });
     }
 
     private _evaluateHue(evt: React.PointerEvent<HTMLDivElement>) {
         let left = evt.nativeEvent.offsetX;
-      
+
         const hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current!.clientWidth));
 
         if (this.props.debugMode) {
@@ -116,7 +113,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
         let hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.01), Math.max(hsv.b, 0.01), this.state.color);
-        this.setState({color: this.state.color});
+        this.setState({ color: this.state.color });
     }
 
     componentDidUpdate() {
@@ -137,98 +134,129 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         }
 
         this.props.onColorChanged(this.state.color.clone());
-    } 
+    }
 
     public render() {
         let colorHex = this.state.color.toHexString();
         let hsv = this.state.color.toHSV();
         let colorRef = new Color3();
-        Color3.HSVtoRGBToRef(hsv.r, 1, 1, colorRef)
+        Color3.HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
         let colorHexRef = colorRef.toHexString();
         let hasAlpha = this.props.color instanceof Color4;
 
         return (
             <div className={"color-picker-container" + (this.props.linearhint ? " with-hints" : "")}>
-                <div className="color-picker-saturation"  
-                    onPointerMove={e => this.onSaturationPointerMove(e)}               
-                    onPointerDown={e => this.onSaturationPointerDown(e)}
-                    onPointerUp={e => this.onSaturationPointerUp(e)}
+                <div
+                    className="color-picker-saturation"
+                    onPointerMove={(e) => this.onSaturationPointerMove(e)}
+                    onPointerDown={(e) => this.onSaturationPointerDown(e)}
+                    onPointerUp={(e) => this.onSaturationPointerUp(e)}
                     ref={this._saturationRef}
                     style={{
-                        background: colorHexRef
-                    }}>
-                    <div className="color-picker-saturation-white">
-                    </div>
-                    <div className="color-picker-saturation-black">
-                    </div>
-                    <div className="color-picker-saturation-cursor" style={{
-                        top: `${ -(hsv.b * 100) + 100 }%`,
-                        left: `${ hsv.g * 100 }%`,
-                    }}>
-                    </div>
+                        background: colorHexRef,
+                    }}
+                >
+                    <div className="color-picker-saturation-white"></div>
+                    <div className="color-picker-saturation-black"></div>
+                    <div
+                        className="color-picker-saturation-cursor"
+                        style={{
+                            top: `${-(hsv.b * 100) + 100}%`,
+                            left: `${hsv.g * 100}%`,
+                        }}
+                    ></div>
                 </div>
                 <div className="color-picker-hue">
-                    <div className="color-picker-hue-color" style={{
-                        background: colorHex
-                    }}>
-                    </div>
-                    <div className="color-picker-hue-slider"                    
+                    <div
+                        className="color-picker-hue-color"
+                        style={{
+                            background: colorHex,
+                        }}
+                    ></div>
+                    <div
+                        className="color-picker-hue-slider"
                         ref={this._hueRef}
-                        onPointerMove={e => this.onHuePointerMove(e)}               
-                        onPointerDown={e => this.onHuePointerDown(e)}
-                        onPointerUp={e => this.onHuePointerUp(e)}
-                    >                    
-                        <div className="color-picker-hue-cursor" style={{
-                            left: `${ (hsv.r / 360.0) * 100 }%`,
-                            border: `1px solid ` + colorHexRef
-                        }}>                    
-                        </div>
+                        onPointerMove={(e) => this.onHuePointerMove(e)}
+                        onPointerDown={(e) => this.onHuePointerDown(e)}
+                        onPointerUp={(e) => this.onHuePointerUp(e)}
+                    >
+                        <div
+                            className="color-picker-hue-cursor"
+                            style={{
+                                left: `${(hsv.r / 360.0) * 100}%`,
+                                border: `1px solid ` + colorHexRef,
+                            }}
+                        ></div>
                     </div>
                 </div>
                 <div className="color-picker-rgb">
                     <div className="red">
-                        <ColorComponentEntry label="R" min={0} max={255} value={Math.round(this.state.color.r * 255)} onChange={value => {
-                            this.state.color.r = value / 255.0;
-                            this.forceUpdate();
-                        }}/>
-                    </div>   
-                    <div className="green">
-                        <ColorComponentEntry label="G" min={0} max={255}  value={Math.round(this.state.color.g * 255)} onChange={value => {
-                            this.state.color.g = value / 255.0;
-                            this.forceUpdate();
-                        }}/>
-                    </div>  
-                    <div className="blue">
-                        <ColorComponentEntry label="B" min={0} max={255}  value={Math.round(this.state.color.b * 255)} onChange={value => {
-                            this.state.color.b = value / 255.0;
-                            this.forceUpdate();
-                        }}/>
-                    </div>        
-                    <div className={"alpha" + (hasAlpha ? "" : " grayed")}>
-                        <ColorComponentEntry label="A" min={0} max={255} value={Math.round(this.state.alpha * 255)} onChange={value => {
-                                this.setState({alpha: value / 255.0});
+                        <ColorComponentEntry
+                            label="R"
+                            min={0}
+                            max={255}
+                            value={Math.round(this.state.color.r * 255)}
+                            onChange={(value) => {
+                                this.state.color.r = value / 255.0;
                                 this.forceUpdate();
-                        }}/>
-                    </div>   
-                </div>  
+                            }}
+                        />
+                    </div>
+                    <div className="green">
+                        <ColorComponentEntry
+                            label="G"
+                            min={0}
+                            max={255}
+                            value={Math.round(this.state.color.g * 255)}
+                            onChange={(value) => {
+                                this.state.color.g = value / 255.0;
+                                this.forceUpdate();
+                            }}
+                        />
+                    </div>
+                    <div className="blue">
+                        <ColorComponentEntry
+                            label="B"
+                            min={0}
+                            max={255}
+                            value={Math.round(this.state.color.b * 255)}
+                            onChange={(value) => {
+                                this.state.color.b = value / 255.0;
+                                this.forceUpdate();
+                            }}
+                        />
+                    </div>
+                    <div className={"alpha" + (hasAlpha ? "" : " grayed")}>
+                        <ColorComponentEntry
+                            label="A"
+                            min={0}
+                            max={255}
+                            value={Math.round(this.state.alpha * 255)}
+                            onChange={(value) => {
+                                this.setState({ alpha: value / 255.0 });
+                                this.forceUpdate();
+                            }}
+                        />
+                    </div>
+                </div>
                 <div className="color-picker-hex">
-                    <div className="color-picker-hex-label">
-                        Hex
+                    <div className="color-picker-hex-label">Hex</div>
+                    <div className="color-picker-hex-value">
+                        <HexColor
+                            expectedLength={6}
+                            value={colorHex}
+                            onChange={(value) => {
+                                this.setState({ color: Color3.FromHexString(value) });
+                            }}
+                        />
                     </div>
-                    <div className="color-picker-hex-value">     
-                        <HexColor expectedLength={6} value={colorHex} onChange={value => {
-                            this.setState({color: Color3.FromHexString(value)});
-                        }}/>            
-                    </div>
-                </div>                
-                {
-                    this.props.linearhint &&
+                </div>
+                {this.props.linearhint && (
                     <div className="color-picker-warning">
                         (Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))
                     </div>
-                }
+                )}
             </div>
         );
     }
 }
-

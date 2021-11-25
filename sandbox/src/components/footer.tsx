@@ -1,10 +1,10 @@
 import * as React from "react";
-import { GlobalState } from '../globalState';
-import { FooterButton } from './footerButton';
-import { DropUpButton } from './dropUpButton';
-import { EnvironmentTools } from '../tools/environmentTools';
-import { FooterFileButton } from './footerFileButton';
-import { AnimationBar } from './animationBar';
+import { GlobalState } from "../globalState";
+import { FooterButton } from "./footerButton";
+import { DropUpButton } from "./dropUpButton";
+import { EnvironmentTools } from "../tools/environmentTools";
+import { FooterFileButton } from "./footerFileButton";
+import { AnimationBar } from "./animationBar";
 import { Nullable } from "babylonjs/types";
 import { KHR_materials_variants } from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants";
 import { Mesh } from "babylonjs/Meshes/mesh";
@@ -26,7 +26,7 @@ export class Footer extends React.Component<IFooterProps> {
 
     public constructor(props: IFooterProps) {
         super(props);
-        props.globalState.onSceneLoaded.add(info => {
+        props.globalState.onSceneLoaded.add((info) => {
             this._updateCameraNames();
             this.forceUpdate();
         });
@@ -36,8 +36,7 @@ export class Footer extends React.Component<IFooterProps> {
         if (this.props.globalState.currentScene) {
             if (this.props.globalState.currentScene.debugLayer.isVisible()) {
                 this.props.globalState.hideDebugLayer();
-            }
-            else {
+            } else {
                 this.props.globalState.showDebugLayer();
             }
         }
@@ -57,7 +56,7 @@ export class Footer extends React.Component<IFooterProps> {
 
     private _updateCameraNames(): void {
         if (!!this.props.globalState.currentScene && this.props.globalState.currentScene.cameras.length > 0) {
-            this._cameraNames = this.props.globalState.currentScene.cameras.map(c => c.name);
+            this._cameraNames = this.props.globalState.currentScene.cameras.map((c) => c.name);
             this._cameraNames.push("default camera");
         }
     }
@@ -87,7 +86,7 @@ export class Footer extends React.Component<IFooterProps> {
 
                     activeEntry = () => {
                         let lastPickedVariant = variantExtension!.getLastSelectedVariant(rootNode) || 0;
-                        if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
+                        if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === "[object String]") {
                             return lastPickedVariant as string;
                         }
 
@@ -97,8 +96,7 @@ export class Footer extends React.Component<IFooterProps> {
                     switchVariant = (name, index) => {
                         if (index === 0) {
                             variantExtension.reset(rootNode);
-                        }
-                        else {
+                        } else {
                             variantExtension.selectVariant(rootNode, name);
                         }
                     };
@@ -108,51 +106,59 @@ export class Footer extends React.Component<IFooterProps> {
 
         const hasCameras = this._cameraNames.length > 1;
 
-
         return (
-            <div id="footer" className={"footer" + (hasCameras || hasVariants ? " long" : (hasCameras && hasVariants ? " longer" : ""))}>
+            <div id="footer" className={"footer" + (hasCameras || hasVariants ? " long" : hasCameras && hasVariants ? " longer" : "")}>
                 <div className="footerLeft">
-                    <img id="logoImg" src={babylonIdentity}/>
+                    <img id="logoImg" src={babylonIdentity} />
                 </div>
-                <AnimationBar globalState={this.props.globalState} 
-                                enabled={!!this.props.globalState.currentScene}/>
+                <AnimationBar globalState={this.props.globalState} enabled={!!this.props.globalState.currentScene} />
                 <div className={"footerRight"}>
-                    <FooterFileButton globalState={this.props.globalState} 
-                                enabled={true}
-                                icon={iconOpen}
-                                onFilesPicked={(evt, files) => {
-                                    this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
-                                    this.props.globalState.filesInput.loadFiles(evt);
-                                }}
-                                label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"/>
-                    <DropUpButton globalState={this.props.globalState} 
-                                    icon={iconIBL}
-                                    label="Select environment"
-                                    options={EnvironmentTools.SkyboxesNames}
-                                    activeEntry={() => EnvironmentTools.GetActiveSkyboxName()}
-                                    onOptionPicked={option => this.props.globalState.onEnvironmentChanged.notifyObservers(option)}
-                                    enabled={!!this.props.globalState.currentScene}/>
-                    <FooterButton globalState={this.props.globalState} 
-                                    icon={iconEdit}
-                                    label="Display inspector"
-                                    onClick={() => this.showInspector()}
-                                    enabled={!!this.props.globalState.currentScene}/>
-                    <DropUpButton globalState={this.props.globalState} 
-                                icon={iconCameras}
-                                label="Select camera"
-                                options={this._cameraNames}
-                                activeEntry={() => this.props.globalState.currentScene?.activeCamera?.name || ""}
-                                onOptionPicked={option => this.switchCamera(option)}
-                                enabled={this._cameraNames.length > 1}/>
-                    <DropUpButton globalState={this.props.globalState} 
-                                icon={iconVariants}
-                                label="Select variant"
-                                options={variantNames}
-                                activeEntry={() => activeEntry()}
-                                onOptionPicked={(option, index) => switchVariant(option, index)}
-                                enabled={hasVariants}/>
+                    <FooterFileButton
+                        globalState={this.props.globalState}
+                        enabled={true}
+                        icon={iconOpen}
+                        onFilesPicked={(evt, files) => {
+                            this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
+                            this.props.globalState.filesInput.loadFiles(evt);
+                        }}
+                        label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"
+                    />
+                    <DropUpButton
+                        globalState={this.props.globalState}
+                        icon={iconIBL}
+                        label="Select environment"
+                        options={EnvironmentTools.SkyboxesNames}
+                        activeEntry={() => EnvironmentTools.GetActiveSkyboxName()}
+                        onOptionPicked={(option) => this.props.globalState.onEnvironmentChanged.notifyObservers(option)}
+                        enabled={!!this.props.globalState.currentScene}
+                    />
+                    <FooterButton
+                        globalState={this.props.globalState}
+                        icon={iconEdit}
+                        label="Display inspector"
+                        onClick={() => this.showInspector()}
+                        enabled={!!this.props.globalState.currentScene}
+                    />
+                    <DropUpButton
+                        globalState={this.props.globalState}
+                        icon={iconCameras}
+                        label="Select camera"
+                        options={this._cameraNames}
+                        activeEntry={() => this.props.globalState.currentScene?.activeCamera?.name || ""}
+                        onOptionPicked={(option) => this.switchCamera(option)}
+                        enabled={this._cameraNames.length > 1}
+                    />
+                    <DropUpButton
+                        globalState={this.props.globalState}
+                        icon={iconVariants}
+                        label="Select variant"
+                        options={variantNames}
+                        activeEntry={() => activeEntry()}
+                        onOptionPicked={(option, index) => switchVariant(option, index)}
+                        enabled={hasVariants}
+                    />
                 </div>
             </div>
-        )
+        );
     }
 }

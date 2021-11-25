@@ -76,12 +76,14 @@ interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
 }
 
 type GPUFeatureName =
-    | "depth-clamping"
+    | "depth-clip-control"
     | "depth24unorm-stencil8"
     | "depth32float-stencil8"
-    | "pipeline-statistics-query"
     | "texture-compression-bc"
-    | "timestamp-query";
+    | "texture-compression-etc2"
+    | "texture-compression-astc"
+    | "timestamp-query"
+    | "indirect-first-instance";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     private __brand: void;
@@ -259,6 +261,50 @@ type GPUTextureFormat =
     | "bc6h-rgb-float"
     | "bc7-rgba-unorm"
     | "bc7-rgba-unorm-srgb"
+
+    // ETC2 compressed formats usable if "texture-compression-etc2" is both
+    // supported by the device/user agent and enabled in requestDevice.
+    | "etc2-rgb8unorm"
+    | "etc2-rgb8unorm-srgb"
+    | "etc2-rgb8a1unorm"
+    | "etc2-rgb8a1unorm-srgb"
+    | "etc2-rgba8unorm"
+    | "etc2-rgba8unorm-srgb"
+    | "eac-r11unorm"
+    | "eac-r11snorm"
+    | "eac-rg11unorm"
+    | "eac-rg11snorm"
+
+    // ASTC compressed formats usable if "texture-compression-astc" is both
+    // supported by the device/user agent and enabled in requestDevice.
+    | "astc-4x4-unorm"
+    | "astc-4x4-unorm-srgb"
+    | "astc-5x4-unorm"
+    | "astc-5x4-unorm-srgb"
+    | "astc-5x5-unorm"
+    | "astc-5x5-unorm-srgb"
+    | "astc-6x5-unorm"
+    | "astc-6x5-unorm-srgb"
+    | "astc-6x6-unorm"
+    | "astc-6x6-unorm-srgb"
+    | "astc-8x5-unorm"
+    | "astc-8x5-unorm-srgb"
+    | "astc-8x6-unorm"
+    | "astc-8x6-unorm-srgb"
+    | "astc-8x8-unorm"
+    | "astc-8x8-unorm-srgb"
+    | "astc-10x5-unorm"
+    | "astc-10x5-unorm-srgb"
+    | "astc-10x6-unorm"
+    | "astc-10x6-unorm-srgb"
+    | "astc-10x8-unorm"
+    | "astc-10x8-unorm-srgb"
+    | "astc-10x10-unorm"
+    | "astc-10x10-unorm-srgb"
+    | "astc-12x10-unorm"
+    | "astc-12x10-unorm-srgb"
+    | "astc-12x12-unorm"
+    | "astc-12x12-unorm-srgb"
 
     // "depth24unorm-stencil8" feature
     | "depth24unorm-stencil8"
@@ -486,8 +532,8 @@ interface GPUPrimitiveState {
     frontFace?: GPUFrontFace; /* default="ccw" */
     cullMode?: GPUCullMode; /* default="none" */
 
-    // Enable depth clamping (requires "depth-clamping" feature)
-    clampDepth?: boolean; /* default=false */
+    // Requires "depth-clip-control" feature.
+    unclippedDepth?: boolean; /* default=false */
 }
 
 type GPUFrontFace = "ccw" | "cw";
@@ -635,8 +681,6 @@ interface GPUVertexAttribute {
 declare class GPUCommandBuffer implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
-
-    readonly executionTime: Promise<number>;
 }
 
 interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
@@ -671,6 +715,11 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
+    fillBuffer(
+        destination: GPUBuffer,
+        destinationOffset: GPUSize64,
+        size: GPUSize64
+    ): void;
 
     pushDebugGroup(groupLabel: string): void;
     popDebugGroup(): void;
@@ -690,7 +739,6 @@ declare class GPUCommandEncoder implements GPUObjectBase {
 }
 
 interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {
-    measureExecutionTime?: boolean; /* default=false */
 }
 
 interface GPUImageDataLayout {
@@ -764,15 +812,23 @@ declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePas
     dispatch(x: GPUSize32, y?: GPUSize32 /* default=1 */, z?: GPUSize32 /* default=1 */): void;
     dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 
-    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-    endPipelineStatisticsQuery(): void;
-
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-
     endPass(): void;
 }
 
+type GPUComputePassTimestampLocation =
+    | "beginning"
+    | "end";
+
+interface GPUComputePassTimestampWrite {
+    querySet: GPUQuerySet;
+    queryIndex: GPUSize32;
+    location: GPUComputePassTimestampLocation;
+}
+
+type GPUComputePassTimestampWrites = Array<GPUComputePassTimestampWrite>;
+
 interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
+    timestampWrites?: GPUComputePassTimestampWrites; /* default=[] */
 }
 
 interface GPURenderEncoderBase {
@@ -856,19 +912,27 @@ declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePass
     beginOcclusionQuery(queryIndex: GPUSize32): void;
     endOcclusionQuery(): void;
 
-    beginPipelineStatisticsQuery(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-    endPipelineStatisticsQuery(): void;
-
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
-
     executeBundles(bundles: GPURenderBundle[]): void;
     endPass(): void;
 }
+
+type GPURenderPassTimestampLocation =
+    | "beginning"
+    | "end";
+
+interface GPURenderPassTimestampWrite {
+    querySet: GPUQuerySet;
+    queryIndex: GPUSize32;
+    location: GPURenderPassTimestampLocation;
+}
+
+type GPURenderPassTimestampWrites = Array<GPURenderPassTimestampWrite>;
 
 interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
     colorAttachments: GPURenderPassColorAttachment[];
     depthStencilAttachment?: GPURenderPassDepthStencilAttachment;
     occlusionQuerySet?: GPUQuerySet;
+    timestampWrites?: GPURenderPassTimestampWrites; /* default=[] */
 }
 
 interface GPURenderPassColorAttachment {
@@ -960,12 +1024,6 @@ interface GPURenderBundleEncoderDescriptor extends GPURenderPassLayout {
     stencilReadOnly?: boolean; /* default=false */
 }
 
-// @todo: to be removed
-interface GPUImageBitmapCopyView {
-    imageBitmap: ImageBitmap;
-    origin?: GPUOrigin2D;
-}
-
 declare class GPUQueue implements GPUObjectBase {
     private __brand: void;
     label: string | undefined;
@@ -989,13 +1047,6 @@ declare class GPUQueue implements GPUObjectBase {
         size: GPUExtent3D
     ): void;
 
-    // @todo: to be removed
-    copyImageBitmapToTexture(
-        source: GPUImageBitmapCopyView,
-        destination: GPUImageCopyTexture,
-        copySize: GPUExtent3D
-    ): void;
-
     copyExternalImageToTexture(
         source: GPUImageCopyExternalImage,
         destination: GPUImageCopyTextureTagged,
@@ -1013,17 +1064,9 @@ declare class GPUQuerySet implements GPUObjectBase {
 interface GPUQuerySetDescriptor extends GPUObjectDescriptorBase {
     type: GPUQueryType;
     count: GPUSize32;
-    pipelineStatistics?: GPUPipelineStatisticName[]; /* default=[] */
 }
 
-type GPUQueryType = "occlusion" | "pipeline-statistics" | "timestamp";
-
-type GPUPipelineStatisticName =
-    | "vertex-shader-invocations"
-    | "clipper-invocations"
-    | "clipper-primitives-out"
-    | "fragment-shader-invocations"
-    | "compute-shader-invocations";
+type GPUQueryType = "occlusion" | "timestamp";
 
 declare class GPUCanvasContext {
     private __brand: void;

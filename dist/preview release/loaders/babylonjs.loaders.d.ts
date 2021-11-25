@@ -1390,7 +1390,7 @@ declare module BABYLON.GLTF2 {
         /**
          * The root Babylon mesh when loading the asset.
          */
-        get rootBabylonMesh(): Mesh;
+        get rootBabylonMesh(): Nullable<Mesh>;
         /** @hidden */
         constructor(parent: GLTFFileLoader);
         /** @hidden */

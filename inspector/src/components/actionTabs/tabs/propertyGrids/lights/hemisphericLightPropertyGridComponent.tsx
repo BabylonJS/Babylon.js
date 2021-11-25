@@ -7,13 +7,13 @@ import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/
 import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
 import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { GlobalState } from "../../../../globalState";
 
 interface IHemisphericLightPropertyGridComponentProps {
-    globalState: GlobalState,
-    light: HemisphericLight,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    globalState: GlobalState;
+    light: HemisphericLight;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class HemisphericLightPropertyGridComponent extends React.Component<IHemisphericLightPropertyGridComponentProps> {
@@ -26,7 +26,12 @@ export class HemisphericLightPropertyGridComponent extends React.Component<IHemi
 
         return (
             <div className="pane">
-                <CommonLightPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonLightPropertyGridComponent
+                    globalState={this.props.globalState}
+                    lockObject={this.props.lockObject}
+                    light={light}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <LineContainerComponent title="SETUP" selection={this.props.globalState}>
                     <Color3LineComponent label="Diffuse" target={light} propertyName="diffuse" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Ground" target={light} propertyName="groundColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

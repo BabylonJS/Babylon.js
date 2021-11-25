@@ -99,6 +99,8 @@ export class Control {
     private _enterCount = -1;
     private _doNotRender = false;
     private _downPointerIds: { [id: number]: boolean } = {};
+    private _evaluatedMeasure = new Measure(0, 0, 0, 0);
+    private _evaluatedParentMeasure = new Measure(0, 0, 0, 0);
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
@@ -1617,24 +1619,27 @@ export class Control {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
+
         if (this.parent && this.parent.clipChildren) {
+            parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
-            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+            if (this._evaluatedMeasure.left > this._evaluatedParentMeasure.left + this._evaluatedParentMeasure.width) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+            if (this._evaluatedMeasure.left + this._evaluatedMeasure.width < this._evaluatedParentMeasure.left) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+            if (this._evaluatedMeasure.top > this._evaluatedParentMeasure.top + this._evaluatedParentMeasure.height) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+            if (this._evaluatedMeasure.top + this._evaluatedMeasure.height < this._evaluatedParentMeasure.top) {
                 this._isClipped = true;
                 return;
             }
