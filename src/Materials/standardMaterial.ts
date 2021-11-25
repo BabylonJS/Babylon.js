@@ -1720,7 +1720,7 @@ export class StandardMaterial extends PushMaterial {
      * @returns the list of animatables object used in the material
      */
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        var results = super.getAnimatables();
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
             results.push(this._diffuseTexture);
@@ -1757,9 +1757,6 @@ export class StandardMaterial extends PushMaterial {
         if (this._refractionTexture && this._refractionTexture.animations && this._refractionTexture.animations.length > 0) {
             results.push(this._refractionTexture);
         }
-
-        this._eventInfo.animatables = results;
-        this._notifyEvent(MaterialEvent.GetAnimatables);
 
         return results;
     }
