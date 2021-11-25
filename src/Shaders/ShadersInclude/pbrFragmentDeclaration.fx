@@ -68,7 +68,107 @@ uniform mat4 view;
     #endif
 #endif
 
-#define ADDITIONAL_FRAGMENT_DECLARATION
+// Refraction
+#if defined(SS_REFRACTION) && defined(SS_USE_LOCAL_REFRACTIONMAP_CUBIC)
+    uniform vec3 vRefractionPosition;
+    uniform vec3 vRefractionSize; 
+#endif
+
+// Clear Coat
+#ifdef CLEARCOAT
+    uniform vec2 vClearCoatParams;
+    uniform vec4 vClearCoatRefractionParams;
+
+    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+        uniform vec4 vClearCoatInfos;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+        uniform mat4 clearCoatRoughnessMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform vec2 vClearCoatTangentSpaceParams;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TINT
+        uniform vec4 vClearCoatTintParams;
+        uniform float clearCoatColorAtDistance;
+
+        #ifdef CLEARCOAT_TINT_TEXTURE
+            uniform vec2 vClearCoatTintInfos;
+            uniform mat4 clearCoatTintMatrix;
+        #endif
+    #endif
+#endif
+
+// Anisotropy
+#ifdef ANISOTROPIC
+    uniform vec3 vAnisotropy;
+
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
+#endif
+
+// Sheen
+#ifdef SHEEN
+    uniform vec4 vSheenColor;
+    #ifdef SHEEN_ROUGHNESS
+        uniform float vSheenRoughness;
+    #endif
+
+    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+        uniform vec4 vSheenInfos;
+    #endif
+
+    #ifdef SHEEN_TEXTURE
+        uniform mat4 sheenMatrix;
+    #endif
+
+    #ifdef SHEEN_TEXTURE_ROUGHNESS
+        uniform mat4 sheenRoughnessMatrix;
+    #endif
+#endif
+
+// SubSurface
+#ifdef SUBSURFACE
+    #ifdef SS_REFRACTION
+        uniform vec4 vRefractionMicrosurfaceInfos;
+        uniform vec4 vRefractionInfos;
+        uniform mat4 refractionMatrix;
+        #ifdef REALTIME_FILTERING
+            uniform vec2 vRefractionFilteringInfo;
+        #endif
+    #endif
+
+    #ifdef SS_THICKNESSANDMASK_TEXTURE
+        uniform vec2 vThicknessInfos;
+        uniform mat4 thicknessMatrix;
+    #endif
+
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        uniform vec2 vRefractionIntensityInfos;
+        uniform mat4 refractionIntensityMatrix;
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        uniform vec2 vTranslucencyIntensityInfos;
+        uniform mat4 translucencyIntensityMatrix;
+    #endif
+
+    uniform vec2 vThicknessParam;
+    uniform vec3 vDiffusionDistance;
+    uniform vec4 vTintColor;
+    uniform vec3 vSubSurfaceIntensity;
+#endif
 
 #ifdef PREPASS
     #ifdef SS_SCATTERING
@@ -78,6 +178,10 @@ uniform mat4 view;
 
 #if DEBUGMODE > 0
     uniform vec2 vDebugMode;
+#endif
+
+#ifdef DETAIL
+    uniform vec4 vDetailInfos;
 #endif
 
 #ifdef USESPHERICALFROMREFLECTIONMAP
@@ -103,3 +207,5 @@ uniform mat4 view;
         uniform vec3 vSphericalZX;
     #endif
 #endif
+
+#define ADDITIONAL_FRAGMENT_DECLARATION

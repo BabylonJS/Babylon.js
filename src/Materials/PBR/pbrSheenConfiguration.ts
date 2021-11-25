@@ -316,37 +316,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                 { name: "sheenMatrix", size: 16, type: "mat4" },
                 { name: "sheenRoughnessMatrix", size: 16, type: "mat4" },
             ],
-            vertex: `#ifdef SHEEN
-                    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
-                        uniform vec4 vSheenInfos;
-                    #endif
-
-                    #ifdef SHEEN_TEXTURE
-                        uniform mat4 sheenMatrix;
-                    #endif
-
-                    #ifdef SHEEN_TEXTURE_ROUGHNESS
-                        uniform mat4 sheenRoughnessMatrix;
-                    #endif
-                #endif`,
-            fragment: `#ifdef SHEEN
-                    uniform vec4 vSheenColor;
-                    #ifdef SHEEN_ROUGHNESS
-                        uniform float vSheenRoughness;
-                    #endif
-
-                    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
-                        uniform vec4 vSheenInfos;
-                    #endif
-
-                    #ifdef SHEEN_TEXTURE
-                        uniform mat4 sheenMatrix;
-                    #endif
-
-                    #ifdef SHEEN_TEXTURE_ROUGHNESS
-                        uniform mat4 sheenRoughnessMatrix;
-                    #endif
-                #endif`,
         };
     }
 }

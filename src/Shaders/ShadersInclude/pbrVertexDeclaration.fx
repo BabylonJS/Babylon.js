@@ -60,7 +60,76 @@ uniform float pointSize;
     uniform mat4 reflectionMatrix;
 #endif
 
-#define ADDITIONAL_VERTEX_DECLARATION
+// Clear Coat
+#ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+        uniform vec4 vClearCoatInfos;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE
+        uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+        uniform mat4 clearCoatRoughnessMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_BUMP
+        uniform vec2 vClearCoatBumpInfos;
+        uniform mat4 clearCoatBumpMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TINT_TEXTURE
+        uniform vec2 vClearCoatTintInfos;
+        uniform mat4 clearCoatTintMatrix;
+    #endif
+#endif
+
+// Anisotropy
+#ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_TEXTURE
+        uniform vec2 vAnisotropyInfos;
+        uniform mat4 anisotropyMatrix;
+    #endif
+#endif
+
+// Sheen
+#ifdef SHEEN
+    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+        uniform vec4 vSheenInfos;
+    #endif
+
+    #ifdef SHEEN_TEXTURE
+        uniform mat4 sheenMatrix;
+    #endif
+
+    #ifdef SHEEN_TEXTURE_ROUGHNESS
+        uniform mat4 sheenRoughnessMatrix;
+    #endif
+#endif
+
+// Sub Surface
+#ifdef SUBSURFACE
+    #ifdef SS_REFRACTION
+        uniform vec4 vRefractionInfos;
+        uniform mat4 refractionMatrix;
+    #endif
+
+    #ifdef SS_THICKNESSANDMASK_TEXTURE
+        uniform vec2 vThicknessInfos;
+        uniform mat4 thicknessMatrix;
+    #endif
+
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        uniform vec2 vRefractionIntensityInfos;
+        uniform mat4 refractionIntensityMatrix;
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        uniform vec2 vTranslucencyIntensityInfos;
+        uniform mat4 translucencyIntensityMatrix;
+    #endif
+#endif
 
 #ifdef NORMAL
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
@@ -89,3 +158,5 @@ uniform float pointSize;
         #endif
     #endif
 #endif
+
+#define ADDITIONAL_VERTEX_DECLARATION
