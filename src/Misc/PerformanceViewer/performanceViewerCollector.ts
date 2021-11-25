@@ -467,14 +467,14 @@ export class PerformanceViewerCollector {
      * Stops the collection of data.
      */
     public stop() {
-        this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
     }
 
     /**
      * Disposes of the object
      */
     public dispose() {
-        this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
         this._datasetMeta.clear();
         this._strategies.forEach((strategy) => {
             strategy.dispose();
