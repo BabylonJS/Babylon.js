@@ -577,7 +577,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (draggedControl.width !== width || draggedControl.height !== height) {
             draggedControl.width = width;
             draggedControl.height = height;
-            alert("Warning: Parenting to stack panel will convert control to pixel value");
+            this.props.globalState.hostWindow.alert("Warning: Parenting to stack panel will convert control to pixel value");
         }
     }
 
