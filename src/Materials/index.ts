@@ -26,3 +26,4 @@ export * from "./drawWrapper";
 export * from "./materialPluginBase";
 export * from "./materialPluginManager";
 export * from "./material.detailMapConfiguration";
+export * from "./materialPluginFactoryExport";

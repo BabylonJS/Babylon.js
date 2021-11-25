@@ -14,26 +14,13 @@ import { TmpVectors } from "../../Maths/math.vector";
 import { SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { MaterialDefines } from "../materialDefines";
 import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoUnbind, MaterialUserEvent } from "../materialUserEvent";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type Material = import("../material").Material;
-
-/**
- * Creates an instance of the sub surface plugin
- * @param material parent material the plugin will be created for
- * @returns the plugin instance or null if the plugin is incompatible with material
- */
- export function createPBRSubSurfacePlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRSubSurfaceConfiguration(material);
-    }
-    return null;
-}
+declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden
