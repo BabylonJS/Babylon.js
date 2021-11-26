@@ -72,7 +72,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
             this._window.addEventListener("beforeunload", () => this._window && onClose(this._window));
             this._window.addEventListener("resize", () => {
                 if (this.props.onResize) {
-                    this.props.onResize(this._window!);
+                    this._window && this.props.onResize(this._window);
                 }
             });
         } else {
