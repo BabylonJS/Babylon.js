@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {Scene} from "babylonjs/scene";
+import { Scene } from "babylonjs/scene";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PerformanceViewerSidebarComponent } from "./performanceViewerSidebarComponent";
@@ -21,17 +21,15 @@ export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupCo
 
     return (
         <div id="performance-viewer">
-            <>
-                <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
-                <PerformanceViewerSidebarComponent collector={performanceCollector} />
-                <CanvasGraphComponent
-                    id="performance-viewer-graph"
-                    returnToPlayheadObservable={returnToLiveObservable}
-                    layoutObservable={layoutObservable}
-                    scene={scene}
-                    collector={performanceCollector}
-                />
-            </>
+            <PerformancePlayheadButtonComponent returnToPlayhead={returnToLiveObservable} />
+            <PerformanceViewerSidebarComponent collector={performanceCollector} />
+            <CanvasGraphComponent
+                id="performance-viewer-graph"
+                returnToPlayheadObservable={returnToLiveObservable}
+                layoutObservable={layoutObservable}
+                scene={scene}
+                collector={performanceCollector}
+            />
         </div>
-    )
-}
+    );
+};

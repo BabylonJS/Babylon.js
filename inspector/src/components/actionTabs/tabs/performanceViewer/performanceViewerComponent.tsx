@@ -10,7 +10,7 @@ import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/per
 import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "babylonjs/Misc/tools";
 import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
-import { Inspector } from "../../../..";
+import { Inspector } from "../../../../inspector";
 import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
 
 require("./scss/performanceViewer.scss");
