@@ -265,17 +265,18 @@ export class PrePassRenderer {
      * @param subMesh Submesh on which the effect is applied
      */
     public bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh) {
+        const material = subMesh.getMaterial();
+        const isPrePassCapable = material && material.isPrePassCapable;
+        const excluded = material && this.excludedMaterials.indexOf(material) !== -1;
+
         if (this.enabled && this._currentTarget.enabled) {
-            if (effect._multiTarget) {
+            if (effect._multiTarget && isPrePassCapable && !excluded) {
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
                 this._engine.bindAttachments(this._defaultAttachments);
 
-                if (this._geometryBuffer && this.currentRTisSceneRT) {
-                    const material = subMesh.getMaterial();
-                    if (material && !material.isPrePassCapable && this.excludedMaterials.indexOf(material) === -1) {
-                        this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
-                    }
+                if (this._geometryBuffer && this.currentRTisSceneRT && !excluded) {
+                    this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
                 }
             }
         }
