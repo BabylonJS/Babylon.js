@@ -254,7 +254,8 @@ export class MaterialPluginManager {
                             match = rx.exec(code);
                         }
                     } else {
-                        code = code.replace("#define " + pointName, "\r\n" + injectedCode);
+                        const fullPointName = "#define " + pointName;
+                        code = code.replace(fullPointName, "\r\n" + injectedCode + "\r\n" + fullPointName);
                     }
                 }
             }
