@@ -136,9 +136,10 @@ export class DynamicTexture extends Texture {
      * Updates the texture
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
+     * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
      */
-    public update(invertY?: boolean, premulAlpha = false): void {
-        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
+    public update(invertY?: boolean, premulAlpha = false, allowGPUOptimization = false): void {
+        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined, undefined, allowGPUOptimization);
     }
 
     /**

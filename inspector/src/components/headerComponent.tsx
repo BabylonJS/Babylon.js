@@ -6,14 +6,14 @@ import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 
 export interface IHeaderComponentProps {
-    title: string,
-    handleBack?: boolean,
-    noExpand?: boolean,
-    noClose?: boolean,
-    noCommands?: boolean,
-    onPopup: () => void,
-    onClose: () => void,
-    onSelectionChangedObservable?: Observable<any>
+    title: string;
+    handleBack?: boolean;
+    noExpand?: boolean;
+    noClose?: boolean;
+    noCommands?: boolean;
+    onPopup: () => void;
+    onClose: () => void;
+    onSelectionChangedObservable?: Observable<any>;
 }
 
 export class HeaderComponent extends React.Component<IHeaderComponentProps, { isBackVisible: boolean }> {
@@ -66,39 +66,33 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
             }
 
             return (
-                <div id="back" onClick={() => this.goBack()} >
+                <div id="back" onClick={() => this.goBack()}>
                     <FontAwesomeIcon icon={faArrowLeft} />
                 </div>
-            )
+            );
         }
 
-        return (
-            <img id="logo" style={{top: "0%"}} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-        )
+        return <img id="logo" style={{ top: "0%" }} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />;
     }
 
     render() {
         return (
             <div id="header">
                 {this.renderLogo()}
-                <div id="title">
-                    {this.props.title}
-                </div>
+                <div id="title">{this.props.title}</div>
                 <div id="commands">
-                    {
-                        !this.props.noCommands && !this.props.noExpand &&
+                    {!this.props.noCommands && !this.props.noExpand && (
                         <div className="expand" onClick={() => this.props.onPopup()}>
                             <FontAwesomeIcon icon={faWindowRestore} />
                         </div>
-                    }
-                    {
-                        !this.props.noCommands && !this.props.noClose &&
+                    )}
+                    {!this.props.noCommands && !this.props.noClose && (
                         <div className="close" onClick={() => this.props.onClose()}>
                             <FontAwesomeIcon icon={faTimes} />
                         </div>
-                    }
+                    )}
                 </div>
             </div>
-        )
+        );
     }
 }

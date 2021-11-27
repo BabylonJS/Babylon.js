@@ -1058,9 +1058,9 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-            serializationObject.tangets = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
+            serializationObject.tangents = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
-                serializationObject.tangets._updatable = true;
+                serializationObject.tangents._updatable = true;
             }
         }
 

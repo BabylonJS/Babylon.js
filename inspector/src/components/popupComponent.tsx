@@ -57,13 +57,13 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
             if (onOpen) {
                 onOpen(this._window);
             }
-            this._window.addEventListener("keyup", evt => {
+            this._window.addEventListener("keyup", (evt) => {
                 if (this.props.onKeyUp) {
                     this.props.onKeyUp(evt);
                 }
             });
 
-            this._window.addEventListener("keydown", evt => {
+            this._window.addEventListener("keydown", (evt) => {
                 if (this.props.onKeyDown) {
                     this.props.onKeyDown(evt);
                 }
@@ -71,11 +71,10 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
 
             this._window.addEventListener("beforeunload", () => this._window && onClose(this._window));
             this._window.addEventListener("resize", () => {
-                    if (this.props.onResize) {
-                        this.props.onResize();
-                    }
+                if (this.props.onResize) {
+                    this.props.onResize();
                 }
-            );
+            });
         } else {
             if (!this._window) {
                 this.setState({ blockedByBrowser: true }, () => {

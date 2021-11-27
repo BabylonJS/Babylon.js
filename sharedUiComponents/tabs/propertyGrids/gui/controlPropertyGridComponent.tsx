@@ -6,9 +6,9 @@ import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/
 import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
-    control: Control,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    control: Control;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ControlPropertyGridComponent extends React.Component<IControlPropertyGridComponentProps> {
@@ -21,7 +21,7 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }
