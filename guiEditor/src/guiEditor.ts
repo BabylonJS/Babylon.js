@@ -25,7 +25,7 @@ export class GUIEditor {
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
      */
-    public static Show(options: IGUIEditorOptions) {
+    public static async Show(options: IGUIEditorOptions) {
         if (this._CurrentState) {
             var popupWindow = (Popup as any)["gui-editor"];
             if (popupWindow) {
@@ -64,7 +64,7 @@ export class GUIEditor {
             globalState.workbench.createGUICanvas();
             if (options.currentSnippetToken) {
                 try {
-                    globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                    await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
 
                 } catch (error) {
                     //swallow and continue

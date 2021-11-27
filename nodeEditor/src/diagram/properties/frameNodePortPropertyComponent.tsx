@@ -1,20 +1,19 @@
-
 import * as React from "react";
-import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { GlobalState } from '../../globalState';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
-import { FramePortPosition, GraphFrame } from '../graphFrame';
-import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
-import { FrameNodePort } from '../frameNodePort';
-import { NodePort } from '../nodePort';
-import { GraphNode } from '../graphNode';
-import { NodeLink } from '../nodeLink';
-import { FramePortData, isFramePortData } from '../graphCanvas';
+import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { GlobalState } from "../../globalState";
+import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
+import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
+import { FramePortPosition, GraphFrame } from "../graphFrame";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { FrameNodePort } from "../frameNodePort";
+import { NodePort } from "../nodePort";
+import { GraphNode } from "../graphNode";
+import { NodeLink } from "../nodeLink";
+import { FramePortData, isFramePortData } from "../graphCanvas";
 
 export interface IFrameNodePortPropertyTabComponentProps {
-    globalState: GlobalState
+    globalState: GlobalState;
     frameNodePort: FrameNodePort;
     frame: GraphFrame;
 }
@@ -26,8 +25,8 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
     constructor(props: IFrameNodePortPropertyTabComponentProps) {
         super(props);
         this.state = {
-            port: this.props.frameNodePort
-        }
+            port: this.props.frameNodePort,
+        };
 
         const _this = this;
         this._onSelectionChangedObserver = this.props.globalState.onSelectionChangedObservable.add((selection) => {
@@ -56,20 +55,28 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
             <div id="propertyTab">
                 <div id="header">
                     <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">
-                        NODE MATERIAL EDITOR
-                </div>
+                    <div id="title">NODE MATERIAL EDITOR</div>
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
                         <TextInputLineComponent globalState={this.props.globalState} label="Port Name" propertyName="portName" target={this.props.frameNodePort} />
-                        {this.props.frameNodePort.framePortPosition !== FramePortPosition.Top && <ButtonLineComponent label="Move Port Up" onClick={() => {
-                            this.props.frame.moveFramePortUp(this.props.frameNodePort);
-                        }} />}
+                        {this.props.frameNodePort.framePortPosition !== FramePortPosition.Top && (
+                            <ButtonLineComponent
+                                label="Move Port Up"
+                                onClick={() => {
+                                    this.props.frame.moveFramePortUp(this.props.frameNodePort);
+                                }}
+                            />
+                        )}
 
-                        {this.props.frameNodePort.framePortPosition !== FramePortPosition.Bottom && <ButtonLineComponent label="Move Port Down" onClick={() => {
-                            this.props.frame.moveFramePortDown(this.props.frameNodePort);
-                        }} />}
+                        {this.props.frameNodePort.framePortPosition !== FramePortPosition.Bottom && (
+                            <ButtonLineComponent
+                                label="Move Port Down"
+                                onClick={() => {
+                                    this.props.frame.moveFramePortDown(this.props.frameNodePort);
+                                }}
+                            />
+                        )}
                     </LineContainerComponent>
                 </div>
             </div>

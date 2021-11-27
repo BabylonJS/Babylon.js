@@ -1,15 +1,15 @@
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 
-import { faMagic } from '@fortawesome/free-solid-svg-icons';
+import { faMagic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
-import * as React from 'react';
+import * as React from "react";
 
 interface IRenderPipelineItemComponenttProps {
-    renderPipeline: PostProcessRenderPipeline,
-    extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    renderPipeline: PostProcessRenderPipeline;
+    extensibilityGroups?: IExplorerExtensibilityGroup[];
+    onClick: () => void;
 }
 
 export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
@@ -21,10 +21,8 @@ export class RenderingPipelineItemComponent extends React.Component<IRenderPipel
         return (
             <div className="postProcessTools">
                 <TreeItemLabelComponent label={this.props.renderPipeline.name} onClick={() => this.props.onClick()} icon={faMagic} color="orangered" />
-                {
-                    <ExtensionsComponent target={this.props.renderPipeline} extensibilityGroups={this.props.extensibilityGroups} />
-                }
+                {<ExtensionsComponent target={this.props.renderPipeline} extensibilityGroups={this.props.extensibilityGroups} />}
             </div>
-        )
+        );
     }
 }

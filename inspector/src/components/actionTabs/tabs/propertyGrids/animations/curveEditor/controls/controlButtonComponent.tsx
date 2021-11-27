@@ -9,31 +9,27 @@ interface IControlButtonComponentProps {
     hoverIcon: string;
     id?: string;
     className?: string;
-    onClick:()=> void;
+    onClick: () => void;
     tooltip?: string;
 }
 
-interface IControlButtonComponentState {
-}
+interface IControlButtonComponentState {}
 
-export class ControlButtonComponent extends React.Component<
-IControlButtonComponentProps,
-IControlButtonComponentState
-> {
-
+export class ControlButtonComponent extends React.Component<IControlButtonComponentProps, IControlButtonComponentState> {
     constructor(props: IControlButtonComponentProps) {
         super(props);
 
-        this.state = { };
+        this.state = {};
     }
 
     public render() {
         return (
-            <div 
+            <div
                 title={this.props.tooltip}
-                className={"control-button" + (this.props.className ? " " + this.props.className : "")} 
-                id={this.props.id} 
-                onClick={() => this.props.onClick()}>
+                className={"control-button" + (this.props.className ? " " + this.props.className : "")}
+                id={this.props.id}
+                onClick={() => this.props.onClick()}
+            >
                 <img className="control-button-image" src={this.props.icon} />
                 <img className="control-button-hover-image" src={this.props.hoverIcon} />
             </div>

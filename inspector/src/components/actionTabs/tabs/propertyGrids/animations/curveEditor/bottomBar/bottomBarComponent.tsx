@@ -18,10 +18,7 @@ interface IBottomBarComponentState {
     clipLength: string;
 }
 
-export class BottomBarComponent extends React.Component<
-IBottomBarComponentProps,
-IBottomBarComponentState
-> {
+export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
     private _onAnimationsLoadedObserver: Nullable<Observer<void>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
     private _onClipLengthIncreasedObserver: Nullable<Observer<number>>;
@@ -45,12 +42,12 @@ IBottomBarComponentState
             this.props.context.clipLength = newClipLength;
 
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            const keyAlreadyExists = this._getKeyAtFrame(newClipLength) !== null;
+            const keyAlreadyExists = this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                this.props.context.onNewKeyPointRequired.notifyObservers();
+                this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
-            this.setState({clipLength: newClipLength.toFixed(0)});
+            this.setState({ clipLength: newClipLength.toFixed(0) });
         });
 
         this._onClipLengthIncreasedObserver = this.props.context.onClipLengthDecreased.add((newClipLength) => {
@@ -58,53 +55,43 @@ IBottomBarComponentState
             this.props.context.clipLength = newClipLength;
 
             this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            const keyAlreadyExists = this._getKeyAtFrame(newClipLength) !== null;
+            const keyAlreadyExists = this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                this.props.context.onNewKeyPointRequired.notifyObservers();
+                this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
 
             this.props.context.toKey = Math.min(this.props.context.toKey, this.props.context.clipLength);
             this.props.context.onRangeUpdated.notifyObservers();
 
-            this.setState({clipLength: newClipLength.toFixed(0)});
+            this.setState({ clipLength: newClipLength.toFixed(0) });
         });
     }
-    
-    private _changeClipLength(newClipLength : number) {
+
+    private _changeClipLength(newClipLength: number) {
         const currClipLength = this.props.context.clipLength || this.props.context.referenceMaxFrame;
         if (currClipLength < newClipLength) {
-            this.props.context.onClipLengthIncreased.notifyObservers(newClipLength);    
+            this.props.context.onClipLengthIncreased.notifyObservers(newClipLength);
         } else if (currClipLength > newClipLength) {
             this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
         }
-        this.setState({clipLength: newClipLength.toFixed(0)});
-    }
-
-    private _getKeyAtFrame(frameNumber : number) {
-        const keys = this.props.context.activeAnimations[0].getKeys();
-        for (let key of keys) {
-            if (Math.floor(frameNumber - key.frame) === 0) {
-                return key;
-            }
-        }
-        return null;
+        this.setState({ clipLength: newClipLength.toFixed(0) });
     }
 
     componentWillUnmount() {
         if (this._onAnimationsLoadedObserver) {
-            this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver)
+            this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver);
         }
 
         if (this._onActiveAnimationChangedObserver) {
-            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver)
+            this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
 
         if (this._onClipLengthDecreasedObserver) {
-            this.props.context.onClipLengthDecreased.remove(this._onClipLengthDecreasedObserver)
+            this.props.context.onClipLengthDecreased.remove(this._onClipLengthDecreasedObserver);
         }
 
         if (this._onClipLengthIncreasedObserver) {
-            this.props.context.onClipLengthDecreased.remove(this._onClipLengthIncreasedObserver)
+            this.props.context.onClipLengthDecreased.remove(this._onClipLengthIncreasedObserver);
         }
     }
 
@@ -113,20 +100,21 @@ IBottomBarComponentState
             <div id="bottom-bar">
                 <MediaPlayerComponent globalState={this.props.globalState} context={this.props.context} />
                 <RangeSelectorComponent globalState={this.props.globalState} context={this.props.context} />
-                {
-                    this.props.context.activeAnimations.length > 0 &&
+                {this.props.context.activeAnimations.length > 0 && (
                     <div id="bottom-bar-total">
-                        <TextInputComponent 
-                        isNumber={true}
-                        value={this.state.clipLength}
-                        tooltip="Clip Length"
-                        id="clip-range"
-                        onValueAsNumberChanged={(newValue, isFocused) => {
-                            !isFocused && this._changeClipLength(newValue)
-                        }}
-                        globalState={this.props.globalState} context={this.props.context} />
+                        <TextInputComponent
+                            isNumber={true}
+                            value={this.state.clipLength}
+                            tooltip="Clip Length"
+                            id="clip-range"
+                            onValueAsNumberChanged={(newValue, isFocused) => {
+                                !isFocused && this._changeClipLength(newValue);
+                            }}
+                            globalState={this.props.globalState}
+                            context={this.props.context}
+                        />
                     </div>
-                }
+                )}
             </div>
         );
     }

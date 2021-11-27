@@ -3,8 +3,8 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
-import { SliderLineComponent } from './sliderLineComponent';
-import { Tools } from 'babylonjs/Misc/tools';
+import { SliderLineComponent } from "./sliderLineComponent";
+import { Tools } from "babylonjs/Misc/tools";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -15,7 +15,7 @@ interface IFloatLineComponentProps {
     isInteger?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
-    step?: string,
+    step?: string;
     digits?: number;
     useEuler?: boolean;
     min?: number;
@@ -23,7 +23,7 @@ interface IFloatLineComponentProps {
     smallUI?: boolean;
     onEnter?: (newValue: number) => void;
     icon?: string;
-    iconLabel? : string;
+    iconLabel?: string;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -49,7 +49,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4) : "0";
+        const newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -70,12 +70,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
     updateValue(valueString: string) {
-
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
         }
@@ -141,18 +140,20 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
 
         return (
             <div>
-                {
-                    !this.props.useEuler &&
+                {!this.props.useEuler && (
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
-                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon" />}
-                        {(!this.props.icon || this.props.label != "") &&
+                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                        {(!this.props.icon || this.props.label != "") && (
                             <div className="label" title={this.props.label}>
                                 {this.props.label}
                             </div>
-                        }
+                        )}
                         <div className={className}>
-                            <input type="number" step={this.props.step || this.props.isInteger ? "1" : "0.01"} className="numeric-input"
-                                onKeyDown={evt => {
+                            <input
+                                type="number"
+                                step={this.props.step || this.props.isInteger ? "1" : "0.01"}
+                                className="numeric-input"
+                                onKeyDown={(evt) => {
                                     if (evt.keyCode !== 13) {
                                         return;
                                     }
@@ -160,19 +161,29 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                         this.props.onEnter(this._store);
                                     }
                                 }}
-                                value={this.state.value} onBlur={() => {
+                                value={this.state.value}
+                                onBlur={() => {
                                     this.unlock();
                                     if (this.props.onEnter) {
                                         this.props.onEnter(this._store);
                                     }
-                                }} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                                }}
+                                onFocus={() => this.lock()}
+                                onChange={(evt) => this.updateValue(evt.target.value)}
+                            />
                         </div>
                     </div>
-                }
-                {
-                    this.props.useEuler &&
-                    <SliderLineComponent label={this.props.label} minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(valueAsNumber)} onChange={value => this.updateValue(Tools.ToRadians(value).toString())} />
-                }
+                )}
+                {this.props.useEuler && (
+                    <SliderLineComponent
+                        label={this.props.label}
+                        minimum={0}
+                        maximum={360}
+                        step={0.1}
+                        directValue={Tools.ToDegrees(valueAsNumber)}
+                        onChange={(value) => this.updateValue(Tools.ToRadians(value).toString())}
+                    />
+                )}
             </div>
         );
     }

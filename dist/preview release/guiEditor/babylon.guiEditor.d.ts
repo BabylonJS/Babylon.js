@@ -86,7 +86,6 @@ declare module GUIEDITOR {
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
-        isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
         private _convertToPixels;
@@ -102,7 +101,7 @@ declare module GUIEDITOR {
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        createGUICanvas(): void;
+        createGUICanvas(): Promise<void>;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
         getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
@@ -390,6 +389,8 @@ declare module GUIEDITOR {
         iconLabel?: string;
         isActive: boolean;
         onClick: () => void;
+        altStyle?: boolean;
+        disabled?: boolean;
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
@@ -731,6 +732,8 @@ declare module GUIEDITOR {
         private _columnDefinitions;
         private _editedRow;
         private _editedColumn;
+        private _rowChild;
+        private _columnChild;
         renderRows(): JSX.Element[];
         setRowValues(): void;
         setColumnValues(): void;
@@ -739,6 +742,7 @@ declare module GUIEDITOR {
         resizeColumn(): void;
         checkValue(value: string, percent: boolean): string;
         checkPercentage(value: string): boolean;
+        resetValues(): void;
         render(): JSX.Element;
     }
 }
@@ -1153,7 +1157,7 @@ declare module GUIEDITOR {
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: IGUIEditorOptions): void;
+        static Show(options: IGUIEditorOptions): Promise<void>;
     }
 }
 declare module GUIEDITOR {

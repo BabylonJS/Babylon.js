@@ -13,7 +13,7 @@ import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/op
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GlobalState } from '../../../../globalState';
+import { GlobalState } from "../../../../globalState";
 import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
 
 interface IPBRMaterialPropertyGridComponentProps {
@@ -39,20 +39,116 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
 
         return (
             <LineContainerComponent title="CHANNELS" selection={this.props.globalState}>
-                <TextureLinkLineComponent label="Albedo" texture={material.albedoTexture} propertyName="albedoTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Metallic Roughness" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} propertyName="reflectionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Refraction" texture={material.refractionTexture} propertyName="refractionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Reflectivity" texture={material.reflectivityTexture} propertyName="reflectivityTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Micro-surface" texture={material.microSurfaceTexture} propertyName="microSurfaceTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Bump" texture={material.bumpTexture} propertyName="bumpTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Emissive" texture={material.emissiveTexture} propertyName="emissiveTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Opacity" texture={material.opacityTexture} propertyName="opacityTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent customDebugAction={(state) => this.switchAmbientMode(state)} label="Ambient" texture={material.ambientTexture} propertyName="ambientTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Lightmap" texture={material.lightmapTexture} propertyName="lightmapTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <TextureLinkLineComponent label="Detailmap" texture={material.detailMap.texture} material={material} onTextureCreated={(texture) => material.detailMap.texture = texture} onTextureRemoved={() => material.detailMap.texture = null} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <CheckBoxLineComponent label="Use lightmap as shadowmap" target={material} propertyName="useLightmapAsShadowmap" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent label="Use detailmap" target={material.detailMap} propertyName="isEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextureLinkLineComponent
+                    label="Albedo"
+                    texture={material.albedoTexture}
+                    propertyName="albedoTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Metallic Roughness"
+                    texture={material.metallicTexture}
+                    propertyName="metallicTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Reflection"
+                    texture={material.reflectionTexture}
+                    propertyName="reflectionTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Refraction"
+                    texture={material.refractionTexture}
+                    propertyName="refractionTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Reflectivity"
+                    texture={material.reflectivityTexture}
+                    propertyName="reflectivityTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Micro-surface"
+                    texture={material.microSurfaceTexture}
+                    propertyName="microSurfaceTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Bump"
+                    texture={material.bumpTexture}
+                    propertyName="bumpTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Emissive"
+                    texture={material.emissiveTexture}
+                    propertyName="emissiveTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Opacity"
+                    texture={material.opacityTexture}
+                    propertyName="opacityTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    customDebugAction={(state) => this.switchAmbientMode(state)}
+                    label="Ambient"
+                    texture={material.ambientTexture}
+                    propertyName="ambientTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Lightmap"
+                    texture={material.lightmapTexture}
+                    propertyName="lightmapTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Detailmap"
+                    texture={material.detailMap.texture}
+                    material={material}
+                    onTextureCreated={(texture) => (material.detailMap.texture = texture)}
+                    onTextureRemoved={() => (material.detailMap.texture = null)}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <CheckBoxLineComponent
+                    label="Use lightmap as shadowmap"
+                    target={material}
+                    propertyName="useLightmapAsShadowmap"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <CheckBoxLineComponent
+                    label="Use detailmap"
+                    target={material.detailMap}
+                    propertyName="isEnabled"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </LineContainerComponent>
         );
     }
@@ -126,7 +222,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         var realTimeFilteringQualityOptions = [
             { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
             { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
-            { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH }
+            { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
         ];
 
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
@@ -139,230 +235,844 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    lockObject={this.props.lockObject}
+                    material={material}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 {this.renderTextures(this._onDebugSelectionChangeObservable)}
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
-                    <Color3LineComponent label="Albedo" target={material} propertyName="albedoColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true}/>
-                    <Color3LineComponent label="Reflectivity" target={material} propertyName="reflectivityColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                    <SliderLineComponent label="Micro-surface" target={material} propertyName="microSurface" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                    <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                    <CheckBoxLineComponent label="Use physical light falloff" target={material} propertyName="usePhysicalLightFalloff" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        label="Albedo"
+                        target={material}
+                        propertyName="albedoColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
+                    <Color3LineComponent
+                        label="Reflectivity"
+                        target={material}
+                        propertyName="reflectivityColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
+                    <SliderLineComponent
+                        label="Micro-surface"
+                        target={material}
+                        propertyName="microSurface"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Color3LineComponent
+                        label="Emissive"
+                        target={material}
+                        propertyName="emissiveColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
+                    <Color3LineComponent
+                        label="Ambient"
+                        target={material}
+                        propertyName="ambientColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
+                    <CheckBoxLineComponent
+                        label="Use physical light falloff"
+                        target={material}
+                        propertyName="usePhysicalLightFalloff"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="METALLIC WORKFLOW" selection={this.props.globalState}>
-                    <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Index of Refraction" target={material} propertyName="indexOfRefraction" minimum={1} maximum={3} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="F0 Factor" target={material} propertyName="metallicF0Factor" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Reflectance Color" target={material} propertyName="metallicReflectanceColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                    <CheckBoxLineComponent label="Use only metallic from MetallicReflectance texture" target={material} propertyName="useOnlyMetallicFromMetallicReflectanceTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <TextureLinkLineComponent label="MetallicReflectance Texture" texture={material.metallicReflectanceTexture} onTextureCreated={(texture) => material.metallicReflectanceTexture = texture} onTextureRemoved={() => material.metallicReflectanceTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                    <TextureLinkLineComponent label="Reflectance Texture" texture={material.reflectanceTexture} onTextureCreated={(texture) => material.reflectanceTexture = texture} onTextureRemoved={() => material.reflectanceTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                    <SliderLineComponent
+                        label="Metallic"
+                        target={material}
+                        propertyName="metallic"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Roughness"
+                        target={material}
+                        propertyName="roughness"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Index of Refraction"
+                        target={material}
+                        propertyName="indexOfRefraction"
+                        minimum={1}
+                        maximum={3}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="F0 Factor"
+                        target={material}
+                        propertyName="metallicF0Factor"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Color3LineComponent
+                        label="Reflectance Color"
+                        target={material}
+                        propertyName="metallicReflectanceColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
+                    <CheckBoxLineComponent
+                        label="Use only metallic from MetallicReflectance texture"
+                        target={material}
+                        propertyName="useOnlyMetallicFromMetallicReflectanceTexture"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="MetallicReflectance Texture"
+                        texture={material.metallicReflectanceTexture}
+                        onTextureCreated={(texture) => (material.metallicReflectanceTexture = texture)}
+                        onTextureRemoved={() => (material.metallicReflectanceTexture = null)}
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Reflectance Texture"
+                        texture={material.reflectanceTexture}
+                        onTextureCreated={(texture) => (material.reflectanceTexture = texture)}
+                        onTextureRemoved={() => (material.reflectanceTexture = null)}
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="CLEAR COAT" selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="Enabled" target={material.clearCoat} propertyName="isEnabled"
+                    <CheckBoxLineComponent
+                        label="Enabled"
+                        target={material.clearCoat}
+                        propertyName="isEnabled"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        material.clearCoat.isEnabled &&
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.clearCoat.isEnabled && (
                         <div className="fragment">
-                            <SliderLineComponent label="Intensity" target={material.clearCoat} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <SliderLineComponent label="Roughness" target={material.clearCoat} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <SliderLineComponent label="IOR" target={material.clearCoat} propertyName="indexOfRefraction" minimum={1.0} maximum={3} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Remap F0" target={material.clearCoat} propertyName="remapF0OnInterfaceChange" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <TextureLinkLineComponent label="Clear coat" texture={material.clearCoat.texture} onTextureCreated={(texture) => material.clearCoat.texture = texture} onTextureRemoved={() => material.clearCoat.texture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            <TextureLinkLineComponent label="Roughness" texture={material.clearCoat.textureRoughness} onTextureCreated={(texture) => material.clearCoat.textureRoughness = texture} onTextureRemoved={() => material.clearCoat.textureRoughness = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            <TextureLinkLineComponent label="Bump" texture={material.clearCoat.bumpTexture} onTextureCreated={(texture) => material.clearCoat.bumpTexture = texture} onTextureRemoved={() => material.clearCoat.bumpTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            {
-                                material.clearCoat.bumpTexture &&
-                                <SliderLineComponent label="Bump strength" target={material.clearCoat.bumpTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            }
-                            <CheckBoxLineComponent label="Use roughness from main texture" target={material.clearCoat} propertyName="useRoughnessFromMainTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Tint" target={material.clearCoat} propertyName="isTintEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            {
-                                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                                <Color3LineComponent label="Tint Color" target={material.clearCoat} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                            }
-                            {
-                                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                                <SliderLineComponent label="At Distance" target={material.clearCoat} propertyName="tintColorAtDistance" minimum={0} maximum={20} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            }
-                            {
-                                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                                <SliderLineComponent label="Tint Thickness" target={material.clearCoat} propertyName="tintThickness" minimum={0} maximum={20} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            }
-                            {
-                                material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                                <TextureLinkLineComponent label="Tint" texture={material.clearCoat.tintTexture} onTextureCreated={(texture) => material.clearCoat.tintTexture = texture} onTextureRemoved={() => material.clearCoat.tintTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            }
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.clearCoat}
+                                propertyName="intensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Roughness"
+                                target={material.clearCoat}
+                                propertyName="roughness"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="IOR"
+                                target={material.clearCoat}
+                                propertyName="indexOfRefraction"
+                                minimum={1.0}
+                                maximum={3}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <CheckBoxLineComponent
+                                label="Remap F0"
+                                target={material.clearCoat}
+                                propertyName="remapF0OnInterfaceChange"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Clear coat"
+                                texture={material.clearCoat.texture}
+                                onTextureCreated={(texture) => (material.clearCoat.texture = texture)}
+                                onTextureRemoved={() => (material.clearCoat.texture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Roughness"
+                                texture={material.clearCoat.textureRoughness}
+                                onTextureCreated={(texture) => (material.clearCoat.textureRoughness = texture)}
+                                onTextureRemoved={() => (material.clearCoat.textureRoughness = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Bump"
+                                texture={material.clearCoat.bumpTexture}
+                                onTextureCreated={(texture) => (material.clearCoat.bumpTexture = texture)}
+                                onTextureRemoved={() => (material.clearCoat.bumpTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            {material.clearCoat.bumpTexture && (
+                                <SliderLineComponent
+                                    label="Bump strength"
+                                    target={material.clearCoat.bumpTexture}
+                                    propertyName="level"
+                                    minimum={0}
+                                    maximum={2}
+                                    step={0.01}
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                />
+                            )}
+                            <CheckBoxLineComponent
+                                label="Use roughness from main texture"
+                                target={material.clearCoat}
+                                propertyName="useRoughnessFromMainTexture"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <CheckBoxLineComponent
+                                label="Tint"
+                                target={material.clearCoat}
+                                propertyName="isTintEnabled"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
+                                <Color3LineComponent
+                                    label="Tint Color"
+                                    target={material.clearCoat}
+                                    propertyName="tintColor"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    isLinear={true}
+                                />
+                            )}
+                            {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
+                                <SliderLineComponent
+                                    label="At Distance"
+                                    target={material.clearCoat}
+                                    propertyName="tintColorAtDistance"
+                                    minimum={0}
+                                    maximum={20}
+                                    step={0.1}
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                />
+                            )}
+                            {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
+                                <SliderLineComponent
+                                    label="Tint Thickness"
+                                    target={material.clearCoat}
+                                    propertyName="tintThickness"
+                                    minimum={0}
+                                    maximum={20}
+                                    step={0.1}
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                />
+                            )}
+                            {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
+                                <TextureLinkLineComponent
+                                    label="Tint"
+                                    texture={material.clearCoat.tintTexture}
+                                    onTextureCreated={(texture) => (material.clearCoat.tintTexture = texture)}
+                                    onTextureRemoved={() => (material.clearCoat.tintTexture = null)}
+                                    material={material}
+                                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                    onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                                />
+                            )}
                         </div>
-                    }
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="ANISOTROPIC" selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="Enabled" target={material.anisotropy} propertyName="isEnabled"
+                    <CheckBoxLineComponent
+                        label="Enabled"
+                        target={material.anisotropy}
+                        propertyName="isEnabled"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        material.anisotropy.isEnabled &&
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.anisotropy.isEnabled && (
                         <div className="fragment">
-                            <SliderLineComponent label="Intensity" target={material.anisotropy} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Vector2LineComponent label="Direction" target={material.anisotropy} propertyName="direction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <TextureLinkLineComponent label="Anisotropic" texture={material.anisotropy.texture} onTextureCreated={(texture) => material.anisotropy.texture = texture} onTextureRemoved={() => material.anisotropy.texture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.anisotropy}
+                                propertyName="intensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Vector2LineComponent
+                                label="Direction"
+                                target={material.anisotropy}
+                                propertyName="direction"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Anisotropic"
+                                texture={material.anisotropy.texture}
+                                onTextureCreated={(texture) => (material.anisotropy.texture = texture)}
+                                onTextureRemoved={() => (material.anisotropy.texture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
                         </div>
-                    }
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="SHEEN" selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="Enabled" target={material.sheen} propertyName="isEnabled"
+                    <CheckBoxLineComponent
+                        label="Enabled"
+                        target={material.sheen}
+                        propertyName="isEnabled"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        material.sheen.isEnabled &&
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.sheen.isEnabled && (
                         <div className="fragment">
-                            <CheckBoxLineComponent label="Link to Albedo" target={material.sheen} propertyName="linkSheenWithAlbedo" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <SliderLineComponent label="Intensity" target={material.sheen} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Color3LineComponent label="Color" target={material.sheen} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                            <TextureLinkLineComponent label="Sheen" texture={material.sheen.texture} onTextureCreated={(texture) => material.sheen.texture = texture} onTextureRemoved={() => material.sheen.texture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            <TextureLinkLineComponent label="Roughness" texture={material.sheen.textureRoughness} onTextureCreated={(texture) => material.sheen.textureRoughness = texture} onTextureRemoved={() => material.sheen.textureRoughness = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <CheckBoxLineComponent
+                                label="Link to Albedo"
+                                target={material.sheen}
+                                propertyName="linkSheenWithAlbedo"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.sheen}
+                                propertyName="intensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color3LineComponent
+                                label="Color"
+                                target={material.sheen}
+                                propertyName="color"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                isLinear={true}
+                            />
+                            <TextureLinkLineComponent
+                                label="Sheen"
+                                texture={material.sheen.texture}
+                                onTextureCreated={(texture) => (material.sheen.texture = texture)}
+                                onTextureRemoved={() => (material.sheen.texture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Roughness"
+                                texture={material.sheen.textureRoughness}
+                                onTextureCreated={(texture) => (material.sheen.textureRoughness = texture)}
+                                onTextureRemoved={() => (material.sheen.textureRoughness = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
                             <CheckBoxLineComponent label="Use roughness" target={material.sheen} propertyName="_useRoughness" />
-                            { (material.sheen as any)._useRoughness &&
-                                <SliderLineComponent label="Roughness" target={material.sheen} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            }
-                            <CheckBoxLineComponent label="Use roughness from main texture" target={material.sheen} propertyName="useRoughnessFromMainTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Albedo scaling" target={material.sheen} propertyName="albedoScaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            {(material.sheen as any)._useRoughness && (
+                                <SliderLineComponent
+                                    label="Roughness"
+                                    target={material.sheen}
+                                    propertyName="roughness"
+                                    minimum={0}
+                                    maximum={1}
+                                    step={0.01}
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                />
+                            )}
+                            <CheckBoxLineComponent
+                                label="Use roughness from main texture"
+                                target={material.sheen}
+                                propertyName="useRoughnessFromMainTexture"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <CheckBoxLineComponent
+                                label="Albedo scaling"
+                                target={material.sheen}
+                                propertyName="albedoScaling"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </div>
-                    }
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="SUBSURFACE" selection={this.props.globalState}>
-                    <TextureLinkLineComponent label="Thickness" texture={material.subSurface.thicknessTexture} onTextureCreated={(texture) => material.subSurface.thicknessTexture = texture} onTextureRemoved={() => material.subSurface.thicknessTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                    <SliderLineComponent label="Min Thickness" target={material.subSurface} propertyName="minimumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Max Thickness" target={material.subSurface} propertyName="maximumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Mask From Thickness" target={material.subSurface} propertyName="useMaskFromThicknessTexture"
+                    <TextureLinkLineComponent
+                        label="Thickness"
+                        texture={material.subSurface.thicknessTexture}
+                        onTextureCreated={(texture) => (material.subSurface.thicknessTexture = texture)}
+                        onTextureRemoved={() => (material.subSurface.thicknessTexture = null)}
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        label="Min Thickness"
+                        target={material.subSurface}
+                        propertyName="minimumThickness"
+                        minimum={0}
+                        maximum={10}
+                        step={0.1}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Max Thickness"
+                        target={material.subSurface}
+                        propertyName="maximumThickness"
+                        minimum={0}
+                        maximum={10}
+                        step={0.1}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Mask From Thickness"
+                        target={material.subSurface}
+                        propertyName="useMaskFromThicknessTexture"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="glTF-Style Textures" target={material.subSurface} propertyName="useGltfStyleTextures"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="glTF-Style Textures"
+                        target={material.subSurface}
+                        propertyName="useGltfStyleTextures"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Use Thickness as Depth" target={material.subSurface} propertyName="useThicknessAsDepth"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Use Thickness as Depth"
+                        target={material.subSurface}
+                        propertyName="useThicknessAsDepth"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Color3LineComponent
+                        label="Tint Color"
+                        target={material.subSurface}
+                        propertyName="tintColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
 
-                    <CheckBoxLineComponent label="Scattering Enabled" target={material.subSurface} propertyName="isScatteringEnabled"
+                    <CheckBoxLineComponent
+                        label="Scattering Enabled"
+                        target={material.subSurface}
+                        propertyName="isScatteringEnabled"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    { (material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer && material.getScene().subSurfaceConfiguration &&
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {(material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer && material.getScene().subSurfaceConfiguration && (
                         <div className="fragment">
-                            <SliderLineComponent label="Meters per unit" target={ material.getScene().subSurfaceConfiguration! } propertyName="metersPerUnit" minimum={0.01} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <SliderLineComponent
+                                label="Meters per unit"
+                                target={material.getScene().subSurfaceConfiguration!}
+                                propertyName="metersPerUnit"
+                                minimum={0.01}
+                                maximum={2}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </div>
-                    }
-                    <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
+                    )}
+                    <CheckBoxLineComponent
+                        label="Refraction Enabled"
+                        target={material.subSurface}
+                        propertyName="isRefractionEnabled"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        material.subSurface.isRefractionEnabled &&
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.subSurface.isRefractionEnabled && (
                         <div className="fragment">
-                            <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="refractionIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <TextureLinkLineComponent label="Refraction" texture={material.subSurface.refractionTexture} onTextureCreated={(texture) => material.subSurface.refractionTexture = texture} onTextureRemoved={() => material.subSurface.refractionTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            <SliderLineComponent label="Volume Index of Refraction" target={material.subSurface} propertyName="volumeIndexOfRefraction" minimum={1} maximum={3} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <SliderLineComponent label="Tint at Distance" target={material.subSurface} propertyName="tintColorAtDistance" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Link refraction with transparency" target={material.subSurface} propertyName="linkRefractionWithTransparency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <CheckBoxLineComponent label="Use albedo to tint surface transparency" target={material.subSurface} propertyName="useAlbedoToTintRefraction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.subSurface}
+                                propertyName="refractionIntensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Refraction"
+                                texture={material.subSurface.refractionTexture}
+                                onTextureCreated={(texture) => (material.subSurface.refractionTexture = texture)}
+                                onTextureRemoved={() => (material.subSurface.refractionTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <SliderLineComponent
+                                label="Volume Index of Refraction"
+                                target={material.subSurface}
+                                propertyName="volumeIndexOfRefraction"
+                                minimum={1}
+                                maximum={3}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Tint at Distance"
+                                target={material.subSurface}
+                                propertyName="tintColorAtDistance"
+                                minimum={0}
+                                maximum={10}
+                                step={0.1}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <CheckBoxLineComponent
+                                label="Link refraction with transparency"
+                                target={material.subSurface}
+                                propertyName="linkRefractionWithTransparency"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <CheckBoxLineComponent
+                                label="Use albedo to tint surface transparency"
+                                target={material.subSurface}
+                                propertyName="useAlbedoToTintRefraction"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </div>
-                    }
+                    )}
 
-                    <CheckBoxLineComponent label="Translucency Enabled" target={material.subSurface} propertyName="isTranslucencyEnabled"
+                    <CheckBoxLineComponent
+                        label="Translucency Enabled"
+                        target={material.subSurface}
+                        propertyName="isTranslucencyEnabled"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        material.subSurface.isTranslucencyEnabled &&
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.subSurface.isTranslucencyEnabled && (
                         <div className="fragment">
-                            <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="translucencyIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Color3LineComponent label="Diffusion Distance" target={material.subSurface} propertyName="diffusionDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                            <CheckBoxLineComponent label="Use albedo to tint surface translucency" target={material.subSurface} propertyName="useAlbedoToTintTranslucency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.subSurface}
+                                propertyName="translucencyIntensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color3LineComponent
+                                label="Diffusion Distance"
+                                target={material.subSurface}
+                                propertyName="diffusionDistance"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                isLinear={true}
+                            />
+                            <CheckBoxLineComponent
+                                label="Use albedo to tint surface translucency"
+                                target={material.subSurface}
+                                propertyName="useAlbedoToTintTranslucency"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </div>
-                    }
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>
-                    <SliderLineComponent label="Environment" target={material} propertyName="environmentIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Specular" target={material} propertyName="specularIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Emissive" target={material} propertyName="emissiveIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Direct" target={material} propertyName="directIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    {
-                        material.bumpTexture &&
-                        <SliderLineComponent label="Bump strength" target={material.bumpTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.ambientTexture &&
-                        <SliderLineComponent label="Ambient strength" target={material} propertyName="ambientTextureStrength" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.reflectionTexture &&
-                        <SliderLineComponent label="Reflection strength" target={material.reflectionTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.clearCoat.texture &&
-                        <SliderLineComponent label="Clear coat" target={material.clearCoat.texture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.clearCoat.bumpTexture &&
-                        <SliderLineComponent label="Clear coat bump" target={material.clearCoat.bumpTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.clearCoat.tintTexture && false && /* level is not used for the clear coat tint texture */
-                        <SliderLineComponent label="Clear coat tint" target={material.clearCoat.tintTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.anisotropy.texture &&
-                        <SliderLineComponent label="Anisotropic" target={material.anisotropy.texture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.sheen.texture &&
-                        <SliderLineComponent label="Sheen" target={material.sheen.texture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.subSurface.thicknessTexture &&
-                        <SliderLineComponent label="Thickness" target={material.subSurface.thicknessTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.subSurface.refractionTexture &&
-                        <SliderLineComponent label="Refraction" target={material.subSurface.refractionTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }
-                    {
-                        material.detailMap.isEnabled && <>
-                        <SliderLineComponent label="Detailmap diffuse" target={material.detailMap} propertyName="diffuseBlendLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <SliderLineComponent label="Detailmap bump" target={material.detailMap} propertyName="bumpLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <SliderLineComponent label="Detailmap roughness" target={material.detailMap} propertyName="roughnessBlendLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    </> }
+                    <SliderLineComponent
+                        label="Environment"
+                        target={material}
+                        propertyName="environmentIntensity"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Specular"
+                        target={material}
+                        propertyName="specularIntensity"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Emissive"
+                        target={material}
+                        propertyName="emissiveIntensity"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Direct"
+                        target={material}
+                        propertyName="directIntensity"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.bumpTexture && (
+                        <SliderLineComponent
+                            label="Bump strength"
+                            target={material.bumpTexture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={2}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.ambientTexture && (
+                        <SliderLineComponent
+                            label="Ambient strength"
+                            target={material}
+                            propertyName="ambientTextureStrength"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.reflectionTexture && (
+                        <SliderLineComponent
+                            label="Reflection strength"
+                            target={material.reflectionTexture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.clearCoat.texture && (
+                        <SliderLineComponent
+                            label="Clear coat"
+                            target={material.clearCoat.texture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.clearCoat.bumpTexture && (
+                        <SliderLineComponent
+                            label="Clear coat bump"
+                            target={material.clearCoat.bumpTexture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={2}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.clearCoat.tintTexture && false /* level is not used for the clear coat tint texture */ && (
+                        <SliderLineComponent
+                            label="Clear coat tint"
+                            target={material.clearCoat.tintTexture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.anisotropy.texture && (
+                        <SliderLineComponent
+                            label="Anisotropic"
+                            target={material.anisotropy.texture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.sheen.texture && (
+                        <SliderLineComponent
+                            label="Sheen"
+                            target={material.sheen.texture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.subSurface.thicknessTexture && (
+                        <SliderLineComponent
+                            label="Thickness"
+                            target={material.subSurface.thicknessTexture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.subSurface.refractionTexture && (
+                        <SliderLineComponent
+                            label="Refraction"
+                            target={material.subSurface.refractionTexture}
+                            propertyName="level"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
+                    {material.detailMap.isEnabled && (
+                        <>
+                            <SliderLineComponent
+                                label="Detailmap diffuse"
+                                target={material.detailMap}
+                                propertyName="diffuseBlendLevel"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Detailmap bump"
+                                target={material.detailMap}
+                                propertyName="bumpLevel"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Detailmap roughness"
+                                target={material.detailMap}
+                                propertyName="roughnessBlendLevel"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                        </>
+                    )}
                 </LineContainerComponent>
                 <LineContainerComponent title="RENDERING" closed={true} selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="Alpha from albedo" target={material} propertyName="useAlphaFromAlbedoTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Ambient in grayscale" target={material} propertyName="useAmbientInGrayScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Radiance over alpha" target={material} propertyName="useRadianceOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Micro-surface from ref. map alpha" target={material} propertyName="useMicroSurfaceFromReflectivityMapAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Specular over alpha" target={material} propertyName="useSpecularOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Specular anti-aliasing" target={material} propertyName="enableSpecularAntiAliasing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Realtime Filtering" target={material} propertyName="realTimeFiltering" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent allowNullValue={true} label="Realtime Filtering quality" options={realTimeFilteringQualityOptions} target={material} propertyName="realTimeFilteringQuality" onPropertyChangedObservable={this.props.onPropertyChangedObservable}  />
+                    <CheckBoxLineComponent
+                        label="Alpha from albedo"
+                        target={material}
+                        propertyName="useAlphaFromAlbedoTexture"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Ambient in grayscale"
+                        target={material}
+                        propertyName="useAmbientInGrayScale"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Radiance over alpha"
+                        target={material}
+                        propertyName="useRadianceOverAlpha"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Micro-surface from ref. map alpha"
+                        target={material}
+                        propertyName="useMicroSurfaceFromReflectivityMapAlpha"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Specular over alpha"
+                        target={material}
+                        propertyName="useSpecularOverAlpha"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Specular anti-aliasing"
+                        target={material}
+                        propertyName="enableSpecularAntiAliasing"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Realtime Filtering"
+                        target={material}
+                        propertyName="realTimeFiltering"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <OptionsLineComponent
+                        allowNullValue={true}
+                        label="Realtime Filtering quality"
+                        options={realTimeFilteringQualityOptions}
+                        target={material}
+                        propertyName="realTimeFilteringQuality"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="NORMAL MAP" closed={true} selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Invert Y axis" target={material} propertyName="invertNormalMapY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent
+                        label="Invert X axis"
+                        target={material}
+                        propertyName="invertNormalMapX"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Invert Y axis"
+                        target={material}
+                        propertyName="invertNormalMapY"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="ADVANCED" closed={true} selection={this.props.globalState}>
-                    <CheckBoxLineComponent label="Energy Conservation" target={material.brdf} propertyName="useEnergyConservation"
+                    <CheckBoxLineComponent
+                        label="Energy Conservation"
+                        target={material.brdf}
+                        propertyName="useEnergyConservation"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Spherical Harmonics" target={material.brdf} propertyName="useSphericalHarmonics"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Spherical Harmonics"
+                        target={material.brdf}
+                        propertyName="useSphericalHarmonics"
                         onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Radiance occlusion" target={material} propertyName="useRadianceOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Horizon occlusion " target={material} propertyName="useHorizonOcclusion" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Radiance occlusion"
+                        target={material}
+                        propertyName="useRadianceOcclusion"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent
+                        label="Horizon occlusion "
+                        target={material}
+                        propertyName="useHorizonOcclusion"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
                     <OptionsLineComponent label="Debug mode" options={debugMode} target={material} propertyName="debugMode" />
-                    <SliderLineComponent label="Split position" target={material} propertyName="debugLimit" minimum={-1} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Output factor" target={material} propertyName="debugFactor" minimum={0} maximum={5} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent
+                        label="Split position"
+                        target={material}
+                        propertyName="debugLimit"
+                        minimum={-1}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        label="Output factor"
+                        target={material}
+                        propertyName="debugFactor"
+                        minimum={0}
+                        maximum={5}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
             </div>
         );

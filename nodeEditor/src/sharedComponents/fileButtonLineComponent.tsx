@@ -31,7 +31,13 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
                 <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload">
                     {this.props.label}
                 </label>
-                <input ref={this.uploadRef} id={this.props.uploadName ? this.props.uploadName : "file-upload"} type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
+                <input
+                    ref={this.uploadRef}
+                    id={this.props.uploadName ? this.props.uploadName : "file-upload"}
+                    type="file"
+                    accept={this.props.accept}
+                    onChange={(evt) => this.onChange(evt)}
+                />
             </div>
         );
     }

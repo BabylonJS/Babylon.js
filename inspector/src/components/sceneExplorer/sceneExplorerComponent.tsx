@@ -12,20 +12,20 @@ import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../components/globalState";
-import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
-import { Vector3 } from 'babylonjs/Maths/math';
-import { PointLight } from 'babylonjs/Lights/pointLight';
-import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
-import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
-import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
-import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
-import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
-import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
-import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
-import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
-import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
+import { DefaultRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { Vector3 } from "babylonjs/Maths/math";
+import { PointLight } from "babylonjs/Lights/pointLight";
+import { FreeCamera } from "babylonjs/Cameras/freeCamera";
+import { DirectionalLight } from "babylonjs/Lights/directionalLight";
+import { SSAORenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { ParticleHelper } from "babylonjs/Particles/particleHelper";
+import { GPUParticleSystem } from "babylonjs/Particles/gpuParticleSystem";
+import { SSAO2RenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
+import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { SpriteManager } from "babylonjs/Sprites/spriteManager";
+import { TargetCamera } from "babylonjs/Cameras/targetCamera";
 
 require("./sceneExplorer.scss");
 
@@ -39,7 +39,6 @@ export class SceneExplorerFilterComponent extends React.Component<ISceneExplorer
     }
 
     render() {
-
         return (
             <div className="filter">
                 <input type="text" placeholder="Filter" onChange={(evt) => this.props.onFilter(evt.target.value)} />
@@ -61,7 +60,7 @@ interface ISceneExplorerComponentProps {
     onClose?: () => void;
 }
 
-export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
+export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Scene }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onSelectionRenamedObserver: Nullable<Observer<void>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
@@ -84,7 +83,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.sceneExplorerRef = React.createRef();
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Scene) => {
             this.setState({
-                scene
+                scene,
             });
         });
     }
@@ -157,7 +156,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.setState({ filter: filter });
     }
 
-    findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: { previousOne?: any, found?: boolean }): boolean {
+    findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: { previousOne?: any; found?: boolean }): boolean {
         if (!items) {
             return false;
         }
@@ -169,7 +168,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         for (var item of sortedItems) {
-            if (item === target) { // found the current selection!
+            if (item === target) {
+                // found the current selection!
                 data.found = true;
                 if (!goNext) {
                     if (data.previousOne) {
@@ -193,7 +193,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return false;
-
     }
 
     processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>) {
@@ -205,26 +204,31 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let search = false;
         let goNext = false;
 
-        if (keyEvent.keyCode === 38) { // up
+        if (keyEvent.keyCode === 38) {
+            // up
             search = true;
-        } else if (keyEvent.keyCode === 40) { // down
+        } else if (keyEvent.keyCode === 40) {
+            // down
             goNext = true;
             search = true;
-        } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) { // enter or right
+        } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) {
+            // enter or right
             var reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(true);
             }
             keyEvent.preventDefault();
             return;
-        } else if (keyEvent.keyCode === 37) { // left
+        } else if (keyEvent.keyCode === 37) {
+            // left
             var reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(false);
             }
             keyEvent.preventDefault();
             return;
-        } else if (keyEvent.keyCode === 46) { // delete
+        } else if (keyEvent.keyCode === 46) {
+            // delete
             this.state.selectedEntity.dispose();
         }
 
@@ -240,7 +244,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
             }
         }
-
     }
 
     renderContent() {
@@ -276,7 +279,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
         // Context menus
-        let pipelineContextMenus: { label: string, action: () => void }[] = [];
+        let pipelineContextMenus: { label: string; action: () => void }[] = [];
 
         if (scene.activeCamera) {
             if (!pipelines.some((p) => p.getClassName() === "DefaultRenderingPipeline")) {
@@ -285,7 +288,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     action: () => {
                         let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
-                    }
+                    },
                 });
             }
 
@@ -295,7 +298,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     action: () => {
                         let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
-                    }
+                    },
                 });
             }
 
@@ -305,25 +308,25 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     action: () => {
                         let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
-                    }
+                    },
                 });
             }
         }
 
-        let nodeContextMenus: { label: string, action: () => void }[] = [];
+        let nodeContextMenus: { label: string; action: () => void }[] = [];
         nodeContextMenus.push({
             label: "Add new point light",
             action: () => {
                 let newPointLight = new PointLight("point light", Vector3.Zero(), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
-            }
+            },
         });
         nodeContextMenus.push({
             label: "Add new directional light",
             action: () => {
                 let newDirectionalLight = new DirectionalLight("directional light", new Vector3(-1, -1, -0.5), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
-            }
+            },
         });
         nodeContextMenus.push({
             label: "Add new free camera",
@@ -339,10 +342,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
-            }
+            },
         });
 
-        const getUniqueName = (name: string) : string => {
+        const getUniqueName = (name: string): string => {
             let idSubscript = 1;
             while (scene.getMaterialById(name)) {
                 name = name + " " + idSubscript++;
@@ -351,20 +354,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         };
 
         // Materials
-        let materialsContextMenus: { label: string, action: () => void }[] = [];
+        let materialsContextMenus: { label: string; action: () => void }[] = [];
         materialsContextMenus.push({
             label: "Add new standard material",
             action: () => {
                 let newStdMaterial = new StandardMaterial(getUniqueName("Standard material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
-            }
+            },
         });
         materialsContextMenus.push({
             label: "Add new PBR material",
             action: () => {
                 let newPBRMaterial = new PBRMaterial(getUniqueName("PBR material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
-            }
+            },
         });
         materialsContextMenus.push({
             label: "Add new node material",
@@ -373,7 +376,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 newNodeMaterial.setToDefault();
                 newNodeMaterial.build();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
-            }
+            },
         });
 
         let materials = [];
@@ -385,17 +388,17 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         // Sprite Managers
-        let spriteManagersContextMenus: { label: string, action: () => void }[] = [];
+        let spriteManagersContextMenus: { label: string; action: () => void }[] = [];
         spriteManagersContextMenus.push({
             label: "Add new sprite manager",
             action: () => {
                 let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
-            }
+            },
         });
 
         // Particle systems
-        let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
+        let particleSystemsContextMenus: { label: string; action: () => void }[] = [];
         particleSystemsContextMenus.push({
             label: "Add new CPU particle system",
             action: () => {
@@ -403,7 +406,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 newSystem.name = "CPU particle system";
                 newSystem.start();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
-            }
+            },
         });
 
         if (GPUParticleSystem.IsSupported) {
@@ -414,7 +417,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     newSystem.name = "GPU particle system";
                     newSystem.start();
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
-                }
+                },
             });
         }
 
@@ -430,49 +433,140 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return (
             <div id="tree" onContextMenu={(e) => e.preventDefault()}>
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
-                <SceneTreeItemComponent globalState={this.props.globalState}
-                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} scene={scene} onRefresh={() => this.forceUpdate()} onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} />
-                <TreeItemComponent globalState={this.props.globalState}
+                <SceneTreeItemComponent
+                    globalState={this.props.globalState}
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    scene={scene}
+                    onRefresh={() => this.forceUpdate()}
+                    onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
+                />
+                <TreeItemComponent
+                    globalState={this.props.globalState}
                     contextMenuItems={nodeContextMenus}
-                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={rootNodes} label="Nodes" offset={1} filter={this.state.filter} />
-                {
-                    scene.skeletons.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.skeletons} label="Skeletons" offset={1} filter={this.state.filter} />
-                }
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={materials}
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    items={rootNodes}
+                    label="Nodes"
+                    offset={1}
+                    filter={this.state.filter}
+                />
+                {scene.skeletons.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={scene.skeletons}
+                        label="Skeletons"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
+                <TreeItemComponent
+                    globalState={this.props.globalState}
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    items={materials}
                     contextMenuItems={materialsContextMenus}
-                    label="Materials" offset={1} filter={this.state.filter} />
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} filter={this.state.filter} />
-                {
-                    postProcessses.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={postProcessses} label="Post-processes" offset={1} filter={this.state.filter} />
-                }
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups}
+                    label="Materials"
+                    offset={1}
+                    filter={this.state.filter}
+                />
+                <TreeItemComponent
+                    globalState={this.props.globalState}
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    items={textures}
+                    label="Textures"
+                    offset={1}
+                    filter={this.state.filter}
+                />
+                {postProcessses.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={postProcessses}
+                        label="Post-processes"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
+                <TreeItemComponent
+                    globalState={this.props.globalState}
+                    extensibilityGroups={this.props.extensibilityGroups}
                     contextMenuItems={pipelineContextMenus}
-                    selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
-                {
-                    scene.effectLayers && scene.effectLayers.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.effectLayers} label="Effect layers" offset={1} filter={this.state.filter} />
-                }
-                <TreeItemComponent globalState={this.props.globalState}
+                    selectedEntity={this.state.selectedEntity}
+                    items={pipelines}
+                    label="Rendering pipelines"
+                    offset={1}
+                    filter={this.state.filter}
+                />
+                {scene.effectLayers && scene.effectLayers.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={scene.effectLayers}
+                        label="Effect layers"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
+                <TreeItemComponent
+                    globalState={this.props.globalState}
                     contextMenuItems={particleSystemsContextMenus}
-                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />
-                <TreeItemComponent globalState={this.props.globalState}
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    items={scene.particleSystems}
+                    label="Particle systems"
+                    offset={1}
+                    filter={this.state.filter}
+                />
+                <TreeItemComponent
+                    globalState={this.props.globalState}
                     contextMenuItems={spriteManagersContextMenus}
                     forceSubitems={true}
-                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.spriteManagers} label="Sprite managers" offset={1} filter={this.state.filter} />
-                {
-                    guiElements && guiElements.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />
-                }
-                {
-                    scene.animationGroups.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.animationGroups} label="Animation groups" offset={1} filter={this.state.filter} />
-                }
-                {
-                    scene.mainSoundTrack && scene.mainSoundTrack.soundCollection.length > 0 &&
-                    <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.mainSoundTrack.soundCollection} label="Sounds" offset={1} filter={this.state.filter} />
-                }
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    items={scene.spriteManagers}
+                    label="Sprite managers"
+                    offset={1}
+                    filter={this.state.filter}
+                />
+                {guiElements && guiElements.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={guiElements}
+                        label="GUI"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
+                {scene.animationGroups.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={scene.animationGroups}
+                        label="Animation groups"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
+                {scene.mainSoundTrack && scene.mainSoundTrack.soundCollection.length > 0 && (
+                    <TreeItemComponent
+                        globalState={this.props.globalState}
+                        extensibilityGroups={this.props.extensibilityGroups}
+                        selectedEntity={this.state.selectedEntity}
+                        items={scene.mainSoundTrack.soundCollection}
+                        label="Sounds"
+                        offset={1}
+                        filter={this.state.filter}
+                    />
+                )}
             </div>
         );
     }
@@ -497,10 +591,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (this.props.popupMode) {
             return (
                 <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
-                    {
-                        !this.props.noHeader &&
-                        <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
-                    }
+                    {!this.props.noHeader && (
+                        <HeaderComponent
+                            title="SCENE EXPLORER"
+                            noClose={this.props.noClose}
+                            noExpand={this.props.noExpand}
+                            noCommands={this.props.noCommands}
+                            onClose={() => this.onClose()}
+                            onPopup={() => this.onPopup()}
+                        />
+                    )}
                     {this.renderContent()}
                 </div>
             );
@@ -519,11 +619,27 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return (
-            <Resizable tabIndex={-1} id="sceneExplorer" ref={this.sceneExplorerRef} size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
-                {
-                    !this.props.noHeader &&
-                    <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
-                }
+            <Resizable
+                tabIndex={-1}
+                id="sceneExplorer"
+                ref={this.sceneExplorerRef}
+                size={{ height: "100%" }}
+                minWidth={300}
+                maxWidth={600}
+                minHeight="100%"
+                enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
+                onKeyDown={(keyEvent) => this.processKeys(keyEvent)}
+            >
+                {!this.props.noHeader && (
+                    <HeaderComponent
+                        title="SCENE EXPLORER"
+                        noClose={this.props.noClose}
+                        noExpand={this.props.noExpand}
+                        noCommands={this.props.noCommands}
+                        onClose={() => this.onClose()}
+                        onPopup={() => this.onPopup()}
+                    />
+                )}
                 {this.renderContent()}
             </Resizable>
         );

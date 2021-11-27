@@ -8,9 +8,9 @@ import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 
 interface IGridPropertyGridComponentProps {
-    grid: Grid,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    grid: Grid;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
@@ -26,13 +26,9 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             rows.push(grid.getRowDefinition(index)!);
         }
 
-        return (
-            rows.map((rd, i) => {
-                return (
-                    <TextLineComponent key={`r${i}`} label={`Row ${i}`} value={rd.toString(grid.host, 2)} underline={i === grid.rowCount - 1} />
-                )
-            })
-        );
+        return rows.map((rd, i) => {
+            return <TextLineComponent key={`r${i}`} label={`Row ${i}`} value={rd.toString(grid.host, 2)} underline={i === grid.rowCount - 1} />;
+        });
     }
 
     renderColumns() {
@@ -43,13 +39,9 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             cols.push(grid.getColumnDefinition(index)!);
         }
 
-        return (
-            cols.map((cd, i) => {
-                return (
-                    <TextLineComponent key={`c${i}`} label={`Column ${i}`} value={cd.toString(grid.host, 2)} />
-                )
-            })
-        );
+        return cols.map((cd, i) => {
+            return <TextLineComponent key={`c${i}`} label={`Column ${i}`} value={cd.toString(grid.host, 2)} />;
+        });
     }
 
     render() {
@@ -57,22 +49,16 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         const cols = [];
 
-
-
         for (var index = 0; index < grid.rowCount; index++) {
             cols.push(grid.getColumnDefinition(index));
         }
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent  lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="GRID">
-                    {
-                        this.renderRows()
-                    }
-                    {
-                        this.renderColumns()
-                    }
+                    {this.renderRows()}
+                    {this.renderColumns()}
                 </LineContainerComponent>
             </div>
         );

@@ -255,7 +255,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     <CommandDropdownComponent
                         globalState={this.props.globalState}
                         storeKey={"version"}
-                        defaultValue={activeVersion}                        
+                        defaultValue={activeVersion}
                         useSessionStorage={true}
                         tooltip="Versions"
                         toRight={true}

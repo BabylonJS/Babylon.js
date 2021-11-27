@@ -34,6 +34,7 @@ module.exports = function(config) {
             './tests/unit/babylon/src/Meshes/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Meshes/babylon.mesh.vertexData.tests.js',
             './tests/unit/babylon/src/Meshes/babylon.positionAndRotation.tests.js',
+            './tests/unit/babylon/src/Misc/babylon.coroutine.tests.js',
             './tests/unit/babylon/src/Misc/babylon.promise.tests.js',
             './tests/unit/babylon/src/Physics/babylon.physicsComponents.tests.js',
             './tests/unit/babylon/src/XR/webXRFeaturesManager.tests.js',
