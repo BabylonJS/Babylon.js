@@ -31,6 +31,8 @@ export class GUI3DManager implements IDisposable {
     /** @hidden */
     public _lastControlDown: { [pointerId: number]: Control3D } = {};
 
+    protected static MRTK_REALISTIC_SCALING: number = 0.032;
+
     /**
      * Observable raised when the point picked by the pointer events changed
      */
@@ -81,12 +83,12 @@ export class GUI3DManager implements IDisposable {
 
     /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public get useRealisticScaling() {
-        return this.controlScaling === 0.032;
+        return this.controlScaling === GUI3DManager.MRTK_REALISTIC_SCALING;
     }
 
     /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
     public set useRealisticScaling(newValue: boolean) {
-        this.controlScaling = newValue ? 0.032 : 1;
+        this.controlScaling = newValue ? GUI3DManager.MRTK_REALISTIC_SCALING : 1;
     }
 
     /**
