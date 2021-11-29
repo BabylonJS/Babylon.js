@@ -3,19 +3,19 @@ import { AsyncCoroutine, CoroutineStep, CoroutineScheduler, runCoroutineAsync, i
 
 function createObservableScheduler<T>(observable: Observable<any>) {
     const coroutines = new Array<AsyncCoroutine<T>>();
-    const onSuccesses = new Array<(stepResult: CoroutineStep<T>) => void>();
+    const onSteps = new Array<(stepResult: CoroutineStep<T>) => void>();
     const onErrors = new Array<(stepError: any) => void>();
 
     const observer = observable.add(() => {
         const count = coroutines.length;
         for (let i = 0; i < count; i++) {
-            inlineScheduler(coroutines.pop()!, onSuccesses.pop()!, onErrors.pop()!);
+            inlineScheduler(coroutines.shift()!, onSteps.shift()!, onErrors.shift()!);
         }
     });
 
     const scheduler = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         coroutines.push(coroutine);
-        onSuccesses.push(onSuccess);
+        onSteps.push(onSuccess);
         onErrors.push(onError);
     };
 
