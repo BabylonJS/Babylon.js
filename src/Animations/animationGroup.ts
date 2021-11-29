@@ -9,7 +9,6 @@ import { EngineStore } from "../Engines/engineStore";
 
 import "./animatable";
 import { AbstractScene } from "../abstractScene";
-import { serialize } from "../Misc/decorators";
 import { Tags } from '../Misc/tags';
 
 /**
@@ -103,7 +102,6 @@ export class AnimationGroup implements IDisposable {
     /**
      * Gets or sets an object used to store user defined information for the node
      */
-    @serialize()
     public metadata: any = null;
 
     /**
