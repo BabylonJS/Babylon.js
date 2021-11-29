@@ -105,7 +105,7 @@ export class NearMenu extends TouchHolographicMenu {
     protected _finalProcessing() {
         super._finalProcessing();
 
-        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, 0);
+        this._pinButton.position.copyFromFloats((this._backPlate.scaling.x + TouchHolographicMenu.MENU_BUTTON_SCALE) / 2, this._backPlate.scaling.y / 2, 0);
     }
 
     /**
