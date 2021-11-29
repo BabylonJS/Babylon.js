@@ -26,7 +26,7 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { MaterialEvent,
-    EventInfo, EventMapping, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoPrepareEffect, EventInfoPrepareUniformBuffer } from "./materialEvent";
+    EventInfo, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoPrepareEffect, EventInfoPrepareUniformBuffer } from "./materialEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -362,7 +362,7 @@ export class Material implements IAnimatable {
      */
     public get hasRenderTargetTextures(): boolean {
         this._eventInfo.hasRenderTargetTextures = false;
-        this._notifyEvent(MaterialEvent.HasRenderTargetTextures);
+        this._callbackPluginEvent(MaterialEvent.HasRenderTargetTextures, this._eventInfo);
         return this._eventInfo.hasRenderTargetTextures;
     }
 
@@ -762,23 +762,8 @@ export class Material implements IAnimatable {
         ubo: undefined as any,
     };
 
-    protected _onEventObservable = new Observable<EventInfo>();
-
-    protected _notifyEvent<T extends keyof EventMapping, U extends EventMapping[T]>(eventInfoType: T, eventInfo?: U): void {
-        if (!eventInfo) {
-            eventInfo = this._eventInfo as U;
-        }
-        this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
-    }
-
-    /**
-     * Registers a callback for a material event
-     * @param eventInfoType event id to register for (from the MaterialEvent enum)
-     * @param callback function to be called when the event is notified
-     */
-    public registerForEvent<T extends keyof EventMapping, U extends EventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
-        this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
-    }
+    /** @hidden */
+    public _callbackPluginEvent: (id: number, info: EventInfo) => void = () => void(0);
 
     /**
      * Creates a material instance
@@ -893,7 +878,7 @@ export class Material implements IAnimatable {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
-        this._notifyEvent(MaterialEvent.IsReadyForSubMesh);
+        this._callbackPluginEvent(MaterialEvent.IsReadyForSubMesh, this._eventInfo);
 
         return this._eventInfo.isReadyForSubMesh;
     }
@@ -1067,7 +1052,7 @@ export class Material implements IAnimatable {
         const ubo = this._uniformBuffer;
 
         this._eventInfo.ubo = ubo;
-        this._notifyEvent(MaterialEvent.PrepareUniformBuffer);
+        this._callbackPluginEvent(MaterialEvent.PrepareUniformBuffer, this._eventInfo);
 
         ubo.create();
 
@@ -1087,7 +1072,7 @@ export class Material implements IAnimatable {
         }
 
         this._eventInfo.subMesh = subMesh;
-        this._notifyEvent(MaterialEvent.BindForSubMesh);
+        this._callbackPluginEvent(MaterialEvent.BindForSubMesh, this._eventInfo);
     }
 
     /**
@@ -1207,7 +1192,7 @@ export class Material implements IAnimatable {
      */
     public getAnimatables(): IAnimatable[] {
         this._eventInfo.animatables = [];
-        this._notifyEvent(MaterialEvent.GetAnimatables);
+        this._callbackPluginEvent(MaterialEvent.GetAnimatables, this._eventInfo);
         return this._eventInfo.animatables;
     }
 
@@ -1217,7 +1202,7 @@ export class Material implements IAnimatable {
      */
     public getActiveTextures(): BaseTexture[] {
         this._eventInfo.activeTextures = [];
-        this._notifyEvent(MaterialEvent.GetActiveTextures);
+        this._callbackPluginEvent(MaterialEvent.GetActiveTextures, this._eventInfo);
         return this._eventInfo.activeTextures;
     }
 
@@ -1229,7 +1214,7 @@ export class Material implements IAnimatable {
     public hasTexture(texture: BaseTexture): boolean {
         this._eventInfo.hasTexture = false;
         this._eventInfo.texture = texture;
-        this._notifyEvent(MaterialEvent.HasTexture);
+        this._callbackPluginEvent(MaterialEvent.HasTexture, this._eventInfo);
         return this._eventInfo.hasTexture;
     }
 
@@ -1584,7 +1569,7 @@ export class Material implements IAnimatable {
         scene.removeMaterial(this);
 
         this._eventInfo.forceDisposeTextures = forceDisposeTextures;
-        this._notifyEvent(MaterialEvent.Disposed);
+        this._callbackPluginEvent(MaterialEvent.Disposed, this._eventInfo);
 
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);

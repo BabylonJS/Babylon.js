@@ -16,6 +16,8 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
+import { MaterialUserEvent } from "../materialUserEvent";
+import { MaterialEvent } from "../materialEvent";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -315,7 +317,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
 
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
-        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines(), addToPluginList);
+        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines(), addToPluginList, MaterialEvent.HasRenderTargetTextures | MaterialUserEvent.FillRenderTargetTextures | MaterialUserEvent.HardBindForSubMesh | MaterialUserEvent.Unbind);
 
         this._scene = material.getScene();
 

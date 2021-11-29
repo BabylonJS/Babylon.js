@@ -1,6 +1,7 @@
 import { SerializationHelper, serialize } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { MaterialPluginManager } from "./materialPluginManager";
+import { SmartArray } from "../Misc/smartArray";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -12,6 +13,8 @@ declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 declare type Material = import("./material").Material;
 declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
+declare type RenderTargetTexture = import("./Textures/renderTargetTexture").RenderTargetTexture;
+declare type Effect = import("./effect").Effect;
 
 /**
  * Base class for material plugins.
@@ -42,7 +45,7 @@ export class MaterialPluginBase {
      * @param defines list of defines used by the plugin. The value of the property is the default value for this property
      * @param addToPluginList true to add the plugin to the list of plugins managed by the material plugin manager of the material (default: true)
      */
-    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true) {
+    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true, flagEvents = 0) {
         this._material = material;
         this.name = name;
         this.priority = priority;
@@ -55,7 +58,7 @@ export class MaterialPluginBase {
         this._pluginManager = material.pluginManager;
 
         if (addToPluginList) {
-            this._pluginManager._addPlugin(this);
+            this._pluginManager._addPlugin(this, flagEvents);
         }
     }
 
@@ -78,6 +81,15 @@ export class MaterialPluginBase {
     public isReadyForSubMesh(defines: MaterialDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {
         return true;
     }
+
+    /**
+     * Binds the material data (this function is called even if mustRebind() returns false)
+     * @param uniformBuffer defines the Uniform buffer to fill in.
+     * @param scene defines the scene the material belongs to.
+     * @param engine defines the engine the material belongs to.
+     * @param subMesh the submesh to bind data for
+     */
+    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {}
 
     /**
      * Binds the material data.
@@ -150,6 +162,12 @@ export class MaterialPluginBase {
     }
 
     /**
+     * Fills the list of render target textures.
+     * @param renderTargets the list of render targets to update
+     */
+    public fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void {}
+
+    /**
      * Returns an array of the actively used textures.
      * @param activeTextures Array of BaseTextures
      */
@@ -177,6 +195,15 @@ export class MaterialPluginBase {
      * @param samplers list that the sampler names should be added to.
      */
     public getSamplers(samplers: string[]): void {}
+
+    /**
+     * Unbinds the material from the mesh.
+     * @param activeEffect defines the effect that should be unbound from.
+     * @returns true if unbound, otherwise false
+     */
+    public unbind(activeEffect: Effect): boolean {
+        return false;
+    }
 
     /**
      * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
