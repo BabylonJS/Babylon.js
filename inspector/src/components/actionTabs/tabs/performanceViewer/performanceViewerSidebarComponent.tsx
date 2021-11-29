@@ -4,6 +4,7 @@ import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/per
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { ColorPickerLineComponent } from "../../../../sharedUiComponents/lines/colorPickerComponent";
+import { faSquare } from "@fortawesome/free-solid-svg-icons";
 
 interface IPerformanceViewerSidebarComponentProps {
     collector: PerformanceViewerCollector;
@@ -45,7 +46,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                 <div key={`perf-sidebar-item-${id}`} className="sidebar-item">
                     <input type="checkbox" checked={!metadata.hidden} onChange={onCheckChange(id)} />
                     <span className="sidebar-item-label">{id}</span>
-                    <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
+                    <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight hideColorRect faIcon={faSquare} />
                 </div>
             ))}
         </div>
