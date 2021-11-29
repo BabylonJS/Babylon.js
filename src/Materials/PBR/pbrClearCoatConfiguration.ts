@@ -175,8 +175,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    constructor(material: PBRBaseMaterial) {
-        super(material, "PBRClearCoat", 100, new MaterialClearCoatDefines());
+    constructor(material: PBRBaseMaterial, addToPluginList = true) {
+        super(material, "PBRClearCoat", 100, new MaterialClearCoatDefines(), addToPluginList);
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }

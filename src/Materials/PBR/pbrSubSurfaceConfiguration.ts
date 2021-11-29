@@ -2,6 +2,7 @@ import { Nullable } from "../../types";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from '../../Maths/math.color';
+import { SmartArray } from "../../Misc/smartArray";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
@@ -15,17 +16,17 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
-import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoUnbind, MaterialUserEvent } from "../materialUserEvent";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
+declare type Effect = import("../effect").Effect;
 
 /**
  * @hidden
  */
-class MaterialSubSurfaceDefines extends MaterialDefines {
+export class MaterialSubSurfaceDefines extends MaterialDefines {
     public SUBSURFACE = false;
 
     public SS_REFRACTION = false;
@@ -313,41 +314,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._internalMarkScenePrePassDirty();
     }
 
-    constructor(material: PBRBaseMaterial) {
-        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines());
+    constructor(material: PBRBaseMaterial, addToPluginList = true) {
+        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines(), addToPluginList);
 
         this._scene = material.getScene();
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
-
-        material.registerForUserEvent(MaterialUserEvent.HardBindForSubMesh, (eventData: EventInfoHardBindForSubMesh) => {
-            const uniformBuffer = material._uniformBuffer;
-            const subMesh = eventData.subMesh;
-
-            if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
-                return;
-            }
-
-            subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
-
-            const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
-
-            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
-        });
-
-        material.registerForUserEvent(MaterialUserEvent.FillRenderTargetTextures, (eventData: EventInfoFillRenderTargetTextures) => {
-            if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                eventData.renderTargets.push(<RenderTargetTexture>this._refractionTexture);
-            }
-        });
-
-        material.registerForUserEvent(MaterialUserEvent.Unbind, (eventData: EventInfoUnbind) => {
-            if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                eventData.effect.setTexture("refractionSampler", null);
-                eventData.needMarkAsTextureDirty = true;
-            }
-        });
     }
 
     public isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene, engine: Engine): boolean {
@@ -474,6 +447,25 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
+    /**
+     * Binds the material data (this function is called even if mustRebind() returns false)
+     * @param uniformBuffer defines the Uniform buffer to fill in.
+     * @param scene defines the scene the material belongs to.
+     * @param engine defines the engine the material belongs to.
+     * @param subMesh the submesh to bind data for
+    */
+    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+        if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
+            return;
+        }
+
+        subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
+
+        const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
+
+        uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
+    }
+    
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
@@ -575,6 +567,20 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
 
     /**
+     * Unbinds the material from the mesh.
+     * @param activeEffect defines the effect that should be unbound from.
+     * @returns true if unbound, otherwise false
+     */
+    public unbind(activeEffect: Effect): boolean {
+        if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
+            activeEffect.setTexture("refractionSampler", null);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the texture used for refraction or null if none is used.
      * @param scene defines the scene the material belongs to.
      * @returns - Refraction texture if present.  If no refraction texture and refraction
@@ -597,6 +603,16 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     public get disableAlphaBlending(): boolean {
         return this.isRefractionEnabled && this._linkRefractionWithTransparency;
+    }
+
+    /**
+     * Fills the list of render target textures.
+     * @param renderTargets the list of render targets to update
+     */
+    public fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void {
+        if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
+            renderTargets.push(<RenderTargetTexture>this._refractionTexture);
+        }
     }
 
     public hasTexture(texture: BaseTexture): boolean {

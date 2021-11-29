@@ -40,8 +40,9 @@ export class MaterialPluginBase {
      * @param name name of the plugin
      * @param priority priority of the plugin
      * @param defines list of defines used by the plugin. The value of the property is the default value for this property
+     * @param addToPluginList true to add the plugin to the list of plugins managed by the material plugin manager of the material (default: true)
      */
-    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }) {
+    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true) {
         this._material = material;
         this.name = name;
         this.priority = priority;
@@ -53,7 +54,9 @@ export class MaterialPluginBase {
         this._pluginDefineNames = defines;
         this._pluginManager = material.pluginManager;
 
-        this._pluginManager._addPlugin(this);
+        if (addToPluginList) {
+            this._pluginManager._addPlugin(this);
+        }
     }
 
     /**

@@ -20,7 +20,7 @@ declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 /**
  * @hidden
  */
- class MaterialSheenDefines extends MaterialDefines {
+ export class MaterialSheenDefines extends MaterialDefines {
     public SHEEN = false;
     public SHEEN_TEXTURE = false;
     public SHEEN_GAMMATEXTURE = false;
@@ -123,8 +123,8 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    constructor(material: PBRBaseMaterial) {
-        super(material, "Sheen", 120, new MaterialSheenDefines());
+    constructor(material: PBRBaseMaterial, addToPluginList = true) {
+        super(material, "Sheen", 120, new MaterialSheenDefines(), addToPluginList);
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
