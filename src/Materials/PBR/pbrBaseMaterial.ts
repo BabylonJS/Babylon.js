@@ -1248,11 +1248,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        if (!this.subSurface.isReadyForSubMesh(defines as any, scene, engine) ||
-            !this.clearCoat.isReadyForSubMesh(defines as any, scene, engine) ||
-            !this.sheen.isReadyForSubMesh(defines as any, scene, engine) ||
-            !this.anisotropy.isReadyForSubMesh(defines as any, scene, engine) ||
-            !this.detailMap.isReadyForSubMesh(defines as any, scene, engine)) {
+        if (!this.subSurface.isReadyForSubMesh(defines as MaterialSubSurfaceDefines, scene, engine) ||
+            !this.clearCoat.isReadyForSubMesh(defines as MaterialClearCoatDefines, scene, engine) ||
+            !this.sheen.isReadyForSubMesh(defines as MaterialSheenDefines, scene, engine) ||
+            !this.anisotropy.isReadyForSubMesh(defines as MaterialAnisotropicDefines, scene, engine) ||
+            !this.detailMap.isReadyForSubMesh(defines as MaterialDetailMapDefines, scene, engine)) {
             return false;
         }
         
