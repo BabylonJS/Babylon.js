@@ -90,8 +90,8 @@ void main(void) {
     y *= normalImpactOnAxis(normal.y);
     z *= normalImpactOnAxis(normal.z);
     
-    // Create the grid value by combining axis.
-    float grid=clamp(max(max(x,y),z),0.,1.);
+    // Create the grid value from the max axis.
+    float grid = clamp(max(max(x, y), z), 0., 1.);
     
     // Create the color.
     vec3 color = mix(mainColor, lineColor, grid);
