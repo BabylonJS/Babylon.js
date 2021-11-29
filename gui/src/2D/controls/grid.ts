@@ -8,12 +8,14 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { Observer } from "babylonjs/Misc/observable";
 
 /**
  * Class used to create a 2D grid container
  */
 export class Grid extends Container {
     private _rowDefinitions = new Array<ValueAndUnit>();
+    private _rowDefinitionObservers: Observer<void>[] = [];
     private _columnDefinitions = new Array<ValueAndUnit>();
     private _cells: { [key: string]: Container } = {};
     private _childControls = new Array<Control>();
@@ -76,7 +78,7 @@ export class Grid extends Container {
      */
     public addRowDefinition(height: number, isPixel = false): Grid {
         this._rowDefinitions.push(new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-
+        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount].onChangedObservable.add(() => this._markAsDirty())!);
         this._markAsDirty();
 
         return this;
@@ -113,7 +115,9 @@ export class Grid extends Container {
             return this;
         }
 
+        this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         this._rowDefinitions[index] = new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
+        this._rowDefinitionObservers[index] = this._rowDefinitions[index].onChangedObservable.add(() => this._markAsDirty())!;
 
         this._markAsDirty();
 
@@ -260,7 +264,9 @@ export class Grid extends Container {
             }
         }
 
+        this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         this._rowDefinitions.splice(index, 1);
+        this._rowDefinitionObservers.splice(index, 1);
 
         this._markAsDirty();
 
