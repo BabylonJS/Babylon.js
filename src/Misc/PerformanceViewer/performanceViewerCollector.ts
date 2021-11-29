@@ -24,6 +24,11 @@ const numPointsColHeader = "numPoints";
 // regex to capture all carriage returns in the string.
 const carriageReturnRegex = /\r/g;
 
+interface IPerformanceViewerStrategyParameter {
+    strategyCallback: PerfStrategyInitialization;
+    category?: string;
+}
+
 /**
  * The collector class handles the collection and storage of data into the appropriate array.
  * The collector also handles notifying any observers of any updates.
@@ -69,7 +74,7 @@ export class PerformanceViewerCollector {
      * @param _scene the scene to collect on.
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
-    constructor(private _scene: Scene, _enabledStrategyCallbacks?: {strategyCallback: PerfStrategyInitialization, category?: string}[]) {
+    constructor(private _scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]) {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
@@ -168,7 +173,7 @@ export class PerformanceViewerCollector {
      * This method adds additional collection strategies for data collection purposes.
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
-    public addCollectionStrategies(...strategyCallbacks: {strategyCallback: PerfStrategyInitialization, category?: string}[]) {
+    public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
         for (const {strategyCallback, category} of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
