@@ -1,3 +1,4 @@
+import { Observable } from "babylonjs/Misc/observable";
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 
 /**
@@ -6,11 +7,17 @@ import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 export class ValueAndUnit {
     private _value = 1;
     private _originalUnit: number;
+
     /**
      * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      */
     public ignoreAdaptiveScaling = false;
+
+    /**
+     * Observable event triggered each time the value or unit changes
+     */
+    public onChangedObservable = new Observable<void>();
 
     /**
      * Creates a new ValueAndUnit
@@ -32,14 +39,51 @@ export class ValueAndUnit {
         return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
     }
 
+    public set isPercentage(value: boolean) {
+        if (value === true) {
+            if (this.isPercentage !== true) {
+                this.unit = ValueAndUnit.UNITMODE_PERCENTAGE;
+                this.onChangedObservable.notifyObservers();
+            }
+        } else {
+            if (this.isPixel !== true) {
+                this.unit = ValueAndUnit.UNITMODE_PIXEL;
+                this.onChangedObservable.notifyObservers();
+            }
+        }
+    }
+
     /** Gets a boolean indicating if the value is store as pixel */
     public get isPixel(): boolean {
         return this.unit === ValueAndUnit.UNITMODE_PIXEL;
     }
 
+    /** Sets if the value is stored as pixel */
+    public set isPixel(value: boolean) {
+        if (value === false) {
+            if (this.isPercentage !== true) {
+                this.unit = ValueAndUnit.UNITMODE_PERCENTAGE;
+                this.onChangedObservable.notifyObservers();
+            }
+        } else {
+            if (this.isPixel !== true) {
+                this.unit = ValueAndUnit.UNITMODE_PIXEL;
+                this.onChangedObservable.notifyObservers();
+            }
+        }
+    }
+
     /** Gets direct internal value */
     public get internalValue(): number {
         return this._value;
+    }
+
+    /** Sets directly internal value */
+    public set internalValue(value: number) {
+        if (value !== this._value) {
+            this._value = value;
+            this.onChangedObservable.notifyObservers();
+        }
     }
 
     /**
@@ -57,14 +101,17 @@ export class ValueAndUnit {
     }
 
     /**
-     * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+     * Update the current value and unit.
      * @param value defines the value to store
      * @param unit defines the unit to store
      * @returns the current ValueAndUnit
      */
     public updateInPlace(value: number, unit = ValueAndUnit.UNITMODE_PIXEL): ValueAndUnit {
-        this._value = value;
-        this.unit = unit;
+        if (this._value !== value || this.unit !== unit) {
+            this._value = value;
+            this.unit = unit;
+            this.onChangedObservable.notifyObservers();
+        }
 
         return this;
     }
