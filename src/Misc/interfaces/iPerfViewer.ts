@@ -33,6 +33,11 @@ import { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
       * Specifies if data should be hidden, falsey by default.
       */
      hidden?: boolean;
+
+     /**
+      * Specifies the category of the data
+      */
+     category?: string;
 }
 
 /**

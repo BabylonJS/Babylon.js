@@ -69,7 +69,7 @@ export class PerformanceViewerCollector {
      * @param _scene the scene to collect on.
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
-    constructor(private _scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]) {
+    constructor(private _scene: Scene, _enabledStrategyCallbacks?: {strategyCallback: PerfStrategyInitialization, category?: string}[]) {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
@@ -92,9 +92,10 @@ export class PerformanceViewerCollector {
      * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
      * @param name The name of the event to register
      * @param forceUpdate if the code should force add an event, and replace the last one.
+     * @param category the category for that event
      * @returns The event registered, used in sendEvent
      */
-    public registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined {
+    public registerEvent(name: string, forceUpdate?: boolean, category?: string): IPerfCustomEvent | undefined {
         if (this._strategies.has(name) && !forceUpdate) {
             return;
         }
@@ -139,7 +140,7 @@ export class PerformanceViewerCollector {
         };
 
         this._eventRestoreSet.add(name);
-        this.addCollectionStrategies(strategy);
+        this.addCollectionStrategies({strategyCallback: strategy, category});
 
         return event;
     }
@@ -167,8 +168,8 @@ export class PerformanceViewerCollector {
      * This method adds additional collection strategies for data collection purposes.
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
-    public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
-        for (const strategyCallback of strategyCallbacks) {
+    public addCollectionStrategies(...strategyCallbacks: {strategyCallback: PerfStrategyInitialization, category?: string}[]) {
+        for (const {strategyCallback, category} of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
@@ -179,6 +180,7 @@ export class PerformanceViewerCollector {
 
             this._datasetMeta.set(strategy.id, {
                 color: this._getHexColorFromId(strategy.id),
+                category
             });
 
             this._strategies.set(strategy.id, strategy);
