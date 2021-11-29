@@ -1168,16 +1168,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE, adaptiveScaling : boolean = false): AdvancedDynamicTexture {
+    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE, adaptiveScaling: boolean = false): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
-        var layer = new Layer(name + "_layer", null, scene, !foreground);
+        const resultScene = result.getScene();
+        var layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
 
-        const resultScene = result.getScene();
-        if(adaptiveScaling && resultScene) {
+        if (adaptiveScaling && resultScene) {
             const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
             result._rootContainer.scaleX = newScale;
             result._rootContainer.scaleY = newScale;
