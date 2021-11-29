@@ -9,6 +9,7 @@ import { WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { WebXRLayers } from "./features/WebXRLayers";
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -121,16 +122,16 @@ export class WebXRExperienceHelper implements IDisposable {
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
             await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
-            const xrLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
+            const xrLayersFeature = this.featuresManager.getEnabledFeature(WebXRLayers.Name) as WebXRLayers | undefined;
+            const xrLayerRenderState = await renderTarget.initializeXRLayerRenderStateAsync(this.sessionManager.session, xrLayersFeature);
 
             const xrRenderState: XRRenderStateInit = {
-                baseLayer: (xrLayer.isCompositionLayer ? undefined : xrLayer.layer as XRWebGLLayer),
+                ...xrLayerRenderState,
                 depthFar: this.camera.maxZ,
                 depthNear: this.camera.minZ,
-                layers: (xrLayer.isCompositionLayer ? [xrLayer.layer as XRCompositionLayer] : undefined)
             };
 
-            await this.sessionManager.updateRenderStateAsync(xrRenderState, xrLayer);
+            this.sessionManager.updateRenderState(xrRenderState);
             // run the render loop
             this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings

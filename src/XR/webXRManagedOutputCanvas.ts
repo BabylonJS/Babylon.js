@@ -1,9 +1,11 @@
 import { Nullable } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
-import { WebXRLayerWrapper, WebXRRenderTarget } from "./webXRTypes";
+import { WebXRLayerRenderStateInit, WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
+import { WebXRLayers } from "./features/WebXRLayers";
+import { WebXRLayerWrapper } from "./webXRLayerWrapper";
 
 /**
  * Configuration object for WebXR output canvas
@@ -59,15 +61,18 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * Rendering context of the canvas which can be used to display/mirror xr content
      */
     public canvasContext: WebGLRenderingContext;
+
     /**
      * xr layer for the canvas
      */
-    public xrLayer: Nullable<WebXRLayerWrapper> = null;
+    public xrLayer: Nullable<XRLayer>;
+
+    private _xrLayerWrapper: Nullable<WebXRLayerWrapper>;
 
     /**
      * Observers registered here will be triggered when the xr layer was initialized
      */
-    public onXRLayerInitObservable: Observable<WebXRLayerWrapper> = new Observable();
+    public onXRLayerInitObservable: Observable<XRLayer> = new Observable();
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
@@ -106,41 +111,43 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     }
 
     /**
-     * Initializes the xr layer for the session
+     * Initializes a XRWebGLLayer to be used as the session's baseLayer.
+     * Note that this method is deprecated in favor of initializeXRLayerRenderStateAsync.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    public initializeXRLayerAsync(xrSession: XRSession): Promise<WebXRLayerWrapper> {
-        const createLayer = () => {
-            let wrapper: WebXRLayerWrapper;
+    public async initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
+        const renderState = await this.initializeXRLayerRenderStateAsync(xrSession);
+        return renderState.baseLayer!;
+    }
 
-            const useLayersAPI = typeof XRWebGLBinding !== 'undefined' && XRWebGLBinding.prototype.createProjectionLayer;
-            if (useLayersAPI) {
-                const xrFramebuffer = this.canvasContext.createFramebuffer();
-                if (!xrFramebuffer) {
-                    throw new Error("Unable to create framebuffer for XR projection layer.");
-                }
-                const xrGLBinding = new XRWebGLBinding(xrSession, this.canvasContext);
-                let layer = xrGLBinding.createProjectionLayer({
-                    textureType: "texture",
-                    colorFormat: this.canvasContext.RGBA,
-                    depthFormat: this.canvasContext.DEPTH_COMPONENT,
-                    scaleFactor: 1.0,
-                });
-                wrapper = WebXRLayerWrapper.CreateFromXRProjectionLayer(layer, xrFramebuffer, xrGLBinding);
+    /**
+     * Creates a WebXRLayerRenderStateInit with baseLayer and layers properties filled in.
+     * If you provide an instance of WebXRLayers, the layers property will be filled in with an XRProjectionLayer.
+     * If no instance of WebXRLayers is provided, the baseLayer property will be filled in with an XRWebGLLayer.
+     * @param xrSession xr session
+     * @param layersFeature an instance of the WebXRLayers feature created by the features manager
+     * @returns a promise that will resolve to the partial render state once the XR layer has been created
+     */
+    public initializeXRLayerRenderStateAsync(xrSession: XRSession, layersFeature?: WebXRLayers): Promise<WebXRLayerRenderStateInit> {
+        const createRenderState = () => {
+            const renderState: WebXRLayerRenderStateInit = {};
+            if (!layersFeature) {
+                const xrWebGLLayer = this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+                this._xrLayerWrapper = WebXRLayerWrapper.CreateFromXRWebGLLayer(xrWebGLLayer);
+                renderState.baseLayer = xrWebGLLayer;
             } else {
-                const layer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
-                wrapper = WebXRLayerWrapper.CreateFromXRWebGLLayer(layer);
-                this.onXRLayerInitObservable.notifyObservers(wrapper);
+                const projectionLayer = this.xrLayer = layersFeature.createProjectionLayer();
+                this._xrLayerWrapper = layersFeature.createLayerWrapper(projectionLayer);
+                renderState.layers = [projectionLayer];
             }
-
-            return wrapper;
+            this.onXRLayerInitObservable.notifyObservers(this.xrLayer);
+            return renderState;
         };
 
         // support canvases without makeXRCompatible
         if (!(this.canvasContext as any).makeXRCompatible) {
-            this.xrLayer = createLayer();
-            return Promise.resolve(this.xrLayer);
+            return Promise.resolve(createRenderState());
         }
 
         return (this.canvasContext as any)
@@ -154,8 +161,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 }
             )
             .then(() => {
-                this.xrLayer = createLayer();
-                return this.xrLayer;
+                return createRenderState();
             });
     }
 
@@ -166,8 +172,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         if (this.xrLayer) {
             this._setCanvasSize(true);
         } else {
-            this.onXRLayerInitObservable.addOnce((layer) => {
-                this._setCanvasSize(true, layer);
+            this.onXRLayerInitObservable.addOnce(() => {
+                this._setCanvasSize(true);
             });
         }
     }
@@ -179,7 +185,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         this._setCanvasSize(false);
     }
 
-    private _setCanvasSize(init: boolean = true, xrLayer = this.xrLayer) {
+    private _setCanvasSize(init: boolean = true, xrLayer = this._xrLayerWrapper) {
         if (!this._canvas || !this._engine) {
             return;
         }

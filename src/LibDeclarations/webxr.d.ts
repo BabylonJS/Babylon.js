@@ -103,7 +103,7 @@ declare class XRWebGLBinding {
     getViewSubImage(layer: XRProjectionLayer, view: XRView): XRWebGLSubImage;
 }
 
-declare class XRWebGLLayer {
+declare class XRWebGLLayer implements XRLayer {
     static getNativeFramebufferScaleFactor(session: XRSession): number;
     constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, layerInit?: XRWebGLLayerInit);
     readonly antialias: boolean;
@@ -113,6 +113,11 @@ declare class XRWebGLLayer {
     readonly ignoreDepthValues: boolean;
     fixedFoveation?: number | null;
     getViewport: (view: XRView) => XRViewport;
+
+    // Methods for EventTarget required through XRLayer
+    addEventListener(): void;
+    dispatchEvent(): boolean;
+    removeEventListener(): void;
 }
 
 type XRLayerLayout = "default" | "mono" | "stereo" | "stereo-left-right" | "stereo-top-bottom";
@@ -171,7 +176,8 @@ interface XRRenderState {
     readonly layers?: XRLayer[];
 }
 
-interface XRRenderStateInit extends XRRenderState {
+// https://immersive-web.github.io/webxr/#dictdef-xrrenderstateinit
+interface XRRenderStateInit {
     baseLayer?: XRWebGLLayer;
     depthFar: number;
     depthNear: number;
@@ -311,7 +317,7 @@ interface XRSession {
      */
     requestLightProbe(options?: XRLightProbeInit): Promise<XRLightProbe>;
 
-    updateRenderState(state: XRRenderStateInit): Promise<void>;
+    updateRenderState(state: XRRenderStateInit): void;
 
     onend: XREventHandler;
     oneyetrackingstart: XREventHandler;
