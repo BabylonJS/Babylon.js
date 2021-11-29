@@ -39,13 +39,39 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
         collector.updateMetadata(id, "color", color);
     };
 
+    const categoryKeys : string[] = [];
+    const metadataMap = new Map<string, MetadataEntry[]>();
+    for (let entry of metadata) {
+        const category = entry[1].category ?? "";
+        let entries = metadataMap.get(category);
+        if (!entries) {
+            entries = [];
+            categoryKeys.push(category);
+        }
+        entries.push(entry);
+        metadataMap.set(category, entries);
+    }
+    categoryKeys.sort();
+
     return (
         <div id="performance-viewer-sidebar">
-            {metadata.map(([id, metadata]) => (
-                <div key={`perf-sidebar-item-${id}`} className="sidebar-item">
-                    <input type="checkbox" checked={!metadata.hidden} onChange={onCheckChange(id)} />
-                    <span className="sidebar-item-label">{id}</span>
-                    <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
+            {categoryKeys.map((category) => (
+                <div key={`category-${category || 'version'}`}>
+                    {category
+                        ? <div className="category-header header" key={`header-${category}`}>
+                            <span>{category}</span>
+                            <input type="checkbox"/>
+                          </div>
+                        : <div className="version-header header" key={"header-version"}>Version:</div>}
+                    {metadataMap.get(category)?.map(([id, metadata]) => (
+                        <div key={`perf-sidebar-item-${id}`} className="sidebar-item">
+                            <input type="checkbox"checked={!metadata.hidden} onChange={onCheckChange(id)} />
+                            <div>
+                                <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
+                            </div>
+                            <span className="sidebar-item-label">{id}</span>
+                        </div>
+                    ))}
                 </div>
             ))}
         </div>
