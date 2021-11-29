@@ -261,7 +261,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     break;
             }
 
-            let rotationOffset = rotationIndex === 2 || rotationIndex === 1 ? 1 : 0;
+            let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) {
                 switch ((this._scalePointIndex + rotationIndex) % 4) {
                     case 0:
@@ -312,35 +312,48 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                         alignmentFactorY = 1;
                         offsetY = [1, 0, 0, -1];
                         break;
-                } //rotationOffset = -1;
+                }
+                rotationOffset = 1;
+                const invert = rotationIndex === 1 ? -1 : 1;
+                
+
+                let tempMeasure = new Measure(0, 0, 0, 0);
+                node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
+    
+                var ox = tempMeasure.left;
+                var oy = tempMeasure.top;
+                console.log("OX1 ",ox);
+                console.log("OY1 ", oy);
+    
+
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
-                    case 0: ;
-                        console.log(0);
+                    case 0: 
+                        console.log(dx * lockY * pivotY * rotationOffset);
                         node.widthInPixels += dy * 2 * lockX;
                         node.heightInPixels -= dx * 2 * lockY;
-                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) + (dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX; //- (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY ;//- (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     case 1:
                         console.log(1);
                         node.widthInPixels += dy * 2 * lockX;
                         node.heightInPixels += dx * 2 * lockY;
-                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX; //- (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY;// - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     case 2:
                         console.log(2);
                         node.widthInPixels -= dy * 2 * lockX;
                         node.heightInPixels += dx * 2 * lockY;
-                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) + (dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX ;//- (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY ;//- (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     case 3:
                         console.log(3);
                         node.widthInPixels -= dy * 2 * lockX;
                         node.heightInPixels -= dx * 2 * lockY;
-                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX;// - (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY;// - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     default:
                         break;
@@ -354,6 +367,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             if (node.heightInPixels < 0) {
                 node.heightInPixels = 0;
             }
+
+            let tempMeasure = new Measure(0, 0, 0, 0);
+            node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
+
+            var ox = tempMeasure.left;
+            var oy = tempMeasure.top;
+            console.log("OX ",ox);
+            console.log("OY ", oy);
+
 
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
             this._previousPositions[this._scalePointIndex].y = newPosition.z;
