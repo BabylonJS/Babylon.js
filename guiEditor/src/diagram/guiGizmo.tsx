@@ -19,7 +19,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _mouseDown: boolean = false;
     private _scalePointIndex: number = -1;
     private _previousPositions: Vector2[] = [];
-
+    private _responsive : boolean;
     constructor(props: IGuiGizmoProps) {
         super(props);
         this.props.globalState.guiGizmo = this;
@@ -36,6 +36,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 });
             }
             this.updateGizmo();
+        });
+
+
+        this.props.globalState.onResponsiveChangeObservable.add((value) => {
+            this._responsive = value;
         });
 
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
@@ -261,6 +266,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     break;
             }
 
+            
+           /* let tempMeasure1 = new Measure(0, 0, 0, 0);
+            node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure1);
+            console.log("---------------------");
+            var ox1 = tempMeasure1.left;
+            var oy1 = tempMeasure1.top;
+            console.log("OX1 ",ox1);
+           console.log("OY1 ", oy1);
+            */
+
             let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) {
                 switch ((this._scalePointIndex + rotationIndex) % 4) {
@@ -317,43 +332,33 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 const invert = rotationIndex === 1 ? -1 : 1;
                 
 
-                let tempMeasure = new Measure(0, 0, 0, 0);
-                node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
-    
-                var ox = tempMeasure.left;
-                var oy = tempMeasure.top;
-                console.log("OX1 ",ox);
-                console.log("OY1 ", oy);
-    
-
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
                     case 0: 
-                        console.log(dx * lockY * pivotY * rotationOffset);
                         node.widthInPixels += dy * 2 * lockX;
                         node.heightInPixels -= dx * 2 * lockY;
-                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX; //- (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY ;//- (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX- (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     case 1:
-                        console.log(1);
+                        //console.log(1);
                         node.widthInPixels += dy * 2 * lockX;
                         node.heightInPixels += dx * 2 * lockY;
-                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX; //- (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY;// - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX- (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY- (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     case 2:
-                        console.log(2);
+                        //console.log(2);
                         node.widthInPixels -= dy * 2 * lockX;
                         node.heightInPixels += dx * 2 * lockY;
-                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX ;//- (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY ;//- (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     case 3:
-                        console.log(3);
+                        //console.log(3);
                         node.widthInPixels -= dy * 2 * lockX;
                         node.heightInPixels -= dx * 2 * lockY;
-                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX;// - (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY;// - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
+                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY; - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
                         break;
                     default:
                         break;
@@ -368,15 +373,31 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 node.heightInPixels = 0;
             }
 
-            let tempMeasure = new Measure(0, 0, 0, 0);
-            node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
 
-            var ox = tempMeasure.left;
-            var oy = tempMeasure.top;
-            console.log("OX ",ox);
-            console.log("OY ", oy);
+            if(this._responsive) {
+                this.props.globalState.workbench.convertToPercentage(node, true);
+            }
+            //node._forceUpdateTransformationMatrix();
+            /*const parentM = node.parent?._currentMeasure;
+            if(parentM)
+            node._layout(parentM, this.props.globalState.guiTexture.getContext() );
+
+            let tempMeasure2 = new Measure(0, 0, 0, 0);
+            node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure2);
+
+            var ox2 = tempMeasure2.left;
+            var oy2 = tempMeasure2.top;
+            //console.log("OX2 ",ox2);
+            //console.log("OY2 ", oy2);
 
 
+            const deltaX = ox2 - ox1;
+            const deltaY = oy2 - oy1;
+            console.log("deltaX ", deltaX);
+            console.log("deltaY", deltaY);
+            node.leftInPixels -= deltaX;
+            node.topInPixels -= deltaY;*/
+            
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
             this._previousPositions[this._scalePointIndex].y = newPosition.z;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
@@ -398,13 +419,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _setMousePosition = (index: number) => {
         this._mouseDown = true;
         this._scalePointIndex = index;
-
-        /*let camera = this.props.globalState.workbench._camera;
-        const scene = this.props.globalState.workbench._scene;
-        const plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
-        let newPosition = this.props.globalState.workbench.getPosition(scene, camera, plane);
-        this._previousPositions[this._scalePointIndex] = new Vector2( newPosition.x , newPosition.y);*/
-
     }
 
     render() {

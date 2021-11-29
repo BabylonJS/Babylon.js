@@ -610,27 +610,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         //convert to percentage
         if (this._responsive) {
-            let ratioX = this._textureMesh.scaling.x;
-            let ratioY = this._textureMesh.scaling.z;
-            if (guiControl.parent) {
-                if (guiControl.parent.typeName === "Grid") {
-                    const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
-                    const cell = (guiControl.parent as Grid).cells[cellInfo];
-                    ratioX = cell.widthInPixels;
-                    ratioY = cell.heightInPixels;
-                } else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
-                    const thickness = (guiControl.parent as Rectangle).thickness * 2;
-                    ratioX = guiControl.parent._currentMeasure.width - thickness;
-                    ratioY = guiControl.parent._currentMeasure.height - thickness;
-                } else {
-                    ratioX = guiControl.parent._currentMeasure.width;
-                    ratioY = guiControl.parent._currentMeasure.height;
-                }
-            }
-            const left = (guiControl.leftInPixels * 100) / ratioX;
-            const top = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.left = `${left.toFixed(2)}%`;
-            guiControl.top = `${top.toFixed(2)}%`;
+            this.convertToPercentage(guiControl, false);
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
@@ -638,6 +618,37 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     componentDidMount() {
         this._rootContainer = React.createRef();
+    }
+
+    convertToPercentage(guiControl: Control, includeScale :boolean) {
+        let ratioX = this._textureMesh.scaling.x;
+        let ratioY = this._textureMesh.scaling.z;
+        if (guiControl.parent) {
+            if (guiControl.parent.typeName === "Grid") {
+                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                const cell = (guiControl.parent as Grid).cells[cellInfo];
+                ratioX = cell.widthInPixels;
+                ratioY = cell.heightInPixels;
+            } else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                const thickness = (guiControl.parent as Rectangle).thickness * 2;
+                ratioX = guiControl.parent._currentMeasure.width - thickness;
+                ratioY = guiControl.parent._currentMeasure.height - thickness;
+            } else {
+                ratioX = guiControl.parent._currentMeasure.width;
+                ratioY = guiControl.parent._currentMeasure.height;
+            }
+        }
+        const left = (guiControl.leftInPixels * 100) / ratioX;
+        const top = (guiControl.topInPixels * 100) / ratioY;
+        guiControl.left = `${left.toFixed(2)}%`;
+        guiControl.top = `${top.toFixed(2)}%`;
+
+        if(includeScale) {
+            const width = (guiControl.widthInPixels * 100) / ratioX;
+            const height = (guiControl.heightInPixels * 100) / ratioY;
+            guiControl.width = `${width.toFixed(2)}%`;
+            guiControl.height = `${height.toFixed(2)}%`;
+        }
     }
 
     onMove(evt: React.PointerEvent) {
