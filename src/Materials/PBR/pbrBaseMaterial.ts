@@ -10,7 +10,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { MaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
+import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
@@ -18,7 +18,7 @@ import { Scalar } from "../../Maths/math.scalar";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
-import { EventInfo, MaterialEvent } from "../../Materials/materialEvent";
+import { MaterialEvent } from "../../Materials/materialEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -37,12 +37,12 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
-import { MaterialClearCoatDefines, PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
-import { MaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
-import { MaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
-import { MaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
-import { DetailMapConfiguration, MaterialDetailMapDefines } from "../material.detailMapConfiguration";
-import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoUnbind, MaterialUserEvent, UserEventMapping } from "../materialUserEvent";
+import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
+import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
+import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
+import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
+import { DetailMapConfiguration } from "../material.detailMapConfiguration";
+import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoUnbind, MaterialUserEvent } from "../materialUserEvent";
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -965,22 +965,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     protected _internalPluginsUniformList: string[] = [];
 
-    protected _notifyUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T]>(eventInfoType: T, eventInfo?: U): void {
-        if (!eventInfo) {
-            eventInfo = this._eventInfoPBR as U;
-        }
-        this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
-    }
-
-    /**
-     * Registers a callback for a material user event
-     * @param eventInfoType event id to register for (from the MaterialUserEvent enum)
-     * @param callback function to be called when the event is notified
-     */
-    public registerForUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
-        this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
-    }
-
     /**
      * Instantiates a new PBRMaterial instance.
      *
@@ -990,12 +974,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
-        this.brdf = new PBRBRDFConfiguration(this, false);
-        this.clearCoat = new PBRClearCoatConfiguration(this, false);
-        this.anisotropy = new PBRAnisotropicConfiguration(this, false);
-        this.sheen = new PBRSheenConfiguration(this, false);
-        this.subSurface = new PBRSubSurfaceConfiguration(this, false);
-        this.detailMap = new DetailMapConfiguration(this, false);
+        this.brdf = new PBRBRDFConfiguration(this);
+        this.clearCoat = new PBRClearCoatConfiguration(this);
+        this.anisotropy = new PBRAnisotropicConfiguration(this);
+        this.sheen = new PBRSheenConfiguration(this);
+        this.subSurface = new PBRSubSurfaceConfiguration(this);
+        this.detailMap = new DetailMapConfiguration(this);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -1007,12 +991,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
             }
 
-            this.subSurface.fillRenderTargetTextures(this._renderTargets);
+            //this.subSurface.fillRenderTargetTextures(this._renderTargets);
 
-            if (this._onEventObservable.hasObservers()) {
-                this._eventInfoPBR.renderTargets = this._renderTargets;
-                this._notifyUserEvent(MaterialUserEvent.FillRenderTargetTextures);
-            }
+            this._eventInfoPBR.renderTargets = this._renderTargets;
+            this._callbackPluginEvent(MaterialUserEvent.FillRenderTargetTextures, this._eventInfoPBR);
 
             return this._renderTargets;
         };
@@ -1029,18 +1011,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        if (this.subSurface.hasRenderTargetTextures()) {
+        /*if (this.subSurface.hasRenderTargetTextures()) {
             return true;
-        }
+        }*/
 
-        if (this._onEventObservable.hasObservers()) {
-            // super.hasRenderTargetTextures is not allowed (because we are in a getter), so code is replicated here
-            this._eventInfo.hasRenderTargetTextures = false;
-            this._notifyEvent(MaterialEvent.HasRenderTargetTextures);
-            return this._eventInfo.hasRenderTargetTextures;
-        }
-
-        return false;
+        // super.hasRenderTargetTextures is not allowed (because we are in a getter), so code is replicated here
+        this._eventInfo.hasRenderTargetTextures = false;
+        this._callbackPluginEvent(MaterialEvent.HasRenderTargetTextures, this._eventInfo);
+        return this._eventInfo.hasRenderTargetTextures;
     }
 
     /**
@@ -1076,7 +1054,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
-        return (this.subSurface.disableAlphaBlending ||
+        return (this.subSurface?.disableAlphaBlending ||
             this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE ||
             this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
     }
@@ -1100,7 +1078,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        if (this.subSurface.disableAlphaBlending) {
+        if (this.subSurface?.disableAlphaBlending) {
             return false;
         }
 
@@ -1147,7 +1125,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            this._notifyEvent(MaterialEvent.GetDefineNames);
+            this._callbackPluginEvent(MaterialEvent.GetDefineNames, this._eventInfo);
             subMesh.materialDefines = new PBRMaterialDefines(this._eventInfo.defineNames);
         }
 
@@ -1248,15 +1226,19 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
         }
 
-        if (!this.subSurface.isReadyForSubMesh(defines as MaterialSubSurfaceDefines, scene, engine) ||
+        /*if (!this.subSurface.isReadyForSubMesh(defines as MaterialSubSurfaceDefines, scene, engine) ||
             !this.clearCoat.isReadyForSubMesh(defines as MaterialClearCoatDefines, scene, engine) ||
             !this.sheen.isReadyForSubMesh(defines as MaterialSheenDefines, scene, engine) ||
             !this.anisotropy.isReadyForSubMesh(defines as MaterialAnisotropicDefines, scene, engine) ||
             !this.detailMap.isReadyForSubMesh(defines as MaterialDetailMapDefines, scene, engine)) {
             return false;
-        }
+        }*/
 
-        if (this._onEventObservable.hasObservers() && !super.isReadyForSubMesh(mesh, subMesh, useInstances)) {
+        this._eventInfo.isReadyForSubMesh = true;
+        this._eventInfo.defines = defines;
+        this._callbackPluginEvent(MaterialEvent.IsReadyForSubMesh, this._eventInfo);
+
+        if (!this._eventInfo.isReadyForSubMesh) {
             return false;
         }
 
@@ -1358,11 +1340,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines.PARALLAXOCCLUSION) {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
-
-        fallbackRank = this.clearCoat.addFallbacks(defines, fallbacks, fallbackRank);
-        fallbackRank = this.anisotropy.addFallbacks(defines, fallbacks, fallbackRank);
-        fallbackRank = this.subSurface.addFallbacks(defines, fallbacks, fallbackRank);
-        fallbackRank = this.sheen.addFallbacks(defines, fallbacks, fallbackRank);
 
         if (defines.ENVIRONMENTBRDF) {
             fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
@@ -1474,13 +1451,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
-        uniforms.push(...this._internalPluginsUniformList);
+        /*uniforms.push(...this._internalPluginsUniformList);
 
         this.detailMap.getSamplers(samplers);
         this.subSurface.getSamplers(samplers);
         this.clearCoat.getSamplers(samplers);
         this.anisotropy.getSamplers(samplers);
-        this.sheen.getSamplers(samplers);
+        this.sheen.getSamplers(samplers);*/
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1491,14 +1468,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this._eventInfo.customCode = undefined;
-        if (this._onEventObservable.hasObservers()) {
-            this._eventInfo.fallbacks = fallbacks;
-            this._eventInfo.fallbackRank = fallbackRank;
-            this._eventInfo.defines = defines;
-            this._eventInfo.uniforms = uniforms;
-            this._eventInfo.samplers = samplers;
-            this._notifyEvent(MaterialEvent.PrepareEffect);
-        }
+        this._eventInfo.fallbacks = fallbacks;
+        this._eventInfo.fallbackRank = fallbackRank;
+        this._eventInfo.defines = defines;
+        this._eventInfo.uniforms = uniforms;
+        this._eventInfo.samplers = samplers;
+        this._callbackPluginEvent(MaterialEvent.PrepareEffect, this._eventInfo);
 
         MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
             uniformsNames: uniforms,
@@ -1837,18 +1812,16 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // External config
-        this.detailMap.prepareDefines(defines as MaterialDetailMapDefines, scene, mesh);
+        /*this.detailMap.prepareDefines(defines as MaterialDetailMapDefines, scene, mesh);
         this.subSurface.prepareDefines(defines as MaterialSubSurfaceDefines, scene, mesh);
         this.clearCoat.prepareDefines(defines as MaterialClearCoatDefines, scene, mesh);
         this.anisotropy.prepareDefines(defines as MaterialAnisotropicDefines, scene, mesh);
         this.brdf.prepareDefines(defines as MaterialBRDFDefines, scene, mesh);
-        this.sheen.prepareDefines(defines as MaterialSheenDefines, scene, mesh);
+        this.sheen.prepareDefines(defines as MaterialSheenDefines, scene, mesh);*/
 
-        if (this._onEventObservable.hasObservers()) {
-            this._eventInfo.defines = defines;
-            this._eventInfo.mesh = mesh;
-            this._notifyEvent(MaterialEvent.PrepareDefines);
-        }
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEvent(MaterialEvent.PrepareDefines, this._eventInfo);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
@@ -1871,7 +1844,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.buildUniformLayout();
         }
 
-        this._notifyEvent(MaterialEvent.GetDefineNames);
+        this._callbackPluginEvent(MaterialEvent.GetDefineNames, this._eventInfo);
         const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
         const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
@@ -1940,7 +1913,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectanceInfos", 2);
         ubo.addUniform("reflectanceMatrix", 16);
 
-        const internalPlugins = [this.clearCoat, this.anisotropy, this.sheen, this.subSurface, this.detailMap];
+        /*const internalPlugins = [this.clearCoat, this.anisotropy, this.sheen, this.subSurface, this.detailMap];
         for (const plugin of internalPlugins) {
             const uniforms = plugin.getUniforms();
             if (uniforms?.ubo) {
@@ -1949,7 +1922,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     this._internalPluginsUniformList.push(uniform.name);
                 }
             }
-        }
+        }*/
 
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);
@@ -1987,7 +1960,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             this._eventInfoPBR.needMarkAsTextureDirty = needFlag;
             this._eventInfoPBR.effect = this._activeEffect;
-            this._notifyUserEvent(MaterialUserEvent.Unbind);
+            this._callbackPluginEvent(MaterialUserEvent.Unbind, this._eventInfoPBR);
 
             if (this._eventInfoPBR.needMarkAsTextureDirty) {
                 this._markAllSubMeshesAsTexturesDirty();
@@ -2028,13 +2001,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
-        this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, subMesh);
+        //this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
-        if (this._onEventObservable.hasObservers()) {
-            this._eventInfoPBR.subMesh = subMesh;
-            this._notifyUserEvent(MaterialUserEvent.HardBindForSubMesh);
-        }
+        this._eventInfoPBR.subMesh = subMesh;
+        this._callbackPluginEvent(MaterialUserEvent.HardBindForSubMesh, this._eventInfoPBR);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -2186,7 +2157,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     TmpColors.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
-                    const ior = this.subSurface.indexOfRefraction;
+                    const ior = this.subSurface?.indexOfRefraction ?? 1.5;
                     const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
@@ -2206,7 +2177,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
-                if (!defines.SS_REFRACTION && this.subSurface.linkRefractionWithTransparency) {
+                if (!defines.SS_REFRACTION && this.subSurface?.linkRefractionWithTransparency) {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, 1);
                 }
                 else {
@@ -2301,16 +2272,16 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
-            this.detailMap.bindForSubMesh(ubo, scene, engine, subMesh);
+            /*this.detailMap.bindForSubMesh(ubo, scene, engine, subMesh);
             this.subSurface.bindForSubMesh(ubo, scene, engine, subMesh);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, engine, subMesh);
-            this.sheen.bindForSubMesh(ubo, scene, engine, subMesh);
+            this.sheen.bindForSubMesh(ubo, scene, engine, subMesh);*/
 
-            if (this._onEventObservable.hasObservers()) {
-                super.bindForSubMesh(world, mesh, subMesh);
-            }
-
+            //super.bindForSubMesh(world, mesh, subMesh);
+            this._eventInfo.subMesh = subMesh;
+            this._callbackPluginEvent(MaterialEvent.BindForSubMesh, this._eventInfo);
+    
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 

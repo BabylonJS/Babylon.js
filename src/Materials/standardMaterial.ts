@@ -17,7 +17,7 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
-import { EventInfo, MaterialEvent } from "./materialEvent";
+import { MaterialEvent } from "./materialEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -34,7 +34,7 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
-import { EventInfoHardBindForSubMesh, MaterialUserEvent, UserEventMapping } from "./materialUserEvent";
+import { EventInfoHardBindForSubMesh, MaterialUserEvent } from "./materialUserEvent";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -746,22 +746,6 @@ export class StandardMaterial extends PushMaterial {
         subMesh: undefined as any,
     };
 
-    protected _notifyUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T]>(eventInfoType: T, eventInfo?: U): void {
-        if (!eventInfo) {
-            eventInfo = this._eventInfoSTD as U;
-        }
-        this._onEventObservable.notifyObservers(eventInfo, eventInfoType);
-    }
-
-    /**
-     * Registers a callback for a material user event
-     * @param eventInfoType event id to register for (from the MaterialUserEvent enum)
-     * @param callback function to be called when the event is notified
-     */
-    public registerForUserEvent<T extends keyof UserEventMapping, U extends UserEventMapping[T] >(eventInfoType: T, callback: (eventInfo: U) => void): void {
-        this._onEventObservable.add(callback as (data: EventInfo) => void, eventInfoType);
-    }
-
     /**
      * Instantiates a new standard material.
      * This is the default material used in Babylon. It is the best trade off between quality
@@ -900,7 +884,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            this._notifyEvent(MaterialEvent.GetDefineNames);
+            this._callbackPluginEvent(MaterialEvent.GetDefineNames, this._eventInfo);
             subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
@@ -1161,7 +1145,7 @@ export class StandardMaterial extends PushMaterial {
         // External config
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
-        this._notifyEvent(MaterialEvent.PrepareDefines);
+        this._callbackPluginEvent(MaterialEvent.PrepareDefines, this._eventInfo);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1288,7 +1272,7 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.uniforms = uniforms;
             this._eventInfo.samplers = samplers;
             this._eventInfo.customCode = undefined;
-            this._notifyEvent(MaterialEvent.PrepareEffect);
+            this._callbackPluginEvent(MaterialEvent.PrepareEffect, this._eventInfo);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
@@ -1467,7 +1451,7 @@ export class StandardMaterial extends PushMaterial {
         this._uniformBuffer.bindToEffect(effect, "Material");
 
         this._eventInfoSTD.subMesh = subMesh;
-        this._notifyUserEvent(MaterialUserEvent.HardBindForSubMesh);
+        this._callbackPluginEvent(MaterialUserEvent.HardBindForSubMesh, this._eventInfoSTD);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
