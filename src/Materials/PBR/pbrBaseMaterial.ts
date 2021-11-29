@@ -311,7 +311,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
     public SS_USE_GLTF_TEXTURES = false;
-    
+
     public UNLIT = false;
 
     public DEBUGMODE = 0;
@@ -1255,7 +1255,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             !this.detailMap.isReadyForSubMesh(defines as MaterialDetailMapDefines, scene, engine)) {
             return false;
         }
-        
+
         if (this._onEventObservable.hasObservers() && !super.isReadyForSubMesh(mesh, subMesh, useInstances)) {
             return false;
         }
@@ -1363,7 +1363,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         fallbackRank = this.anisotropy.addFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = this.subSurface.addFallbacks(defines, fallbacks, fallbackRank);
         fallbackRank = this.sheen.addFallbacks(defines, fallbacks, fallbackRank);
-        
+
         if (defines.ENVIRONMENTBRDF) {
             fallbacks.addFallback(fallbackRank++, "ENVIRONMENTBRDF");
         }
@@ -1481,7 +1481,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.clearCoat.getSamplers(samplers);
         this.anisotropy.getSamplers(samplers);
         this.sheen.getSamplers(samplers);
-        
+
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
 
