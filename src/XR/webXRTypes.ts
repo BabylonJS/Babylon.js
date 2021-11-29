@@ -1,5 +1,6 @@
 import { Nullable } from "../types";
 import { IDisposable } from "../scene";
+import { WebXRLayers } from "./features/WebXRLayers";
 
 /**
  * States of the webXR experience
@@ -42,61 +43,16 @@ export enum WebXRTrackingState {
 }
 
 /**
- * Wrapper over XRWebGLLayer and XRCompositionLayer.
+ * A partial version of XRRenderStateInit that only contains relevant data for xr session layers.
  */
-export class WebXRLayerWrapper {
-    private constructor(
-        /** The width of the layer's framebuffer. */
-        public getWidth: () => number,
-        /** The height of the layer's framebuffer. */
-        public getHeight: () => number,
-        /** The layer's framebuffer. */
-        public getFramebuffer: () => WebGLFramebuffer,
-        /**
-         * Gets the XRWebGLSubImage corresponding to the supplied view.
-         * Note that this method is only supported on WebXRLayerWrappers
-         * that are wrapped around a projection layer.
-         */
-        public getViewSubImage: (view: XRView) => XRWebGLSubImage,
-        /** The XR layer that this WebXRLayerWrapper wraps. */
-        public readonly layer: XRWebGLLayer | XRCompositionLayer,
-        /** Whether the xr layer being wrapped inherits from XRCompositionLayer */
-        public readonly isCompositionLayer: boolean = false) {}
-
+export interface WebXRLayerRenderStateInit {
+    /** An XRWebGLLayer from which the XR compositor will obtain images */
+    baseLayer?: XRWebGLLayer;
     /**
-     * Creates a WebXRLayerWrapper that wraps around an XRWebGLLayer.
-     * @param layer is the layer to be wrapped.
-     * @returns a new WebXRLayerWrapper wrapping the provided XRWebGLLayer.
+     * An ordered array containing XRLayer objects that are displayed by the XR compositor.
+     * The order of the layers is "back-to-front".
      */
-    public static CreateFromXRWebGLLayer(layer: XRWebGLLayer): WebXRLayerWrapper {
-        return new WebXRLayerWrapper(
-            () => layer.framebufferWidth,
-            () => layer.framebufferHeight,
-            () => layer.framebuffer,
-            (view: XRView) => { throw new Error("Not supported for XRWebGLLayer"); },
-            layer,
-            false);
-    }
-
-    /**
-     * Creates a WebXRLayerWrapper that wraps around an XRProjectionLayer.
-     * @param layer is the layer to be wrapped.
-     * @param framebuffer is the framebuffer to use for the XRProjectionLayer.
-     * @param xrGLBinding is the XRWebGLBinding used to create the XRProjectionLayer.
-     * @returns a new WebXRLayerWrapper wrapping the provided XRProjectionLayer.
-     */
-    public static CreateFromXRProjectionLayer(
-        layer: XRProjectionLayer,
-        framebuffer: WebGLFramebuffer,
-        xrGLBinding: XRWebGLBinding): WebXRLayerWrapper {
-        return new WebXRLayerWrapper(
-            () => layer.textureWidth,
-            () => layer.textureHeight,
-            () => framebuffer,
-            (view: XRView) => xrGLBinding.getViewSubImage(layer, view),
-            layer,
-            true);
-    }
+    layers?: XRLayer[];
 }
 
 /**
@@ -111,12 +67,23 @@ export interface WebXRRenderTarget extends IDisposable {
     /**
      * xr layer for the canvas
      */
-    xrLayer: Nullable<WebXRLayerWrapper>;
+    xrLayer: Nullable<XRLayer>;
 
     /**
-     * Initializes the xr layer for the session
+     * Initializes a XRWebGLLayer to be used as the session's baseLayer.
+     * Note that this method is deprecated in favor of initializeXRLayerRenderStateAsync.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    initializeXRLayerAsync(xrSession: XRSession): Promise<WebXRLayerWrapper>;
+    initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
+
+    /**
+     * Creates a WebXRLayerRenderStateInit with baseLayer and layers properties filled in.
+     * If you provide an instance of WebXRLayers, the layers property will be filled in with an XRProjectionLayer.
+     * If no instance of WebXRLayers is provided, the baseLayer property will be filled in with an XRWebGLLayer.
+     * @param xrSession xr session
+     * @param layersFeature an instance of the WebXRLayers feature created by the features manager
+     * @returns a promise that will resolve to the partial render state once the XR layer has been created
+     */
+    initializeXRLayerRenderStateAsync(xrSession: XRSession, layersFeature?: WebXRLayers): Promise<WebXRLayerRenderStateInit>;
 }

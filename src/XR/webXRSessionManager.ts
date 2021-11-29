@@ -2,20 +2,14 @@ import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { IDisposable, Scene } from "../scene";
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
-import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
-import { WebXRLayerWrapper } from "./webXRTypes";
-import { WebGLHardwareTexture } from "../Engines/WebGL/webGLHardwareTexture";
-
-interface IRenderTargetProvider {
-    getViewportForView(view: XRView): Nullable<XRViewport>;
-    getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture>;
-    getRenderTargetForView(view: XRView): Nullable<RenderTargetTexture>;
-}
+import { WebXRRenderTargetProvider } from "./webXRRenderTargetProvider";
+import { Viewport } from "../Maths/math.viewport";
+import { WebXRLayerWrapper, WebXRLayerWrapperProvider } from "./webXRLayerWrapper";
+import { NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -24,12 +18,14 @@ interface IRenderTargetProvider {
 export class WebXRSessionManager implements IDisposable {
     private _engine: Nullable<Engine>;
     private _referenceSpace: XRReferenceSpace;
-    private _rttProvider: Nullable<IRenderTargetProvider>;
+    private _xrLayers: Nullable<WebXRLayerWrapper[]>;
+    private _baseRTTProvider: Nullable<WebXRRenderTargetProvider>;
     private _sessionEnded: boolean = false;
     private _xrNavigator: any;
-    private _xrLayer: Nullable<WebXRLayerWrapper> = null;
-    private _renderTargetTextures: Array<RenderTargetTexture> = [];
     private _sessionMode: XRSessionMode;
+
+    /** @hidden */
+    private _layerWrapperProviders = new Set<WebXRLayerWrapperProvider>();
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -140,12 +136,14 @@ export class WebXRSessionManager implements IDisposable {
     }
 
     /**
-     * Gets the framebuffer-size-normalized viewport to be rendered this frame for this view
-     * @param view the view for which to get the viewport
-     * @returns the viewport for the specified view or null if not available
+     * Attempts to set the framebuffer-size-normalized viewport to be rendered this frame for this view.
+     * In the event of a failure, the supplied viewport is not updated.
+     * @param viewport the viewport to which the view will be rendered
+     * @param view the view for which to set the viewport
+     * @returns whether the operation was successful
      */
-    public getViewportForView(view: XRView): Nullable<XRViewport> {
-        return this._rttProvider!.getViewportForView(view);
+    public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
+        return this._baseRTTProvider!.trySetViewportForView(viewport, view);
     }
 
     /**
@@ -154,7 +152,7 @@ export class WebXRSessionManager implements IDisposable {
      * @returns the render target for the specified eye or null if not available
      */
     public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
-        return this._rttProvider!.getRenderTargetForEye(eye);
+        return this._baseRTTProvider!.getRenderTargetForEye(eye);
     }
 
     /**
@@ -163,7 +161,7 @@ export class WebXRSessionManager implements IDisposable {
      * @returns the render target for the specified view or null if not available
      */
     public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this._rttProvider!.getRenderTargetForView(view);
+        return this._baseRTTProvider!.getRenderTargetForView(view);
     }
 
     /**
@@ -175,7 +173,7 @@ export class WebXRSessionManager implements IDisposable {
     public getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget {
         const engine = this.scene.getEngine();
         if (this._xrNavigator.xr.native) {
-            return this._xrNavigator.xr.getWebXRRenderTarget(engine);
+            return new NativeXRRenderTarget(this);
         } else {
             options = options || WebXRManagedOutputCanvasOptions.GetDefaults(engine);
             options.canvasElement = options.canvasElement || engine.getRenderingCanvas() || undefined;
@@ -218,8 +216,6 @@ export class WebXRSessionManager implements IDisposable {
 
                     // Notify frame observers
                     this.onXRSessionEnded.notifyObservers(null);
-                    // Remove render target texture
-                    this._rttProvider = null;
 
                     if (this._engine) {
                         // make sure dimensions object is restored
@@ -234,9 +230,9 @@ export class WebXRSessionManager implements IDisposable {
                     }
 
                     // Dispose render target textures
-                    if (this.isNative) {
-                        this._renderTargetTextures.forEach((rtt) => rtt.dispose());
-                        this._renderTargetTextures.length = 0;
+                    if (this._baseRTTProvider) {
+                        this._baseRTTProvider.dispose();
+                        this._baseRTTProvider = null;
                     }
                 },
                 { once: true }
@@ -281,7 +277,7 @@ export class WebXRSessionManager implements IDisposable {
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
-                    this._engine.framebufferDimensionsObject = this._xrLayer && { framebufferWidth: this._xrLayer.getWidth(), framebufferHeight: this._xrLayer.getHeight() };
+                    this._engine.framebufferDimensionsObject = this._baseRTTProvider?.getFramebufferDimensions() || null;
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                     this._engine._renderLoop();
                     this._engine.framebufferDimensionsObject = null;
@@ -289,99 +285,7 @@ export class WebXRSessionManager implements IDisposable {
             },
         };
 
-        if (this._xrNavigator.xr.native) {
-            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, this._createRenderTargetTexture.bind(this), this._destroyRenderTargetTexture.bind(this));
-        } else {
-            // Create render target texture from xr's webgl render target
-            let rtts: RenderTargetTexture[] = [];
-            let framebufferInfos: { width: number, height: number, instance: WebGLFramebuffer }[] = [];
-            this._rttProvider = {
-                getViewportForView: (view: XRView) => {
-                    if (!this._xrLayer) {
-                        return null;
-                    }
-
-                    let viewport: any;
-                    if (this._xrLayer.isCompositionLayer) {
-                        viewport = this._xrLayer.getViewSubImage(view).viewport;
-                    } else {
-                        viewport = (this._xrLayer.layer as XRWebGLLayer).getViewport(view);
-                    }
-
-                    let layerWidth = this._xrLayer.getWidth();
-                    let layerHeight = this._xrLayer.getHeight();
-
-                    return {
-                        x: viewport.x / layerWidth,
-                        y: viewport.y / layerHeight,
-                        width: viewport.width / layerWidth,
-                        height: viewport.height / layerHeight,
-                    };
-                },
-                getRenderTargetForView: (view: XRView) => {
-                    if (!this._xrLayer) {
-                        return null;
-                    }
-
-                    if (this._xrLayer.isCompositionLayer) {
-                        if (!this._engine) {
-                            return null;
-                        }
-                        const glContext = this._engine._gl;
-
-                        const subImage = this._xrLayer.getViewSubImage(view);
-                        const subImageIndex = subImage.imageIndex || 0;
-                        // We allocate the framebuffer for the composition layer and it doesn't change so we don't have to check if the instance has changed.
-                        if (!rtts[subImageIndex] ||
-                            framebufferInfos[subImageIndex].width != subImage.textureWidth ||
-                            framebufferInfos[subImageIndex].height != subImage.textureHeight) {
-                            const colorTexture = new WebGLHardwareTexture(subImage.colorTexture, glContext);
-                            const depthStencilTexture = new WebGLHardwareTexture(subImage.depthStencilTexture, glContext);
-                            rtts[subImageIndex] = this._createRenderTargetTexture(
-                                { width: subImage.textureWidth, height: subImage.textureHeight },
-                                this._xrLayer.getFramebuffer(),
-                                colorTexture,
-                                depthStencilTexture);
-                            framebufferInfos[subImageIndex] = {
-                                width: subImage.textureWidth,
-                                height: subImage.textureHeight,
-                                instance: this._xrLayer.getFramebuffer()
-                            };
-                        }
-
-                        return rtts[subImageIndex];
-                    } else {
-                        return this.getRenderTargetTextureForEye(view.eye);
-                    }
-                },
-                getRenderTargetForEye: (eye: XREye) => {
-                    if (!this._xrLayer) {
-                        return null;
-                    }
-
-                    if (this._xrLayer.isCompositionLayer) {
-                        throw new Error("getRenderTargetForEye is not supported when using composition layers. Please use getRenderTargetForView instead.");
-                    }
-
-                    const layerWidth = this._xrLayer.getWidth();
-                    const layerHeight = this._xrLayer.getHeight();
-                    const layerFramebuffer = this._xrLayer.getFramebuffer();
-                    if (!framebufferInfos[0] ||
-                        layerWidth !== framebufferInfos[0].width ||
-                        layerHeight !== framebufferInfos[0].height ||
-                        layerFramebuffer !== framebufferInfos[0].instance) {
-                        rtts[0] = this._createRenderTargetTexture({ width: layerWidth, height: layerHeight }, layerFramebuffer);
-                        framebufferInfos[0] = {
-                            width: layerWidth,
-                            height: layerHeight,
-                            instance: layerFramebuffer
-                        };
-                    }
-                    return rtts[0];
-                },
-            };
-            this._engine.framebufferDimensionsObject = this._xrLayer && { framebufferWidth: this._xrLayer.getWidth(), framebufferHeight: this._xrLayer.getHeight() };
-        }
+        this._engine.framebufferDimensionsObject = this._baseRTTProvider?.getFramebufferDimensions() || null;
 
         // Stop window's animation frame and trigger sessions animation frame
         if (typeof window !== "undefined" && window.cancelAnimationFrame) {
@@ -433,19 +337,69 @@ export class WebXRSessionManager implements IDisposable {
             });
     }
 
+    /** @hidden */
+    public _addLayerWrapperProvider(provider: WebXRLayerWrapperProvider) {
+        this._layerWrapperProviders.add(provider);
+    }
+
+    /** @hidden */
+    public _removeLayerWrapperProvider(provider: WebXRLayerWrapperProvider) {
+        this._layerWrapperProviders.delete(provider);
+    }
+
+    private _updateXRLayers(layers: XRLayer[]) {
+        // Wrap the new layers
+        this._xrLayers = layers.map(
+            (layer: XRLayer) => {
+                let layerWrapper: Nullable<WebXRLayerWrapper> = null;
+                // We assume that the order doesn't matter and either
+                // only one provider is capable of producing a wrapper for a given layer
+                // or multiple providers would give the same answer.
+                this._layerWrapperProviders.forEach((provider) => {
+                    if (!layerWrapper) {
+                        layerWrapper = provider.createLayerWrapper(layer);
+                    }
+                });
+                // If all else fails just assume it's a regular old XRWebGLLayer.
+                if (!layerWrapper) {
+                    layerWrapper = WebXRLayerWrapper.CreateFromXRWebGLLayer(layer as XRWebGLLayer);
+                }
+                return layerWrapper;
+            });
+
+        this._baseRTTProvider?.dispose();
+        this._baseRTTProvider = this._xrLayers[0].createRenderTargetProvider(this);
+    }
+
+    /**
+     * Updates the render state of the session.
+     * Note that this is deprecated in favor of webXRSessionManager.updateRenderState().
+     * @param state state to set
+     * @returns a promise that resolves once the render state has been updated
+     */
+    public updateRenderStateAsync(state: XRRenderState): Promise<void> {
+        if (!!state.baseLayer) {
+            this._updateXRLayers([state.baseLayer]);
+        }
+
+        return new Promise((resolve) => {
+            this.session.updateRenderState(state);
+            resolve();
+        });
+    }
+
     /**
      * Updates the render state of the session
      * @param state state to set
-     * @param xrLayer an optional WebXRLayerWrapper that is the session's main xr layer
-     * @returns a promise that resolves once the render state has been updated
      */
-    public updateRenderStateAsync(state: XRRenderStateInit, xrLayer?: Nullable<WebXRLayerWrapper>) {
-        if (xrLayer) {
-            this._xrLayer = xrLayer;
-        } else if (state.baseLayer) {
-            this._xrLayer = WebXRLayerWrapper.CreateFromXRWebGLLayer(state.baseLayer);
+    public updateRenderState(state: XRRenderStateInit): void {
+        if (!!state.baseLayer) {
+            this._updateXRLayers([state.baseLayer]);
+        } else if (state.layers && state.layers.length > 0) {
+            this._updateXRLayers(state.layers);
         }
-        return this.session.updateRenderState(state);
+
+        this.session.updateRenderState(state);
     }
 
     /**
@@ -509,7 +463,10 @@ export class WebXRSessionManager implements IDisposable {
      * Check if fixed foveation is supported on this device
      */
     public get isFixedFoveationSupported(): boolean {
-        return !!this._xrLayer && !this._xrLayer.isCompositionLayer && !!(this._xrLayer.layer as XRWebGLLayer).fixedFoveation;
+        if (this._xrLayers && this._xrLayers.length > 0) {
+            return this._xrLayers[0].isFixedFoveationSupported;
+        }
+        return false;
     }
 
     /**
@@ -517,7 +474,10 @@ export class WebXRSessionManager implements IDisposable {
      * If this returns null, then fixed foveation is not supported
      */
     public get fixedFoveation(): Nullable<number> {
-        return (this._xrLayer?.layer as XRWebGLLayer | undefined)?.fixedFoveation || null;
+        if (this._xrLayers && this._xrLayers.length > 0) {
+            return this._xrLayers[0].fixedFoveation;
+        }
+        return null;
     }
 
     /**
@@ -525,52 +485,9 @@ export class WebXRSessionManager implements IDisposable {
      * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
      */
     public set fixedFoveation(value: Nullable<number>) {
-        const val = Math.max(0, Math.min(1, value || 0));
-        const baseLayer = (this._xrLayer?.layer as XRWebGLLayer | undefined);
-        if (!!baseLayer?.fixedFoveation) {
-            baseLayer.fixedFoveation = val;
+        if (this._xrLayers && this._xrLayers.length > 0) {
+            const val = Math.max(0, Math.min(1, value || 0));
+            this._xrLayers[0].fixedFoveation = val;
         }
-    }
-
-    private _createRenderTargetTexture(size: { width: number, height: number, numLayers?: number }, framebuffer: WebGLFramebuffer, colorTexture?: WebGLHardwareTexture, depthStencilTexture?: WebGLHardwareTexture): RenderTargetTexture {
-        if (!this._engine) {
-            throw new Error("Engine is disposed");
-        }
-
-        // Create render target texture from the internal texture
-        const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", size, this.scene);
-        const webglRTWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
-        webglRTWrapper._framebuffer = framebuffer;
-
-        // Create internal texture
-        const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
-        internalTexture.width = size.width;
-        internalTexture.height = size.height;
-        if (!!colorTexture) {
-            internalTexture._hardwareTexture = colorTexture;
-        }
-        webglRTWrapper.setTexture(internalTexture, 0);
-        renderTargetTexture._texture = internalTexture;
-
-        if (!!depthStencilTexture) {
-            const internalDSTexture = new InternalTexture(this._engine, InternalTextureSource.DepthStencil, true);
-            internalDSTexture.width = size.width;
-            internalDSTexture.height = size.height;
-            internalDSTexture._hardwareTexture = depthStencilTexture;
-            webglRTWrapper._depthStencilTexture = internalDSTexture;
-        }
-
-        renderTargetTexture.disableRescaling();
-        renderTargetTexture.skipInitialClear = true;
-
-        // Store the render target texture for cleanup when the session ends.
-        this._renderTargetTextures.push(renderTargetTexture);
-
-        return renderTargetTexture;
-    }
-
-    private _destroyRenderTargetTexture(renderTargetTexture: RenderTargetTexture): void {
-        this._renderTargetTextures.splice(this._renderTargetTextures.indexOf(renderTargetTexture), 1);
-        renderTargetTexture.dispose();
     }
 }

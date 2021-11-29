@@ -132,6 +132,10 @@ export class WebXRFeatureName {
      * The name of the walking locomotion feature
      */
     public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion";
+    /**
+     * The name of the composition layers feature
+     */
+    public static readonly LAYERS = "xr-layers";
 }
 
 /**
@@ -406,7 +410,7 @@ export class WebXRFeaturesManager implements IDisposable {
             return this._features[name].featureImplementation;
         } else {
             if (required) {
-                throw new Error("required feature not compatible");
+                throw new Error(`Required feature ${name} not compatible with the current environment/browser and could not be enabled.`);
             } else {
                 Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
                 return constructed;
