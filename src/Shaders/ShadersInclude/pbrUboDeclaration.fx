@@ -62,6 +62,50 @@ uniform Material {
     vec2 vReflectanceInfos;
     mat4 reflectanceMatrix;
 
+    vec2 vClearCoatParams;
+    vec4 vClearCoatRefractionParams;
+    vec4 vClearCoatInfos;
+    mat4 clearCoatMatrix;
+    mat4 clearCoatRoughnessMatrix;
+    vec2 vClearCoatBumpInfos;
+    vec2 vClearCoatTangentSpaceParams;
+    mat4 clearCoatBumpMatrix;
+    vec4 vClearCoatTintParams;
+    float clearCoatColorAtDistance;
+    vec2 vClearCoatTintInfos;
+    mat4 clearCoatTintMatrix;
+
+    vec3 vAnisotropy;
+    vec2 vAnisotropyInfos;
+    mat4 anisotropyMatrix;
+
+    vec4 vSheenColor;
+    float vSheenRoughness;
+    vec4 vSheenInfos;
+    mat4 sheenMatrix;
+    mat4 sheenRoughnessMatrix;
+
+    vec4 vRefractionMicrosurfaceInfos;
+    vec2 vRefractionFilteringInfo;
+    vec2 vTranslucencyIntensityInfos;
+    vec4 vRefractionInfos;
+    mat4 refractionMatrix;
+    vec2 vThicknessInfos;
+    vec2 vRefractionIntensityInfos;
+    mat4 thicknessMatrix;
+    mat4 refractionIntensityMatrix;
+    mat4 translucencyIntensityMatrix;
+    vec2 vThicknessParam;
+    vec3 vDiffusionDistance;
+    vec4 vTintColor;
+    vec3 vSubSurfaceIntensity;
+    vec3 vRefractionPosition;
+    vec3 vRefractionSize;
+    float scatteringDiffusionProfile;
+
+    vec4 vDetailInfos;
+    mat4 detailMatrix;
+
     vec3 vSphericalL00;
     vec3 vSphericalL1_1;
     vec3 vSphericalL10;

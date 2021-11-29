@@ -9,6 +9,7 @@ import { IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";
+import { SubMesh } from "../Meshes/subMesh";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -19,7 +20,7 @@ declare type PBRBaseMaterial = import("./PBR/pbrBaseMaterial").PBRBaseMaterial;
 /**
  * @hidden
  */
-class MaterialDetailMapDefines extends MaterialDefines {
+export class MaterialDetailMapDefines extends MaterialDefines {
     DETAIL = false;
     DETAILDIRECTUV = 0;
     DETAIL_NORMALBLENDMETHOD = 0;
@@ -91,8 +92,8 @@ export class DetailMapConfiguration extends MaterialPluginBase {
      * Instantiate a new detail map
      * @param material The material implementing this plugin.
      */
-    constructor(material: PBRBaseMaterial | StandardMaterial) {
-        super(material, "DetailMap", 140, new MaterialDetailMapDefines());
+    constructor(material: PBRBaseMaterial | StandardMaterial, addToPluginList = true) {
+        super(material, "DetailMap", 140, new MaterialDetailMapDefines(), addToPluginList);
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
@@ -133,7 +134,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         }
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }

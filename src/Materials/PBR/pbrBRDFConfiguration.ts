@@ -99,8 +99,8 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsMiscDirty();
     }
 
-    constructor(material: PBRBaseMaterial) {
-        super(material, "PBRBRDF", 90, new MaterialBRDFDefines());
+    constructor(material: PBRBaseMaterial, addToPluginList = true) {
+        super(material, "PBRBRDF", 90, new MaterialBRDFDefines(), addToPluginList);
 
         this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
     }
