@@ -46271,6 +46271,10 @@ declare module BABYLON {
          */
         onAnimationGroupPlayObservable: Observable<AnimationGroup>;
         /**
+         * Gets or sets an object used to store user defined information for the node
+         */
+        metadata: any;
+        /**
          * Gets the first frame
          */
         get from(): number;

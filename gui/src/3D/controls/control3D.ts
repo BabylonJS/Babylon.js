@@ -24,6 +24,8 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     private _enterCount = -1;
     private _downPointerIds: { [id: number]: number } = {}; // Store number of pointer downs per ID, from near and far interactions
     private _isVisible = true;
+    /** @hidden */
+    public _isScaledByManager = false;
 
     /** Gets or sets the control position in world space */
     public get position(): Vector3 {
@@ -56,6 +58,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return;
         }
 
+        this._isScaledByManager = false;
         this._node.scaling = value;
     }
 
