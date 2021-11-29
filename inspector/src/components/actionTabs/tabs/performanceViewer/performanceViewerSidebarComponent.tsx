@@ -66,9 +66,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                     {metadataMap.get(category)?.map(([id, metadata]) => (
                         <div key={`perf-sidebar-item-${id}`} className="sidebar-item">
                             <input type="checkbox"checked={!metadata.hidden} onChange={onCheckChange(id)} />
-                            <div>
-                                <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
-                            </div>
+                            <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
                             <span className="sidebar-item-label">{id}</span>
                         </div>
                     ))}
