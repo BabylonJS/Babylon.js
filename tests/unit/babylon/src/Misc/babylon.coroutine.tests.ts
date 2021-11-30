@@ -225,7 +225,7 @@
             
             expect(count1).to.equal(1);
             expect(count2).to.equal(2);
-        }
+        });
     });
  });
  
