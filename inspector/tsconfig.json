@@ -7,6 +7,7 @@
         "rootDir": "./src/",
         "paths": {
             "babylonjs-gui/*": ["../../dist/preview release/gui/babylon.gui.module.d.ts"],
+            "babylonjs-gui-editor": ["../../dist/preview release/guiEditor/babylon.guiEditor.module.d.ts"],
             "babylonjs-gltf2interface": ["../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"],
             "@babylonjs/loaders/glTF/2.0/Extensions*": ["../../../distES6/loaders/glTF/2.0/Extensions"],
             "babylonjs-loaders/*": ["../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"],
