@@ -346,6 +346,7 @@
 - Fix issue with wrong definition of a returned BASIS format ([RaananW](https://github.com/RaananW))
 - Fix glTF exporter exports unused materials from excluded meshes ([daoshengmu](https://github.com/daoshengmu))
 - Fix glTFLoader 2.0 when dealing with glTF files that contain no meshes ([simonihmig](https://github.com/simonihmig))
+- Fix issue with setParent and meshes with a pivot ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
