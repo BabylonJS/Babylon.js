@@ -24,8 +24,17 @@ const numPointsColHeader = "numPoints";
 // regex to capture all carriage returns in the string.
 const carriageReturnRegex = /\r/g;
 
+/**
+ * Callback strategy and optional category for data collection
+ */
 interface IPerformanceViewerStrategyParameter {
+    /**
+     * The strategy for collecting data. Available strategies are located on the PerfCollectionStrategy class
+     */
     strategyCallback: PerfStrategyInitialization;
+    /**
+     * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
+     */
     category?: string;
 }
 
