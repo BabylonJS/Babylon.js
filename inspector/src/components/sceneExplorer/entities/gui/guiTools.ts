@@ -21,13 +21,23 @@ function _getGlobalGUIEditor(): any {
     return undefined;
 }
 
-export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
+/** Used to pass in the gui-editor package. */
+export function InjectGUIEditor(guiEditorPackage: any) {
+    guiEditor = guiEditorPackage;
+}
+
+/**
+ * Opens an ADT in the GUI editor
+ * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+ * If you are in a UMD environment, you have the option to load the editor from a custom URL, or use the default (unpkg CDN) 
+*/
+export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, customEditorURL?: string) {
     if (!guiEditor) {
         if (typeof BABYLON !== 'undefined') {
             // we are in UMD environment
             guiEditor = guiEditor || _getGlobalGUIEditor();
             if (typeof guiEditor == 'undefined') {
-                const editorUrl = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;;
+                const editorUrl = customEditorURL || `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;;
 
                 // Load editor and add it to the DOM
                 try {
@@ -39,11 +49,7 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
             }
         } else {
             // we are in ES6 environment
-            try {
-                guiEditor = await import("@babylonjs/gui-editor");
-            } catch {
-                Tools.Error("Failed to import @babylonjs/gui-editor. Please install the package if you want to use the GUI editor.");
-            }
+            Tools.Error(`Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`);
         }
     }
     guiEditor.GUIEditor.Show({liveGuiTexture: adt});
