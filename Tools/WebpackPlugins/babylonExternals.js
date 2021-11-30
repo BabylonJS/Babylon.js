@@ -29,7 +29,7 @@ module.exports = function nodeExternals(options) {
         }
         else if (/^babylonjs-gui-editor.*$/i.test(request)) {
             callback(null, {
-                root: ["BABYLON", "GUIEDITOR"],
+                root: ["GUIEDITOR"],
                 commonjs: "babylonjs-gui-editor",
                 commonjs2: "babylonjs-gui-editor",
                 amd: "babylonjs-gui-editor"
@@ -81,6 +81,14 @@ module.exports = function nodeExternals(options) {
                 commonjs: "@babylonjs/loaders",
                 commonjs2: "@babylonjs/loaders",
                 amd: "@babylonjs/loaders"
+            });
+        }
+        else if (/^@babylonjs\/gui-editor.*$/i.test(request)) {
+            callback(null, {
+                root: ["GUIEDITOR"],
+                commonjs: "@babylonjs/gui",
+                commonjs2: "@babylonjs/gui",
+                amd: "@babylonjs/gui"
             });
         }
         else if (/^@babylonjs\/gui.*$/i.test(request)) {
