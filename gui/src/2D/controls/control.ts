@@ -1527,6 +1527,10 @@ export class Control {
         if (this._isFontSizeInPercentage) {
             this._fontSet = true;
         }
+        
+        if (this.host.useSmallestIdeal && !this._font) {
+            this._fontSet = true;
+        }
 
         if (this._fontSet) {
             this._prepareFont();
