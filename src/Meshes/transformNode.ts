@@ -765,7 +765,7 @@ export class TransformNode extends Node {
         this.computeWorldMatrix(true);
 
         let currentRotation = this.rotationQuaternion;
-        if(!currentRotation) {
+        if (!currentRotation) {
             currentRotation = TransformNode._TmpRotation;
             Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, currentRotation);
         }
