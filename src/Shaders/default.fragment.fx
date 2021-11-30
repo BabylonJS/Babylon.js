@@ -452,7 +452,7 @@ color.rgb = max(color.rgb, 0.);
     #endif
     #ifdef PREPASS_REFLECTIVITY
         #if defined(SPECULAR)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularMapColor.rgb, writeGeometryInfo);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularMapColor.rgb, specularMapColor.a * writeGeometryInfo);
         #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
