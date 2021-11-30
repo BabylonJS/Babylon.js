@@ -6,6 +6,8 @@ import { Plane } from "babylonjs/Maths/math.plane";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
+import { Image } from "babylonjs-gui/2D/controls/image";
+import { DataStorage } from "babylonjs/Misc/dataStorage";
 
 require("./workbenchCanvas.scss");
 
@@ -19,11 +21,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _mouseDown: boolean = false;
     private _scalePointIndex: number = -1;
     private _previousPositions: Vector2[] = [];
-    private _responsive : boolean;
+    private _responsive: boolean;
     constructor(props: IGuiGizmoProps) {
         super(props);
         this.props.globalState.guiGizmo = this;
-
+        this._responsive = DataStorage.ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection) {
                 this.scalePoints.forEach(scalePoint => {
@@ -76,26 +78,24 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),];
 
-            startingPositions[0].x -= node._currentMeasure.width * node.scaleX / 2;
-            startingPositions[0].z += node._currentMeasure.height * node.scaleY / 2;
+            const halfScaleX = node.scaleX / 2;;
+            const halfScaleY = node.scaleY / 2;;
+            startingPositions[0].x -= node._currentMeasure.width * halfScaleX;
+            startingPositions[0].z += node._currentMeasure.height * halfScaleY;
 
-            startingPositions[1].x -= node._currentMeasure.width * node.scaleX / 2;
-            startingPositions[1].z -= node._currentMeasure.height * node.scaleY / 2;
+            startingPositions[1].x -= node._currentMeasure.width * halfScaleX;
+            startingPositions[1].z -= node._currentMeasure.height * halfScaleY;
 
-            startingPositions[2].x += node._currentMeasure.width * node.scaleX / 2;
-            startingPositions[2].z -= node._currentMeasure.height * node.scaleY / 2;
+            startingPositions[2].x += node._currentMeasure.width * halfScaleX;
+            startingPositions[2].z -= node._currentMeasure.height * halfScaleY;
 
-            startingPositions[3].x += node._currentMeasure.width * node.scaleX / 2;
-            startingPositions[3].z += node._currentMeasure.height * node.scaleY / 2
+            startingPositions[3].x += node._currentMeasure.width * halfScaleX;
+            startingPositions[3].z += node._currentMeasure.height * halfScaleY;
 
-
-            startingPositions[4].x -= node._currentMeasure.width * node.scaleX / 2;
-
-            startingPositions[5].z -= node._currentMeasure.height * node.scaleY / 2;
-
-            startingPositions[6].x += node._currentMeasure.width * node.scaleX / 2;
-
-            startingPositions[7].z += node._currentMeasure.height * node.scaleY / 2
+            startingPositions[4].x -= node._currentMeasure.width * halfScaleX;
+            startingPositions[5].z -= node._currentMeasure.height * halfScaleY;
+            startingPositions[6].x += node._currentMeasure.width * halfScaleX;
+            startingPositions[7].z += node._currentMeasure.height * halfScaleY;
 
             const center = node.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER &&
                 node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER;
@@ -209,41 +209,34 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
 
-
             let camera = this.props.globalState.workbench._camera;
             const scene = this.props.globalState.workbench._scene;
             const plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
             let newPosition = this.props.globalState.workbench.getPosition(scene, camera, plane);
 
-
             let dx = newPosition.x - this._previousPositions[this._scalePointIndex].x;
             let dy = newPosition.z - this._previousPositions[this._scalePointIndex].y;
-
-            let alignmentFactorX = 2;
-            let alignmentFactorY = 2;
+            let alignmentFactorX = node.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER ? 2 : 1;
+            let alignmentFactorY = node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER ? 2 : 1;
             let offsetX = [0, 0, 0, 0];
             let offsetY = [0, 0, 0, 0]
+
             switch (node.horizontalAlignment) {
                 case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                    alignmentFactorX = 1;
                     offsetX = [-1, -1, 0, 0];
                     break;
                 case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                    alignmentFactorX = 1;
                     offsetX = [0, 0, 1, 1];
                     break;
             }
             switch (node.verticalAlignment) {
                 case Control.VERTICAL_ALIGNMENT_TOP:
-                    alignmentFactorY = 1;
                     offsetY = [0, -1, -1, 0];
                     break;
                 case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                    alignmentFactorY = 1;
                     offsetY = [1, 0, 0, 1];
                     break;
             }
-
 
             let pivotX = (node.transformCenterX - 0.5) * 2;
             let pivotY = (node.transformCenterY - 0.5) * 2;
@@ -266,144 +259,109 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     break;
             }
 
-            
-           /* let tempMeasure1 = new Measure(0, 0, 0, 0);
-            node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure1);
-            console.log("---------------------");
-            var ox1 = tempMeasure1.left;
-            var oy1 = tempMeasure1.top;
-            console.log("OX1 ",ox1);
-           console.log("OY1 ", oy1);
-            */
-
             let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) {
-                switch ((this._scalePointIndex + rotationIndex) % 4) {
+                const index = (this._scalePointIndex + rotationIndex) % 4;
+                const invert = index === 0 || index === 3 ? -1 : 1;
+                const newWidth = dx * alignmentFactorX * lockX;
+                const newHieght = dy * alignmentFactorY * lockY;
+                const newLeft = dx * alignmentFactorX * offsetX[index] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
+                const newTop = dy * alignmentFactorY * offsetY[index] * lockY + (invert * dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+
+                switch (index) {
                     case 0:
-                        node.widthInPixels -= dx * alignmentFactorX * lockX;
-                        node.heightInPixels -= dy * alignmentFactorY * lockY;
-                        node.leftInPixels -= dx * alignmentFactorX * offsetX[0] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
-                        node.topInPixels -= dy * alignmentFactorY * offsetY[0] * lockY - (dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, -1, -1, -1);
                         break;
                     case 1:
-                        node.widthInPixels -= dx * alignmentFactorX * lockX;
-                        node.heightInPixels += dy * alignmentFactorY * lockY;
-                        node.leftInPixels -= dx * alignmentFactorX * offsetX[1] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
-                        node.topInPixels += dy * alignmentFactorY * offsetY[1] * lockY + (dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, 1, -1, 1);
                         break;
                     case 2:
-                        node.widthInPixels += dx * alignmentFactorX * lockX;
-                        node.heightInPixels += dy * alignmentFactorY * lockY;
-                        node.leftInPixels += dx * alignmentFactorX * offsetX[2] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
-                        node.topInPixels += dy * alignmentFactorY * offsetY[2] * lockY + (dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, 1, 1, 1);
                         break;
                     case 3:
-                        node.widthInPixels += dx * alignmentFactorX * lockX;
-                        node.heightInPixels -= dy * alignmentFactorY * lockY;
-                        node.leftInPixels += dx * alignmentFactorX * offsetX[3] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
-                        node.topInPixels -= dy * alignmentFactorY * offsetY[3] * lockY - (dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, -1, 1, -1);
                         break;
                     default:
                         break;
                 }
             }
             else {
+
+                const invert = rotationIndex === 1 ? -1 : 1;
                 switch (node.horizontalAlignment) {
                     case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                        alignmentFactorX = 1;
                         offsetX = [-1, -1, 0, 0];
                         break;
-                    case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                        alignmentFactorX = 1;
+                    case Control.HORIZONTAL_ALIGNMENT_RIGHT: ;
                         offsetX = [1, 1, 0, 0];
                         break;
                 }
                 switch (node.verticalAlignment) {
                     case Control.VERTICAL_ALIGNMENT_TOP:
-                        alignmentFactorY = 1;
                         offsetY = [-1, -1, -1, 0];
                         break;
                     case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                        alignmentFactorY = 1;
                         offsetY = [1, 0, 0, -1];
                         break;
                 }
-                rotationOffset = 1;
-                const invert = rotationIndex === 1 ? -1 : 1;
-                
+
+                const newWidth = dy * 2 * lockX;
+                const newHieght = dx * 2 * lockY;
+                const newLeft = dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+                const newTop = dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX) - (dx * lockY * pivotY);
 
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
-                    case 0: 
-                        node.widthInPixels += dy * 2 * lockX;
-                        node.heightInPixels -= dx * 2 * lockY;
-                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX- (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                    case 0:
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, -1, +1, -1);
                         break;
                     case 1:
-                        //console.log(1);
-                        node.widthInPixels += dy * 2 * lockX;
-                        node.heightInPixels += dx * 2 * lockY;
-                        node.leftInPixels += dy * alignmentFactorX * offsetX[0] * lockX- (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY- (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, 1, 1, 1);
                         break;
                     case 2:
-                        //console.log(2);
-                        node.widthInPixels -= dy * 2 * lockX;
-                        node.heightInPixels += dx * 2 * lockY;
-                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) - (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels += dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, 1, -1, 1);
                         break;
                     case 3:
-                        //console.log(3);
-                        node.widthInPixels -= dy * 2 * lockX;
-                        node.heightInPixels -= dx * 2 * lockY;
-                        node.leftInPixels -= dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX * rotationOffset) + (invert *dx * lockY * pivotY * rotationOffset);
-                        node.topInPixels -= dx * alignmentFactorY * offsetY[0] * lockY; - (dy * lockX * pivotX * rotationOffset) - (dx * lockY * pivotY * rotationOffset);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, -1, -1, -1);
                         break;
                     default:
                         break;
                 }
             }
 
-
-            if (node.widthInPixels < 0) {
-                node.widthInPixels = 0;
-            }
-            if (node.heightInPixels < 0) {
-                node.heightInPixels = 0;
-            }
-
-
-            if(this._responsive) {
+            if (this._responsive) {
                 this.props.globalState.workbench.convertToPercentage(node, true);
             }
-            //node._forceUpdateTransformationMatrix();
-            /*const parentM = node.parent?._currentMeasure;
-            if(parentM)
-            node._layout(parentM, this.props.globalState.guiTexture.getContext() );
 
-            let tempMeasure2 = new Measure(0, 0, 0, 0);
-            node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure2);
-
-            var ox2 = tempMeasure2.left;
-            var oy2 = tempMeasure2.top;
-            //console.log("OX2 ",ox2);
-            //console.log("OY2 ", oy2);
-
-
-            const deltaX = ox2 - ox1;
-            const deltaY = oy2 - oy1;
-            console.log("deltaX ", deltaX);
-            console.log("deltaY", deltaY);
-            node.leftInPixels -= deltaX;
-            node.topInPixels -= deltaY;*/
-            
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
             this._previousPositions[this._scalePointIndex].y = newPosition.z;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             this.updateGizmo();
 
         }
+    }
+
+    private _calculateScaling(node: Control, w: number, h: number, l: number, t: number, plusW: number, plusH: number, plusL: number, plusT: number) {
+        node.widthInPixels += w * plusW;
+        node.heightInPixels += h * plusH;
+
+        if (node.widthInPixels < 0) {
+            node.widthInPixels = 0;
+        }
+        else {
+            node.leftInPixels += l * plusL;
+        }
+
+        if (node.heightInPixels < 0) {
+            node.heightInPixels = 0;
+        }
+        else {
+            node.topInPixels += t * plusT;
+        }
+
+        if (node.typeName === "Image") {
+            (node as Image).autoScale = false;
+        }
+
     }
 
     public onUp(evt: React.PointerEvent<HTMLElement>) {
