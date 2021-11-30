@@ -366,7 +366,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
-            console.error(err);
+            console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
     }
