@@ -306,7 +306,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                         offsetY = [1, 0, 0, -1];
                         break;
                 }
-
+                //#3FTIKL
                 const newWidth = dy * 2 * lockX;
                 const newHieght = dx * 2 * lockY;
                 const newLeft = dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
