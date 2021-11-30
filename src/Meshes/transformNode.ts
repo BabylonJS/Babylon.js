@@ -761,22 +761,27 @@ export class TransformNode extends Node {
         const scale = TmpVectors.Vector3[1];
         const invParentMatrix = TmpVectors.Matrix[1];
         Matrix.IdentityToRef(invParentMatrix);
-        const diffMatrix = TmpVectors.Matrix[0];
+        const composedMatrix = TmpVectors.Matrix[0];
         this.computeWorldMatrix(true);
 
-        // current global transformation without pivot
-        Matrix.ComposeToRef(this.scaling, this.rotationQuaternion || Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z), this.position, diffMatrix);
-        if (this.parent) {
-            this.parent.computeWorldMatrix(true).invertToRef(invParentMatrix);
-            diffMatrix.multiplyToRef(invParentMatrix, diffMatrix);
+        let currentRotation = this.rotationQuaternion;
+        if(!currentRotation) {
+            currentRotation = TransformNode._TmpRotation;
+            Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, currentRotation);
         }
 
+        // current global transformation without pivot
+        Matrix.ComposeToRef(this.scaling, currentRotation, this.position, composedMatrix);
+        if (this.parent) {
+            composedMatrix.multiplyToRef(this.parent.computeWorldMatrix(true), composedMatrix);
+        }
+
+        // is a node was set, calculate the difference between this and the node
         if (node) {
             node.computeWorldMatrix(true).invertToRef(invParentMatrix);
-            diffMatrix.multiplyToRef(invParentMatrix, diffMatrix);
-            (diffMatrix).decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
+            composedMatrix.multiplyToRef(invParentMatrix, composedMatrix);
         }
-        diffMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
+        composedMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
 
         if (this.rotationQuaternion) {
             this.rotationQuaternion.copyFrom(quatRotation);
