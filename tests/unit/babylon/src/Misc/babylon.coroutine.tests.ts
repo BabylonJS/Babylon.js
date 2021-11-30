@@ -200,6 +200,32 @@
             expect(count1).to.equal(2);
             expect(count2).to.equal(1);
         });
+
+        it("should be able to cancel current coroutines then proceed with more", () => {
+            const observable = new BABYLON.Observable<void>();
+            let count1 = 0;
+            let count2 = 0;
+            observable.runCoroutineAsync(function* () {
+                while (true) {
+                    count1 += 1;
+                    yield;
+                }
+            }());
+            observable.notifyObservers();
+            observable.cancelAllCoroutines();
+            expect(count1).to.equal(1);
+            observable.runCoroutineAsync(function* () {
+                while (true) {
+                    count2 += 1;
+                    yield;
+                }
+            }());
+            observable.notifyObservers();
+            observable.notifyObservers();
+            
+            expect(count1).to.equal(1);
+            expect(count2).to.equal(2);
+        }
     });
  });
  
