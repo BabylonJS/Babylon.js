@@ -92,8 +92,8 @@ export class GridMaterial extends PushMaterial {
     /**
      * Determines if the max line value will be used instead of the sum wherever grid lines intersect.
      */
-     @serialize()
-     public useMaxLine = false;
+    @serialize()
+    public useMaxLine = false;
 
     @serializeAsTexture("opacityTexture")
     private _opacityTexture: BaseTexture;
@@ -150,7 +150,7 @@ export class GridMaterial extends PushMaterial {
             defines.markAsUnprocessed();
         }
 
-        if (defines.MAX_LINE != this.useMaxLine) {
+        if (defines.MAX_LINE !== this.useMaxLine) {
             defines.MAX_LINE = !defines.MAX_LINE;
             defines.markAsUnprocessed();
         }
