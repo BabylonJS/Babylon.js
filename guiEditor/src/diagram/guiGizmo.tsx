@@ -151,13 +151,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scene.getTransformMatrix(),
                     camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
 
-                scalePoint.style.left = finalResult.x + "px";
-                scalePoint.style.top = finalResult.y + "px";
 
-                //scalePoint.style.display = finalResult.x < 0 || finalResult.y < 0 ? "none" : "flex" ;
+                //scalePoint.style.display = finalResult.x < 0 || finalResult.y < 0 ? "none" : "flex";
+                if (scalePoint.style.display === "flex") {
+                    scalePoint.style.left = finalResult.x + "px";
+                    scalePoint.style.top = finalResult.y + "px";
 
-                const rotate = this.getRotation(node) * (180 / Math.PI);
-                scalePoint.style.transform = 'translate(-50%, -50%) rotate(' + rotate + 'deg)';
+                    const rotate = this.getRotation(node) * (180 / Math.PI);
+                    scalePoint.style.transform = 'translate(-50%, -50%) rotate(' + rotate + 'deg)';
+                }
                 ++index;
 
             });
@@ -262,11 +264,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) {
                 const index = (this._scalePointIndex + rotationIndex) % 4;
-                const invert = index === 0 || index === 3 ? -1 : 1;
+                console.log("even ", index);
                 const newWidth = dx * alignmentFactorX * lockX;
                 const newHieght = dy * alignmentFactorY * lockY;
                 const newLeft = dx * alignmentFactorX * offsetX[index] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
-                const newTop = dy * alignmentFactorY * offsetY[index] * lockY + (invert * dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+                const newTop = dy * alignmentFactorY * offsetY[index] * lockY - (dy * alignmentFactorY * lockY * pivotY * rotationOffset);
 
                 switch (index) {
                     case 0:
@@ -309,7 +311,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 const newHieght = dx * 2 * lockY;
                 const newLeft = dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
                 const newTop = dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX) - (dx * lockY * pivotY);
-
+                console.log("odd", (this._scalePointIndex + rotationIndex - 1) % 4);
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
                     case 0:
                         this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, -1, +1, -1);
