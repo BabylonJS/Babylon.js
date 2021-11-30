@@ -150,5 +150,56 @@
             expect(result).to.equal(42);
         });
     });
+
+    describe("#observable coroutines", () => {
+        it("should be able to run multiple coroutines in parallel", () => {
+            const observable = new BABYLON.Observable<void>();
+            let count1 = 0;
+            let count2 = 0;
+            observable.runCoroutineAsync(function* () {
+                while (true) {
+                    count1 += 1;
+                    yield;
+                }
+            }());
+            observable.notifyObservers();
+            observable.runCoroutineAsync(function* () {
+                while (true) {
+                    count2 += 1;
+                    yield;
+                }
+            }());
+            observable.notifyObservers();
+            observable.notifyObservers();
+
+            expect(count1).to.equal(3);
+            expect(count2).to.equal(2);
+        });
+
+        it("should be able to cancel all coroutines", () => {
+            const observable = new BABYLON.Observable<void>();
+            let count1 = 0;
+            let count2 = 0;
+            observable.runCoroutineAsync(function* () {
+                while (true) {
+                    count1 += 1;
+                    yield;
+                }
+            }());
+            observable.notifyObservers();
+            observable.runCoroutineAsync(function* () {
+                while (true) {
+                    count2 += 1;
+                    yield;
+                }
+            }());
+            observable.notifyObservers();
+            observable.cancelAllCoroutines();
+            observable.notifyObservers();
+            
+            expect(count1).to.equal(2);
+            expect(count2).to.equal(1);
+        });
+    });
  });
  
