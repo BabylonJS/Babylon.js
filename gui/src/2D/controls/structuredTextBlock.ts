@@ -688,10 +688,10 @@ export class StructuredTextBlock extends Control {
             frameOutlineColor: part.frameOutlineColor ?? this._frameOutlineColor ,
             frameCornerRadius: part.frameCornerRadius ?? this._frameCornerRadius,
 
-            fontFamily: part.fontFamily ?? this._style?.fontFamily ?? this._fontFamily ,
-            fontSize: '' + (part.fontSize ?? this._style?.fontSize ?? this._fontSize) ,
-            fontStyle: part.fontStyle ?? this._style?.fontStyle ?? this._fontStyle ,
-            fontWeight: part.fontWeight ?? this._style?.fontWeight ?? this._fontWeight
+            fontFamily: part.fontFamily ?? this.style?.fontFamily ?? this.fontFamily ,
+            fontSize: '' + (part.fontSize ?? this.style?.fontSize ?? this.fontSize) ,
+            fontStyle: part.fontStyle ?? this.style?.fontStyle ?? this.fontStyle ,
+            fontWeight: part.fontWeight ?? this.style?.fontWeight ?? this.fontWeight
         };
     }
 
@@ -808,7 +808,6 @@ export class StructuredTextBlock extends Control {
             this._contentHeight += line.metrics.height;
             if (line.metrics.width > this._contentWidth) { this._contentWidth = line.metrics.width; }
             let x = 0;
-            //console.warn("line metrics",line.metrics.width,line,width);
 
             switch (this._textHorizontalAlignment) {
                 case Control.HORIZONTAL_ALIGNMENT_LEFT:
@@ -1283,7 +1282,6 @@ export class StructuredTextBlock extends Control {
     /** @hidden */
     public _onWheelScroll(deltaX?: number, deltaY?: number): void {
         if (! this._isEnabled || ! this._scrollable) { return; }
-        console.warn("delta:",deltaX,deltaY);
         if (deltaX) { this.scrollX -= Math.round(Math.sign(deltaX) * 0.125 * this._currentMeasure.width); }
         if (deltaY) { this.scrollY -= Math.round(Math.sign(deltaY) * 0.125 * this._currentMeasure.height); }
     }
@@ -1293,4 +1291,5 @@ export class StructuredTextBlock extends Control {
         this.onTextChangedObservable.clear();
     }
 }
+
 RegisterClass("BABYLON.GUI.StructuredTextBlock", StructuredTextBlock);

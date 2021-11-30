@@ -37,11 +37,11 @@ export class Control {
     public parent: Nullable<Container>;
     /** @hidden */
     public _currentMeasure = Measure.Empty();
-    protected _fontFamily = "Arial";
-    protected _fontStyle = "";
-    protected _fontWeight = "";
-    protected _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
-    protected _font: string;
+    private _fontFamily = "Arial";
+    private _fontStyle = "";
+    private _fontWeight = "";
+    private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
+    private _font: string;
     /** @hidden */
     public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
     /** @hidden */
@@ -49,7 +49,7 @@ export class Control {
     /** @hidden */
     protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
-    protected _style: Nullable<Style> = null;
+    private _style: Nullable<Style> = null;
     private _styleObserver: Nullable<Observer<Style>>;
     /** @hidden */
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
