@@ -139,7 +139,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 res.z -= (size.height / 2) - tempMeasure.height / 2;
                 res.z *= -1;
 
-                if (this._scalePointIndex != index || (center && !pivot)) { //need to remove for center center alignment
+                if (this._scalePointIndex != index || (center && !pivot && node.typeName != "ColorPicker") ) { //need to remove for center center alignment
                     this._previousPositions[index].x = res.x;
                     this._previousPositions[index].y = res.z;
                 }
@@ -191,7 +191,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.left = i * 100 + 'px';
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
-            scalePoint.addEventListener("pointerdown", () => { this._setMousePosition(i) });
+            scalePoint.addEventListener("pointerdown", () => { this._setMousePosition(i) ;});
             scalePoint.addEventListener("pointerup", this._onUp);
             this.scalePoints.push(scalePoint);
             this._previousPositions.push(new Vector2(0, 0));
@@ -366,7 +366,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     }
 
-    public onUp(evt: React.PointerEvent<HTMLElement>) {
+    public onUp() {
         this._mouseDown = false;
         this._scalePointIndex = -1;
     }

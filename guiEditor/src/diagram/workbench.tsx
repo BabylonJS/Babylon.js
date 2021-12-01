@@ -822,6 +822,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
             this._panning = false;
             removeObservers();
+            this.props.globalState.guiGizmo.onUp();
         }, PointerEventTypes.POINTERUP);
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
@@ -957,7 +958,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 }} onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => {
                     this.onUp(evt);
-                    this.props.globalState.guiGizmo.onUp(evt);
+                    this.props.globalState.guiGizmo.onUp();
                 }}
                 ref={this._rootContainer}>
 
