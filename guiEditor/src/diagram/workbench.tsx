@@ -386,10 +386,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (this._outlines) {
                 node.isHighlighted = true;
                 node.highlightLineWidth = 5;
-               // node.highlightLineWidth = value ? 10 : 5;
             } else {
-                node.isHighlighted = false;
-                node.highlightLineWidth = 5 //10;
+                node.isHighlighted = value && node.typeName === "Grid";
+                node.highlightLineWidth = 5
             }
         });
         this.updateHitTestForSelection(value);

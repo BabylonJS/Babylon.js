@@ -215,29 +215,27 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             let dx = newPosition.x - this._previousPositions[this._scalePointIndex].x;
             let dy = newPosition.z - this._previousPositions[this._scalePointIndex].y;
-            let alignmentFactorX = node.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER ? 2 : 1;
-            let alignmentFactorY = node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER ? 2 : 1;
-            let offsetX = [0, 0, 0, 0];
-            let offsetY = [0, 0, 0, 0]
-            
-            //node.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+
+            let offsetX = [1, 1, 1, 1];
+            let offsetY = [1, 1, 1, 1]
+            const alignmentFactor = -2;
             switch (node.horizontalAlignment) {
                 case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                    offsetX = [-1, -1, 0, 0];
+                    offsetX = [-alignmentFactor, -alignmentFactor, 0, 0];
                     break;
                 case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                    offsetX = [0, 0, 1, 1];
+                    offsetX = [0, 0, -alignmentFactor, -alignmentFactor];
                     break;
             }
             switch (node.verticalAlignment) {
                 case Control.VERTICAL_ALIGNMENT_TOP:
-                    offsetY = [0, -1, -1, 0];
+                    offsetY = [0, -alignmentFactor, -alignmentFactor, 0];
                     break;
                 case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                    offsetY = [1, 0, 0, 1];
+                    offsetY = [-alignmentFactor, 0, 0, -alignmentFactor];
                     break;
             }
-
+        
             let pivotX = (node.transformCenterX - 0.5) * 2;
             let pivotY = (node.transformCenterY - 0.5) * 2;
 
@@ -261,22 +259,23 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
             let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) {
+
                 const index = (this._scalePointIndex + rotationIndex) % 4;
                 console.log("even ", index);
-                const newWidth = dx * alignmentFactorX * lockX;
-                const newHieght = dy * alignmentFactorY * lockY;
-                const newLeft = dx * alignmentFactorX * offsetX[index] * lockX - (dx * alignmentFactorX * lockX * pivotX * rotationOffset);
-                const newTop = dy * alignmentFactorY * offsetY[index] * lockY - (dy * alignmentFactorY * lockY * pivotY * rotationOffset);
+                const newWidth = dx *  lockX ;
+                const newHieght = dy * lockY ;
+                const newLeft =  newWidth /2 * offsetX[index] - (newWidth * pivotX * rotationOffset);
+                const newTop = newHieght /2 *  offsetY[index] - (newHieght * pivotY * rotationOffset);
 
                 switch (index) {
                     case 0:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, -1, -1, -1);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, -1, 1, -1);
                         break;
                     case 1:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, 1, -1, 1);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, 1, 1, -1);
                         break;
                     case 2:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, 1, 1, 1);
+                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, 1, 1, -1);
                         break;
                     case 3:
                         this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, -1, 1, -1);
@@ -288,7 +287,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             else {
 
                 const invert = rotationIndex === 1 ? -1 : 1;
-                switch (node.horizontalAlignment) {
+                /*switch (node.horizontalAlignment) {
                     case Control.HORIZONTAL_ALIGNMENT_LEFT:
                         offsetX = [-1, -1, 0, 0];
                         break;
@@ -303,13 +302,13 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     case Control.VERTICAL_ALIGNMENT_BOTTOM:
                         offsetY = [1, 0, 0, -1];
                         break;
-                }
+                }*/
                 //#3FTIKL
 
                 let newWidth = dy * 2 * lockX;
                 const newHieght = dx * 2 * lockY;
-                const newLeft = dy * alignmentFactorX * offsetX[0] * lockX - (invert* dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
-                const newTop = dx * alignmentFactorY * offsetY[0] * lockY - (invert *dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+                const newLeft = dy * offsetX[0] * lockX - (invert* dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+                const newTop = dx * offsetY[0] * lockY - (invert *dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
                 
                 console.log("odd", (this._scalePointIndex + rotationIndex - 1) % 4);
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
@@ -337,7 +336,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
             this._previousPositions[this._scalePointIndex].y = newPosition.z;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-           // node.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
             this.updateGizmo();
 
         }
@@ -347,14 +345,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         node.widthInPixels += w * plusW;
         node.heightInPixels += h * plusH;
 
-        if (node.widthInPixels < 0) {
+        if (node.widthInPixels <= 0) {
             node.widthInPixels = 0;
         }
         else {
             node.leftInPixels += l * plusL;
         }
 
-        if (node.heightInPixels < 0) {
+        if (node.heightInPixels <= 0) {
             node.heightInPixels = 0;
         }
         else {
