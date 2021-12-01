@@ -360,6 +360,10 @@ declare module BABYLON {
          * Determine RBG output is premultiplied by alpha value.
          */
         preMultiplyAlpha: boolean;
+        /**
+         * Determines if the max line value will be used instead of the sum wherever grid lines intersect.
+         */
+        useMaxLine: boolean;
         private _opacityTexture;
         opacityTexture: BABYLON.BaseTexture;
         private _gridControl;
