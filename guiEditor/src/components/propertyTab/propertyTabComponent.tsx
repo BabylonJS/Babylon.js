@@ -169,6 +169,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
         } catch (error) {
             this.props.globalState.hostWindow.alert("Unable to save your GUI");
+            Tools.Error("Unable to save your GUI");
         }
     };
 
