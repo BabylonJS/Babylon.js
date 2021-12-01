@@ -17,6 +17,9 @@ $buttonHeight: 30px;
         color: #2e3f47;
         outline: 2px #2e3f47;
         margin: 5px;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
     }
 
     #performance-viewer-graph {
@@ -27,11 +30,40 @@ $buttonHeight: 30px;
         grid-area: sidebar;
         display: flex;
         flex-direction: column;
+
+        .header {
+            color: white;
+            display: inline-flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 5 0;
+        }
+
+        //darkest color
+        .version-header {
+            background-color: darkslategray;
+        }
+
+        // mid-dark color
+        .category-header {
+            background-color: royalblue;
+        }
         
+        //darker color
+        .sidebar-item:nth-child(odd) {
+            background-color: lightsteelblue;
+        }
+
+        // lighter color
+        .sidebar-item:nth-child(even) {
+            background-color: lightgrey;
+        }
+
         .sidebar-item {
             display: inline-flex;
             flex-direction: row;    
             width: 100%;
+            align-items: center;
             .sidebar-item-label {
                 width: 100%;
             }
@@ -63,6 +95,16 @@ $buttonHeight: 30px;
                         width: 200px;
                     }
                 }                
+            }
+        }
+
+        .checkBoxLine {
+
+            .checkBox {
+
+                .hidden { 
+                    display: none; 
+                }               
             }
         }
     }

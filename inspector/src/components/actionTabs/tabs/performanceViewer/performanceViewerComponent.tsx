@@ -23,14 +23,19 @@ interface IPerformanceViewerComponentProps {
 const initialWindowSize = { width: 1024, height: 512 };
 
 // Note this should be false when committed until the feature is fully working.
-const isEnabled = false;
+const isEnabled = true;
+
+export enum IPerfMetadataCategory {
+    Count = "Count",
+    FrameSteps = "Frame Steps Duration"
+ }
 
 // list of strategies to add to perf graph automatically.
 const defaultStrategies = [
-    PerfCollectionStrategy.GpuFrameTimeStrategy(),
-    PerfCollectionStrategy.FpsStrategy(),
-    PerfCollectionStrategy.DrawCallsStrategy(),
-    PerfCollectionStrategy.ActiveMeshesStrategy(),
+    {strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps},
+    {strategyCallback: PerfCollectionStrategy.FpsStrategy()},
+    {strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: IPerfMetadataCategory.Count},
+    {strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count},
 ];
 
 enum RecordingState {
