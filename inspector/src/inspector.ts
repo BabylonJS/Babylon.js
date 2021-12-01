@@ -45,6 +45,9 @@ export class Inspector {
     private static _OpenedPane = 0;
     private static _OnBeforeRenderObserver: Nullable<Observer<Scene>>;
 
+    private static _OnSceneExplorerClosedObserver: Nullable<Observer<void>>;
+    private static _OnActionTabsClosedObserver: Nullable<Observer<void>>;
+
     public static OnSelectionChangeObservable = new Observable<any>();
     public static OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
     private static _GlobalState = new GlobalState();
@@ -591,9 +594,6 @@ export class Inspector {
         }
     }
 
-    private static _OnSceneExplorerClosedObserver: Nullable<Observer<void>>;
-    private static _OnActionTabsClosedObserver: Nullable<Observer<void>>;
-
     public static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement) {
         if (this._PersistentPopupHost) {
             this._ClosePersistentPopup();
@@ -620,9 +620,11 @@ export class Inspector {
         }
         if (this._OnSceneExplorerClosedObserver) {
             this._GlobalState.onSceneExplorerClosedObservable.remove(this._OnSceneExplorerClosedObserver);
+            this._OnSceneExplorerClosedObserver = null;
         }
         if (this._OnActionTabsClosedObserver) {
             this._GlobalState.onActionTabsClosedObservable.remove(this._OnActionTabsClosedObserver);
+            this._OnActionTabsClosedObserver = null;
         }
     }
 }

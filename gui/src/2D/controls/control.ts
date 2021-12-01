@@ -1528,6 +1528,10 @@ export class Control {
             this._fontSet = true;
         }
 
+        if (this.host.useSmallestIdeal && !this._font) {
+            this._fontSet = true;
+        }
+
         if (this._fontSet) {
             this._prepareFont();
             this._fontSet = false;
