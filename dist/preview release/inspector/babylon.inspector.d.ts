@@ -639,6 +639,10 @@ declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
         scene: BABYLON.Scene;
     }
+    export enum IPerfMetadataCategory {
+        Count = "Count",
+        FrameSteps = "Frame Steps Duration"
+    }
     export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
 declare module INSPECTOR {

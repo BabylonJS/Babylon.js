@@ -4880,11 +4880,11 @@ declare module BABYLON {
     /** @hidden */
     export type CoroutineStep<T> = IteratorResult<void, T>;
     /** @hidden */
-    export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+    export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
     /** @hidden */
-    export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void): void;
+    export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void): void;
     /** @hidden */
-    export function createYieldingScheduler<T>(yieldAfterMS?: number): (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+    export function createYieldingScheduler<T>(yieldAfterMS?: number): (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
     /** @hidden */
     export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal): void;
     /** @hidden */
@@ -46271,6 +46271,10 @@ declare module BABYLON {
          */
         onAnimationGroupPlayObservable: Observable<AnimationGroup>;
         /**
+         * Gets or sets an object used to store user defined information for the node
+         */
+        metadata: any;
+        /**
          * Gets the first frame
          */
         get from(): number;
@@ -46519,6 +46523,10 @@ declare module BABYLON {
          * Specifies if data should be hidden, falsey by default.
          */
         hidden?: boolean;
+        /**
+         * Specifies the category of the data
+         */
+        category?: string;
     }
     /**
      * Defines the shape of a custom user registered event.
@@ -46743,6 +46751,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Callback strategy and optional category for data collection
+     */
+    interface IPerformanceViewerStrategyParameter {
+        /**
+         * The strategy for collecting data. Available strategies are located on the PerfCollectionStrategy class
+         */
+        strategyCallback: PerfStrategyInitialization;
+        /**
+         * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
+         */
+        category?: string;
+    }
+    /**
      * The collector class handles the collection and storage of data into the appropriate array.
      * The collector also handles notifying any observers of any updates.
      */
@@ -46780,16 +46801,17 @@ declare module BABYLON {
          * @param _scene the scene to collect on.
          * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
          */
-        constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
+        constructor(_scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]);
         /**
          * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
          * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
          * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
          * @param name The name of the event to register
          * @param forceUpdate if the code should force add an event, and replace the last one.
+         * @param category the category for that event
          * @returns The event registered, used in sendEvent
          */
-        registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined;
+        registerEvent(name: string, forceUpdate?: boolean, category?: string): IPerfCustomEvent | undefined;
         /**
          * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
          * @param event the event to handle an occurence for
@@ -46803,7 +46825,7 @@ declare module BABYLON {
          * This method adds additional collection strategies for data collection purposes.
          * @param strategyCallbacks the list of data to collect with callbacks.
          */
-        addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]): void;
+        addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]): void;
         /**
          * Gets a 6 character hexcode representing the colour from a passed in string.
          * @param id the string to get a hex code for.
@@ -47316,6 +47338,10 @@ declare module BABYLON {
          * Gets or sets a predicate used to select candidate meshes for a pointer move event
          */
         pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
+        /**
+         * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
+         */
+        skipPointerMovePicking: boolean;
         /** Callback called when a pointer move is detected */
         onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Callback called when a pointer down is detected  */
@@ -87417,19 +87443,19 @@ declare module BABYLON {
          * @param taskName defines the name of the new task
          * @param meshesNames defines the name of meshes to load
          * @param rootUrl defines the root url to use to locate files
-         * @param sceneFilename defines the filename of the scene file
+         * @param sceneFilename defines the filename of the scene file or the File itself
          * @returns a new ContainerAssetTask object
          */
-        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): ContainerAssetTask;
+        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): ContainerAssetTask;
         /**
          * Add a MeshAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param meshesNames defines the name of meshes to load
          * @param rootUrl defines the root url to use to locate files
-         * @param sceneFilename defines the filename of the scene file
+         * @param sceneFilename defines the filename of the scene file or the File itself
          * @returns a new MeshAssetTask object
          */
-        addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): MeshAssetTask;
+        addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): MeshAssetTask;
         /**
          * Add a TextFileAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
@@ -87660,13 +87686,13 @@ declare module BABYLON {
 declare module BABYLON {
         interface Observable<T> {
             /**
-             * Internal observable based coroutine scheduler instance.
+             * Internal observable-based coroutine scheduler instance.
              */
-            coroutineScheduler: CoroutineScheduler<void> | undefined;
+            _coroutineScheduler?: CoroutineScheduler<void>;
             /**
-             * Internal AbortController for in flight coroutines.
+             * Internal disposal method for observable-bsaed coroutine scheduler instance.
              */
-            coroutineAbortController: AbortController | undefined;
+            _coroutineSchedulerDispose?: () => void;
             /**
              * Runs a coroutine asynchronously on this observable
              * @param coroutine the iterator resulting from having started the coroutine
