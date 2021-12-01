@@ -33,24 +33,24 @@ export type CoroutineStep<T> = IteratorResult<void, T>;
 
 // A CoroutineScheduler<T> is responsible for scheduling the call to Coroutine<T>.next and invokes the success or error callback after next is called.
 /** @hidden */
-export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
 
 // The inline scheduler simply steps the coroutine synchronously. This is useful for running a coroutine synchronously, and also as a helper function for other schedulers.
 /** @hidden */
-export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
+export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
     try {
         const step = coroutine.next();
 
         if (step.done) {
-            onSuccess(step);
+            onStep(step);
         } else if (!step.value) {
             // NOTE: The properties of step have been narrowed, but the type of step itself is not narrowed, so the cast below is the most type safe way to deal with this without instantiating a new object to hold the values.
-            onSuccess(step as {done: typeof step.done, value: typeof step.value});
+            onStep(step as {done: typeof step.done, value: typeof step.value});
         } else {
             step.value.then(
                 () => {
                     step.value = undefined;
-                    onSuccess(step as {done: typeof step.done, value: typeof step.value});
+                    onStep(step as {done: typeof step.done, value: typeof step.value});
                 },
                 (error) => onError(error),
             );
@@ -65,18 +65,18 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (ste
 /** @hidden */
 export function createYieldingScheduler<T>(yieldAfterMS = 25) {
     let startTime: number | undefined;
-    return (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
+    return (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         const currentTime = performance.now();
 
         if (startTime === undefined || currentTime - startTime > yieldAfterMS) {
             // If this is the first coroutine step, or if the time interval has elapsed, record a new start time, and schedule the coroutine step to happen later, effectively yielding control of the execution context.
             startTime = currentTime;
             setTimeout(() => {
-                inlineScheduler(coroutine, onSuccess, onError);
+                inlineScheduler(coroutine, onStep, onError);
             }, 0);
         } else {
             // Otherwise it is not time to yield yet, so step the coroutine synchronously.
-            inlineScheduler(coroutine, onSuccess, onError);
+            inlineScheduler(coroutine, onStep, onError);
         }
     };
 }

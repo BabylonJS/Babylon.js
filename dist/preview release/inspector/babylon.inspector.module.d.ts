@@ -690,6 +690,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer
     interface IPerformanceViewerComponentProps {
         scene: Scene;
     }
+    export enum IPerfMetadataCategory {
+        Count = "Count",
+        FrameSteps = "Frame Steps Duration"
+    }
     export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/statisticsTabComponent" {
@@ -5602,6 +5606,10 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
         scene: BABYLON.Scene;
+    }
+    export enum IPerfMetadataCategory {
+        Count = "Count",
+        FrameSteps = "Frame Steps Duration"
     }
     export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
