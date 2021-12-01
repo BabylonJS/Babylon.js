@@ -183,6 +183,12 @@ export class StackPanel extends Container {
             }
         }
 
+        if (this._isVertical) {
+            stackHeight -= this._childSpacing;
+        } else {
+            stackWidth -= this._childSpacing;
+        }
+
         stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
         stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
 
