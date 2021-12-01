@@ -668,7 +668,7 @@ export class InputManager {
                 this._processPointerMove(new PickingInfo(), evt as IPointerEvent);
                 return;
             }
-            
+
             if (!scene.pointerMovePredicate) {
                 scene.pointerMovePredicate = (mesh: AbstractMesh): boolean =>
                     mesh.isPickable &&
