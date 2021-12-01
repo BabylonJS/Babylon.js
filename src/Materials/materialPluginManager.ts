@@ -128,7 +128,7 @@ export class MaterialPluginManager {
     }
 
     protected _handlePluginEvent(id: number, info: EventInfo): void {
-        switch(id) {
+        switch (id) {
             case MaterialEvent.IsReadyForSubMesh: {
                 const eventData = info as EventInfoIsReadyForSubMesh;
 

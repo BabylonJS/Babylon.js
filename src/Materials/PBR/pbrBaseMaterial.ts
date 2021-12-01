@@ -2281,7 +2281,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             //super.bindForSubMesh(world, mesh, subMesh);
             this._eventInfo.subMesh = subMesh;
             this._callbackPluginEvent(MaterialEvent.BindForSubMesh, this._eventInfo);
-    
+
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
