@@ -1528,7 +1528,7 @@ export class Control {
             this._fontSet = true;
         }
 
-        if (this.host.useSmallestIdeal && !this._font) {
+        if (this._host && this._host.useSmallestIdeal && !this._font) {
             this._fontSet = true;
         }
 
