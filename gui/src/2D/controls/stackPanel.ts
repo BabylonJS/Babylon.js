@@ -40,7 +40,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * Gets or sets the margin (in pixel) between each child.
+     * Gets or sets the spacing (in pixels) between each child.
      */
      @serialize()
      public get spacing(): number {
