@@ -219,7 +219,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let alignmentFactorY = node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER ? 2 : 1;
             let offsetX = [0, 0, 0, 0];
             let offsetY = [0, 0, 0, 0]
-
+            
+            //node.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             switch (node.horizontalAlignment) {
                 case Control.HORIZONTAL_ALIGNMENT_LEFT:
                     offsetX = [-1, -1, 0, 0];
@@ -307,8 +308,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 let newWidth = dy * 2 * lockX;
                 const newHieght = dx * 2 * lockY;
-                const newLeft = dy * alignmentFactorX * offsetX[0] * lockX - (dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
-                const newTop = dx * alignmentFactorY * offsetY[0] * lockY - (dy * lockX * pivotX) - (dx * lockY * pivotY);
+                const newLeft = dy * alignmentFactorX * offsetX[0] * lockX - (invert* dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+                const newTop = dx * alignmentFactorY * offsetY[0] * lockY - (invert *dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
                 
                 console.log("odd", (this._scalePointIndex + rotationIndex - 1) % 4);
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
@@ -336,6 +337,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             this._previousPositions[this._scalePointIndex].x = newPosition.x;
             this._previousPositions[this._scalePointIndex].y = newPosition.z;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+           // node.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
             this.updateGizmo();
 
         }

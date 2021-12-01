@@ -385,10 +385,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._selectedGuiNodes.forEach((node) => {
             if (this._outlines) {
                 node.isHighlighted = true;
-                node.highlightLineWidth = value ? 10 : 5;
+                node.highlightLineWidth = 5;
+               // node.highlightLineWidth = value ? 10 : 5;
             } else {
-                node.isHighlighted = value;
-                node.highlightLineWidth = 10;
+                node.isHighlighted = false;
+                node.highlightLineWidth = 5 //10;
             }
         });
         this.updateHitTestForSelection(value);
