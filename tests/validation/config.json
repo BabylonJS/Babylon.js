@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Merge Meshes",
+            "playgroundId": "#484RHA#0",
+            "referenceImage": "mergemeshes.png"
+        },
+        {
             "title": "Texture cache",
             "playgroundId": "#3TFH5I#0",
             "referenceImage": "texture cache.png",
@@ -151,14 +156,14 @@
         {
             "title": "GUI Slate",
             "renderCount": 60,
-            "playgroundId": "#2YZFA0#211",
+            "playgroundId": "#2YZFA0#277",
             "referenceImage": "guiSlate.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#243",
+            "playgroundId":"#2YZFA0#276",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
         },

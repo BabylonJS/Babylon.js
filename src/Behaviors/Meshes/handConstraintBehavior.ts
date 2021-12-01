@@ -69,6 +69,12 @@ export enum HandConstraintVisibility {
     PALM_AND_GAZE,
 }
 
+type HandPoseInfo = {
+    position: Vector3;
+    quaternion: Quaternion;
+    id: string;
+};
+
 /**
  * Hand constraint behavior that makes the attached `TransformNode` follow hands in XR experiences.
  * @since 5.0.0
@@ -155,7 +161,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         this._node.setEnabled(false);
     }
 
-    private _getHandPose() {
+    private _getHandPose(): Nullable<HandPoseInfo> {
         if (!this._handTracking) {
             return null;
         }
@@ -174,6 +180,8 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             const wrist = hand.getJointMesh(XRHandJoint.WRIST);
 
             if (wrist && middleMetacarpal && pinkyMetacarpal) {
+                let handPose: HandPoseInfo = { position: middleMetacarpal.absolutePosition, quaternion: new Quaternion(), id: hand.xrController.uniqueId };
+
                 // palm forward
                 const up = TmpVectors.Vector3[0];
                 const forward = TmpVectors.Vector3[1];
@@ -185,13 +193,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 Vector3.CrossToRef(up, forward, forward);
                 Vector3.CrossToRef(forward, up, left);
 
-                const quaternion = Quaternion.FromLookDirectionLH(forward, up);
+                Quaternion.FromLookDirectionLHToRef(forward, up, handPose.quaternion);
 
-                return {
-                    quaternion,
-                    position: middleMetacarpal.absolutePosition,
-                    controllerId: hand.xrController.uniqueId
-                };
+                return handPose;
             }
         }
 
@@ -264,23 +268,22 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 Vector3.SmoothToRef(this._node.position, targetPosition, elapsed, this.lerpTime, this._node.position);
                 Quaternion.SmoothToRef(this._node.rotationQuaternion!, targetRotation, elapsed, this.lerpTime, this._node.rotationQuaternion!);
 
-                this._node.reservedDataStore.nearInteraction.excludedControllerId = pose.controllerId;
+                this._node.reservedDataStore.nearInteraction.excludedControllerId = pose.id;
             }
 
-            this._setVisibility();
+            this._setVisibility(pose);
 
             lastTick = Date.now();
         });
     }
 
-    private _setVisibility() {
+    private _setVisibility(pose: Nullable<HandPoseInfo>) {
         let palmVisible = true;
         let gazeVisible = true;
         const camera = this._scene.activeCamera;
 
         if (camera) {
             const cameraForward = camera.getForwardRay();
-            const pose = this._getHandPose();
 
             if (this.handConstraintVisibility === HandConstraintVisibility.GAZE_FOCUS ||
                 this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
@@ -341,7 +344,14 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      * @param xr xr experience
      */
     public linkToXRExperience(xr: WebXRExperienceHelper) {
-        this._eyeTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.EYE_TRACKING) as WebXREyeTracking;
-        this._handTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
+        try {
+            this._eyeTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.EYE_TRACKING) as WebXREyeTracking;
+        } catch {}
+
+        try {
+            this._handTracking = xr.featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
+        } catch {
+            alert("Hand tracking must be enabled for the Hand Menu to work");
+        }
     }
 }

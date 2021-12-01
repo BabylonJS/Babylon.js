@@ -18,13 +18,13 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+
+        this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("worldViewProjection", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("x", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("y", NodeMaterialBlockConnectionPointTypes.Float);
 
-        this.inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this.inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 

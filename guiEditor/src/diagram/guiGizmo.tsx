@@ -117,7 +117,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 Matrix2D.TranslationToRef(-ox, -oy, translateTo);
                 Matrix2D.RotationToRef(node.rotation, m2d);
                 let parent = node.parent;
-                while (parent) { //#S69ESC
+                while (parent) { 
                     let parentRot = parent.rotation;
                     Matrix2D.ScalingToRef(parent.scaleX, parent.scaleY, s2dP);
                     Matrix2D.RotationToRef(parentRot, m2dP);
