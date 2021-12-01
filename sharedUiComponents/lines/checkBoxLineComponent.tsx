@@ -98,8 +98,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                         id={"checkbox" + this._uniqueId}
                         className="cbx hidden"
                         checked={this.state.isSelected}
-                        // onChange={() => this.onChange()}
-                        // disabled={!!this.props.disabled}
+                        readOnly
                     />
                     <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${!!this.props.disabled ? " disabled" : ""}`}></label>
                     {this.props.faIcons && <FontAwesomeIcon icon={this.state.isSelected ? this.props.faIcons.faIconEnabled : this.props.faIcons.faIconDisabled}/>}
