@@ -31,80 +31,93 @@ $buttonHeight: 30px;
         display: flex;
         flex-direction: column;
 
-        .header {
-            color: white;
-            display: inline-flex;
-            justify-content: space-between;
+        border: 2px solid gray;
+
+        .sidebar-item {
+            display: grid;
             width: 100%;
-            padding: 5 0;
+            
+            align-items: center;
+            padding: 5px 0px;
         }
 
-        //darkest color
+        .header {
+            color: white;
+            grid-template-columns: 10px 9fr 1fr 10px;
+
+            .category {
+                grid-column: 2;
+            }
+
+            .value {
+                grid-column: 3;
+            }
+        }
+        
         .version-header {
             background-color: darkslategray;
         }
-
+        
         // mid-dark color
         .category-header {
             background-color: royalblue;
         }
-        
+
+        .measure {
+            color: black;
+            grid-template-columns: 10px 6fr 1fr;
+            .category {
+                display: grid;
+                grid-template-columns: 20px 20px 1fr;
+                grid-column: 2;
+            }
+
+            .value {
+                grid-column: 3;
+            }
+        }
+
         //darker color
-        .sidebar-item:nth-child(odd) {
+        .measure:nth-child(odd) {
             background-color: lightsteelblue;
         }
-
+        
         // lighter color
-        .sidebar-item:nth-child(even) {
+        .measure:nth-child(even) {
             background-color: lightgrey;
         }
-
-        .sidebar-item {
-            display: inline-flex;
-            flex-direction: row;    
-            width: 100%;
-            align-items: center;
-            .sidebar-item-label {
-                width: 100%;
-            }
-            .color-picker {
-                height: calc(100% - 8px);
-                margin: 4px;
-                width: 100%;
-        
-                .color-rect {
-                    height: calc(100% - 4px);
-                    border: 2px white solid;
-                    cursor: pointer;
-                    min-height: 18px;
-                }
-        
-                .color-picker-cover {
-                    position: fixed;
-                    top: 0px;
-                    right: 0px;
-                    bottom: 0px;
-                    left: 0px;
-                    z-index: 100;
-                }
-        
-                .color-picker-float {
-                    position: absolute;
-        
-                    .color-picker-container {
-                        width: 200px;
-                    }
-                }                
-            }
-        }
-
+    
         .checkBoxLine {
-
+            color: white;
             .checkBox {
-
                 .hidden { 
                     display: none; 
                 }               
+            }
+        }
+        
+        .color-picker {
+            position: relative;
+            transform: rotate(0deg);
+
+            .color-picker-cover {
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                left: 0px;
+                z-index: 100;
+                width: 100vw;
+                height: 100vh;
+            }
+    
+            .color-picker-float {
+                position: fixed;
+    
+                .color-picker-container {
+                    z-index: 101;
+                    width: 200px;
+                }
             }
         }
     }
