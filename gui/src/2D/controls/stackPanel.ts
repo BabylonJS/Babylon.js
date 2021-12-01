@@ -16,7 +16,7 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
-    private _childSpacing = 0;
+    private _spacing = 0;
 
     /**
      * Gets or sets a boolean indicating that layout warnings should be ignored
@@ -43,16 +43,16 @@ export class StackPanel extends Container {
      * Gets or sets the margin (in pixel) between each child.
      */
      @serialize()
-     public get childSpacing(): number {
-         return this._childSpacing;
+     public get spacing(): number {
+         return this._spacing;
      }
  
-     public set childSpacing(value: number) {
-         if (this._childSpacing === value) {
+     public set spacing(value: number) {
+         if (this._spacing === value) {
              return;
          }
  
-         this._childSpacing = value;
+         this._spacing = value;
          this._markAsDirty();
      }
 
@@ -164,7 +164,7 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }
                 } else {
-                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels + this._childSpacing;
+                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels + this._spacing;
                 }
             } else {
                 if (child.left !== stackWidth + "px") {
@@ -178,15 +178,15 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
                 } else {
-                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels + this._childSpacing;
+                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels + this._spacing;
                 }
             }
         }
 
         if (this._isVertical) {
-            stackHeight -= this._childSpacing;
+            stackHeight -= this._spacing;
         } else {
-            stackWidth -= this._childSpacing;
+            stackWidth -= this._spacing;
         }
 
         stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
