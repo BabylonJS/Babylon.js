@@ -16,9 +16,10 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
+    private _childSpacing = 0;
 
     /**
-     * Gets or sets a boolean indicating that layou warnings should be ignored
+     * Gets or sets a boolean indicating that layout warnings should be ignored
      */
     @serialize()
     public ignoreLayoutWarnings = false;
@@ -37,6 +38,23 @@ export class StackPanel extends Container {
         this._isVertical = value;
         this._markAsDirty();
     }
+
+    /**
+     * Gets or sets the margin (in pixel) between each child.
+     */
+     @serialize()
+     public get childSpacing(): number {
+         return this._childSpacing;
+     }
+ 
+     public set childSpacing(value: number) {
+         if (this._childSpacing === value) {
+             return;
+         }
+ 
+         this._childSpacing = value;
+         this._markAsDirty();
+     }
 
     /**
      * Gets or sets panel width.
@@ -146,7 +164,7 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }
                 } else {
-                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
+                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels + this._childSpacing;
                 }
             } else {
                 if (child.left !== stackWidth + "px") {
@@ -160,7 +178,7 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
                 } else {
-                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
+                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels + this._childSpacing;
                 }
             }
         }
