@@ -235,6 +235,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
         } else {
             texture.width = rootImage.width;
             texture.height = rootImage.height;
+            texture.generateMipMaps = transcodeResult.fileInfo.images[i].levels.length > 1;
 
             // Upload all mip levels in the file
             transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
