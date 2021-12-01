@@ -190,4 +190,7 @@ export class GlobalState {
             camera.reservedDataStore.cameraGizmo = null;
         }
     }
+
+    public onSceneExplorerClosedObservable = new Observable<void>();
+    public onActionTabsClosedObservable = new Observable<void>();
 }
