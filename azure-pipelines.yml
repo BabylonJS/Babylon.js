@@ -146,6 +146,10 @@ jobs:
     vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version available'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
