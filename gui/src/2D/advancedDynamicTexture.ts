@@ -846,7 +846,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
             }
 
-
             let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
