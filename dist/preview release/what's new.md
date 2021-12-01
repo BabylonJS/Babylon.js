@@ -60,6 +60,7 @@
 - Added the ability to load a GUI from the snippet server and project it onto a mesh ([PirateJC](https://github.com/piratejc))
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
+- Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
 
 ### Engine
 
@@ -100,6 +101,7 @@
 
 ### Materials
 
+- Added property `useMaxLine` to `GridMaterial`, which affects the brightness of line intersections. ([BlakeOne](https://github.com/BlakeOne))
 - Added an `OcclusionMaterial` to simplify depth-only rendering of geometry ([rgerd](https://github.com/rgerd))
 - PrePass can now be used in `RenderTargets` speeding up effects like SSAO2 or MotionBlur ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for morph targets to `ShaderMaterial` ([Popov72](https://github.com/Popov72))
@@ -164,6 +166,7 @@
 - Added `HandMenu`, a simple menu that uses `HandConstraintBehavior` ([CraigFeldspar](https://github.com/CraigFeldspar))
 - `VolumeBasedPanel`'s constructor now accepts a name parameter, similar to other controls ([rickfromwork](https://github.com/rickfromwork))
 - Added `loadLayoutAsync` in the `XmlLoader`. Now the layouts can be loaded asynchronously rather than providing a callback.
+- Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 
 ### Behaviors
 
@@ -211,6 +214,7 @@
 - New experimental walking locomotion feature for VR sessions ([syntheticmagus](https://github.com/syntheticmagus))
 - Updated `SixDofDragBehavior` to support XR motion controller specific rotation options when one is used, allowing for 1:1 mesh rotation with controllers ([rickfromwork](https://github.com/rickfromwork))
 - Allow customizing the selection and laser point meshes of the pointer selection feature ([#11487](https://github.com/BabylonJS/Babylon.js/issues/11487)) ([RaananW](https://github.com/RaananW))
+- Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 
 ### Gizmos
 
@@ -343,6 +347,7 @@
 - Fix issue with wrong definition of a returned BASIS format ([RaananW](https://github.com/RaananW))
 - Fix glTF exporter exports unused materials from excluded meshes ([daoshengmu](https://github.com/daoshengmu))
 - Fix glTFLoader 2.0 when dealing with glTF files that contain no meshes ([simonihmig](https://github.com/simonihmig))
+- Fix issue with setParent and meshes with a pivot ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

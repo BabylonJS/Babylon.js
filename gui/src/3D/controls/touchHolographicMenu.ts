@@ -30,7 +30,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     /**
      * Scale for the buttons added to the menu
      */
-    protected static MENU_BUTTON_SCALE: number = 0.32;
+    protected static MENU_BUTTON_SCALE: number = 1;
 
     /**
      * Gets or sets the margin size of the backplate in button size units.
@@ -107,18 +107,20 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     }
 
     private _updateMargins() {
-        this._currentMin!.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
-        this._currentMax!.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
-        const extendSize = this._currentMax!.subtract(this._currentMin!);
+        if (this._children.length > 0) {
+            this._currentMin!.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
+            this._currentMax!.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
+            const extendSize = this._currentMax!.subtract(this._currentMin!);
 
-        // Also add a % margin
-        this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateMargin;
-        this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateMargin;
-        this._backPlate.scaling.z = 0.001;
+            // Also add a % margin
+            this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateMargin;
+            this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateMargin;
+            this._backPlate.scaling.z = 0.001;
 
-        for (let i = 0; i < this._children.length; i++) {
-            this._children[i].position.subtractInPlace(this._currentMin!).subtractInPlace(extendSize.scale(0.5));
-            this._children[i].position.z -= 0.01;
+            for (let i = 0; i < this._children.length; i++) {
+                this._children[i].position.subtractInPlace(this._currentMin!).subtractInPlace(extendSize.scale(0.5));
+                this._children[i].position.z -= 0.01;
+            }
         }
 
         this._currentMin = null;

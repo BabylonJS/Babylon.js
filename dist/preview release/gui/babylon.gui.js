@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!************************************************************************************!*\
-  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \************************************************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1197,7 +1197,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     /** @hidden */
     AdvancedDynamicTexture.prototype._getGlobalViewport = function () {
         var size = this.getSize();
-        return this._fullscreenViewport.toGlobal(size.width, size.height);
+        var globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
+        var targetX = globalViewPort.width * (1 / this.rootContainer.scaleX);
+        var targetY = globalViewPort.height * (1 / this.rootContainer.scaleY);
+        globalViewPort.x += (globalViewPort.width - targetX) / 2;
+        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+        globalViewPort.width = targetX;
+        globalViewPort.height = targetY;
+        return globalViewPort;
     };
     /**
      * Get screen coordinates for a vector3
@@ -1712,18 +1719,26 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
      * @param scene defines the hosting scene
      * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+     * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling) {
+    AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling, adaptiveScaling) {
         if (foreground === void 0) { foreground = true; }
         if (scene === void 0) { scene = null; }
         if (sampling === void 0) { sampling = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].BILINEAR_SAMPLINGMODE; }
+        if (adaptiveScaling === void 0) { adaptiveScaling = false; }
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
-        var layer = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Layer"](name + "_layer", null, scene, !foreground);
+        var resultScene = result.getScene();
+        var layer = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Layer"](name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+        if (adaptiveScaling && resultScene) {
+            var newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            result._rootContainer.scaleX = newScale;
+            result._rootContainer.scaleY = newScale;
+        }
         // Attach
         result.attach();
         return result;
@@ -16832,6 +16847,8 @@ var Control3D = /** @class */ (function () {
         this._enterCount = -1;
         this._downPointerIds = {}; // Store number of pointer downs per ID, from near and far interactions
         this._isVisible = true;
+        /** @hidden */
+        this._isScaledByManager = false;
         /**
          * An event triggered when the pointer moves over the control
          */
@@ -16888,6 +16905,7 @@ var Control3D = /** @class */ (function () {
             if (!this._node) {
                 return;
             }
+            this._isScaledByManager = false;
             this._node.scaling = value;
         },
         enumerable: false,
@@ -17919,11 +17937,11 @@ var HolographicSlate = /** @class */ (function (_super) {
         /**
          * Dimensions of the slate
          */
-        _this.dimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.7, 0.4, 0.001);
+        _this.dimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](21.875, 12.5, 0.001);
         /**
          * Minimum dimensions of the slate
          */
-        _this.minDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.5, 0.2, 0.001);
+        _this.minDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](15.625, 6.25, 0.001);
         /**
          * Default dimensions of the slate
          */
@@ -17931,7 +17949,7 @@ var HolographicSlate = /** @class */ (function (_super) {
         /**
          * Dimensions of the backplate
          */
-        _this.backplateDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.7, 0.02, 0.001);
+        _this.backplateDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](21.875, 0.625, 0.001);
         /**
          * Margin between backplate and contentplate
          */
@@ -18106,8 +18124,8 @@ var HolographicSlate = /** @class */ (function (_super) {
         this._positionElements();
         this._followButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.FOLLOW_ICON_FILENAME;
         this._closeButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.CLOSE_ICON_FILENAME;
-        this._followButton.backMaterial.alpha = 0;
-        this._closeButton.backMaterial.alpha = 0;
+        this._followButton.isBackplateVisible = false;
+        this._closeButton.isBackplateVisible = false;
         this._followButton.onPointerClickObservable.add(function () {
             _this._defaultBehavior.followBehaviorEnabled = !_this._defaultBehavior.followBehaviorEnabled;
             if (_this._defaultBehavior.followBehaviorEnabled) {
@@ -18533,7 +18551,7 @@ var NearMenu = /** @class */ (function (_super) {
     };
     NearMenu.prototype._finalProcessing = function () {
         _super.prototype._finalProcessing.call(this);
-        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, 0);
+        this._pinButton.position.copyFromFloats((this._backPlate.scaling.x + _touchHolographicMenu__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicMenu"].MENU_BUTTON_SCALE) / 2, this._backPlate.scaling.y / 2, 0);
     };
     /**
      * Disposes the near menu
@@ -19920,16 +19938,18 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
         this._currentMax.maximizeInPlace(nodePosition);
     };
     TouchHolographicMenu.prototype._updateMargins = function () {
-        this._currentMin.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
-        this._currentMax.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
-        var extendSize = this._currentMax.subtract(this._currentMin);
-        // Also add a % margin
-        this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateMargin;
-        this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateMargin;
-        this._backPlate.scaling.z = 0.001;
-        for (var i = 0; i < this._children.length; i++) {
-            this._children[i].position.subtractInPlace(this._currentMin).subtractInPlace(extendSize.scale(0.5));
-            this._children[i].position.z -= 0.01;
+        if (this._children.length > 0) {
+            this._currentMin.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
+            this._currentMax.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
+            var extendSize = this._currentMax.subtract(this._currentMin);
+            // Also add a % margin
+            this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateMargin;
+            this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateMargin;
+            this._backPlate.scaling.z = 0.001;
+            for (var i = 0; i < this._children.length; i++) {
+                this._children[i].position.subtractInPlace(this._currentMin).subtractInPlace(extendSize.scale(0.5));
+                this._children[i].position.z -= 0.01;
+            }
         }
         this._currentMin = null;
         this._currentMax = null;
@@ -19976,7 +19996,7 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
     /**
      * Scale for the buttons added to the menu
      */
-    TouchHolographicMenu.MENU_BUTTON_SCALE = 0.32;
+    TouchHolographicMenu.MENU_BUTTON_SCALE = 1;
     return TouchHolographicMenu;
 }(_volumeBasedPanel__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]));
 
@@ -21000,6 +21020,7 @@ var GUI3DManager = /** @class */ (function () {
      */
     function GUI3DManager(scene) {
         var _this = this;
+        this._customControlScaling = 1.0;
         /** @hidden */
         this._lastControlOver = {};
         /** @hidden */
@@ -21058,6 +21079,39 @@ var GUI3DManager = /** @class */ (function () {
         /** Gets associated utility layer */
         get: function () {
             return this._utilityLayer;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(GUI3DManager.prototype, "controlScaling", {
+        /** Gets the scaling for all UI elements owned by this manager */
+        get: function () {
+            return this._customControlScaling;
+        },
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set: function (newScale) {
+            if (this._customControlScaling !== newScale && newScale > 0) {
+                var scaleRatio_1 = newScale / this._customControlScaling;
+                this._customControlScaling = newScale;
+                this._rootContainer.children.forEach(function (control) {
+                    control.scaling.scaleInPlace(scaleRatio_1);
+                    if (newScale !== 1) {
+                        control._isScaledByManager = true;
+                    }
+                });
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(GUI3DManager.prototype, "useRealisticScaling", {
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get: function () {
+            return this.controlScaling === GUI3DManager.MRTK_REALISTIC_SCALING;
+        },
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set: function (newValue) {
+            this.controlScaling = newValue ? GUI3DManager.MRTK_REALISTIC_SCALING : 1;
         },
         enumerable: false,
         configurable: true
@@ -21140,6 +21194,10 @@ var GUI3DManager = /** @class */ (function () {
      */
     GUI3DManager.prototype.addControl = function (control) {
         this._rootContainer.addControl(control);
+        if (this._customControlScaling !== 1) {
+            control.scaling.scaleInPlace(this._customControlScaling);
+            control._isScaledByManager = true;
+        }
         return this;
     };
     /**
@@ -21149,6 +21207,10 @@ var GUI3DManager = /** @class */ (function () {
      */
     GUI3DManager.prototype.removeControl = function (control) {
         this._rootContainer.removeControl(control);
+        if (control._isScaledByManager) {
+            control.scaling.scaleInPlace(1 / this._customControlScaling);
+            control._isScaledByManager = false;
+        }
         return this;
     };
     /**
@@ -21193,6 +21255,7 @@ var GUI3DManager = /** @class */ (function () {
             this._utilityLayer.dispose();
         }
     };
+    GUI3DManager.MRTK_REALISTIC_SCALING = 0.032;
     return GUI3DManager;
 }());
 

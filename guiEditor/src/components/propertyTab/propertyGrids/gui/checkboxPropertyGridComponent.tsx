@@ -42,7 +42,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                 <CheckBoxLineComponent
                     iconLabel={"Checked"}
                     icon={fillColorIcon}
-                    label=""
+                    label="CHECKED"
                     target={checkbox}
                     propertyName="isChecked"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

@@ -594,7 +594,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** @hidden */
     public _getGlobalViewport(): Viewport {
         var size = this.getSize();
-        return this._fullscreenViewport.toGlobal(size.width, size.height);
+        const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
+
+        const targetX = globalViewPort.width * (1 / this.rootContainer.scaleX);
+        const targetY = globalViewPort.height * (1 / this.rootContainer.scaleY);
+
+        globalViewPort.x += (globalViewPort.width - targetX) / 2;
+        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+
+        globalViewPort.width = targetX;
+        globalViewPort.height = targetY;
+
+        return globalViewPort;
     }
     /**
      * Get screen coordinates for a vector3
@@ -1154,15 +1165,24 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
      * @param scene defines the hosting scene
      * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+     * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
+    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE, adaptiveScaling: boolean = false): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
-        var layer = new Layer(name + "_layer", null, scene, !foreground);
+        const resultScene = result.getScene();
+        var layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+
+        if (adaptiveScaling && resultScene) {
+            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            result._rootContainer.scaleX = newScale;
+            result._rootContainer.scaleY = newScale;
+        }
+
         // Attach
         result.attach();
         return result;
