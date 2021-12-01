@@ -5,6 +5,7 @@ import { Tools } from "babylonjs/Misc/tools";
 declare var GUIEDITOR: any;
 declare var BABYLON: any;
 
+let editorUrl = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
 let guiEditor: any = null;
 /** Get the inspector from bundle or global */
 function _getGlobalGUIEditor(): any {
@@ -26,25 +27,28 @@ export function InjectGUIEditor(guiEditorPackage: any) {
     guiEditor = guiEditorPackage;
 }
 
+/** Change the URL that the GUI editor loads from */
+export function SetGUIEditorURL(guiEditorURL: string) {
+    editorUrl = guiEditorURL;
+}
+
 /**
  * Opens an ADT in the GUI editor
  * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
- * If you are in a UMD environment, you have the option to load the editor from a custom URL, or use the default (unpkg CDN) 
+ * If you are in a UMD environment, it will load the package from a URL
 */
-export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, customEditorURL?: string) {
+export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
     if (!guiEditor) {
         if (typeof BABYLON !== 'undefined') {
             // we are in UMD environment
             guiEditor = guiEditor || _getGlobalGUIEditor();
-            if (typeof guiEditor == 'undefined') {
-                const editorUrl = customEditorURL || `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;;
-
+            if (typeof guiEditor === 'undefined') {
                 // Load editor and add it to the DOM
                 try {
                     await Tools.LoadScriptAsync(editorUrl);
                     guiEditor = guiEditor || _getGlobalGUIEditor();
                 } catch {
-                    Tools.Error(`Failed to load GUI editor from ${editorUrl}`);
+                    throw `Failed to load GUI editor from ${editorUrl}`;
                 }
             }
         } else {
