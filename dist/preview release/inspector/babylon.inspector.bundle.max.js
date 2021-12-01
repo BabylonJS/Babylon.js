@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px;\n    position: absolute;\n    bottom: 10px;\n    right: 10px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .header {\n      color: white;\n      display: inline-flex;\n      justify-content: space-between;\n      width: 100%;\n      padding: 5 0; }\n    #performance-viewer #performance-viewer-sidebar .version-header {\n      background-color: darkslategray; }\n    #performance-viewer #performance-viewer-sidebar .category-header {\n      background-color: royalblue; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item:nth-child(odd) {\n      background-color: lightsteelblue; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item:nth-child(even) {\n      background-color: lightgrey; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%;\n      align-items: center; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -45924,11 +45924,12 @@ var PerformancePlayheadButtonComponent = function (_a) {
 /*!*************************************************************************************!*\
   !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
   \*************************************************************************************/
-/*! exports provided: PerformanceViewerComponent */
+/*! exports provided: IPerfMetadataCategory, PerformanceViewerComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IPerfMetadataCategory", function() { return IPerfMetadataCategory; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
@@ -45955,12 +45956,17 @@ __webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTab
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
+var IPerfMetadataCategory;
+(function (IPerfMetadataCategory) {
+    IPerfMetadataCategory["Count"] = "Count";
+    IPerfMetadataCategory["FrameSteps"] = "Frame Steps Duration";
+})(IPerfMetadataCategory || (IPerfMetadataCategory = {}));
 // list of strategies to add to perf graph automatically.
 var defaultStrategies = [
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(),
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy(),
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].DrawCallsStrategy(),
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].ActiveMeshesStrategy(),
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps },
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy() },
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].DrawCallsStrategy(), category: IPerfMetadataCategory.Count },
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count },
 ];
 var RecordingState;
 (function (RecordingState) {
@@ -46125,15 +46131,27 @@ __webpack_require__.r(__webpack_exports__);
 
 var PerformanceViewerSidebarComponent = function (props) {
     var collector = props.collector;
-    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])([]), metadata = _a[0], setMetadata = _a[1];
+    // Map from id to IPerfMetadata information
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), metadataMap = _a[0], setMetadataMap = _a[1];
+    // Map from category to all the ids belonging to that category
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), metadataCategoryId = _b[0], setMetadataCategoryId = _b[1];
+    // List of ordered categories
+    var _c = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), metadataCategories = _c[0], setMetadataCategories = _c[1];
     Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
         var onUpdateMetadata = function (metadata) {
-            var entries = [];
-            // convert to iterable list of entries
-            metadata.forEach(function (value, key) {
-                entries.push([key, value]);
+            var newMap = new Map();
+            metadata.forEach(function (value, id) {
+                var _a, _b;
+                var currentCategory = (_a = value.category) !== null && _a !== void 0 ? _a : "";
+                var currentIds = (_b = newMap.get(currentCategory)) !== null && _b !== void 0 ? _b : [];
+                currentIds.push(id);
+                newMap.set(currentCategory, currentIds);
             });
-            setMetadata(entries);
+            var orderedCategories = Array.from(newMap.keys());
+            orderedCategories.sort();
+            setMetadataCategoryId(newMap);
+            setMetadataMap(metadata);
+            setMetadataCategories(orderedCategories);
         };
         collector.metadataObservable.add(onUpdateMetadata);
         return function () {
@@ -46146,13 +46164,22 @@ var PerformanceViewerSidebarComponent = function (props) {
     var onColorChange = function (id) { return function (color) {
         collector.updateMetadata(id, "color", color);
     }; };
-    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadata.map(function (_a) {
-        var _b;
-        var id = _a[0], metadata = _a[1];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_b = metadata.color) !== null && _b !== void 0 ? _b : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true })));
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadataCategories && metadataCategories.map(function (category) {
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "category-" + (category || 'version') },
+            category
+                ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "category-header header", key: "header-" + category },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", null, category),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox" }))
+                : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "version-header header", key: "header-version" }, "Version:"), (_a = metadataCategoryId === null || metadataCategoryId === void 0 ? void 0 : metadataCategoryId.get(category)) === null || _a === void 0 ? void 0 :
+            _a.map(function (id) {
+                var _a;
+                var metadata = metadataMap === null || metadataMap === void 0 ? void 0 : metadataMap.get(id);
+                return metadata && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_a = metadata.color) !== null && _a !== void 0 ? _a : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id));
+            })));
     })));
 };
 
