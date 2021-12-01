@@ -631,7 +631,7 @@ void main(void) {
 
     #ifdef PREPASS_REFLECTIVITY
         #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, writeGeometryInfo);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, baseReflectivity.a * writeGeometryInfo);
         #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
