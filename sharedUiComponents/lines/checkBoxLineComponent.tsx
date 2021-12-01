@@ -1,9 +1,11 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./../propertyChangedEvent";
+import { IconDefinition } from "@fortawesome/fontawesome-common-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export interface ICheckBoxLineComponentProps {
-    label: string;
+    label?: string;
     target?: any;
     propertyName?: string;
     isSelected?: () => boolean;
@@ -13,6 +15,7 @@ export interface ICheckBoxLineComponentProps {
     disabled?: boolean;
     icon?: string;
     iconLabel?: string;
+    faIcons?: {faIconEnabled: IconDefinition, faIconDisabled: IconDefinition}
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean }> {
@@ -85,19 +88,21 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         return (
             <div className="checkBoxLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
-                <div className="label" title={this.props.iconLabel}>
-                    {this.props.label}
-                </div>
-                <div className="checkBox">
+                {this.props.label && 
+                    <div className="label" title={this.props.iconLabel}>
+                        {this.props.label}
+                    </div>}
+                <div className="checkBox" onClick={() => !this.props.disabled && this.onChange()}>
                     <input
                         type="checkbox"
                         id={"checkbox" + this._uniqueId}
                         className="cbx hidden"
                         checked={this.state.isSelected}
-                        onChange={() => this.onChange()}
-                        disabled={!!this.props.disabled}
+                        // onChange={() => this.onChange()}
+                        // disabled={!!this.props.disabled}
                     />
                     <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${!!this.props.disabled ? " disabled" : ""}`}></label>
+                    {this.props.faIcons && <FontAwesomeIcon icon={this.state.isSelected ? this.props.faIcons.faIconEnabled : this.props.faIcons.faIconDisabled}/>}
                 </div>
             </div>
         );
