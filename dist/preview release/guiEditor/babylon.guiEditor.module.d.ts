@@ -31,6 +31,641 @@ declare module "babylonjs-gui-editor/tools" {
         static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2): void;
     }
 }
+declare module "babylonjs-gui-editor/diagram/GUIEditorNodeMaterial" {
+    export const GUIEditorNodeMaterial: {
+        tags: null;
+        ignoreAlpha: boolean;
+        maxSimultaneousLights: number;
+        mode: number;
+        id: string;
+        name: string;
+        checkReadyOnEveryCall: boolean;
+        checkReadyOnlyOnce: boolean;
+        state: string;
+        alpha: number;
+        backFaceCulling: boolean;
+        cullBackFaces: boolean;
+        sideOrientation: number;
+        alphaMode: number;
+        _needDepthPrePass: boolean;
+        disableDepthWrite: boolean;
+        disableColorWrite: boolean;
+        forceDepthWrite: boolean;
+        depthFunction: number;
+        separateCullingPass: boolean;
+        fogEnabled: boolean;
+        pointSize: number;
+        zOffset: number;
+        zOffsetUnits: number;
+        pointsCloud: boolean;
+        fillMode: number;
+        editorData: {
+            locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[];
+            frames: {
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+                color: number[];
+                name: string;
+                isCollapsed: boolean;
+                blocks: number[];
+            }[];
+            x: number;
+            y: number;
+            zoom: number;
+        };
+        customType: string;
+        outputNodes: number[];
+        blocks: ({
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            }[];
+            outputs: {
+                name: string;
+            }[];
+            complementZ: number;
+            complementW: number;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            systemValue: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: never[];
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                displayName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            rSwizzle: string;
+            gSwizzle: string;
+            bSwizzle: string;
+            aSwizzle: string;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            }[];
+            outputs: {
+                name: string;
+            }[];
+            operation: number;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: {
+                name: string;
+            }[];
+            xSwizzle: string;
+            ySwizzle: string;
+            zSwizzle: string;
+            wSwizzle: string;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+            } | {
+                name: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            })[];
+            outputs: {
+                name: string;
+            }[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            valueType: string;
+            value: number[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            valueType: string;
+            value: number;
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            fragmentOnly: boolean;
+            disableLevelMultiplication: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+        })[];
+    };
+}
 declare module "babylonjs-gui-editor/diagram/workbench" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -102,7 +737,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         resizeGuiTexture(newvalue: Vector2): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
-        isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
         private _convertToPixels;
@@ -118,7 +752,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        createGUICanvas(): Promise<void>;
+        createGUICanvas(): void;
         addControls(scene: Scene, camera: ArcRotateCamera): void;
         getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane): Vector3;
         panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3): Vector3;
@@ -436,6 +1070,8 @@ declare module "babylonjs-gui-editor/components/commandButtonComponent" {
         iconLabel?: string;
         isActive: boolean;
         onClick: () => void;
+        altStyle?: boolean;
+        disabled?: boolean;
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
@@ -642,13 +1278,30 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/sl
     import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
     import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+    import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     interface ISliderPropertyGridComponentProps {
-        slider: Slider;
+        slider: Slider | ImageBasedSlider;
         lockObject: LockObject;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
         constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/sliderGenericPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+    interface ISliderGenericPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SliderGenericPropertyGridComponent extends React.Component<ISliderGenericPropertyGridComponentProps> {
+        constructor(props: ISliderGenericPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -853,6 +1506,8 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
         private _columnDefinitions;
         private _editedRow;
         private _editedColumn;
+        private _rowChild;
+        private _columnChild;
         renderRows(): JSX.Element[];
         setRowValues(): void;
         setColumnValues(): void;
@@ -861,6 +1516,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/gr
         resizeColumn(): void;
         checkValue(value: string, percent: boolean): string;
         checkPercentage(value: string): boolean;
+        resetValues(): void;
         render(): JSX.Element;
     }
 }
@@ -999,7 +1655,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
@@ -2214,6 +2870,641 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export const GUIEditorNodeMaterial: {
+        tags: null;
+        ignoreAlpha: boolean;
+        maxSimultaneousLights: number;
+        mode: number;
+        id: string;
+        name: string;
+        checkReadyOnEveryCall: boolean;
+        checkReadyOnlyOnce: boolean;
+        state: string;
+        alpha: number;
+        backFaceCulling: boolean;
+        cullBackFaces: boolean;
+        sideOrientation: number;
+        alphaMode: number;
+        _needDepthPrePass: boolean;
+        disableDepthWrite: boolean;
+        disableColorWrite: boolean;
+        forceDepthWrite: boolean;
+        depthFunction: number;
+        separateCullingPass: boolean;
+        fogEnabled: boolean;
+        pointSize: number;
+        zOffset: number;
+        zOffsetUnits: number;
+        pointsCloud: boolean;
+        fillMode: number;
+        editorData: {
+            locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[];
+            frames: {
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+                color: number[];
+                name: string;
+                isCollapsed: boolean;
+                blocks: number[];
+            }[];
+            x: number;
+            y: number;
+            zoom: number;
+        };
+        customType: string;
+        outputNodes: number[];
+        blocks: ({
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            }[];
+            outputs: {
+                name: string;
+            }[];
+            complementZ: number;
+            complementW: number;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            systemValue: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: never[];
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                displayName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            rSwizzle: string;
+            gSwizzle: string;
+            bSwizzle: string;
+            aSwizzle: string;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            }[];
+            outputs: {
+                name: string;
+            }[];
+            operation: number;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: {
+                name: string;
+            }[];
+            xSwizzle: string;
+            ySwizzle: string;
+            zSwizzle: string;
+            wSwizzle: string;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+            } | {
+                name: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            })[];
+            outputs: {
+                name: string;
+            }[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            valueType: string;
+            value: number[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            valueType: string;
+            value: number;
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            fragmentOnly: boolean;
+            disableLevelMultiplication: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+        })[];
+    };
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -2273,7 +3564,6 @@ declare module GUIEDITOR {
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
-        isContainer(guiControl: Control): boolean;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
         private _convertToPixels;
@@ -2289,7 +3579,7 @@ declare module GUIEDITOR {
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
-        createGUICanvas(): Promise<void>;
+        createGUICanvas(): void;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
         getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
@@ -2577,6 +3867,8 @@ declare module GUIEDITOR {
         iconLabel?: string;
         isActive: boolean;
         onClick: () => void;
+        altStyle?: boolean;
+        disabled?: boolean;
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
@@ -2762,12 +4054,23 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     interface ISliderPropertyGridComponentProps {
-        slider: Slider;
+        slider: Slider | ImageBasedSlider;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
         constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderGenericPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderGenericPropertyGridComponent extends React.Component<ISliderGenericPropertyGridComponentProps> {
+        constructor(props: ISliderGenericPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2918,6 +4221,8 @@ declare module GUIEDITOR {
         private _columnDefinitions;
         private _editedRow;
         private _editedColumn;
+        private _rowChild;
+        private _columnChild;
         renderRows(): JSX.Element[];
         setRowValues(): void;
         setColumnValues(): void;
@@ -2926,6 +4231,7 @@ declare module GUIEDITOR {
         resizeColumn(): void;
         checkValue(value: string, percent: boolean): string;
         checkPercentage(value: string): boolean;
+        resetValues(): void;
         render(): JSX.Element;
     }
 }
@@ -3015,7 +4321,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {

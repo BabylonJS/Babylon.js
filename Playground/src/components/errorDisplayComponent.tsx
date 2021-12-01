@@ -48,8 +48,9 @@ export class ErrorDisplayComponent extends React.Component<IErrorDisplayComponen
 
         return (
             <div className="error-display" onClick={() => this._onClick()}>
+                {typeof this.state.error === "string" && this.state.error}
                 {this.state.error.lineNumber && this.state.error.columnNumber && `Error at [${this.state.error.lineNumber}, ${this.state.error.columnNumber}]: `}
-                {typeof this.state.error.message === "string" ? this.state.error.message : this.state.error.message.messageText}
+                {this.state.error.message && (typeof this.state.error.message === "string" ? this.state.error.message : this.state.error.message.messageText)}
             </div>
         );
     }

@@ -10062,7 +10062,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n  #node-editor-graph-root.popup {\n    grid-template-columns: 100%;\n    overflow: hidden; }\n  #node-editor-graph-root .wait-screen {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 100%;\n    width: 100%;\n    background: #464646;\n    opacity: 0.95;\n    color: white;\n    font: 24px \"acumin-pro\";\n    position: absolute;\n    top: 0;\n    left: 0; }\n    #node-editor-graph-root .wait-screen.hidden {\n      visibility: hidden; }\n  #node-editor-graph-root #nodeList {\n    grid-row: 1 / span 2;\n    grid-column: 1; }\n  #node-editor-graph-root #leftGrab {\n    grid-row: 1 / span 2;\n    grid-column: 2;\n    cursor: ew-resize; }\n  #node-editor-graph-root #rightGrab {\n    grid-row: 1 / span 2;\n    grid-column: 4;\n    cursor: ew-resize; }\n  #node-editor-graph-root .diagram-container {\n    grid-row: 1;\n    grid-column: 3;\n    background: #5f5b60;\n    width: 100%;\n    height: 100%; }\n    #node-editor-graph-root .diagram-container .diagram {\n      display: none;\n      width: 100%;\n      height: 100%; }\n  #node-editor-graph-root .right-panel {\n    grid-row: 1 / span 2;\n    grid-column: 5;\n    display: grid;\n    grid-template-rows: 1fr 40px auto 40px;\n    grid-template-columns: 100%;\n    height: 100%;\n    overflow-y: auto; }\n  #node-editor-graph-root #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  #node-editor-graph-root .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    #node-editor-graph-root .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    #node-editor-graph-root .button.selected {\n      background: #337ab7;\n      color: white; }\n    #node-editor-graph-root .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  #node-editor-graph-root #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    #node-editor-graph-root #preview-mesh-bar #file-picker {\n      display: none; }\n    #node-editor-graph-root #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        #node-editor-graph-root #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-mesh-bar .button img {\n        height: 40px;\n        width: 100%; }\n    #node-editor-graph-root #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    #node-editor-graph-root #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button img {\n        height: 40px;\n        width: 30px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 5px;\n        padding-bottom: 38px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    #node-editor-graph-root #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    #node-editor-graph-root #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  #node-editor-graph-root #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    #node-editor-graph-root #preview-config-bar.extended {\n      grid-template-columns: 1fr; }\n    #node-editor-graph-root #preview-config-bar .listLine {\n      padding-left: 5px;\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto; }\n      #node-editor-graph-root #preview-config-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-config-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-right: 5px; }\n        #node-editor-graph-root #preview-config-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-config-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-config-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      #node-editor-graph-root #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      #node-editor-graph-root #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      #node-editor-graph-root #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n  #node-editor-graph-root #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    padding: 0 !important;\n    user-select: none;\n    overflow: hidden; }\n    #node-editor-graph-root #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      padding: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    #node-editor-graph-root #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      #node-editor-graph-root #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n  #node-editor-graph-root .blocker {\n    visibility: hidden;\n    position: absolute;\n    width: calc(100% - 40px);\n    height: 100%;\n    top: 0;\n    left: 0;\n    background: rgba(20, 20, 20, 0.95);\n    font-family: \"acumin-pro\";\n    color: white;\n    font-size: 24px;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    user-select: none;\n    padding: 20px;\n    text-align: center; }\n  #node-editor-graph-root #log-console {\n    grid-row: 2;\n    grid-column: 3; }\n  #node-editor-graph-root .dialog-container {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    background: rgba(0, 0, 0, 0.6);\n    display: grid;\n    font-family: \"acumin-pro\";\n    top: 0; }\n    #node-editor-graph-root .dialog-container .dialog {\n      align-self: center;\n      justify-self: center;\n      min-height: 140px;\n      max-width: 400px;\n      border-radius: 10px;\n      background: white;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: calc(100% - 50px) 50px; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-message {\n        grid-row: 1;\n        grid-column: 1;\n        margin-top: 20px;\n        padding: 10px;\n        font-size: 18px;\n        color: black; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-buttons {\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%;\n        color: white; }\n        #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n          cursor: pointer;\n          justify-self: center;\n          background: green;\n          min-width: 80px;\n          justify-content: center;\n          display: grid;\n          align-content: center;\n          align-self: center;\n          height: 35px;\n          border-radius: 10px; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n            opacity: 0.8; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n            background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n  #node-editor-graph-root.popup {\n    grid-template-columns: 100%;\n    overflow: hidden; }\n  #node-editor-graph-root .wait-screen {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 100%;\n    width: 100%;\n    background: #464646;\n    opacity: 0.95;\n    color: white;\n    font: 24px \"acumin-pro\";\n    position: absolute;\n    top: 0;\n    left: 0; }\n    #node-editor-graph-root .wait-screen.hidden {\n      visibility: hidden; }\n  #node-editor-graph-root #nodeList {\n    grid-row: 1 / span 2;\n    grid-column: 1; }\n  #node-editor-graph-root #leftGrab {\n    grid-row: 1 / span 2;\n    grid-column: 2;\n    cursor: ew-resize; }\n  #node-editor-graph-root #rightGrab {\n    grid-row: 1 / span 2;\n    grid-column: 4;\n    cursor: ew-resize; }\n  #node-editor-graph-root .diagram-container {\n    grid-row: 1;\n    grid-column: 3;\n    background: #5f5b60;\n    width: 100%;\n    height: 100%; }\n    #node-editor-graph-root .diagram-container .diagram {\n      display: none;\n      width: 100%;\n      height: 100%; }\n  #node-editor-graph-root .right-panel {\n    grid-row: 1 / span 2;\n    grid-column: 5;\n    display: grid;\n    grid-template-rows: 1fr 40px auto 40px;\n    grid-template-columns: 100%;\n    height: 100%;\n    overflow-y: auto; }\n  #node-editor-graph-root #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  #node-editor-graph-root .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    #node-editor-graph-root .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    #node-editor-graph-root .button.selected {\n      background: #337ab7;\n      color: white; }\n    #node-editor-graph-root .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  #node-editor-graph-root #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    #node-editor-graph-root #preview-mesh-bar #file-picker {\n      display: none; }\n    #node-editor-graph-root #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        #node-editor-graph-root #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-mesh-bar .button img {\n        height: 24px;\n        width: 24px; }\n    #node-editor-graph-root #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    #node-editor-graph-root #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button img {\n        height: 24px;\n        width: 24px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 7px;\n        padding-bottom: 38px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    #node-editor-graph-root #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    #node-editor-graph-root #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  #node-editor-graph-root #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    #node-editor-graph-root #preview-config-bar.extended {\n      grid-template-columns: 1fr; }\n    #node-editor-graph-root #preview-config-bar .listLine {\n      padding-left: 5px;\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto; }\n      #node-editor-graph-root #preview-config-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-config-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-right: 5px; }\n        #node-editor-graph-root #preview-config-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-config-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-config-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      #node-editor-graph-root #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      #node-editor-graph-root #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      #node-editor-graph-root #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n  #node-editor-graph-root #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    padding: 0 !important;\n    user-select: none;\n    overflow: hidden; }\n    #node-editor-graph-root #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      padding: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    #node-editor-graph-root #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      #node-editor-graph-root #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n  #node-editor-graph-root .blocker {\n    visibility: hidden;\n    position: absolute;\n    width: calc(100% - 40px);\n    height: 100%;\n    top: 0;\n    left: 0;\n    background: rgba(20, 20, 20, 0.95);\n    font-family: \"acumin-pro\";\n    color: white;\n    font-size: 24px;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    user-select: none;\n    padding: 20px;\n    text-align: center; }\n  #node-editor-graph-root #log-console {\n    grid-row: 2;\n    grid-column: 3; }\n  #node-editor-graph-root .dialog-container {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    background: rgba(0, 0, 0, 0.6);\n    display: grid;\n    font-family: \"acumin-pro\";\n    top: 0; }\n    #node-editor-graph-root .dialog-container .dialog {\n      align-self: center;\n      justify-self: center;\n      min-height: 140px;\n      max-width: 400px;\n      border-radius: 10px;\n      background: white;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: calc(100% - 50px) 50px; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-message {\n        grid-row: 1;\n        grid-column: 1;\n        margin-top: 20px;\n        padding: 10px;\n        font-size: 18px;\n        color: black; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-buttons {\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%;\n        color: white; }\n        #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n          cursor: pointer;\n          justify-self: center;\n          background: green;\n          min-width: 80px;\n          justify-content: center;\n          display: grid;\n          align-content: center;\n          align-self: center;\n          height: 35px;\n          border-radius: 10px; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n            opacity: 0.8; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n            background: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -54952,11 +54952,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "TwirlBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TwirlBlock"]("Twirl");
             case "VoronoiNoiseBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VoronoiNoiseBlock"]("VoronoiNoise");
             case "ScreenSpaceBlock":
@@ -55656,6 +55659,10 @@ var NodeListComponent = /** @class */ (function (_super) {
         if (frameJson) {
             _this._customFrameList = JSON.parse(frameJson);
         }
+        var blockJson = localStorage.getItem("Custom-Block-List");
+        if (blockJson) {
+            _this._customBlockList = JSON.parse(blockJson);
+        }
         _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
             _this.forceUpdate();
         });
@@ -55707,15 +55714,60 @@ var NodeListComponent = /** @class */ (function (_super) {
             this.forceUpdate();
         }
     };
+    NodeListComponent.prototype.loadCustomBlock = function (file) {
+        var _this = this;
+        babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["Tools"].ReadFile(file, function (data) { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+            var decoder, blockData, blockName, blockToolTip, blockJson, blockList;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                decoder = new TextDecoder("utf-8");
+                blockData = JSON.parse(decoder.decode(data));
+                blockName = (blockData.name || "") + "CustomBlock";
+                blockToolTip = blockData.comments || "";
+                try {
+                    localStorage.setItem(blockName, JSON.stringify(blockData));
+                }
+                catch (error) {
+                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
+                    return [2 /*return*/];
+                }
+                blockJson = localStorage.getItem("Custom-Block-List");
+                blockList = {};
+                if (blockJson) {
+                    blockList = JSON.parse(blockJson);
+                }
+                blockList[blockName] = blockToolTip;
+                localStorage.setItem("Custom-Block-List", JSON.stringify(blockList));
+                this._customBlockList = blockList;
+                this.forceUpdate();
+                return [2 /*return*/];
+            });
+        }); }, undefined, true);
+    };
+    NodeListComponent.prototype.removeCustomBlock = function (value) {
+        var blockJson = localStorage.getItem("Custom-Block-List");
+        if (blockJson) {
+            var blockList = JSON.parse(blockJson);
+            delete blockList[value];
+            localStorage.removeItem(value);
+            localStorage.setItem("Custom-Block-List", JSON.stringify(blockList));
+            this._customBlockList = blockList;
+            this.forceUpdate();
+        }
+    };
     NodeListComponent.prototype.render = function () {
         var _this = this;
         var customFrameNames = [];
         for (var frame in this._customFrameList) {
             customFrameNames.push(frame);
         }
+        var customBlockNames = [];
+        for (var block in this._customBlockList) {
+            customBlockNames.push(block);
+        }
         // Block types used to create the menu from
         var allBlocks = {
             Custom_Frames: customFrameNames,
+            Custom_Blocks: customBlockNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -55783,6 +55835,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 "Rotate2dBlock",
                 "TransformBlock",
                 "ScreenSpaceBlock",
+                "TwirlBlock"
             ],
             Matrices: [
                 "Matrix",
@@ -55879,11 +55932,20 @@ var NodeListComponent = /** @class */ (function (_super) {
                 if (key === "Custom_Frames") {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customFrameList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeItem(value); } }));
                 }
+                else if (key === "Custom_Blocks") {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customBlockList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeCustomBlock(value); }, lenSuffixToRemove: 11 }));
+                }
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: NodeListComponent._Tooltips[block] || "" });
             });
             if (key === "Custom_Frames") {
                 var line = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: "custom-frame-upload", iconImage: addButton, accept: ".json", onIconClick: function (file) {
                         _this.loadCustomFrame(file);
+                    } }));
+                blockList.push(line);
+            }
+            else if (key === "Custom_Blocks") {
+                var line = (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Block", closed: false, label: "Add...", uploadName: "custom-block-upload", iconImage: addButton, accept: ".json", onIconClick: function (file) {
+                        _this.loadCustomBlock(file);
                     } }));
                 blockList.push(line);
             }
@@ -56040,6 +56102,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         CloudBlock: "Generate Fractal Brownian Motion Clouds",
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
+        TwirlBlock: "Apply a twirl rotation"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56927,7 +56990,7 @@ module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' version='1.1' xm
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 20 20' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='27' height='27'%3E %3C!-- Generator: Sketch 64 (93537) - https://sketch.com --%3E %3Ctitle%3Eic_fluent_window_new_20_regular%3C/title%3E %3Cdesc%3ECreated with Sketch.%3C/desc%3E %3Cg id='🔍-System-Icons' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E %3Cg id='ic_fluent_window_new_20_regular' fill='white' fill-rule='nonzero'%3E %3Cpath d='M14.5,3 C15.825472,3 16.9100378,4.03153766 16.9946823,5.33562452 L17,5.5 L17,12.5 C17,13.6248 16.2572,14.5761 15.2354,14.8901 C15.0566136,16.0311636 14.105895,16.9162833 12.934399,16.9943911 L12.7656,17 L6.5,17 C4.63143333,17 3.10487333,15.5357256 3.00517885,13.6920355 L3,13.5 L3,7.26562 C3,6.02104 3.90947,4.98887 5.10007,4.79744 C5.38765316,3.81341789 6.26401881,3.08064388 7.32204931,3.00623559 L7.5,3 L14.5,3 Z M5,5.85098 C4.46221538,6.04106 4.0651929,6.52910923 4.00729467,7.11674983 L4,7.26562 L4,13.5 C4,14.825472 5.03153766,15.9100378 6.33562452,15.9946823 L6.5,16 L12.7656,16 C13.3684615,16 13.8883314,15.6443456 14.12669,15.1313988 L14.1803,15 L7.5,15 C6.1745184,15 5.08996147,13.9684531 5.00531769,12.6643744 L5,12.5 L5,5.85098 Z M14.5,4 L7.5,4 C6.67157,4 6,4.67157 6,5.5 L6,12.5 C6,13.3284 6.67157,14 7.5,14 L14.5,14 C15.3284,14 16,13.3284 16,12.5 L16,5.5 C16,4.67157 15.3284,4 14.5,4 Z M13.4999975,6 C13.7454219,6 13.949598,6.17687704 13.9919405,6.41012499 L13.9999975,6.5 L13.9999975,10.4844 C13.9999975,10.7605 13.7761,10.9844 13.4999975,10.9844 C13.2545775,10.9844 13.050398,10.8074914 13.0080546,10.5742645 L12.9999975,10.4844 L12.9999975,7.70711 L8.85355,11.8536 C8.65829,12.0488 8.34171,12.0488 8.14645,11.8536 C7.97287667,11.68 7.95359074,11.410558 8.08859222,11.2156598 L8.14645,11.1464 L12.2929,7 L9.51562,7 C9.23948,7 9.01562,6.77614 9.01562,6.5 C9.01562,6.25454222 9.19249704,6.0503921 9.42574499,6.00805575 L9.51562,6 L13.4999975,6 Z' id='🎨-Color'%3E%3C/path%3E %3C/g%3E %3C/g%3E %3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23ffffff;%7D%3C/style%3E%3C/defs%3E%3Cg id='_-System-Icons' data-name='🔍-System-Icons'%3E%3Cg id='ic_fluent_window_new_20_regular' data-name='ic fluent window new 20 regular'%3E%3Cpath id='_-Color' data-name='🎨-Color' class='cls-1' d='M18.14,2.44a3.42,3.42,0,0,1,3.41,3.19v9.78a3.41,3.41,0,0,1-2.41,3.26A3.44,3.44,0,0,1,16,21.55H7.22A4.78,4.78,0,0,1,2.45,17V8.27A3.42,3.42,0,0,1,5.31,4.9a3.43,3.43,0,0,1,3-2.45h9.8Zm-13,3.9A2,2,0,0,0,3.82,8.06v8.72A3.41,3.41,0,0,0,7,20.18h8.78A2,2,0,0,0,17.63,19l.08-.17H8.59a3.42,3.42,0,0,1-3.41-3.19V6.34Zm13-2.53H8.59a2.05,2.05,0,0,0-2,2.05v9.55a2.05,2.05,0,0,0,2.05,2.05h9.55a2.05,2.05,0,0,0,2.05-2.05V5.86A2.05,2.05,0,0,0,18.14,3.81ZM16.78,6.54a.69.69,0,0,1,.67.56v5.56a.68.68,0,0,1-.68.68.67.67,0,0,1-.67-.56V8.87l-5.66,5.66a.68.68,0,0,1-1-.87l.08-.1L15.13,7.9H11.34a.67.67,0,0,1-.68-.68.69.69,0,0,1,.56-.67h5.56Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -63665,6 +63728,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./main.scss */ "./main.scss");
 var GraphEditor = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
@@ -64253,7 +64317,20 @@ var GraphEditor = /** @class */ (function (_super) {
         var _this = this;
         var data = event.dataTransfer.getData("babylonjs-material-node");
         var newNode;
-        if (data.indexOf("Custom") > -1) {
+        var customBlockData;
+        if (data.indexOf("CustomBlock") > -1) {
+            var storageData = localStorage.getItem(data);
+            if (!storageData) {
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error loading custom block");
+                return;
+            }
+            customBlockData = JSON.parse(storageData);
+            if (!customBlockData) {
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error parsing custom block");
+                return;
+            }
+        }
+        else if (data.indexOf("Custom") > -1) {
             var storageData = localStorage.getItem(data);
             if (storageData) {
                 var frameData = JSON.parse(storageData);
@@ -64279,7 +64356,14 @@ var GraphEditor = /** @class */ (function (_super) {
             newNode = this.addValueNode(data);
         }
         else {
-            var block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
+            var block_1;
+            if (customBlockData) {
+                block_1 = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["CustomBlock"]("");
+                block_1.options = customBlockData;
+            }
+            else {
+                block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
+            }
             if (block_1.isUnique) {
                 var className = block_1.getClassName();
                 for (var _b = 0, _c = this._blocks; _b < _c.length; _b++) {
@@ -65194,10 +65278,11 @@ var DraggableLineWithButtonComponent = /** @class */ (function (_super) {
     }
     DraggableLineWithButtonComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "draggableLine withButton", title: this.props.tooltip, draggable: true, onDragStart: function (event) {
                 event.dataTransfer.setData("babylonjs-material-node", _this.props.data);
             } },
-            this.props.data.substr(0, this.props.data.length - 6),
+            this.props.data.substr(0, this.props.data.length - ((_a = this.props.lenSuffixToRemove) !== null && _a !== void 0 ? _a : 6)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", onClick: function () {
                     _this.props.onIconClick(_this.props.data);
                 }, title: this.props.iconTitle },

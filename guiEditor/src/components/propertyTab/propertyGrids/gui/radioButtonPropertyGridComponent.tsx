@@ -64,7 +64,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                 <CheckBoxLineComponent
                     iconLabel="Is Checked"
                     icon={checkboxIcon}
-                    label=""
+                    label="CHECKED"
                     target={radioButton}
                     propertyName="isChecked"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

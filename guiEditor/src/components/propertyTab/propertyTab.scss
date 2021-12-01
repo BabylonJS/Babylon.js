@@ -177,6 +177,10 @@ hr.ge {
         grid-template-columns: auto auto auto auto auto auto;
     }
 
+    .ge-divider-short {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
     
     .ge-grid-divider {
         display: grid;
@@ -230,6 +234,10 @@ hr.ge {
             min-width: 15px;
         }
 
+        img {
+            width: 30px;
+        }
+        
         .img {
             grid-column: 1;
             display: flex;
@@ -584,6 +592,10 @@ hr.ge {
             min-width: 15px;
         }
 
+        img {
+            width: 30px;
+        }
+
         .img {
             grid-column: 1;
             display: flex;
@@ -791,6 +803,12 @@ hr.ge {
             grid-column: 2;
             display: flex;
             align-items: center;
+            min-width: 100px;
+            margin-left: 15px;
+        }
+
+        img {
+            width: 30px;
         }
         
         .img {
@@ -804,7 +822,7 @@ hr.ge {
             display: flex;
             align-items: center;
             padding-left: 15px;
-
+            
             .lbl {
                 position: relative;
                 display: block;
@@ -884,6 +902,10 @@ hr.ge {
             grid-column: 2;
             display: none;
             align-items: center;
+        }
+
+        img {
+            width: 30px;
         }
 
         .img {
@@ -1019,6 +1041,10 @@ hr.ge {
             display: flex;
             align-items: left;
             min-width: 15px;
+        }
+
+        img {
+            width: 30px;
         }
 
         .img {

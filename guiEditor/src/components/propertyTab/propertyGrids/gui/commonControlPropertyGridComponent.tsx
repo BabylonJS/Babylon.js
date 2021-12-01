@@ -12,6 +12,7 @@ import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { Container } from "babylonjs-gui/2D/controls/container";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -317,17 +318,18 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
-                {(control as any).color !== undefined && (
-                    <Color3LineComponent
-                        iconLabel={"Color"}
-                        icon={colorIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={control}
-                        propertyName="color"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                )}
+                {((control as any).color !== undefined && control.typeName !== "Image" &&
+                    control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
+                        <Color3LineComponent
+                            iconLabel={"Color"}
+                            icon={colorIcon}
+                            lockObject={this.props.lockObject}
+                            label=""
+                            target={control}
+                            propertyName="color"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
                 {(control as any).background !== undefined && (
                     <Color3LineComponent
                         iconLabel={"Background"}
@@ -380,59 +382,63 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                <FloatLineComponent
-                    iconLabel={"Shadow Blur"}
-                    icon={shadowBlurIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={control}
-                    propertyName="shadowBlur"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <hr className="ge" />
-                <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <TextInputLineComponent
-                        iconLabel={"Font Family"}
-                        icon={fontFamilyIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={control}
-                        propertyName="fontFamily"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextInputLineComponent
-                        iconLabel={"Font Size"}
-                        icon={fontSizeIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={control}
-                        numbersOnly={true}
-                        propertyName="fontSize"
-                        onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </div>
-                <div className="ge-divider">
-                    <TextInputLineComponent
-                        iconLabel={"Font Weight"}
+                <div className="ge-divider-short">
+                    <FloatLineComponent
+                        iconLabel={"Shadow Blur"}
                         icon={shadowBlurIcon}
                         lockObject={this.props.lockObject}
                         label=""
                         target={control}
-                        propertyName="fontWeight"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextInputLineComponent
-                        iconLabel={"Font Style"}
-                        icon={fontStyleIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={control}
-                        propertyName="fontStyle"
+                        propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
+                {(control instanceof Container || control.typeName === "TextBlock") && <>
+                    <hr className="ge" />
+                    <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
+                    <div className="ge-divider">
+                        <TextInputLineComponent
+                            iconLabel={"Font Family"}
+                            icon={fontFamilyIcon}
+                            lockObject={this.props.lockObject}
+                            label=""
+                            target={control}
+                            propertyName="fontFamily"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                        <TextInputLineComponent
+                            iconLabel={"Font Size"}
+                            icon={fontSizeIcon}
+                            lockObject={this.props.lockObject}
+                            label=""
+                            target={control}
+                            numbersOnly={true}
+                            propertyName="fontSize"
+                            onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    </div>
+                    <div className="ge-divider">
+                        <TextInputLineComponent
+                            iconLabel={"Font Weight"}
+                            icon={shadowBlurIcon}
+                            lockObject={this.props.lockObject}
+                            label=""
+                            target={control}
+                            propertyName="fontWeight"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                        <TextInputLineComponent
+                            iconLabel={"Font Style"}
+                            icon={fontStyleIcon}
+                            lockObject={this.props.lockObject}
+                            label=""
+                            target={control}
+                            propertyName="fontStyle"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    </div>
+                </>}
             </div>
         );
     }

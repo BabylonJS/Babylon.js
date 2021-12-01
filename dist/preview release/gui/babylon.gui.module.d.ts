@@ -748,9 +748,10 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
          * @param scene defines the hosting scene
          * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module "babylonjs-gui/2D/controls/control" {
@@ -853,6 +854,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -4152,6 +4155,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -4162,6 +4166,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * Observable raised when the point picked by the pointer events changed
          */
@@ -4182,6 +4187,14 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         get scene(): Scene;
         /** Gets associated utility layer */
         get utilityLayer(): Nullable<UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -4336,6 +4349,8 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): Vector3;
         set position(value: Vector3);
@@ -7809,9 +7824,10 @@ declare module BABYLON.GUI {
          * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
          * @param scene defines the hosting scene
          * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module BABYLON.GUI {
@@ -7901,6 +7917,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -10986,6 +11004,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -10996,6 +11015,7 @@ declare module BABYLON.GUI {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * BABYLON.Observable raised when the point picked by the pointer events changed
          */
@@ -11016,6 +11036,14 @@ declare module BABYLON.GUI {
         get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
         get utilityLayer(): BABYLON.Nullable<BABYLON.UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -11148,6 +11176,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): BABYLON.Vector3;
         set position(value: BABYLON.Vector3);

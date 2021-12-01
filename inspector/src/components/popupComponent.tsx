@@ -2,13 +2,13 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Inspector } from "../inspector";
 
-interface IPopupComponentProps {
+export interface IPopupComponentProps {
     id: string;
     title: string;
     size: { width: number; height: number };
     onOpen?: (window: Window) => void;
     onClose: (window: Window) => void;
-    onResize?: () => void;
+    onResize?: (window: Window) => void;
     onKeyUp?: (evt: KeyboardEvent) => void;
     onKeyDown?: (evt: KeyboardEvent) => void;
 }
@@ -72,7 +72,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
             this._window.addEventListener("beforeunload", () => this._window && onClose(this._window));
             this._window.addEventListener("resize", () => {
                 if (this.props.onResize) {
-                    this.props.onResize();
+                    this._window && this.props.onResize(this._window);
                 }
             });
         } else {

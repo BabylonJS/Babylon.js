@@ -11160,7 +11160,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
+exports.push([module.i, "#performance-viewer {\n  display: grid;\n  height: 100%;\n  width: 100%;\n  grid-template-columns: 25% 75%;\n  grid-template-rows: 30px;\n  grid-template-areas: \". liveButton\"\r \"sidebar graph\"; }\n  #performance-viewer .performancePlayheadButton {\n    grid-area: liveButton;\n    height: 30px;\n    width: 100px;\n    justify-self: right;\n    background-color: #dcdfe1;\n    color: #2e3f47;\n    outline: 2px #2e3f47;\n    margin: 5px;\n    position: absolute;\n    bottom: 10px;\n    right: 10px; }\n  #performance-viewer #performance-viewer-graph {\n    grid-area: graph; }\n  #performance-viewer #performance-viewer-sidebar {\n    grid-area: sidebar;\n    display: flex;\n    flex-direction: column; }\n    #performance-viewer #performance-viewer-sidebar .header {\n      color: white;\n      display: inline-flex;\n      justify-content: space-between;\n      width: 100%;\n      padding: 5 0; }\n    #performance-viewer #performance-viewer-sidebar .version-header {\n      background-color: darkslategray; }\n    #performance-viewer #performance-viewer-sidebar .category-header {\n      background-color: royalblue; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item:nth-child(odd) {\n      background-color: lightsteelblue; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item:nth-child(even) {\n      background-color: lightgrey; }\n    #performance-viewer #performance-viewer-sidebar .sidebar-item {\n      display: inline-flex;\n      flex-direction: row;\n      width: 100%;\n      align-items: center; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .sidebar-item-label {\n        width: 100%; }\n      #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker {\n        height: calc(100% - 8px);\n        margin: 4px;\n        width: 100%; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-rect {\n          height: calc(100% - 4px);\n          border: 2px white solid;\n          cursor: pointer;\n          min-height: 18px; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-cover {\n          position: fixed;\n          top: 0px;\n          right: 0px;\n          bottom: 0px;\n          left: 0px;\n          z-index: 100; }\n        #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float {\n          position: absolute; }\n          #performance-viewer #performance-viewer-sidebar .sidebar-item .color-picker .color-picker-float .color-picker-container {\n            width: 200px; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -45924,11 +45924,12 @@ var PerformancePlayheadButtonComponent = function (_a) {
 /*!*************************************************************************************!*\
   !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx ***!
   \*************************************************************************************/
-/*! exports provided: PerformanceViewerComponent */
+/*! exports provided: IPerfMetadataCategory, PerformanceViewerComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IPerfMetadataCategory", function() { return IPerfMetadataCategory; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerComponent", function() { return PerformanceViewerComponent; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
@@ -45937,12 +45938,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/buttonLineComponent */ "./sharedUiComponents/lines/buttonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/fileButtonLineComponent */ "./sharedUiComponents/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/lineContainerComponent */ "./sharedUiComponents/lines/lineContainerComponent.tsx");
-/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
-/* harmony import */ var _popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../popupComponent */ "./components/popupComponent.tsx");
-/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
-/* harmony import */ var _performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./performancePlayheadButtonComponent */ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx");
-
-
+/* harmony import */ var _inspector__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../inspector */ "./inspector.ts");
+/* harmony import */ var _performanceViewerPopupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./performanceViewerPopupComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerPopupComponent.tsx");
 
 
 
@@ -45959,12 +45956,17 @@ __webpack_require__(/*! ./scss/performanceViewer.scss */ "./components/actionTab
 var initialWindowSize = { width: 1024, height: 512 };
 // Note this should be false when committed until the feature is fully working.
 var isEnabled = false;
+var IPerfMetadataCategory;
+(function (IPerfMetadataCategory) {
+    IPerfMetadataCategory["Count"] = "Count";
+    IPerfMetadataCategory["FrameSteps"] = "Frame Steps Duration";
+})(IPerfMetadataCategory || (IPerfMetadataCategory = {}));
 // list of strategies to add to perf graph automatically.
 var defaultStrategies = [
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(),
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy(),
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].DrawCallsStrategy(),
-    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].ActiveMeshesStrategy(),
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps },
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].FpsStrategy() },
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].DrawCallsStrategy(), category: IPerfMetadataCategory.Count },
+    { strategyCallback: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PerfCollectionStrategy"].ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count },
 ];
 var RecordingState;
 (function (RecordingState) {
@@ -45979,7 +45981,6 @@ var PerformanceViewerComponent = function (props) {
     var _d = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), performanceCollector = _d[0], setPerformanceCollector = _d[1];
     var layoutObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
     var returnToLiveObservable = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]())[0];
-    var popupRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null);
     // do cleanup when the window is closed
     var onClosePerformanceViewer = function (window) {
         if (window) {
@@ -45988,9 +45989,24 @@ var PerformanceViewerComponent = function (props) {
         setIsOpen(false);
         setIsLoaded(false);
     };
+    var startPerformanceViewerPopup = function () {
+        if (performanceCollector) {
+            _inspector__WEBPACK_IMPORTED_MODULE_5__["Inspector"]._CreatePersistentPopup({
+                props: {
+                    id: "performance-viewer",
+                    title: "Realtime Performance Viewer",
+                    onClose: onClosePerformanceViewer,
+                    onResize: onResize,
+                    size: initialWindowSize
+                },
+                children: react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerPopupComponent__WEBPACK_IMPORTED_MODULE_6__["PerformanceViewerPopupComponent"], { scene: scene, layoutObservable: layoutObservable, returnToLiveObservable: returnToLiveObservable, performanceCollector: performanceCollector })
+            }, document.body);
+        }
+    };
     var onPerformanceButtonClick = function () {
         setIsLoaded(false);
         setIsOpen(true);
+        startPerformanceViewerPopup();
     };
     var onLoadClick = function (file) {
         babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].ReadFile(file, function (data) {
@@ -46004,17 +46020,16 @@ var PerformanceViewerComponent = function (props) {
                 setIsOpen(false);
                 setIsLoaded(false);
             }
+            else {
+                startPerformanceViewerPopup();
+            }
         });
     };
     var onExportClick = function () {
         performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.exportDataToCsv();
     };
-    var onResize = function () {
+    var onResize = function (window) {
         var _a, _b;
-        if (!popupRef.current) {
-            return;
-        }
-        var window = popupRef.current.getWindow();
         var width = (_a = window === null || window === void 0 ? void 0 : window.innerWidth) !== null && _a !== void 0 ? _a : 0;
         var height = (_b = window === null || window === void 0 ? void 0 : window.innerHeight) !== null && _b !== void 0 ? _b : 0;
         layoutObservable.notifyObservers({ width: width, height: height });
@@ -46055,17 +46070,41 @@ var PerformanceViewerComponent = function (props) {
             performanceCollector === null || performanceCollector === void 0 ? void 0 : performanceCollector.stop();
         };
     }, [recordingState]);
-    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-        isEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "Performance Viewer" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Realtime Perf Viewer", onClick: onPerformanceButtonClick }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { accept: "csv", label: "Load Perf Viewer using CSV", onClick: onLoadClick }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export Perf to CSV", onClick: onExportClick }),
-            !isOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: recordingState, onClick: onToggleRecording }))),
-        isOpen && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "perf-viewer", title: "Performance Viewer", size: initialWindowSize, ref: popupRef, onResize: onResize, onClose: onClosePerformanceViewer },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer" }, performanceCollector && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_8__["PerformancePlayheadButtonComponent"], { returnToPlayhead: returnToLiveObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_7__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_5__["CanvasGraphComponent"], { id: "performance-viewer-graph", returnToPlayheadObservable: returnToLiveObservable, layoutObservable: layoutObservable, scene: scene, collector: performanceCollector }))))))));
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, isEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "Performance Viewer" },
+        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Open Realtime Perf Viewer", onClick: onPerformanceButtonClick }),
+        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["FileButtonLineComponent"], { accept: "csv", label: "Load Perf Viewer using CSV", onClick: onLoadClick }),
+        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export Perf to CSV", onClick: onExportClick }),
+        !isOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: recordingState, onClick: onToggleRecording })))));
+};
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/performanceViewer/performanceViewerPopupComponent.tsx":
+/*!******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/performanceViewer/performanceViewerPopupComponent.tsx ***!
+  \******************************************************************************************/
+/*! exports provided: PerformanceViewerPopupComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PerformanceViewerPopupComponent", function() { return PerformanceViewerPopupComponent; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./performanceViewerSidebarComponent */ "./components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx");
+/* harmony import */ var _performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./performancePlayheadButtonComponent */ "./components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent.tsx");
+/* harmony import */ var _graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../graph/canvasGraphComponent */ "./components/graph/canvasGraphComponent.tsx");
+
+
+
+
+var PerformanceViewerPopupComponent = function (props) {
+    var scene = props.scene, layoutObservable = props.layoutObservable, returnToLiveObservable = props.returnToLiveObservable, performanceCollector = props.performanceCollector;
+    return (react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", { id: "performance-viewer" },
+        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_performancePlayheadButtonComponent__WEBPACK_IMPORTED_MODULE_2__["PerformancePlayheadButtonComponent"], { returnToPlayhead: returnToLiveObservable }),
+        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_performanceViewerSidebarComponent__WEBPACK_IMPORTED_MODULE_1__["PerformanceViewerSidebarComponent"], { collector: performanceCollector }),
+        react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_graph_canvasGraphComponent__WEBPACK_IMPORTED_MODULE_3__["CanvasGraphComponent"], { id: "performance-viewer-graph", returnToPlayheadObservable: returnToLiveObservable, layoutObservable: layoutObservable, scene: scene, collector: performanceCollector })));
 };
 
 
@@ -46092,15 +46131,27 @@ __webpack_require__.r(__webpack_exports__);
 
 var PerformanceViewerSidebarComponent = function (props) {
     var collector = props.collector;
-    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])([]), metadata = _a[0], setMetadata = _a[1];
+    // Map from id to IPerfMetadata information
+    var _a = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), metadataMap = _a[0], setMetadataMap = _a[1];
+    // Map from category to all the ids belonging to that category
+    var _b = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), metadataCategoryId = _b[0], setMetadataCategoryId = _b[1];
+    // List of ordered categories
+    var _c = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(), metadataCategories = _c[0], setMetadataCategories = _c[1];
     Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
         var onUpdateMetadata = function (metadata) {
-            var entries = [];
-            // convert to iterable list of entries
-            metadata.forEach(function (value, key) {
-                entries.push([key, value]);
+            var newMap = new Map();
+            metadata.forEach(function (value, id) {
+                var _a, _b;
+                var currentCategory = (_a = value.category) !== null && _a !== void 0 ? _a : "";
+                var currentIds = (_b = newMap.get(currentCategory)) !== null && _b !== void 0 ? _b : [];
+                currentIds.push(id);
+                newMap.set(currentCategory, currentIds);
             });
-            setMetadata(entries);
+            var orderedCategories = Array.from(newMap.keys());
+            orderedCategories.sort();
+            setMetadataCategoryId(newMap);
+            setMetadataMap(metadata);
+            setMetadataCategories(orderedCategories);
         };
         collector.metadataObservable.add(onUpdateMetadata);
         return function () {
@@ -46113,13 +46164,22 @@ var PerformanceViewerSidebarComponent = function (props) {
     var onColorChange = function (id) { return function (color) {
         collector.updateMetadata(id, "color", color);
     }; };
-    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadata.map(function (_a) {
-        var _b;
-        var id = _a[0], metadata = _a[1];
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_b = metadata.color) !== null && _b !== void 0 ? _b : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true })));
+    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "performance-viewer-sidebar" }, metadataCategories && metadataCategories.map(function (category) {
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "category-" + (category || 'version') },
+            category
+                ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "category-header header", key: "header-" + category },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", null, category),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox" }))
+                : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "version-header header", key: "header-version" }, "Version:"), (_a = metadataCategoryId === null || metadataCategoryId === void 0 ? void 0 : metadataCategoryId.get(category)) === null || _a === void 0 ? void 0 :
+            _a.map(function (id) {
+                var _a;
+                var metadata = metadataMap === null || metadataMap === void 0 ? void 0 : metadataMap.get(id);
+                return metadata && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "perf-sidebar-item-" + id, className: "sidebar-item" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", checked: !metadata.hidden, onChange: onCheckChange(id) }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorPickerComponent__WEBPACK_IMPORTED_MODULE_2__["ColorPickerLineComponent"], { value: babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromHexString((_a = metadata.color) !== null && _a !== void 0 ? _a : "#000"), onColorChanged: onColorChange(id), shouldPopRight: true }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", { className: "sidebar-item-label" }, id));
+            })));
     })));
 };
 
@@ -47434,9 +47494,9 @@ var BottomBarComponent = /** @class */ (function (_super) {
             // New clip length is greater than current clip length: add a key frame at the new clip length location with the same value as the previous frame
             _this.props.context.clipLength = newClipLength;
             _this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            var keyAlreadyExists = _this._getKeyAtFrame(newClipLength) !== null;
+            var keyAlreadyExists = _this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                _this.props.context.onNewKeyPointRequired.notifyObservers();
+                _this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
             _this.setState({ clipLength: newClipLength.toFixed(0) });
         });
@@ -47444,9 +47504,9 @@ var BottomBarComponent = /** @class */ (function (_super) {
             // New clip length is smaller than current clip length: move the playing range to the new clip length
             _this.props.context.clipLength = newClipLength;
             _this.props.context.onMoveToFrameRequired.notifyObservers(newClipLength);
-            var keyAlreadyExists = _this._getKeyAtFrame(newClipLength) !== null;
+            var keyAlreadyExists = _this.props.context.getKeyAtAnyFrameIndex(newClipLength) !== null;
             if (!keyAlreadyExists) {
-                _this.props.context.onNewKeyPointRequired.notifyObservers();
+                _this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers();
             }
             _this.props.context.toKey = Math.min(_this.props.context.toKey, _this.props.context.clipLength);
             _this.props.context.onRangeUpdated.notifyObservers();
@@ -47463,16 +47523,6 @@ var BottomBarComponent = /** @class */ (function (_super) {
             this.props.context.onClipLengthDecreased.notifyObservers(newClipLength);
         }
         this.setState({ clipLength: newClipLength.toFixed(0) });
-    };
-    BottomBarComponent.prototype._getKeyAtFrame = function (frameNumber) {
-        var keys = this.props.context.activeAnimations[0].getKeys();
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-            var key = keys_1[_i];
-            if (Math.floor(frameNumber - key.frame) === 0) {
-                return key;
-            }
-        }
-        return null;
     };
     BottomBarComponent.prototype.componentWillUnmount = function () {
         if (this._onAnimationsLoadedObserver) {
@@ -47791,7 +47841,7 @@ var Context = /** @class */ (function () {
         this.onValueSet = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onValueManuallyEntered = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onNewKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onCreateOrUpdateKeyPointRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFlattenTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLinearTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onBreakTangentRequired = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47976,6 +48026,31 @@ var Context = /** @class */ (function () {
             nextKey = this.toKey;
         }
         return nextKey;
+    };
+    /**
+     * If any current active animation has a key at the received frameNumber,
+     * return the index of the animation in the active animation array, and
+     * the index of the frame on the animation.
+     */
+    Context.prototype.getKeyAtAnyFrameIndex = function (frameNumber) {
+        if (!this.animations || !this.animations.length || !this.activeAnimations || !this.activeAnimations.length) {
+            return null;
+        }
+        var animIdx = 0;
+        for (var _i = 0, _a = this.activeAnimations; _i < _a.length; _i++) {
+            var animation = _a[_i];
+            var keys = animation.getKeys();
+            var idx = 0;
+            for (var _b = 0, keys_3 = keys; _b < keys_3.length; _b++) {
+                var key = keys_3[_b];
+                if (Math.floor(frameNumber - key.frame) === 0) {
+                    return { animationIndex: animIdx, keyIndex: idx };
+                }
+                idx++;
+            }
+            animIdx++;
+        }
+        return null;
     };
     return Context;
 }());
@@ -48691,8 +48766,8 @@ var GraphComponent = /** @class */ (function (_super) {
             }
             _this.props.context.onActiveAnimationChanged.notifyObservers();
         });
-        // New keypoint
-        _this.props.context.onNewKeyPointRequired.add(function () {
+        // Create or Update keypoint
+        _this.props.context.onCreateOrUpdateKeyPointRequired.add(function () {
             if (_this.props.context.activeAnimations.length === 0) {
                 return;
             }
@@ -48726,44 +48801,56 @@ var GraphComponent = /** @class */ (function (_super) {
                 }
                 var leftKey = keys[indexToAdd];
                 var rightKey = keys[indexToAdd + 1];
-                var newKey = {
-                    frame: currentFrame,
-                    value: value,
-                };
-                if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
-                    var derivative = null;
-                    var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
-                    var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
-                    switch (currentAnimation.dataType) {
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        }
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                        case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
-                            derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
-                            break;
-                    }
-                    if (derivative !== null) {
-                        newKey.inTangent = derivative;
-                        newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
-                    }
+                if (Math.floor(currentFrame - (leftKey === null || leftKey === void 0 ? void 0 : leftKey.frame)) === 0) {
+                    // Key already exists, update it
+                    leftKey.value = value;
                 }
-                keys.splice(indexToAdd + 1, 0, newKey);
+                else if (Math.floor(rightKey.frame - currentFrame) === 0) {
+                    // Key already exists, update it
+                    rightKey.value = value;
+                }
+                else {
+                    // Key doesn't exist, create it (same operations) as
+                    // the new key listener
+                    var newKey = {
+                        frame: currentFrame,
+                        value: value,
+                    };
+                    if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                        var derivative = null;
+                        var invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                        var cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                        switch (currentAnimation.dataType) {
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Scalar"].Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION: {
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Quaternion"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            }
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color3"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                                derivative = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Color4"].Hermite1stDerivative(leftKey.value.scale(invFrameDelta), leftKey.outTangent, rightKey.value.scale(invFrameDelta), rightKey.inTangent, cutTime);
+                                break;
+                        }
+                        if (derivative !== null) {
+                            newKey.inTangent = derivative;
+                            newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
+                        }
+                    }
+                    keys.splice(indexToAdd + 1, 0, newKey);
+                }
                 currentAnimation.setKeys(keys);
             }
             _this._evaluateKeys(false, false);
@@ -51443,7 +51530,7 @@ var TopBarComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "top-bar-parent-name" }, this.props.context.title),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyFrameValue, tooltip: "Frame", id: "key-frame", onValueAsNumberChanged: function (newValue) { return _this.props.context.onFrameManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_textInputComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputComponent"], { className: hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled", isNumber: true, value: this.state.keyValue, tooltip: "Value", id: "key-value", onValueAsNumberChanged: function (newValue) { return _this.props.context.onValueManuallyEntered.notifyObservers(newValue); }, globalState: this.props.globalState, context: this.props.context }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: hasActiveAnimations ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onNewKeyPointRequired.notifyObservers(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: hasActiveAnimations ? "" : "disabled", tooltip: "New key", id: "new-key", globalState: this.props.globalState, context: this.props.context, icon: newKeyIcon, onClick: function () { return _this.props.context.onCreateOrUpdateKeyPointRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { tooltip: "Frame canvas", id: "frame-canvas", globalState: this.props.globalState, context: this.props.context, icon: frameIcon, onClick: function () { return _this.props.context.onFrameRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Flatten tangent", id: "flatten-tangent", globalState: this.props.globalState, context: this.props.context, icon: flatTangentIcon, onClick: function () { return _this.props.context.onFlattenTangentRequired.notifyObservers(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls_actionButtonComponent__WEBPACK_IMPORTED_MODULE_2__["ActionButtonComponent"], { className: this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0 ? "" : "disabled", tooltip: "Linear tangent", id: "linear-tangent", globalState: this.props.globalState, context: this.props.context, icon: linearTangentIcon, onClick: function () { return _this.props.context.onLinearTangentRequired.notifyObservers(); } }),
@@ -59672,6 +59759,8 @@ var GlobalState = /** @class */ (function () {
         this.lightGizmos = [];
         // Camera gizmos
         this.cameraGizmos = [];
+        this.onSceneExplorerClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onActionTabsClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
     }
     Object.defineProperty(GlobalState.prototype, "onlyUseEulers", {
         get: function () {
@@ -61056,7 +61145,7 @@ var PopupComponent = /** @class */ (function (_super) {
             this._window.addEventListener("beforeunload", function () { return _this._window && onClose(_this._window); });
             this._window.addEventListener("resize", function () {
                 if (_this.props.onResize) {
-                    _this.props.onResize();
+                    _this._window && _this.props.onResize(_this._window);
                 }
             });
         }
@@ -63188,7 +63277,7 @@ var TreeItemLabelComponent = /** @class */ (function (_super) {
     };
     TreeItemLabelComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title", onClick: function () { return _this.onClick(); } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title", title: this.props.label, onClick: function () { return _this.onClick(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "titleIcon" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: this.props.icon, color: this.props.color })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "titleText" }, this.props.label || "no name")));
@@ -63524,6 +63613,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/sceneExplorer/sceneExplorerComponent */ "./components/sceneExplorer/sceneExplorerComponent.tsx");
 /* harmony import */ var _components_embedHost_embedHostComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/embedHost/embedHostComponent */ "./components/embedHost/embedHostComponent.tsx");
 /* harmony import */ var _components_globalState__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/globalState */ "./components/globalState.ts");
+/* harmony import */ var _components_popupComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/popupComponent */ "./components/popupComponent.tsx");
+
 
 
 
@@ -63634,6 +63725,7 @@ var Inspector = /** @class */ (function () {
                     if (options.popup) {
                         _this._SceneExplorerWindow.close();
                     }
+                    _this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
                 },
             });
             react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](sceneExplorerElement, this._SceneExplorerHost);
@@ -63681,6 +63773,7 @@ var Inspector = /** @class */ (function () {
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
                     }
+                    _this._GlobalState.onActionTabsClosedObservable.notifyObservers();
                 },
                 initialTab: options.initialTab,
             });
@@ -63730,6 +63823,8 @@ var Inspector = /** @class */ (function () {
                     if (options.popup) {
                         _this._EmbedHostWindow.close();
                     }
+                    _this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
+                    _this._GlobalState.onActionTabsClosedObservable.notifyObservers();
                 },
                 initialTab: options.initialTab,
             });
@@ -63800,6 +63895,7 @@ var Inspector = /** @class */ (function () {
         }
     };
     Inspector.Show = function (scene, userOptions) {
+        var _this = this;
         var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
@@ -63820,6 +63916,8 @@ var Inspector = /** @class */ (function () {
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
+                this._EmbedHostWindow.addEventListener("beforeunload", function () { return _this._GlobalState.onSceneExplorerClosedObservable.notifyObservers(); });
+                this._EmbedHostWindow.addEventListener("beforeunload", function () { return _this._GlobalState.onActionTabsClosedObservable.notifyObservers(); });
             }
             else {
                 if (!rootElement) {
@@ -63850,12 +63948,14 @@ var Inspector = /** @class */ (function () {
                     this._SceneExplorerHost.style.width = "0";
                 }
                 this._CreateSceneExplorer(scene, options, this._CreatePopup("SCENE EXPLORER", "_SceneExplorerWindow"));
+                this._SceneExplorerWindow.addEventListener("beforeunload", function () { return _this._GlobalState.onSceneExplorerClosedObservable.notifyObservers(); });
             }
             if (options.showInspector) {
                 if (this._ActionTabsHost) {
                     this._ActionTabsHost.style.width = "0";
                 }
                 this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
+                this._ActionTabsWindow.addEventListener("beforeunload", function () { return _this._GlobalState.onActionTabsClosedObservable.notifyObservers(); });
             }
         }
         else {
@@ -63955,6 +64055,7 @@ var Inspector = /** @class */ (function () {
             react_dom__WEBPACK_IMPORTED_MODULE_2__["unmountComponentAtNode"](this._ActionTabsHost);
             this._RemoveElementFromDOM(this._ActionTabsHost);
             this._ActionTabsHost = null;
+            this._GlobalState.onActionTabsClosedObservable.notifyObservers();
         }
         if (this._SceneExplorerHost) {
             react_dom__WEBPACK_IMPORTED_MODULE_2__["unmountComponentAtNode"](this._SceneExplorerHost);
@@ -63962,6 +64063,7 @@ var Inspector = /** @class */ (function () {
                 this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
             }
             this._SceneExplorerHost = null;
+            this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
         if (this._EmbedHost) {
             react_dom__WEBPACK_IMPORTED_MODULE_2__["unmountComponentAtNode"](this._EmbedHost);
@@ -63969,12 +64071,44 @@ var Inspector = /** @class */ (function () {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
             }
             this._EmbedHost = null;
+            this._GlobalState.onActionTabsClosedObservable.notifyObservers();
+            this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
         Inspector._OpenedPane = 0;
         this._Cleanup();
         if (!this._GlobalState.onPluginActivatedObserver) {
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_3__["SceneLoader"].OnPluginActivatedObservable.remove(this._GlobalState.onPluginActivatedObserver);
             this._GlobalState.onPluginActivatedObserver = null;
+        }
+    };
+    Inspector._CreatePersistentPopup = function (config, hostElement) {
+        var _this = this;
+        if (this._PersistentPopupHost) {
+            this._ClosePersistentPopup();
+        }
+        this._PersistentPopupHost = hostElement.ownerDocument.createElement("div");
+        var popupElement = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_popupComponent__WEBPACK_IMPORTED_MODULE_8__["PopupComponent"], config.props, config.children);
+        react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](popupElement, this._PersistentPopupHost);
+        if (config.closeWhenSceneExplorerCloses) {
+            this._OnSceneExplorerClosedObserver = this._GlobalState.onSceneExplorerClosedObservable.add(function () { return _this._ClosePersistentPopup(); });
+        }
+        if (config.closeWhenActionTabsCloses) {
+            this._OnActionTabsClosedObserver = this._GlobalState.onActionTabsClosedObservable.add(function () { return _this._ClosePersistentPopup(); });
+        }
+    };
+    Inspector._ClosePersistentPopup = function () {
+        if (this._PersistentPopupHost) {
+            react_dom__WEBPACK_IMPORTED_MODULE_2__["unmountComponentAtNode"](this._PersistentPopupHost);
+            this._PersistentPopupHost.remove();
+            this._PersistentPopupHost = null;
+        }
+        if (this._OnSceneExplorerClosedObserver) {
+            this._GlobalState.onSceneExplorerClosedObservable.remove(this._OnSceneExplorerClosedObserver);
+            this._OnSceneExplorerClosedObserver = null;
+        }
+        if (this._OnActionTabsClosedObserver) {
+            this._GlobalState.onActionTabsClosedObservable.remove(this._OnActionTabsClosedObserver);
+            this._OnActionTabsClosedObserver = null;
         }
     };
     Inspector._OpenedPane = 0;
