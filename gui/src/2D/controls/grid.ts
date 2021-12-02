@@ -17,6 +17,7 @@ export class Grid extends Container {
     private _rowDefinitions = new Array<ValueAndUnit>();
     private _rowDefinitionObservers: Observer<void>[] = [];
     private _columnDefinitions = new Array<ValueAndUnit>();
+    private _columnDefinitionObservers: Observer<void>[] = [];
     private _cells: { [key: string]: Container } = {};
     private _childControls = new Array<Control>();
 
@@ -78,7 +79,7 @@ export class Grid extends Container {
      */
     public addRowDefinition(height: number, isPixel = false): Grid {
         this._rowDefinitions.push(new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount].onChangedObservable.add(() => this._markAsDirty())!);
+        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
         this._markAsDirty();
 
         return this;
@@ -92,7 +93,7 @@ export class Grid extends Container {
      */
     public addColumnDefinition(width: number, isPixel = false): Grid {
         this._columnDefinitions.push(new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-
+        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
         this._markAsDirty();
 
         return this;
@@ -141,7 +142,9 @@ export class Grid extends Container {
             return this;
         }
 
+        this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         this._columnDefinitions[index] = new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
+        this._columnDefinitionObservers[index] = this._columnDefinitions[index].onChangedObservable.add(() => this._markAsDirty())!;
 
         this._markAsDirty();
 
@@ -231,7 +234,9 @@ export class Grid extends Container {
             }
         }
 
+        this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         this._columnDefinitions.splice(index, 1);
+        this._columnDefinitionObservers.splice(index, 1);
 
         this._markAsDirty();
 
