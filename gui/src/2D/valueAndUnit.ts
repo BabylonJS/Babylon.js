@@ -1,3 +1,4 @@
+import { Observable } from "babylonjs/Misc/observable";
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 
 /**
@@ -5,7 +6,9 @@ import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
  */
 export class ValueAndUnit {
     private _value = 1;
+    private _unit = ValueAndUnit.UNITMODE_PIXEL;
     private _originalUnit: number;
+
     /**
      * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
@@ -13,33 +16,68 @@ export class ValueAndUnit {
     public ignoreAdaptiveScaling = false;
 
     /**
+     * Observable event triggered each time the value or unit changes
+     */
+    public onChangedObservable = new Observable<void>();
+
+    /**
      * Creates a new ValueAndUnit
      * @param value defines the value to store
-     * @param unit defines the unit to store
+     * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
      * @param negativeValueAllowed defines a boolean indicating if the value can be negative
      */
     public constructor(value: number,
         /** defines the unit to store */
-        public unit = ValueAndUnit.UNITMODE_PIXEL,
+        unit = ValueAndUnit.UNITMODE_PIXEL,
         /** defines a boolean indicating if the value can be negative */
         public negativeValueAllowed = true) {
         this._value = value;
+        this._unit = unit;
         this._originalUnit = unit;
     }
 
     /** Gets a boolean indicating if the value is a percentage */
     public get isPercentage(): boolean {
-        return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
+        return this._unit === ValueAndUnit.UNITMODE_PERCENTAGE;
     }
 
     /** Gets a boolean indicating if the value is store as pixel */
     public get isPixel(): boolean {
-        return this.unit === ValueAndUnit.UNITMODE_PIXEL;
+        return this._unit === ValueAndUnit.UNITMODE_PIXEL;
     }
 
-    /** Gets direct internal value */
+    /**
+     * Gets value (without units)
+     * @deprecated use value property instead
+     */
     public get internalValue(): number {
         return this._value;
+    }
+
+    /** Gets value (without units) */
+    public get value(): number {
+        return this._value;
+    }
+
+    /** Sets value (without units) */
+    public set value(value: number) {
+        if (value !== this._value) {
+            this._value = value;
+            this.onChangedObservable.notifyObservers();
+        }
+    }
+
+    /** Gets units (without value) */
+    public get unit(): number {
+        return this._unit;
+    }
+
+    /** Sets units (without value) */
+    public set unit(value: number) {
+        if (value !== this._unit) {
+            this._unit = value;
+            this.onChangedObservable.notifyObservers();
+        }
     }
 
     /**
@@ -57,14 +95,18 @@ export class ValueAndUnit {
     }
 
     /**
-     * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+     * Update the current value and unit.
      * @param value defines the value to store
      * @param unit defines the unit to store
      * @returns the current ValueAndUnit
      */
     public updateInPlace(value: number, unit = ValueAndUnit.UNITMODE_PIXEL): ValueAndUnit {
-        this._value = value;
-        this.unit = unit;
+        if (this.value !== value || this.unit !== unit) {
+            // set member variables to notify only once
+            this._value = value;
+            this._unit = unit;
+            this.onChangedObservable.notifyObservers();
+        }
 
         return this;
     }
@@ -109,23 +151,22 @@ export class ValueAndUnit {
      * @returns a string
      */
     public toString(host: AdvancedDynamicTexture, decimals?: number): string {
-        switch (this.unit) {
+        switch (this._unit) {
             case ValueAndUnit.UNITMODE_PERCENTAGE:
                 let percentage = this.getValue(host) * 100;
-
                 return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
             case ValueAndUnit.UNITMODE_PIXEL:
                 let pixels = this.getValue(host);
                 return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
         }
 
-        return this.unit.toString();
+        return this._unit.toString();
     }
 
     /**
      * Store a value parsed from a string
      * @param source defines the source string
-     * @returns true if the value was successfully parsed
+     * @returns true if the value was successfully parsed and updated
      */
     public fromString(source: string | number): boolean {
         var match = ValueAndUnit._Regex.exec(source.toString());
@@ -155,12 +196,13 @@ export class ValueAndUnit {
             }
         }
 
-        if (sourceValue === this._value && sourceUnit === this.unit) {
+        if (sourceValue === this._value && sourceUnit === this._unit) {
             return false;
         }
 
         this._value = sourceValue;
-        this.unit = sourceUnit;
+        this._unit = sourceUnit;
+        this.onChangedObservable.notifyObservers();
 
         return true;
     }
