@@ -1,8 +1,6 @@
 import * as React from "react";
 import { Color4, Color3 } from "babylonjs/Maths/math.color";
 import { ColorPicker } from "../colorPicker/colorPicker";
-import { IconDefinition } from "@fortawesome/fontawesome-common-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
@@ -11,8 +9,6 @@ export interface IColorPickerComponentProps {
     icon?: string;
     iconLabel?: string;
     shouldPopRight?: boolean;
-    hideColorRect?: boolean;
-    faIcon?: IconDefinition;
 }
 
 interface IColorPickerComponentState {
@@ -82,8 +78,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         return (
             <div className="color-picker">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
-                {!this.props.hideColorRect && <div className="color-rect" ref={this._floatHostRef} style={{ background: this.state.hex }} onClick={() => this.setState({ pickerEnabled: true })}></div>}
-                {this.props.faIcon && <FontAwesomeIcon icon={this.props.faIcon} style={{color: this.state.hex}} onClick={() => this.setState({ pickerEnabled: true })}/>}
+                <div className="color-rect" ref={this._floatHostRef} style={{ background: this.state.hex }} onClick={() => this.setState({ pickerEnabled: true })}></div>
                 {this.state.pickerEnabled && (
                     <>
                         <div
