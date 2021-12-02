@@ -166,7 +166,7 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }
                 } else {
-                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
+                    stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             } else {
                 if (child.left !== stackWidth + "px") {
@@ -180,13 +180,13 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
                 } else {
-                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
+                    stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             }
         }
 
-        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
-        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+        stackWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
+        stackHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
 
         this._doNotTrackManualChanges = true;
 

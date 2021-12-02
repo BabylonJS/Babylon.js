@@ -383,16 +383,16 @@ export class Container extends Control {
                     if (child._layout(this._measureForChildren, context)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
                         }
                     }
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
-                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+                    computedWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
@@ -400,7 +400,7 @@ export class Container extends Control {
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
-                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+                    computedHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
