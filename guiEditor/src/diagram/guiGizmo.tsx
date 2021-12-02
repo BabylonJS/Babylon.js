@@ -23,6 +23,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _scalePointIndex: number = -1;
     private _previousPositions: Vector2[] = [];
     private _responsive: boolean;
+
     constructor(props: IGuiGizmoProps) {
         super(props);
         this.props.globalState.guiGizmo = this;
@@ -144,7 +145,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 res.x = result.x;
                 res.z = result.y;
 
-                //project to screen space
+                // Project to screen space
                 res.x -= (size.width / 2) - tempMeasure.width / 2;
                 res.z -= (size.height / 2) - tempMeasure.height / 2;
                 res.z *= -1;
@@ -288,29 +289,35 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             rotation = rotation % 6.28; // 360 degrees //TODO: use actual PI numbers
             rotation += 0.785398; // 45 degrees
             let rotationIndex = Math.floor(rotation / 1.5708);
-
+            const alpha = this.getRotation(node);;
+            
             let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) { // 0 and 180 degreess
 
                 const index = (this._scalePointIndex + rotationIndex) % 4; // If we're rotated calculate the offset for scalePoint
                 console.log("even ", index);
-                const newWidth = dx * lockX;
-                const newHieght = dy * lockY;
-                const newLeft = newWidth / 2 * offsetX[index] - (newWidth * pivotX * rotationOffset);
-                const newTop = newHieght / 2 * offsetY[index] - (newHieght * pivotY * rotationOffset);
+                const deltaWidth = dx * lockX;
+                const deltaHieght = dy * lockY;
+                //const deltaLeft = deltaWidth / 2 * offsetX[index] - (deltaWidth * pivotX * rotationOffset);
+                //const deltaTop = deltaHieght / 2 * offsetY[index] - (deltaHieght * pivotY * rotationOffset);
 
+                // x = dy *sin(rotation) + x*cos(rotation);
+                let deltaLeft = (deltaWidth / 2 * Math.cos(alpha)) + (deltaHieght/ 2 * Math.sin(alpha));            ///- (deltaWidth * pivotX * rotationOffset);
+                let deltaTop = (deltaHieght / 2 * Math.cos(alpha)) + (deltaWidth / 2 * Math.sin(alpha));            ///- (deltaHieght * pivotY * rotationOffset);
+                
+                const invert = rotationIndex === 2 ? -1 : 1;
                 switch (index) {
                     case 0:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, -1, 1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, -1, 1, 1);
                         break;
                     case 1:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, 1, 1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, 1, 1, -1);
                         break;
                     case 2:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, 1, 1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, 1, -1, -1);
                         break;
                     case 3:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, -1, 1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, -1, -1, 1);
                         break;
                     default:
                         break;
