@@ -19,6 +19,8 @@ module.exports = function(config) {
             '!./**/*.d.ts',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
+            './tests/unit/babylon/gui/2D/valueAndUnit.tests.js',
+            './tests/unit/babylon/gui/2D/controls/grid.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
             './tests/unit/babylon/src/babylon.node.tests.js',
             './tests/unit/babylon/src/Animations/babylon.animation.tests.js',

@@ -588,6 +588,9 @@ export abstract class Light extends Node implements ISortableLight {
             return null;
         }
         let clonedLight = SerializationHelper.Clone(constructor, this);
+        if (name) {
+            clonedLight.name = name;
+        }
         if (newParent) {
             clonedLight.parent = newParent;
         }
