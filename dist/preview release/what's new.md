@@ -168,6 +168,7 @@
 - Added `loadLayoutAsync` in the `XmlLoader`. Now the layouts can be loaded asynchronously rather than providing a callback.
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 - Added support for full screen UI and rig cameras ([#11544](https://github.com/BabylonJS/Babylon.js/issues/11544)) ([RaananW](https://github.com/RaananW))
+- Added ValueAndUnit change observable and Grid to listen for changes ([brianzinn](https://github.com/brianzinn))
 
 ### Behaviors
 
