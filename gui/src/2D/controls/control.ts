@@ -37,6 +37,7 @@ export class Control {
     public parent: Nullable<Container>;
     /** @hidden */
     public _currentMeasure = Measure.Empty();
+    /** @hidden */
     public _tempPaddingMeasure = Measure.Empty();
     private _fontFamily = "Arial";
     private _fontStyle = "";
