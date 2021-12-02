@@ -94,10 +94,10 @@ export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: Corouti
             } else {
                 // If the coroutine is not done, resume the coroutine (via the scheduler).
                 if (reschedule === undefined) {
-                    // If shouldReschedule is undefined at this point, then the coroutine must have stepped synchronously, so just flag another loop iteration.
+                    // If reschedule is undefined at this point, then the coroutine must have stepped synchronously, so just flag another loop iteration.
                     reschedule = true;
                 } else {
-                    // If shouldReschedule is defined at this point, then the coroutine must have stepped asynchronously, so call resume to restart the step loop.
+                    // If reschedule is defined at this point, then the coroutine must have stepped asynchronously, so call resume to restart the step loop.
                     resume();
                 }
             }
@@ -113,7 +113,7 @@ export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: Corouti
             }
 
             if (reschedule === undefined) {
-                // If shouldReschedule is defined at this point, then the coroutine must have stepped asynchronously, so stop looping and let the coroutine be resumed later.
+                // If reschedule is undefined at this point, then the coroutine must have stepped asynchronously, so stop looping and let the coroutine be resumed later.
                 reschedule = false;
             }
         } while (reschedule);
