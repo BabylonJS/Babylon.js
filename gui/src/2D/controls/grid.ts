@@ -112,7 +112,7 @@ export class Grid extends Container {
         }
 
         let current = this._rowDefinitions[index];
-        if (current && current.isPixel === isPixel && current.internalValue === height) {
+        if (current && current.isPixel === isPixel && current.value === height) {
             return this;
         }
 
@@ -138,7 +138,7 @@ export class Grid extends Container {
         }
 
         let current = this._columnDefinitions[index];
-        if (current && current.isPixel === isPixel && current.internalValue === width) {
+        if (current && current.isPixel === isPixel && current.value === width) {
             return this;
         }
 
@@ -372,55 +372,55 @@ export class Grid extends Container {
 
         // Heights
         let index = 0;
-        for (var value of this._rowDefinitions) {
-            if (value.isPixel) {
-                let height = value.getValue(this._host);
+        for (var rowDefinition of this._rowDefinitions) {
+            if (rowDefinition.isPixel) {
+                let height = rowDefinition.getValue(this._host);
                 availableHeight -= height;
                 heights[index] = height;
             } else {
-                globalHeightPercentage += value.internalValue;
+                globalHeightPercentage += rowDefinition.value;
             }
             index++;
         }
 
         let top = 0;
         index = 0;
-        for (var value of this._rowDefinitions) {
+        for (var rowDefinition of this._rowDefinitions) {
             tops.push(top);
 
-            if (!value.isPixel) {
-                let height = (value.internalValue / globalHeightPercentage) * availableHeight;
+            if (!rowDefinition.isPixel) {
+                let height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
                 top += height;
                 heights[index] = height;
             } else {
-                top += value.getValue(this._host);
+                top += rowDefinition.getValue(this._host);
             }
             index++;
         }
 
         // Widths
         index = 0;
-        for (var value of this._columnDefinitions) {
-            if (value.isPixel) {
-                let width = value.getValue(this._host);
+        for (var columnDefinition of this._columnDefinitions) {
+            if (columnDefinition.isPixel) {
+                let width = columnDefinition.getValue(this._host);
                 availableWidth -= width;
                 widths[index] = width;
             } else {
-                globalWidthPercentage += value.internalValue;
+                globalWidthPercentage += columnDefinition.value;
             }
             index++;
         }
 
         let left = 0;
         index = 0;
-        for (var value of this._columnDefinitions) {
+        for (var columnDefinition of this._columnDefinitions) {
             lefts.push(left);
-            if (!value.isPixel) {
-                let width = (value.internalValue / globalWidthPercentage) * availableWidth;
+            if (!columnDefinition.isPixel) {
+                let width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
                 left += width;
                 widths[index] = width;
             } else {
-                left += value.getValue(this._host);
+                left += columnDefinition.getValue(this._host);
             }
             index++;
         }
@@ -499,14 +499,24 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
-
+        for (var index = 0; index < this._rowDefinitions.length; index++) {
+            this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
+        }
+        for (var index = 0; index < this._columnDefinitions.length; index++) {
+            this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
+        }
+        this._rowDefinitionObservers = [];
+        this._rowDefinitions = [];
+        this._columnDefinitionObservers = [];
+        this._columnDefinitions = [];
+        this._cells = {};
         this._childControls = [];
     }
 
     /**
- * Serializes the current control
- * @param serializationObject defined the JSON serialized object
- */
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
         serializationObject.columnCount = this.columnCount;
