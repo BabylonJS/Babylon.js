@@ -49,18 +49,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
     private _toolBarIconSize = 55;
 
-    private _onWidgetKeyUpPointer: any;
     private _popUpWindow: Window;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
     }
 
