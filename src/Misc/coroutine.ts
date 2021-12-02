@@ -117,7 +117,7 @@ export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: Corouti
                 reschedule = false;
             }
         } while (reschedule);
-    }
+    };
 
     resume();
 }
