@@ -105,9 +105,7 @@ $squareSize: 14px;
             justify-content: center;
             align-items: center;
             .checkBox {
-                .hidden { 
-                    display: none; 
-                }               
+                display: none;                
             }
         }
 
@@ -115,8 +113,8 @@ $squareSize: 14px;
             width: 100%;
     
             .color-rect {
-                height: 14px;
-                width: 14px;
+                height: $squareSize;
+                width: $squareSize;
                 cursor: pointer;
             }
     
