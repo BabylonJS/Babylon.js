@@ -806,7 +806,7 @@ export class Control {
      public get descendentsOnlyPadding(): boolean {
         return this._descendentsOnlyPadding;
      }
- 
+
      public set descendentsOnlyPadding(value: boolean) {
         if (this._descendentsOnlyPadding === value) {
              return;
