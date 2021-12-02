@@ -2273,6 +2273,18 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: BABYLON.GUI.AdvancedDynamicTexture): Promise<void>;
+}
+declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
         texture: BABYLON.BaseTexture;
         lockObject: LockObject;

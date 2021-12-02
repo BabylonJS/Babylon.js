@@ -700,6 +700,8 @@ declare module GUIEDITOR {
         private _cameraMaxRadiasFactor;
         private _pasted;
         private _engine;
+        private _liveRenderObserver;
+        private _guiRenderObserver;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -715,7 +717,7 @@ declare module GUIEDITOR {
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedId: string): Promise<void>;
+        loadFromSnippet(snippetId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
@@ -730,13 +732,13 @@ declare module GUIEDITOR {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
-        componentDidMount(): void;
         onMove(evt: React.PointerEvent): void;
         getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
         createGUICanvas(): void;
+        synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
         getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
@@ -775,6 +777,7 @@ declare module GUIEDITOR {
     }
     export class GlobalState {
         [x: string]: any;
+        liveGuiTexture: BABYLON.Nullable<AdvancedDynamicTexture>;
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
@@ -790,6 +793,7 @@ declare module GUIEDITOR {
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
         onNewSceneObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Scene>>;
         onGuiNodeRemovalObservable: BABYLON.Observable<Control>;
+        onPopupClosedObservable: BABYLON.Observable<void>;
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
@@ -1739,10 +1743,8 @@ declare module GUIEDITOR {
         private _leftWidth;
         private _rightWidth;
         private _toolBarIconSize;
-        private _onWidgetKeyUpPointer;
         private _popUpWindow;
         componentDidMount(): void;
-        componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         showWaitScreen(): void;
         hideWaitScreen(): void;
@@ -1782,6 +1784,7 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        liveGuiTexture?: AdvancedDynamicTexture;
         customLoad: {
             label: string;
             action: (data: string) => Promise<string>;

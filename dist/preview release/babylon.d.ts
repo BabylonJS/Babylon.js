@@ -6580,7 +6580,7 @@ declare module BABYLON {
          */
         _shareDepth(renderTarget: RenderTargetWrapper): void;
         /** @hidden */
-        _swapAndDie(target: Nullable<InternalTexture>): void;
+        _swapAndDie(target: InternalTexture): void;
         protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper>;
         protected _swapRenderTargetWrapper(target: RenderTargetWrapper): void;
         /** @hidden */

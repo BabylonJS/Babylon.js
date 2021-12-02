@@ -44921,7 +44921,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_7__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, json, "guiTexture.json");
             }
             catch (error) {
-                alert("Unable to save your GUI");
+                _this.props.globalState.hostWindow.alert("Unable to save your GUI");
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].Error("Unable to save your GUI");
             }
         };
         _this.saveToSnippetServerHelper = function (content, adt) {
@@ -44979,19 +44980,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         navigator.clipboard
                             .writeText(adt.snippetId)
                             .then(function () {
-                            alert(alertMessage + ". The ID was copied to your clipboard.");
+                            _this.props.globalState.hostWindow.alert(alertMessage + ". The ID was copied to your clipboard.");
                         })
                             .catch(function (err) {
-                            alert(alertMessage);
+                            _this.props.globalState.hostWindow.alert(alertMessage);
                         });
                     }
                     else {
-                        alert(alertMessage);
+                        _this.props.globalState.hostWindow.alert(alertMessage);
                     }
                     _this.props.globalState.onBuiltObservable.notifyObservers();
                 })
                     .catch(function (err) {
-                    alert(err);
+                    _this.props.globalState.hostWindow.alert(err);
                 });
                 this.forceUpdate();
                 return [2 /*return*/];
@@ -45058,7 +45059,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
-        var snippedId = window.prompt("Please enter the snippet ID to use");
+        var snippedId = this.props.globalState.hostWindow.prompt("Please enter the snippet ID to use");
         if (!snippedId) {
             return;
         }
@@ -45255,7 +45256,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
                             var _a;
-                            (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
+                            if (_this.state.currentNode) {
+                                _this.props.globalState.guiTexture.removeControl(_this.state.currentNode);
+                                (_a = _this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(_this.state.currentNode);
+                                _this.state.currentNode.dispose();
+                            }
                             _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
@@ -47828,7 +47833,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             if (evt.key === "Delete") {
                 if (!_this.props.globalState.lockObject.lock) {
                     _this._selectedGuiNodes.forEach(function (guiNode) {
+                        var _a;
                         if (guiNode !== _this.globalState.guiTexture.getChildren()[0]) {
+                            _this.props.globalState.guiTexture.removeControl(guiNode);
+                            (_a = _this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(guiNode);
                             guiNode.dispose();
                         }
                     });
@@ -47867,6 +47875,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._constraintDirection = ConstraintDirection.NONE;
         };
         _this.isUp = true;
+        _this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
@@ -48083,22 +48092,55 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.props.globalState.hostDocument.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument.defaultView.removeEventListener("blur", this.blurEvent);
+        if (this.props.globalState.liveGuiTexture) {
+            this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
+            this.props.globalState.guiTexture.onBeginRenderObservable.remove(this._guiRenderObserver);
+            this.props.globalState.guiTexture.getDescendants(false).forEach(function (control) {
+                if (!control.metadata || !control.metadata.guiEditor) {
+                    return;
+                }
+                control.onPointerUpObservable.remove(control.metadata.onPointerUp);
+                control.onPointerDownObservable.remove(control.metadata.onPointerDown);
+                control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
+                control.onPointerOutObservable.remove(control.metadata.onPointerOut);
+                control.onDisposeObservable.remove(control.metadata.onDispose);
+                control.highlightLineWidth = control.metadata.highlightLineWidth;
+                control.isHighlighted = control.metadata.isHighlighted;
+                control.metadata = control.metadata.metadata;
+            });
+        }
         this._engine.dispose();
     };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
+        var _a;
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject, true);
+        if (this.props.globalState.liveGuiTexture) {
+            (_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseContent(serializationObject, true);
+            this.synchronizeLiveGUI();
+        }
+        else {
+            this.globalState.guiTexture.parseContent(serializationObject, true);
+        }
         this.loadToEditor();
     };
-    WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
+    WorkbenchComponent.prototype.loadFromSnippet = function (snippetId) {
+        var _a;
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
-                switch (_a.label) {
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true)];
+                        if (!this.props.globalState.liveGuiTexture) return [3 /*break*/, 2];
+                        return [4 /*yield*/, ((_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseFromSnippetAsync(snippetId, true))];
                     case 1:
-                        _a.sent();
+                        _b.sent();
+                        this.synchronizeLiveGUI();
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippetId, true)];
+                    case 3:
+                        _b.sent();
+                        _b.label = 4;
+                    case 4:
                         this.loadToEditor();
                         if (this.props.globalState.customLoad) {
                             this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(function (err) {
@@ -48115,8 +48157,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _this = this;
         var size = this.globalState.guiTexture.getSize();
         this.resizeGuiTexture(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height));
-        var children = this.globalState.guiTexture.getChildren();
-        children[0].children.forEach(function (guiElement) {
+        this.globalState.guiTexture.rootContainer.children.forEach(function (guiElement) {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
                 _this.artBoardBackground = guiElement;
                 return;
@@ -48157,17 +48198,19 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
     };
     WorkbenchComponent.prototype.appendBlock = function (guiElement) {
+        if (this.globalState.liveGuiTexture) {
+            this.globalState.liveGuiTexture.addControl(guiElement);
+        }
         var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
     };
     WorkbenchComponent.prototype.createNewGuiNode = function (guiControl) {
         var _this = this;
-        guiControl.highlightLineWidth = 5;
-        guiControl.onPointerUpObservable.add(function (evt) {
+        var onPointerUp = guiControl.onPointerUpObservable.add(function (evt) {
             _this.clicked = false;
         });
-        guiControl.onPointerDownObservable.add(function (evt) {
+        var onPointerDown = guiControl.onPointerDownObservable.add(function (evt) {
             if (!_this.isUp || evt.buttonIndex > 0)
                 return;
             if (_this._forceSelecting) {
@@ -48175,30 +48218,45 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this.isUp = false;
             }
         });
-        guiControl.onPointerEnterObservable.add(function (evt) {
+        var onPointerEnter = guiControl.onPointerEnterObservable.add(function (evt) {
             if (_this._isOverGUINode.indexOf(guiControl) === -1) {
                 _this._isOverGUINode.push(guiControl);
             }
         });
-        guiControl.onPointerOutObservable.add(function (evt) {
+        var onPointerOut = guiControl.onPointerOutObservable.add(function (evt) {
             var index = _this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 _this._isOverGUINode.splice(index, 1);
             }
         });
-        guiControl.onDisposeObservable.add(function (evt) {
+        var onDispose = guiControl.onDisposeObservable.add(function (evt) {
             var index = _this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 _this._isOverGUINode.splice(index, 1);
             }
         });
-        if (guiControl instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
-            guiControl.children.forEach(function (child) {
-                _this.createNewGuiNode(child);
-            });
-        }
+        // use metadata to keep track of things we need to cleanup/restore when the gui editor closes
+        // also stores the old metadata
+        guiControl.metadata = {
+            guiEditor: true,
+            metadata: guiControl.metadata,
+            isHighlighted: guiControl.isHighlighted,
+            highlightLineWidth: guiControl.highlightLineWidth,
+            isReadOnly: guiControl.isReadOnly,
+            isHitTestVisible: guiControl.isHitTestVisible,
+            onPointerUp: onPointerUp,
+            onPointerDown: onPointerDown,
+            onPointerEnter: onPointerEnter,
+            onPointerOut: onPointerOut,
+            onDispose: onDispose
+        };
+        guiControl.highlightLineWidth = 5;
+        guiControl.isHighlighted = false;
         guiControl.isReadOnly = true;
         guiControl.isHitTestVisible = true;
+        guiControl.getDescendants(true).forEach(function (child) {
+            _this.createNewGuiNode(child);
+        });
         return guiControl;
     };
     WorkbenchComponent.prototype.parent = function (dropLocationControl) {
@@ -48263,7 +48321,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (draggedControl.width !== width || draggedControl.height !== height) {
             draggedControl.width = width;
             draggedControl.height = height;
-            alert("Warning: Parenting to stack panel will convert control to pixel value");
+            this.props.globalState.hostWindow.alert("Warning: Parenting to stack panel will convert control to pixel value");
         }
     };
     WorkbenchComponent.prototype._reorderGrid = function (grid, draggedControl, dropLocationControl) {
@@ -48353,9 +48411,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
     };
-    WorkbenchComponent.prototype.componentDidMount = function () {
-        this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-    };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
         var pos = this.getGroundPosition();
@@ -48413,7 +48468,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.createGUICanvas = function () {
         var _this = this;
         // Get the canvas element from the DOM.
-        var canvas = document.getElementById("workbench-canvas");
+        var canvas = this._rootContainer.current;
         this._canvas = canvas;
         // Associate a Babylon Engine to it.
         this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
@@ -48428,6 +48483,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._textureMesh.scaling.x = textureSize;
         this._textureMesh.scaling.z = textureSize;
         this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
+        this.globalState.guiTexture.rootContainer.clipChildren = false;
+        this.globalState.guiTexture.useInvalidateRectOptimization = false;
         this._textureMesh.showBoundingBox = true;
         this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
         this.artBoardBackground.width = "100%";
@@ -48435,6 +48492,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.artBoardBackground.background = "transparent";
         this.artBoardBackground.thickness = 0;
         this.globalState.guiTexture.addControl(this.artBoardBackground);
+        this.synchronizeLiveGUI();
         var nodeMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["NodeMaterial"]("NodeMaterial", this._scene);
         nodeMaterial.loadFromSerialization(_GUIEditorNodeMaterial__WEBPACK_IMPORTED_MODULE_6__["GUIEditorNodeMaterial"]);
         nodeMaterial.build(true);
@@ -48451,15 +48509,46 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
         this._scene.doNotHandleCursors = true;
         // Watch for browser/canvas resize events
-        window.addEventListener("resize", function () {
+        this.globalState.hostWindow.addEventListener("resize", function () {
             _this._engine.resize();
         });
+        this._engine.resize();
+        // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
+        // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
+        // to prevent an infite loop, we flip a boolean flag
+        if (this.globalState.liveGuiTexture) {
+            var doRerender_1 = true;
+            this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(function () {
+                var _a;
+                if (doRerender_1) {
+                    (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
+                }
+                doRerender_1 = true;
+            });
+            this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(function () {
+                var _a;
+                (_a = _this.globalState.guiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
+                doRerender_1 = false;
+            });
+        }
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
         this._engine.runRenderLoop(function () {
             _this._scene.render();
         });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    };
+    // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
+    WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
+        var _this = this;
+        if (this.globalState.liveGuiTexture) {
+            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
+            this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(function (desc) {
+                var _a;
+                (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(desc);
+                _this.appendBlock(desc);
+            });
+        }
     };
     //Add map-like controls to an ArcRotate camera
     WorkbenchComponent.prototype.addControls = function (scene, camera) {
@@ -48710,6 +48799,7 @@ var GlobalState = /** @class */ (function () {
         this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGuiNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
         this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -48797,13 +48887,15 @@ var GUIEditor = /** @class */ (function () {
                                     //swallow and continue
                                 }
                             }
-                            return [2 /*return*/];
                         }
                         hostElement = options.hostElement;
                         if (!hostElement) {
-                            hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800);
+                            hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800);
                         }
                         globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();
+                        if (options.liveGuiTexture) {
+                            globalState.liveGuiTexture = options.liveGuiTexture;
+                        }
                         globalState.hostElement = hostElement;
                         globalState.hostDocument = hostElement.ownerDocument;
                         globalState.customSave = options.customSave;
@@ -48843,7 +48935,9 @@ var GUIEditor = /** @class */ (function () {
                                 }
                             };
                         }
-                        window.addEventListener("beforeunload", function () { });
+                        globalState.hostWindow.addEventListener("beforeunload", function () {
+                            globalState.onPopupClosedObservable.notifyObservers();
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -51617,11 +51711,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
     WorkbenchEditor.prototype.componentDidMount = function () {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
-        }
-    };
-    WorkbenchEditor.prototype.componentWillUnmount = function () {
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
     };
     WorkbenchEditor.prototype.showWaitScreen = function () {
