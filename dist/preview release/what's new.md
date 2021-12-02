@@ -167,6 +167,8 @@
 - `VolumeBasedPanel`'s constructor now accepts a name parameter, similar to other controls ([rickfromwork](https://github.com/rickfromwork))
 - Added `loadLayoutAsync` in the `XmlLoader`. Now the layouts can be loaded asynchronously rather than providing a callback.
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
+- Added ValueAndUnit change observable and Grid to listen for changes ([brianzinn](https://github.com/brianzinn))
+
 
 ### Behaviors
 
