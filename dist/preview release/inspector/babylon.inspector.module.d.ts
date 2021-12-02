@@ -2532,6 +2532,19 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/guiTools" {
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture): Promise<void>;
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent" {
     import * as React from "react";
     import { Nullable } from "babylonjs/types";
@@ -7239,6 +7252,18 @@ declare module INSPECTOR {
         uploadTexture(file: File): void;
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: BABYLON.GUI.AdvancedDynamicTexture): Promise<void>;
 }
 declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
