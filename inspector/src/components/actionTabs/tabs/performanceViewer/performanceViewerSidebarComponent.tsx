@@ -9,20 +9,30 @@ interface IPerformanceViewerSidebarComponentProps {
     collector: PerformanceViewerCollector;
 }
 
-type MetadataEntry = [string, IPerfMetadata];
-
 export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSidebarComponentProps) => {
     const { collector } = props;
-    const [metadata, setMetadata] = useState<MetadataEntry[]>([]);
+    // Map from id to IPerfMetadata information
+    const [metadataMap, setMetadataMap] = useState<Map<string, IPerfMetadata>>();
+    // Map from category to all the ids belonging to that category
+    const [metadataCategoryId, setMetadataCategoryId] = useState<Map<string, string[]>>();
+    // List of ordered categories
+    const [metadataCategories, setMetadataCategories] = useState<string[]>();
 
     useEffect(() => {
         const onUpdateMetadata = (metadata: Map<string, IPerfMetadata>) => {
-            const entries: MetadataEntry[] = [];
-            // convert to iterable list of entries
-            metadata.forEach((value: IPerfMetadata, key) => {
-                entries.push([key, value]);
+            const newMap = new Map<string, string[]>();
+            metadata.forEach((value: IPerfMetadata, id: string) => {
+                const currentCategory = value.category ?? "";
+                let currentIds : string[] = newMap.get(currentCategory) ?? [];
+                currentIds.push(id);
+                newMap.set(currentCategory, currentIds);
             });
-            setMetadata(entries);
+            const orderedCategories = Array.from(newMap.keys());
+            orderedCategories.sort();
+
+            setMetadataCategoryId(newMap);
+            setMetadataMap(metadata);
+            setMetadataCategories(orderedCategories);
         };
 
         collector.metadataObservable.add(onUpdateMetadata);
@@ -41,11 +51,22 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
 
     return (
         <div id="performance-viewer-sidebar">
-            {metadata.map(([id, metadata]) => (
-                <div key={`perf-sidebar-item-${id}`} className="sidebar-item">
-                    <input type="checkbox" checked={!metadata.hidden} onChange={onCheckChange(id)} />
-                    <span className="sidebar-item-label">{id}</span>
-                    <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
+            {metadataCategories && metadataCategories.map((category) => (
+                <div key={`category-${category || 'version'}`}>
+                    {category
+                        ? <div className="category-header header" key={`header-${category}`}>
+                            <span>{category}</span>
+                            <input type="checkbox"/>
+                          </div>
+                        : <div className="version-header header" key={"header-version"}>Version:</div>}
+                    {metadataCategoryId?.get(category)?.map((id) => {
+                        const metadata = metadataMap?.get(id);
+                        return metadata && <div key={`perf-sidebar-item-${id}`} className="sidebar-item">
+                            <input type="checkbox"checked={!metadata.hidden} onChange={onCheckChange(id)} />
+                            <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
+                            <span className="sidebar-item-label">{id}</span>
+                        </div>
+                    })}
                 </div>
             ))}
         </div>

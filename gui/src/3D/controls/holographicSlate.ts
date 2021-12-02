@@ -42,12 +42,12 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Dimensions of the slate
      */
-    public dimensions = new Vector3(0.7, 0.4, 0.001);
+    public dimensions = new Vector3(21.875, 12.5, 0.001);
 
     /**
      * Minimum dimensions of the slate
      */
-    public minDimensions = new Vector3(0.5, 0.2, 0.001);
+    public minDimensions = new Vector3(15.625, 6.25, 0.001);
 
     /**
      * Default dimensions of the slate
@@ -57,7 +57,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Dimensions of the backplate
      */
-    public backplateDimensions = new Vector3(0.7, 0.02, 0.001);
+    public backplateDimensions = new Vector3(21.875, 0.625, 0.001);
 
     /**
      * Margin between backplate and contentplate
@@ -286,8 +286,8 @@ export class HolographicSlate extends ContentDisplay3D {
         this._followButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.FOLLOW_ICON_FILENAME;
         this._closeButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.CLOSE_ICON_FILENAME;
 
-        this._followButton.backMaterial.alpha = 0;
-        this._closeButton.backMaterial.alpha = 0;
+        this._followButton.isBackplateVisible = false;
+        this._closeButton.isBackplateVisible = false;
 
         this._followButton.onPointerClickObservable.add(() => {
             this._defaultBehavior.followBehaviorEnabled = !this._defaultBehavior.followBehaviorEnabled;

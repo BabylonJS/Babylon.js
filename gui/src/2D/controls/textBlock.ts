@@ -308,13 +308,13 @@ export class TextBlock extends Control {
 
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                let newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
+                let newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            let newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
+            let newHeight = (this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
 
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 let lineSpacing = 0;
@@ -529,9 +529,9 @@ export class TextBlock extends Control {
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
                 }
-                const lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                const lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, context);
 
-                let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+                let newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lines.length;
 
                 if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                     let lineSpacing = 0;

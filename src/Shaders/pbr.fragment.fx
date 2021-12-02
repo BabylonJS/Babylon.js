@@ -612,7 +612,7 @@ void main(void) {
             float scatteringDiffusionProfile = 255.;
         #endif
 
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), writeGeometryInfo * scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
@@ -631,7 +631,7 @@ void main(void) {
 
     #ifdef PREPASS_REFLECTIVITY
         #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, writeGeometryInfo);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, baseReflectivity.a * writeGeometryInfo);
         #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
