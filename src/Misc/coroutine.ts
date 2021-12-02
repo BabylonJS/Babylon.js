@@ -85,42 +85,39 @@ export function createYieldingScheduler<T>(yieldAfterMS = 25) {
 /** @hidden */
 export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal) {
     const resume = () => {
-        let shouldReschedule: boolean | undefined;
+        let reschedule: boolean | undefined;
+
+        const onStep = (stepResult: CoroutineStep<T>) => {
+            if (stepResult.done) {
+                // If the coroutine is done, report success.
+                onSuccess(stepResult.value);
+            } else {
+                // If the coroutine is not done, resume the coroutine (via the scheduler).
+                if (reschedule === undefined) {
+                    // If shouldReschedule is undefined at this point, then the coroutine must have stepped synchronously, so just flag another loop iteration.
+                    reschedule = true;
+                } else {
+                    // If shouldReschedule is defined at this point, then the coroutine must have stepped asynchronously, so call resume to restart the step loop.
+                    resume();
+                }
+            }
+        };
 
         do {
-            shouldReschedule = undefined;
+            reschedule = undefined;
 
             if (!abortSignal || !abortSignal.aborted) {
-                scheduler(coroutine,
-                    (stepResult: CoroutineStep<T>) => {
-                        if (stepResult.done) {
-                            // If the coroutine is done, report success.
-                            onSuccess(stepResult.value);
-                        } else {
-                            // If the coroutine is not done, resume the coroutine (via the scheduler).
-                            if (shouldReschedule === undefined) {
-                                // If shouldReschedule is undefined at this point, then the coroutine must have stepped synchronously, so just flag another loop iteration.
-                                shouldReschedule = true;
-                            } else {
-                                // If shouldReschedule is defined at this point, then the coroutine must have stepped asynchronously, so call resume to restart the step loop.
-                                resume();
-                            }
-                        }
-                    },
-                    (error: any) => {
-                        // If the coroutine threw an error, report the error.
-                        onError(error);
-                    });
+                scheduler(coroutine, onStep, onError);
             } else {
                 onError(new Error("Aborted"));
             }
 
-            if (shouldReschedule === undefined) {
+            if (reschedule === undefined) {
                 // If shouldReschedule is defined at this point, then the coroutine must have stepped asynchronously, so stop looping and let the coroutine be resumed later.
-                shouldReschedule = false;
+                reschedule = false;
             }
 
-        } while (shouldReschedule);
+        } while (reschedule);
     }
 
     resume();
