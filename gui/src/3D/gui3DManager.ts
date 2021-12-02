@@ -23,12 +23,15 @@ export class GUI3DManager implements IDisposable {
     private _rootContainer: Container3D;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
+    private _customControlScaling = 1.0;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
     public _lastControlOver: { [pointerId: number]: Control3D } = {};
     /** @hidden */
     public _lastControlDown: { [pointerId: number]: Control3D } = {};
+
+    protected static MRTK_REALISTIC_SCALING: number = 0.032;
 
     /**
      * Observable raised when the point picked by the pointer events changed
@@ -55,6 +58,37 @@ export class GUI3DManager implements IDisposable {
     /** Gets associated utility layer */
     public get utilityLayer(): Nullable<UtilityLayerRenderer> {
         return this._utilityLayer;
+    }
+
+    /** Gets the scaling for all UI elements owned by this manager */
+    public get controlScaling() {
+        return this._customControlScaling;
+    }
+
+    /** Sets the scaling adjustment for all UI elements owned by this manager */
+    public set controlScaling(newScale: number) {
+        if (this._customControlScaling !== newScale && newScale > 0) {
+            let scaleRatio = newScale / this._customControlScaling;
+            this._customControlScaling = newScale;
+
+            this._rootContainer.children.forEach((control: Control3D) => {
+                control.scaling.scaleInPlace(scaleRatio);
+
+                if (newScale !== 1) {
+                    control._isScaledByManager = true;
+                }
+            });
+        }
+    }
+
+    /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+    public get useRealisticScaling() {
+        return this.controlScaling === GUI3DManager.MRTK_REALISTIC_SCALING;
+    }
+
+    /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+    public set useRealisticScaling(newValue: boolean) {
+        this.controlScaling = newValue ? GUI3DManager.MRTK_REALISTIC_SCALING : 1;
     }
 
     /**
@@ -185,6 +219,10 @@ export class GUI3DManager implements IDisposable {
      */
     public addControl(control: Control3D): GUI3DManager {
         this._rootContainer.addControl(control);
+        if (this._customControlScaling !== 1) {
+            control.scaling.scaleInPlace(this._customControlScaling);
+            control._isScaledByManager = true;
+        }
         return this;
     }
 
@@ -195,6 +233,10 @@ export class GUI3DManager implements IDisposable {
      */
     public removeControl(control: Control3D): GUI3DManager {
         this._rootContainer.removeControl(control);
+        if (control._isScaledByManager) {
+            control.scaling.scaleInPlace(1 / this._customControlScaling);
+            control._isScaledByManager = false;
+        }
         return this;
     }
 

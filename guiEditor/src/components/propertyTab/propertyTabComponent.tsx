@@ -10,7 +10,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
+import { SliderGenericPropertyGridComponent } from "./propertyGrids/gui/sliderGenericPropertyGridComponent";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
 import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
@@ -168,7 +168,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
         } catch (error) {
-            alert("Unable to save your GUI");
+            this.props.globalState.hostWindow.alert("Unable to save your GUI");
+            Tools.Error("Unable to save your GUI");
         }
     };
 
@@ -225,24 +226,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     navigator.clipboard
                         .writeText(adt.snippetId)
                         .then(() => {
-                            alert(`${alertMessage}. The ID was copied to your clipboard.`);
+                            this.props.globalState.hostWindow.alert(`${alertMessage}. The ID was copied to your clipboard.`);
                         })
                         .catch((err: any) => {
-                            alert(alertMessage);
+                            this.props.globalState.hostWindow.alert(alertMessage);
                         });
                 } else {
-                    alert(alertMessage);
+                    this.props.globalState.hostWindow.alert(alertMessage);
                 }
                 this.props.globalState.onBuiltObservable.notifyObservers();
             })
             .catch((err: any) => {
-                alert(err);
+                this.props.globalState.hostWindow.alert(err);
             });
         this.forceUpdate();
     };
 
     loadFromSnippet() {
-        const snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = this.props.globalState.hostWindow.prompt("Please enter the snippet ID to use");
         if (!snippedId) {
             return;
         }
@@ -289,7 +290,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Slider": {
                 const slider = this.state.currentNode as Slider;
                 return (
-                    <SliderPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    <SliderGenericPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                 );
             }
             case "ImageBasedSlider": {
@@ -535,7 +536,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             <ButtonLineComponent
                                 label="DELETE ELEMENT"
                                 onClick={() => {
-                                    this.state.currentNode?.dispose();
+                                    if (this.state.currentNode) {
+                                        this.props.globalState.guiTexture.removeControl(this.state.currentNode);
+                                        this.props.globalState.liveGuiTexture?.removeControl(this.state.currentNode);
+                                        this.state.currentNode.dispose();
+                                    }
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                                 }}
                             />

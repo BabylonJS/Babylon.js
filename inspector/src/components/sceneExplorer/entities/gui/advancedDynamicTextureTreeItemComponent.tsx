@@ -5,11 +5,12 @@ import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
-import { faImage, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { faImage, faCrosshairs, faPen } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { EditAdvancedDynamicTexture } from "./guiTools";
 
 interface IAdvancedDynamicTextureTreeItemComponentProps {
     texture: AdvancedDynamicTexture;
@@ -65,6 +66,13 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         return (
             <div className="adtextureTools">
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
+                <div
+                    className={"icon edit"}
+                    onClick={() => EditAdvancedDynamicTexture(this.props.texture)}
+                    title="Edit"
+                >
+                    <FontAwesomeIcon icon={faPen} />
+                </div>
                 <div
                     className={this.state.isInPickingMode ? "pickingMode selected icon" : "pickingMode icon"}
                     onClick={() => this.onPickingMode()}

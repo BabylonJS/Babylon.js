@@ -9,6 +9,7 @@ import { EngineStore } from "../Engines/engineStore";
 
 import "./animatable";
 import { AbstractScene } from "../abstractScene";
+import { Tags } from '../Misc/tags';
 
 /**
  * This class defines the direct association between an animation and a target
@@ -97,6 +98,11 @@ export class AnimationGroup implements IDisposable {
      * This observable will notify when all animations are playing.
      */
     public onAnimationGroupPlayObservable = new Observable<AnimationGroup>();
+
+    /**
+     * Gets or sets an object used to store user defined information for the node
+     */
+    public metadata: any = null;
 
     /**
      * Gets the first frame
@@ -599,6 +605,15 @@ export class AnimationGroup implements IDisposable {
             serializationObject.targetedAnimations[targetedAnimationIndex] = targetedAnimation.serialize();
         }
 
+        if (Tags && Tags.HasTags(this)) {
+            serializationObject.tags = Tags.GetTags(this);
+        }
+
+        // Metadata
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
+        }
+
         return serializationObject;
     }
 
@@ -632,6 +647,14 @@ export class AnimationGroup implements IDisposable {
 
         if (parsedAnimationGroup.from !== null && parsedAnimationGroup.to !== null) {
             animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+        }
+
+        if (Tags) {
+            Tags.AddTagsTo(animationGroup, parsedAnimationGroup.tags);
+        }
+
+        if (parsedAnimationGroup.metadata !== undefined) {
+            animationGroup.metadata = parsedAnimationGroup.metadata;
         }
 
         return animationGroup;
