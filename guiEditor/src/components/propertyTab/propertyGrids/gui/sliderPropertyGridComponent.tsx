@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
@@ -9,16 +8,21 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
-const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
-const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
-const horizontalMarginIcon: string = require("../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg");
 const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
-const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
-const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
+const verticalSliderIcon: string = require("../../../../sharedUiComponents/imgs/verticalSliderIcon.svg");
+const sliderValueIcon: string = require("../../../../sharedUiComponents/imgs/sliderValueIcon.svg");
+const sliderValueMaximumIcon: string = require("../../../../sharedUiComponents/imgs/sliderValueMaximumIcon.svg");
+const sliderValueMinimumIcon: string = require("../../../../sharedUiComponents/imgs/sliderValueMinimumIcon.svg");
+const thumbWidthIcon: string = require("../../../../sharedUiComponents/imgs/thumbWidthIcon.svg");
+const clampSliderValueIcon: string = require("../../../../sharedUiComponents/imgs/clampSliderValueIcon.svg");
+const showThumbIcon: string = require("../../../../sharedUiComponents/imgs/showThumbIcon.svg");
+const barOffsetIcon: string = require("../../../../sharedUiComponents/imgs/barOffsetIcon.svg");
+const thumbCircleIcon: string = require("../../../../sharedUiComponents/imgs/thumbCircleIcon.svg");
 
 interface ISliderPropertyGridComponentProps {
-    slider: Slider;
+    slider: Slider | ImageBasedSlider;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -33,10 +37,9 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                <Color3LineComponent
+                {slider.typeName === "Slider" && <Color3LineComponent
                     iconLabel={"Border color"}
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
@@ -44,60 +47,63 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     target={slider}
                     propertyName="borderColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                />}
                 <CheckBoxLineComponent
                     iconLabel={"Display thumb"}
-                    icon={clipContentsIcon}
-                    label=""
+                    icon={showThumbIcon}
+                    label="DISPLAY THUMB"
                     target={slider}
                     propertyName="displayThumb"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <CheckBoxLineComponent
                     iconLabel={"Thumb circle"}
-                    icon={clipContentsIcon}
-                    label=""
+                    icon={thumbCircleIcon}
+                    label="THUMB CIRCLE"
                     target={slider}
                     propertyName="isThumbCircle"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <CheckBoxLineComponent
-                    iconLabel={"Vertical"}
-                    icon={vAlignCenterIcon}
-                    label=""
-                    target={slider}
-                    propertyName="isVertical"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <CheckBoxLineComponent
                     iconLabel={"Thumb clamped"}
-                    icon={clipContentsIcon}
-                    label=""
+                    icon={clampSliderValueIcon}
+                    label="THUMB CLAMPED"
                     target={slider}
                     propertyName="isThumbClamped"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <TextInputLineComponent
-                    iconLabel={"Bar offset"}
-                    icon={clipContentsIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
+                <CheckBoxLineComponent
+                    iconLabel={"Vertical"}
+                    icon={verticalSliderIcon}
+                    label="VERTICAL"
                     target={slider}
-                    propertyName="barOffset"
+                    propertyName="isVertical"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                <div className="ge-divider">
                 <TextInputLineComponent
                     iconLabel={"Thumb width"}
-                    icon={sizeIcon}
+                    icon={thumbWidthIcon}
                     lockObject={this.props.lockObject}
                     label=""
                     target={slider}
                     propertyName="thumbWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                <TextInputLineComponent
+                    iconLabel={"Bar offset"}
+                    icon={barOffsetIcon}
+                    lockObject={this.props.lockObject}
+                    label=""
+                    target={slider}
+                    propertyName="barOffset"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                </div>
+                <div className="ge-divider">
                 <FloatLineComponent
                     iconLabel={"Minimum"}
-                    icon={scaleIcon}
+                    icon={sliderValueMinimumIcon}
                     lockObject={this.props.lockObject}
                     label=""
                     target={slider}
@@ -106,22 +112,25 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                 />
                 <FloatLineComponent
                     iconLabel={"Maximum"}
-                    icon={scaleIcon}
+                    icon={sliderValueMaximumIcon}
                     lockObject={this.props.lockObject}
                     label=""
                     target={slider}
                     propertyName="maximum"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                </div>
+                <div className="ge-divider-short">
                 <FloatLineComponent
                     iconLabel={"Value"}
-                    icon={horizontalMarginIcon}
+                    icon={sliderValueIcon}
                     lockObject={this.props.lockObject}
                     label=""
                     target={slider}
                     propertyName="value"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                </div>
             </div>
         );
     }

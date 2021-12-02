@@ -6064,7 +6064,7 @@ var KHR_materials_variants = /** @class */ (function () {
                 if (babylonMesh instanceof babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
                     var babylonDrawMode = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"]._GetDrawMode(context, primitive.mode);
                     var root_1 = _this._loader.rootBabylonMesh;
-                    var metadata = (root_1.metadata = root_1.metadata || {});
+                    var metadata = (root_1 ? root_1.metadata = root_1.metadata || {} : {});
                     var gltf = (metadata.gltf = metadata.gltf || {});
                     var extensionMetadata_1 = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
                     // Store the original material.
@@ -6095,7 +6095,7 @@ var KHR_materials_variants = /** @class */ (function () {
                                         metadata = KHR_materials_variants._GetExtensionMetadata(newRoot);
                                     } while (metadata === null);
                                     // Need to clone the metadata on the root (first time only)
-                                    if (metadata === KHR_materials_variants._GetExtensionMetadata(root_1)) {
+                                    if (root_1 && metadata === KHR_materials_variants._GetExtensionMetadata(root_1)) {
                                         // Copy main metadata
                                         newRoot.metadata = {};
                                         for (var key in root_1.metadata) {
@@ -6457,6 +6457,9 @@ var KHR_xmp_json_ld = /** @class */ (function () {
      */
     KHR_xmp_json_ld.prototype.onLoading = function () {
         var _a, _b, _c;
+        if (this._loader.rootBabylonMesh === null) {
+            return;
+        }
         var xmp_gltf = (_a = this._loader.gltf.extensions) === null || _a === void 0 ? void 0 : _a.KHR_xmp_json_ld;
         var xmp_node = (_c = (_b = this._loader.gltf.asset) === null || _b === void 0 ? void 0 : _b.extensions) === null || _c === void 0 ? void 0 : _c.KHR_xmp_json_ld;
         if (xmp_gltf && xmp_node) {
@@ -7407,6 +7410,7 @@ var GLTFLoader = /** @class */ (function () {
         this._disableInstancedMesh = 0;
         this._disposed = false;
         this._extensions = new Array();
+        this._rootBabylonMesh = null;
         this._defaultBabylonMaterialData = {};
         this._parent = parent;
     }
@@ -7804,8 +7808,10 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._getMeshes = function () {
         var meshes = new Array();
-        // Root mesh is always first.
-        meshes.push(this._rootBabylonMesh);
+        // Root mesh is always first, if available.
+        if (this._rootBabylonMesh) {
+            meshes.push(this._rootBabylonMesh);
+        }
         var nodes = this._gltf.nodes;
         if (nodes) {
             for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {

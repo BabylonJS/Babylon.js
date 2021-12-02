@@ -20,6 +20,7 @@ const gridIcon: string = require("../public/imgs/gridIcon.svg");
 const stackPanelIcon: string = require("../public/imgs/stackPanelIcon.svg");
 const textBoxIcon: string = require("../public/imgs/textBoxIcon.svg");
 const sliderIcon: string = require("../public/imgs/sliderIcon.svg");
+const imageBasedSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
 const buttonIcon: string = require("../public/imgs/buttonIcon.svg");
 const passwordFieldIcon: string = require("../public/imgs/passwordFieldIcon.svg");
 const checkboxIcon: string = require("../public/imgs/checkboxIcon.svg");
@@ -48,18 +49,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
     private _toolBarIconSize = 55;
 
-    private _onWidgetKeyUpPointer: any;
     private _popUpWindow: Window;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
     }
 
@@ -398,6 +392,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 icon: sliderIcon,
                 onClick: () => {
                     this.onCreate("Slider");
+                },
+            },
+            {
+                label: "ImageBasedSlider",
+                icon: imageBasedSliderIcon,
+                onClick: () => {
+                    this.onCreate("ImageBasedSlider");
                 },
             },
             {

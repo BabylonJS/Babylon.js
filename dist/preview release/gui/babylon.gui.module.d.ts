@@ -35,16 +35,16 @@ declare module "babylonjs-gui/2D/controls/focusableControl" {
     }
 }
 declare module "babylonjs-gui/2D/valueAndUnit" {
+    import { Observable } from "babylonjs/Misc/observable";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
-        /** defines the unit to store */
-        unit: number;
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed: boolean;
         private _value;
+        private _unit;
         private _originalUnit;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
@@ -52,9 +52,13 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
          */
         ignoreAdaptiveScaling: boolean;
         /**
+         * Observable event triggered each time the value or unit changes
+         */
+        onChangedObservable: Observable<void>;
+        /**
          * Creates a new ValueAndUnit
          * @param value defines the value to store
-         * @param unit defines the unit to store
+         * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
          * @param negativeValueAllowed defines a boolean indicating if the value can be negative
          */
         constructor(value: number, 
@@ -66,8 +70,19 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
         get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
         get isPixel(): boolean;
-        /** Gets direct internal value */
+        /**
+         * Gets value (without units)
+         * @deprecated use value property instead
+         */
         get internalValue(): number;
+        /** Gets value (without units) */
+        get value(): number;
+        /** Sets value (without units) */
+        set value(value: number);
+        /** Gets units (without value) */
+        get unit(): number;
+        /** Sets units (without value) */
+        set unit(value: number);
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -76,7 +91,7 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
          */
         getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         /**
-         * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+         * Update the current value and unit.
          * @param value defines the value to store
          * @param unit defines the unit to store
          * @returns the current ValueAndUnit
@@ -98,7 +113,7 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
         /**
          * Store a value parsed from a string
          * @param source defines the source string
-         * @returns true if the value was successfully parsed
+         * @returns true if the value was successfully parsed and updated
          */
         fromString(source: string | number): boolean;
         private static _Regex;
@@ -748,9 +763,10 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
          * @param scene defines the hosting scene
          * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module "babylonjs-gui/2D/controls/control" {
@@ -787,6 +803,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         parent: Nullable<Container>;
         /** @hidden */
         _currentMeasure: Measure;
+        /** @hidden */
+        _tempPaddingMeasure: Measure;
         private _fontFamily;
         private _fontStyle;
         private _fontWeight;
@@ -819,6 +837,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
+        private _descendentsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -853,6 +872,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -1120,6 +1141,12 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get linkedMesh(): Nullable<TransformNode>;
         /**
+         * Gets or sets a value indicating the padding should work like in CSS.
+         * Basically, it will add the padding amount on each side of the parent control for its children.
+         */
+        get descendentsOnlyPadding(): boolean;
+        set descendentsOnlyPadding(value: boolean);
+        /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -1131,6 +1158,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingLeftInPixels(): number;
         set paddingLeftInPixels(value: number);
+        /** @hidden */
+        get _paddingLeftInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1143,6 +1172,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingRightInPixels(): number;
         set paddingRightInPixels(value: number);
+        /** @hidden */
+        get _paddingRightInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1155,6 +1186,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingTopInPixels(): number;
         set paddingTopInPixels(value: number);
+        /** @hidden */
+        get _paddingTopInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1167,6 +1200,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingBottomInPixels(): number;
         set paddingBottomInPixels(value: number);
+        /** @hidden */
+        get _paddingBottomInPixels(): number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -2100,13 +2135,19 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        private _spacing;
         /**
-         * Gets or sets a boolean indicating that layou warnings should be ignored
+         * Gets or sets a boolean indicating that layout warnings should be ignored
          */
         ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         get isVertical(): boolean;
         set isVertical(value: boolean);
+        /**
+         * Gets or sets the spacing (in pixels) between each child.
+         */
+        get spacing(): number;
+        set spacing(value: number);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
@@ -2500,7 +2541,9 @@ declare module "babylonjs-gui/2D/controls/grid" {
     export class Grid extends Container {
         name?: string | undefined;
         private _rowDefinitions;
+        private _rowDefinitionObservers;
         private _columnDefinitions;
+        private _columnDefinitionObservers;
         private _cells;
         private _childControls;
         /**
@@ -2613,9 +2656,9 @@ declare module "babylonjs-gui/2D/controls/grid" {
         /** Releases associated resources */
         dispose(): void;
         /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
         serialize(serializationObject: any): void;
         /** @hidden */
         _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
@@ -4152,6 +4195,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -4162,6 +4206,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * Observable raised when the point picked by the pointer events changed
          */
@@ -4182,6 +4227,14 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         get scene(): Scene;
         /** Gets associated utility layer */
         get utilityLayer(): Nullable<UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -4336,6 +4389,8 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): Vector3;
         set position(value: Vector3);
@@ -7121,11 +7176,10 @@ declare module BABYLON.GUI {
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
-        /** defines the unit to store */
-        unit: number;
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed: boolean;
         private _value;
+        private _unit;
         private _originalUnit;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
@@ -7133,9 +7187,13 @@ declare module BABYLON.GUI {
          */
         ignoreAdaptiveScaling: boolean;
         /**
+         * BABYLON.Observable event triggered each time the value or unit changes
+         */
+        onChangedObservable: BABYLON.Observable<void>;
+        /**
          * Creates a new ValueAndUnit
          * @param value defines the value to store
-         * @param unit defines the unit to store
+         * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
          * @param negativeValueAllowed defines a boolean indicating if the value can be negative
          */
         constructor(value: number, 
@@ -7147,8 +7205,19 @@ declare module BABYLON.GUI {
         get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
         get isPixel(): boolean;
-        /** Gets direct internal value */
+        /**
+         * Gets value (without units)
+         * @deprecated use value property instead
+         */
         get internalValue(): number;
+        /** Gets value (without units) */
+        get value(): number;
+        /** Sets value (without units) */
+        set value(value: number);
+        /** Gets units (without value) */
+        get unit(): number;
+        /** Sets units (without value) */
+        set unit(value: number);
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -7157,7 +7226,7 @@ declare module BABYLON.GUI {
          */
         getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         /**
-         * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+         * Update the current value and unit.
          * @param value defines the value to store
          * @param unit defines the unit to store
          * @returns the current ValueAndUnit
@@ -7179,7 +7248,7 @@ declare module BABYLON.GUI {
         /**
          * Store a value parsed from a string
          * @param source defines the source string
-         * @returns true if the value was successfully parsed
+         * @returns true if the value was successfully parsed and updated
          */
         fromString(source: string | number): boolean;
         private static _Regex;
@@ -7809,9 +7878,10 @@ declare module BABYLON.GUI {
          * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
          * @param scene defines the hosting scene
          * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module BABYLON.GUI {
@@ -7835,6 +7905,8 @@ declare module BABYLON.GUI {
         parent: BABYLON.Nullable<Container>;
         /** @hidden */
         _currentMeasure: Measure;
+        /** @hidden */
+        _tempPaddingMeasure: Measure;
         private _fontFamily;
         private _fontStyle;
         private _fontWeight;
@@ -7867,6 +7939,7 @@ declare module BABYLON.GUI {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
+        private _descendentsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -7901,6 +7974,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -8168,6 +8243,12 @@ declare module BABYLON.GUI {
          */
         get linkedMesh(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
+         * Gets or sets a value indicating the padding should work like in CSS.
+         * Basically, it will add the padding amount on each side of the parent control for its children.
+         */
+        get descendentsOnlyPadding(): boolean;
+        set descendentsOnlyPadding(value: boolean);
+        /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -8179,6 +8260,8 @@ declare module BABYLON.GUI {
          */
         get paddingLeftInPixels(): number;
         set paddingLeftInPixels(value: number);
+        /** @hidden */
+        get _paddingLeftInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8191,6 +8274,8 @@ declare module BABYLON.GUI {
          */
         get paddingRightInPixels(): number;
         set paddingRightInPixels(value: number);
+        /** @hidden */
+        get _paddingRightInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8203,6 +8288,8 @@ declare module BABYLON.GUI {
          */
         get paddingTopInPixels(): number;
         set paddingTopInPixels(value: number);
+        /** @hidden */
+        get _paddingTopInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8215,6 +8302,8 @@ declare module BABYLON.GUI {
          */
         get paddingBottomInPixels(): number;
         set paddingBottomInPixels(value: number);
+        /** @hidden */
+        get _paddingBottomInPixels(): number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -9117,13 +9206,19 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        private _spacing;
         /**
-         * Gets or sets a boolean indicating that layou warnings should be ignored
+         * Gets or sets a boolean indicating that layout warnings should be ignored
          */
         ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         get isVertical(): boolean;
         set isVertical(value: boolean);
+        /**
+         * Gets or sets the spacing (in pixels) between each child.
+         */
+        get spacing(): number;
+        set spacing(value: number);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
@@ -9487,7 +9582,9 @@ declare module BABYLON.GUI {
     export class Grid extends Container {
         name?: string | undefined;
         private _rowDefinitions;
+        private _rowDefinitionObservers;
         private _columnDefinitions;
+        private _columnDefinitionObservers;
         private _cells;
         private _childControls;
         /**
@@ -9600,9 +9697,9 @@ declare module BABYLON.GUI {
         /** Releases associated resources */
         dispose(): void;
         /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
         serialize(serializationObject: any): void;
         /** @hidden */
         _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
@@ -10986,6 +11083,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -10996,6 +11094,7 @@ declare module BABYLON.GUI {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * BABYLON.Observable raised when the point picked by the pointer events changed
          */
@@ -11016,6 +11115,14 @@ declare module BABYLON.GUI {
         get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
         get utilityLayer(): BABYLON.Nullable<BABYLON.UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -11148,6 +11255,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): BABYLON.Vector3;
         set position(value: BABYLON.Vector3);

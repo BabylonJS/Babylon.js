@@ -4880,11 +4880,11 @@ declare module BABYLON {
     /** @hidden */
     export type CoroutineStep<T> = IteratorResult<void, T>;
     /** @hidden */
-    export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+    export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
     /** @hidden */
-    export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void): void;
+    export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void): void;
     /** @hidden */
-    export function createYieldingScheduler<T>(yieldAfterMS?: number): (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
+    export function createYieldingScheduler<T>(yieldAfterMS?: number): (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
     /** @hidden */
     export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal): void;
     /** @hidden */
@@ -6580,7 +6580,7 @@ declare module BABYLON {
          */
         _shareDepth(renderTarget: RenderTargetWrapper): void;
         /** @hidden */
-        _swapAndDie(target: Nullable<InternalTexture>): void;
+        _swapAndDie(target: InternalTexture): void;
         protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper>;
         protected _swapRenderTargetWrapper(target: RenderTargetWrapper): void;
         /** @hidden */
@@ -38361,24 +38361,26 @@ declare module BABYLON {
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          * @returns a new matrix as a left-handed perspective projection matrix
          */
-        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number): Matrix;
+        static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): Matrix;
         /**
          * Stores a left-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          */
-        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number): void;
+        static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): void;
         /**
          * Stores a left-handed perspective projection into a given matrix with depth reversed
          * @param fov defines the horizontal field of view
@@ -38396,24 +38398,26 @@ declare module BABYLON {
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          * @returns a new matrix as a right-handed perspective projection matrix
          */
-        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number): Matrix;
+        static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): Matrix;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
          * @param znear defines the near clip plane
-         * @param zfar defines the far clip plane
+         * @param zfar defines the far clip plane. If 0, assume we are in "infinite zfar" mode
          * @param result defines the target matrix
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
          * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
+         * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
          */
-        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number): void;
+        static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean, halfZRange?: boolean, projectionPlaneTilt?: number, reverseDepthBufferMode?: boolean): void;
         /**
          * Stores a right-handed perspective projection into a given matrix
          * @param fov defines the horizontal field of view
@@ -46267,6 +46271,10 @@ declare module BABYLON {
          */
         onAnimationGroupPlayObservable: Observable<AnimationGroup>;
         /**
+         * Gets or sets an object used to store user defined information for the node
+         */
+        metadata: any;
+        /**
          * Gets the first frame
          */
         get from(): number;
@@ -46515,6 +46523,10 @@ declare module BABYLON {
          * Specifies if data should be hidden, falsey by default.
          */
         hidden?: boolean;
+        /**
+         * Specifies the category of the data
+         */
+        category?: string;
     }
     /**
      * Defines the shape of a custom user registered event.
@@ -46739,6 +46751,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Callback strategy and optional category for data collection
+     */
+    interface IPerformanceViewerStrategyParameter {
+        /**
+         * The strategy for collecting data. Available strategies are located on the PerfCollectionStrategy class
+         */
+        strategyCallback: PerfStrategyInitialization;
+        /**
+         * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
+         */
+        category?: string;
+    }
+    /**
      * The collector class handles the collection and storage of data into the appropriate array.
      * The collector also handles notifying any observers of any updates.
      */
@@ -46776,16 +46801,17 @@ declare module BABYLON {
          * @param _scene the scene to collect on.
          * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
          */
-        constructor(_scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]);
+        constructor(_scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]);
         /**
          * Registers a custom string event which will be callable via sendEvent. This method returns an event object which will contain the id of the event.
          * The user can set a value optionally, which will be used in the sendEvent method. If the value is set, we will record this value at the end of each frame,
          * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
          * @param name The name of the event to register
          * @param forceUpdate if the code should force add an event, and replace the last one.
+         * @param category the category for that event
          * @returns The event registered, used in sendEvent
          */
-        registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined;
+        registerEvent(name: string, forceUpdate?: boolean, category?: string): IPerfCustomEvent | undefined;
         /**
          * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
          * @param event the event to handle an occurence for
@@ -46799,7 +46825,7 @@ declare module BABYLON {
          * This method adds additional collection strategies for data collection purposes.
          * @param strategyCallbacks the list of data to collect with callbacks.
          */
-        addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]): void;
+        addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]): void;
         /**
          * Gets a 6 character hexcode representing the colour from a passed in string.
          * @param id the string to get a hex code for.
@@ -47312,6 +47338,10 @@ declare module BABYLON {
          * Gets or sets a predicate used to select candidate meshes for a pointer move event
          */
         pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
+        /**
+         * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
+         */
+        skipPointerMovePicking: boolean;
         /** Callback called when a pointer move is detected */
         onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Callback called when a pointer down is detected  */
@@ -51283,6 +51313,11 @@ declare module BABYLON {
          * Detaches the behavior from its current arc rotate camera.
          */
         detach(): void;
+        /**
+         * Force-reset the last interaction time
+         * @param customTime an optional time that will be used instead of the current last interaction time. For example `Date.now()`
+         */
+        resetLastInteractionTime(customTime?: number): void;
         /**
          * Returns true if user is scrolling.
          * @return true if user is scrolling.
@@ -72241,6 +72276,14 @@ declare module BABYLON {
          * The rendering group to draw the layer in.
          */
         renderingGroupId: number;
+        /**
+         * Forces the merge step to be done in ldr (clamp values > 1)
+         */
+        ldrMerge?: boolean;
+        /**
+         * Defines the blend mode used by the merge
+         */
+        alphaBlendingMode?: number;
     }
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
@@ -77023,6 +77066,36 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Custom block created from user-defined json
+     */
+    export class CustomBlock extends NodeMaterialBlock {
+        private _options;
+        private _code;
+        /**
+         * Gets or sets the options for this custom block
+         */
+        get options(): any;
+        set options(options: any);
+        /**
+         * Creates a new CustomBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        private _deserializeOptions;
+        private _findInputByName;
     }
 }
 declare module BABYLON {
@@ -87370,19 +87443,19 @@ declare module BABYLON {
          * @param taskName defines the name of the new task
          * @param meshesNames defines the name of meshes to load
          * @param rootUrl defines the root url to use to locate files
-         * @param sceneFilename defines the filename of the scene file
+         * @param sceneFilename defines the filename of the scene file or the File itself
          * @returns a new ContainerAssetTask object
          */
-        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): ContainerAssetTask;
+        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): ContainerAssetTask;
         /**
          * Add a MeshAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
          * @param meshesNames defines the name of meshes to load
          * @param rootUrl defines the root url to use to locate files
-         * @param sceneFilename defines the filename of the scene file
+         * @param sceneFilename defines the filename of the scene file or the File itself
          * @returns a new MeshAssetTask object
          */
-        addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): MeshAssetTask;
+        addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): MeshAssetTask;
         /**
          * Add a TextFileAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
@@ -87613,13 +87686,13 @@ declare module BABYLON {
 declare module BABYLON {
         interface Observable<T> {
             /**
-             * Internal observable based coroutine scheduler instance.
+             * Internal observable-based coroutine scheduler instance.
              */
-            coroutineScheduler: CoroutineScheduler<void> | undefined;
+            _coroutineScheduler?: CoroutineScheduler<void>;
             /**
-             * Internal AbortController for in flight coroutines.
+             * Internal disposal method for observable-bsaed coroutine scheduler instance.
              */
-            coroutineAbortController: AbortController | undefined;
+            _coroutineSchedulerDispose?: () => void;
             /**
              * Runs a coroutine asynchronously on this observable
              * @param coroutine the iterator resulting from having started the coroutine

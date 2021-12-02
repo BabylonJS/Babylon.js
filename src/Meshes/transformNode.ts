@@ -203,9 +203,9 @@ export class TransformNode extends Node {
      * return true if a pivot has been set
      * @returns true if a pivot matrix is used
      */
-     public isUsingPivotMatrix(): boolean {
-         return this._usePivotMatrix;
-     }
+    public isUsingPivotMatrix(): boolean {
+        return this._usePivotMatrix;
+    }
 
     /**
       * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
@@ -732,17 +732,16 @@ export class TransformNode extends Node {
     * @param property if set to "rotation" the objects rotationQuaternion will be set to null
     * @returns this  node
     */
-     public markAsDirty(property?: string): Node {
-        // We need to explicitely update the children
+    public markAsDirty(property?: string): Node {
+        // We need to explicitly update the children
         // as the scene.evaluateActiveMeshes will not poll the transform nodes
         if (this._children) {
-            for (let child of this._children)
-            {
+            for (let child of this._children) {
                 child.markAsDirty(property);
             }
         }
         return super.markAsDirty(property);
-     }
+    }
 
     /**
      * Defines the passed node as the parent of the current node.
@@ -757,24 +756,32 @@ export class TransformNode extends Node {
             return this;
         }
 
-        var quatRotation = TmpVectors.Quaternion[0];
-        var position = TmpVectors.Vector3[0];
-        var scale = TmpVectors.Vector3[1];
+        const quatRotation = TmpVectors.Quaternion[0];
+        const position = TmpVectors.Vector3[0];
+        const scale = TmpVectors.Vector3[1];
+        const invParentMatrix = TmpVectors.Matrix[1];
+        Matrix.IdentityToRef(invParentMatrix);
+        const composedMatrix = TmpVectors.Matrix[0];
+        this.computeWorldMatrix(true);
 
-        if (!node) {
-            this.computeWorldMatrix(true);
-            this.getWorldMatrix().decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
-        } else {
-            var diffMatrix = TmpVectors.Matrix[0];
-            var invParentMatrix = TmpVectors.Matrix[1];
-
-            this.computeWorldMatrix(true);
-            node.computeWorldMatrix(true);
-
-            node.getWorldMatrix().invertToRef(invParentMatrix);
-            this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
-            diffMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
+        let currentRotation = this.rotationQuaternion;
+        if (!currentRotation) {
+            currentRotation = TransformNode._TmpRotation;
+            Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, currentRotation);
         }
+
+        // current global transformation without pivot
+        Matrix.ComposeToRef(this.scaling, currentRotation, this.position, composedMatrix);
+        if (this.parent) {
+            composedMatrix.multiplyToRef(this.parent.computeWorldMatrix(true), composedMatrix);
+        }
+
+        // is a node was set, calculate the difference between this and the node
+        if (node) {
+            node.computeWorldMatrix(true).invertToRef(invParentMatrix);
+            composedMatrix.multiplyToRef(invParentMatrix, composedMatrix);
+        }
+        composedMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
 
         if (this.rotationQuaternion) {
             this.rotationQuaternion.copyFrom(quatRotation);

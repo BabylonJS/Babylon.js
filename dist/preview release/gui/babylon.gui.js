@@ -1197,7 +1197,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     /** @hidden */
     AdvancedDynamicTexture.prototype._getGlobalViewport = function () {
         var size = this.getSize();
-        return this._fullscreenViewport.toGlobal(size.width, size.height);
+        var globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
+        var targetX = globalViewPort.width * (1 / this.rootContainer.scaleX);
+        var targetY = globalViewPort.height * (1 / this.rootContainer.scaleY);
+        globalViewPort.x += (globalViewPort.width - targetX) / 2;
+        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+        globalViewPort.width = targetX;
+        globalViewPort.height = targetY;
+        return globalViewPort;
     };
     /**
      * Get screen coordinates for a vector3
@@ -1392,6 +1399,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             var camera = scene.cameraToUseForPointers || scene.activeCamera;
             var engine = scene.getEngine();
+            var originalCameraToUseForPointers = scene.cameraToUseForPointers;
             if (!camera) {
                 tempViewport.x = 0;
                 tempViewport.y = 0;
@@ -1399,7 +1407,31 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 tempViewport.height = engine.getRenderHeight();
             }
             else {
-                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                if (camera.rigCameras.length) {
+                    // rig camera - we need to find the camera to use for this event
+                    var rigViewport_1 = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Viewport"](0, 0, 1, 1);
+                    camera.rigCameras.forEach(function (rigCamera) {
+                        // generate the viewport of this camera
+                        rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport_1);
+                        var x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport_1.x;
+                        var y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport_1.y - rigViewport_1.height);
+                        // check if the pointer is in the camera's viewport
+                        if (x < 0 || y < 0 || x > rigViewport_1.width || y > rigViewport_1.height) {
+                            // out of viewport - don't use this camera
+                            return;
+                        }
+                        // set the camera to use for pointers until this pointer loop is over
+                        scene.cameraToUseForPointers = rigCamera;
+                        // set the viewport
+                        tempViewport.x = rigViewport_1.x;
+                        tempViewport.y = rigViewport_1.y;
+                        tempViewport.width = rigViewport_1.width;
+                        tempViewport.height = rigViewport_1.height;
+                    });
+                }
+                else {
+                    camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                }
             }
             var x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
             var y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
@@ -1411,6 +1443,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             if (_this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = _this._shouldBlockPointer;
             }
+            // if overridden by a rig camera - reset back to the original value
+            scene.cameraToUseForPointers = originalCameraToUseForPointers;
         });
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
@@ -1712,18 +1746,26 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
      * @param scene defines the hosting scene
      * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+     * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling) {
+    AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling, adaptiveScaling) {
         if (foreground === void 0) { foreground = true; }
         if (scene === void 0) { scene = null; }
         if (sampling === void 0) { sampling = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].BILINEAR_SAMPLINGMODE; }
+        if (adaptiveScaling === void 0) { adaptiveScaling = false; }
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
-        var layer = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Layer"](name + "_layer", null, scene, !foreground);
+        var resultScene = result.getScene();
+        var layer = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Layer"](name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+        if (adaptiveScaling && resultScene) {
+            var newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            result._rootContainer.scaleX = newScale;
+            result._rootContainer.scaleY = newScale;
+        }
         // Attach
         result.attach();
         return result;
@@ -3952,15 +3994,15 @@ var Container = /** @class */ (function (_super) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
                     if (child._layout(this._measureForChildren, context)) {
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
                         }
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
-                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+                    computedWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         (_a = this.parent) === null || _a === void 0 ? void 0 : _a._markAsDirty();
                         this.width = computedWidth + "px";
@@ -3968,7 +4010,7 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
-                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+                    computedHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         (_b = this.parent) === null || _b === void 0 ? void 0 : _b._markAsDirty();
                         this.height = computedHeight + "px";
@@ -4181,6 +4223,8 @@ var Control = /** @class */ (function () {
         this._zIndex = 0;
         /** @hidden */
         this._currentMeasure = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
+        /** @hidden */
+        this._tempPaddingMeasure = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
         this._fontFamily = "Arial";
         this._fontStyle = "";
         this._fontWeight = "";
@@ -4205,6 +4249,7 @@ var Control = /** @class */ (function () {
         this._prevCurrentMeasureTransformedIntoGlobalSpace = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
         /** @hidden */
         this._cachedParentMeasure = _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"].Empty();
+        this._descendentsOnlyPadding = false;
         this._paddingLeft = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         this._paddingRight = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         this._paddingTop = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
@@ -4235,6 +4280,8 @@ var Control = /** @class */ (function () {
         this._enterCount = -1;
         this._doNotRender = false;
         this._downPointerIds = {};
+        this._evaluatedMeasure = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
+        this._evaluatedParentMeasure = new _measure__WEBPACK_IMPORTED_MODULE_3__["Measure"](0, 0, 0, 0);
         this._isEnabled = true;
         this._disabledColor = "#9a9a9a";
         this._disabledColorItem = "#6a6a6a";
@@ -4912,6 +4959,24 @@ var Control = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Control.prototype, "descendentsOnlyPadding", {
+        /**
+         * Gets or sets a value indicating the padding should work like in CSS.
+         * Basically, it will add the padding amount on each side of the parent control for its children.
+         */
+        get: function () {
+            return this._descendentsOnlyPadding;
+        },
+        set: function (value) {
+            if (this._descendentsOnlyPadding === value) {
+                return;
+            }
+            this._descendentsOnlyPadding = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Control.prototype, "paddingLeft", {
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
@@ -4941,6 +5006,17 @@ var Control = /** @class */ (function () {
                 return;
             }
             this.paddingLeft = value + "px";
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Control.prototype, "_paddingLeftInPixels", {
+        /** @hidden */
+        get: function () {
+            if (this._descendentsOnlyPadding) {
+                return 0;
+            }
+            return this.paddingLeftInPixels;
         },
         enumerable: false,
         configurable: true
@@ -4978,6 +5054,17 @@ var Control = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Control.prototype, "_paddingRightInPixels", {
+        /** @hidden */
+        get: function () {
+            if (this._descendentsOnlyPadding) {
+                return 0;
+            }
+            return this.paddingRightInPixels;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Control.prototype, "paddingTop", {
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
@@ -5011,6 +5098,17 @@ var Control = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(Control.prototype, "_paddingTopInPixels", {
+        /** @hidden */
+        get: function () {
+            if (this._descendentsOnlyPadding) {
+                return 0;
+            }
+            return this.paddingTopInPixels;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(Control.prototype, "paddingBottom", {
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
@@ -5040,6 +5138,17 @@ var Control = /** @class */ (function () {
                 return;
             }
             this.paddingBottom = value + "px";
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Control.prototype, "_paddingBottomInPixels", {
+        /** @hidden */
+        get: function () {
+            if (this._descendentsOnlyPadding) {
+                return 0;
+            }
+            return this.paddingBottomInPixels;
         },
         enumerable: false,
         configurable: true
@@ -5579,6 +5688,9 @@ var Control = /** @class */ (function () {
         if (this._isFontSizeInPercentage) {
             this._fontSet = true;
         }
+        if (this._host && this._host.useSmallestIdeal && !this._font) {
+            this._fontSet = true;
+        }
         if (this._fontSet) {
             this._prepareFont();
             this._fontSet = false;
@@ -5603,7 +5715,7 @@ var Control = /** @class */ (function () {
         }
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
-            this._currentMeasure.addAndTransformToRef(this._transformMatrix, -this.paddingLeftInPixels | 0, -this.paddingTopInPixels | 0, this.paddingRightInPixels | 0, this.paddingBottomInPixels | 0, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.addAndTransformToRef(this._transformMatrix, -this._paddingLeftInPixels | 0, -this._paddingTopInPixels | 0, this._paddingRightInPixels | 0, this._paddingBottomInPixels | 0, this._prevCurrentMeasureTransformedIntoGlobalSpace);
             context.save();
             this._applyStates(context);
             var rebuildCount = 0;
@@ -5625,39 +5737,49 @@ var Control = /** @class */ (function () {
     };
     /** @hidden */
     Control.prototype._processMeasures = function (parentMeasure, context) {
-        this._currentMeasure.copyFrom(parentMeasure);
+        this._tempPaddingMeasure.copyFrom(parentMeasure);
+        // Apply padding if in correct mode
+        if (this.parent && this.parent.descendentsOnlyPadding) {
+            this._tempPaddingMeasure.left += this.parent.paddingLeftInPixels;
+            this._tempPaddingMeasure.top += this.parent.paddingTopInPixels;
+            this._tempPaddingMeasure.width -= this.parent.paddingLeftInPixels + this.parent.paddingRightInPixels;
+            this._tempPaddingMeasure.height -= this.parent.paddingTopInPixels + this.parent.paddingBottomInPixels;
+        }
+        this._currentMeasure.copyFrom(this._tempPaddingMeasure);
         // Let children take some pre-measurement actions
-        this._preMeasure(parentMeasure, context);
+        this._preMeasure(this._tempPaddingMeasure, context);
         this._measure();
-        this._computeAlignment(parentMeasure, context);
+        this._computeAlignment(this._tempPaddingMeasure, context);
         // Convert to int values
         this._currentMeasure.left = this._currentMeasure.left | 0;
         this._currentMeasure.top = this._currentMeasure.top | 0;
         this._currentMeasure.width = this._currentMeasure.width | 0;
         this._currentMeasure.height = this._currentMeasure.height | 0;
         // Let children add more features
-        this._additionalProcessing(parentMeasure, context);
-        this._cachedParentMeasure.copyFrom(parentMeasure);
+        this._additionalProcessing(this._tempPaddingMeasure, context);
+        this._cachedParentMeasure.copyFrom(this._tempPaddingMeasure);
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
         }
     };
     Control.prototype._evaluateClippingState = function (parentMeasure) {
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
+            parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
-            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+            if (this._evaluatedMeasure.left > this._evaluatedParentMeasure.left + this._evaluatedParentMeasure.width) {
                 this._isClipped = true;
                 return;
             }
-            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+            if (this._evaluatedMeasure.left + this._evaluatedMeasure.width < this._evaluatedParentMeasure.left) {
                 this._isClipped = true;
                 return;
             }
-            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+            if (this._evaluatedMeasure.top > this._evaluatedParentMeasure.top + this._evaluatedParentMeasure.height) {
                 this._isClipped = true;
                 return;
             }
-            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+            if (this._evaluatedMeasure.top + this._evaluatedMeasure.height < this._evaluatedParentMeasure.top) {
                 this._isClipped = true;
                 return;
             }
@@ -5719,33 +5841,35 @@ var Control = /** @class */ (function () {
                 y = (parentHeight - height) / 2;
                 break;
         }
-        if (this._paddingLeft.isPixel) {
-            this._currentMeasure.left += this._paddingLeft.getValue(this._host);
-            this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
-        }
-        else {
-            this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
-            this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
-        }
-        if (this._paddingRight.isPixel) {
-            this._currentMeasure.width -= this._paddingRight.getValue(this._host);
-        }
-        else {
-            this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
-        }
-        if (this._paddingTop.isPixel) {
-            this._currentMeasure.top += this._paddingTop.getValue(this._host);
-            this._currentMeasure.height -= this._paddingTop.getValue(this._host);
-        }
-        else {
-            this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
-            this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
-        }
-        if (this._paddingBottom.isPixel) {
-            this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
-        }
-        else {
-            this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
+        if (!this.descendentsOnlyPadding) {
+            if (this._paddingLeft.isPixel) {
+                this._currentMeasure.left += this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
+            }
+            else {
+                this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
+            }
+            if (this._paddingRight.isPixel) {
+                this._currentMeasure.width -= this._paddingRight.getValue(this._host);
+            }
+            else {
+                this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
+            }
+            if (this._paddingTop.isPixel) {
+                this._currentMeasure.top += this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= this._paddingTop.getValue(this._host);
+            }
+            else {
+                this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
+            }
+            if (this._paddingBottom.isPixel) {
+                this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
+            }
+            else {
+                this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
+            }
         }
         if (this._left.isPixel) {
             this._currentMeasure.left += this._left.getValue(this._host);
@@ -6289,6 +6413,9 @@ var Control = /** @class */ (function () {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Control.prototype, "isVisible", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], Control.prototype, "descendentsOnlyPadding", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], Control.prototype, "paddingLeft", null);
@@ -6848,7 +6975,9 @@ var Grid = /** @class */ (function (_super) {
         var _this = _super.call(this, name) || this;
         _this.name = name;
         _this._rowDefinitions = new Array();
+        _this._rowDefinitionObservers = [];
         _this._columnDefinitions = new Array();
+        _this._columnDefinitionObservers = [];
         _this._cells = {};
         _this._childControls = new Array();
         return _this;
@@ -6918,8 +7047,10 @@ var Grid = /** @class */ (function (_super) {
      * @returns the current grid
      */
     Grid.prototype.addRowDefinition = function (height, isPixel) {
+        var _this = this;
         if (isPixel === void 0) { isPixel = false; }
         this._rowDefinitions.push(new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](height, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE));
+        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(function () { return _this._markAsDirty(); }));
         this._markAsDirty();
         return this;
     };
@@ -6930,8 +7061,10 @@ var Grid = /** @class */ (function (_super) {
      * @returns the current grid
      */
     Grid.prototype.addColumnDefinition = function (width, isPixel) {
+        var _this = this;
         if (isPixel === void 0) { isPixel = false; }
         this._columnDefinitions.push(new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](width, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE));
+        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(function () { return _this._markAsDirty(); }));
         this._markAsDirty();
         return this;
     };
@@ -6943,15 +7076,18 @@ var Grid = /** @class */ (function (_super) {
      * @returns the current grid
      */
     Grid.prototype.setRowDefinition = function (index, height, isPixel) {
+        var _this = this;
         if (isPixel === void 0) { isPixel = false; }
         if (index < 0 || index >= this._rowDefinitions.length) {
             return this;
         }
         var current = this._rowDefinitions[index];
-        if (current && current.isPixel === isPixel && current.internalValue === height) {
+        if (current && current.isPixel === isPixel && current.value === height) {
             return this;
         }
+        this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         this._rowDefinitions[index] = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](height, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE);
+        this._rowDefinitionObservers[index] = this._rowDefinitions[index].onChangedObservable.add(function () { return _this._markAsDirty(); });
         this._markAsDirty();
         return this;
     };
@@ -6963,15 +7099,18 @@ var Grid = /** @class */ (function (_super) {
      * @returns the current grid
      */
     Grid.prototype.setColumnDefinition = function (index, width, isPixel) {
+        var _this = this;
         if (isPixel === void 0) { isPixel = false; }
         if (index < 0 || index >= this._columnDefinitions.length) {
             return this;
         }
         var current = this._columnDefinitions[index];
-        if (current && current.isPixel === isPixel && current.internalValue === width) {
+        if (current && current.isPixel === isPixel && current.value === width) {
             return this;
         }
+        this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         this._columnDefinitions[index] = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](width, isPixel ? _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL : _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PERCENTAGE);
+        this._columnDefinitionObservers[index] = this._columnDefinitions[index].onChangedObservable.add(function () { return _this._markAsDirty(); });
         this._markAsDirty();
         return this;
     };
@@ -7042,7 +7181,9 @@ var Grid = /** @class */ (function (_super) {
                 this._offsetCell(previousKey, key);
             }
         }
+        this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         this._columnDefinitions.splice(index, 1);
+        this._columnDefinitionObservers.splice(index, 1);
         this._markAsDirty();
         return this;
     };
@@ -7067,7 +7208,9 @@ var Grid = /** @class */ (function (_super) {
                 this._offsetCell(previousKey, key);
             }
         }
+        this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         this._rowDefinitions.splice(index, 1);
+        this._rowDefinitionObservers.splice(index, 1);
         this._markAsDirty();
         return this;
     };
@@ -7144,58 +7287,58 @@ var Grid = /** @class */ (function (_super) {
         // Heights
         var index = 0;
         for (var _i = 0, _a = this._rowDefinitions; _i < _a.length; _i++) {
-            var value = _a[_i];
-            if (value.isPixel) {
-                var height = value.getValue(this._host);
+            var rowDefinition = _a[_i];
+            if (rowDefinition.isPixel) {
+                var height = rowDefinition.getValue(this._host);
                 availableHeight -= height;
                 heights[index] = height;
             }
             else {
-                globalHeightPercentage += value.internalValue;
+                globalHeightPercentage += rowDefinition.value;
             }
             index++;
         }
         var top = 0;
         index = 0;
         for (var _b = 0, _c = this._rowDefinitions; _b < _c.length; _b++) {
-            var value = _c[_b];
+            var rowDefinition = _c[_b];
             tops.push(top);
-            if (!value.isPixel) {
-                var height = (value.internalValue / globalHeightPercentage) * availableHeight;
+            if (!rowDefinition.isPixel) {
+                var height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
                 top += height;
                 heights[index] = height;
             }
             else {
-                top += value.getValue(this._host);
+                top += rowDefinition.getValue(this._host);
             }
             index++;
         }
         // Widths
         index = 0;
         for (var _d = 0, _e = this._columnDefinitions; _d < _e.length; _d++) {
-            var value = _e[_d];
-            if (value.isPixel) {
-                var width = value.getValue(this._host);
+            var columnDefinition = _e[_d];
+            if (columnDefinition.isPixel) {
+                var width = columnDefinition.getValue(this._host);
                 availableWidth -= width;
                 widths[index] = width;
             }
             else {
-                globalWidthPercentage += value.internalValue;
+                globalWidthPercentage += columnDefinition.value;
             }
             index++;
         }
         var left = 0;
         index = 0;
         for (var _f = 0, _g = this._columnDefinitions; _f < _g.length; _f++) {
-            var value = _g[_f];
+            var columnDefinition = _g[_f];
             lefts.push(left);
-            if (!value.isPixel) {
-                var width = (value.internalValue / globalWidthPercentage) * availableWidth;
+            if (!columnDefinition.isPixel) {
+                var width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
                 left += width;
                 widths[index] = width;
             }
             else {
-                left += value.getValue(this._host);
+                left += columnDefinition.getValue(this._host);
             }
             index++;
         }
@@ -7264,12 +7407,23 @@ var Grid = /** @class */ (function (_super) {
             var control = _a[_i];
             control.dispose();
         }
+        for (var index = 0; index < this._rowDefinitions.length; index++) {
+            this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
+        }
+        for (var index = 0; index < this._columnDefinitions.length; index++) {
+            this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
+        }
+        this._rowDefinitionObservers = [];
+        this._rowDefinitions = [];
+        this._columnDefinitionObservers = [];
+        this._columnDefinitions = [];
+        this._cells = {};
         this._childControls = [];
     };
     /**
- * Serializes the current control
- * @param serializationObject defined the JSON serialized object
- */
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
     Grid.prototype.serialize = function (serializationObject) {
         _super.prototype.serialize.call(this, serializationObject);
         serializationObject.columnCount = this.columnCount;
@@ -13455,8 +13609,9 @@ var StackPanel = /** @class */ (function (_super) {
         _this._manualWidth = false;
         _this._manualHeight = false;
         _this._doNotTrackManualChanges = false;
+        _this._spacing = 0;
         /**
-         * Gets or sets a boolean indicating that layou warnings should be ignored
+         * Gets or sets a boolean indicating that layout warnings should be ignored
          */
         _this.ignoreLayoutWarnings = false;
         return _this;
@@ -13471,6 +13626,23 @@ var StackPanel = /** @class */ (function (_super) {
                 return;
             }
             this._isVertical = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(StackPanel.prototype, "spacing", {
+        /**
+         * Gets or sets the spacing (in pixels) between each child.
+         */
+        get: function () {
+            return this._spacing;
+        },
+        set: function (value) {
+            if (this._spacing === value) {
+                return;
+            }
+            this._spacing = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -13551,8 +13723,9 @@ var StackPanel = /** @class */ (function (_super) {
     StackPanel.prototype._postMeasure = function () {
         var stackWidth = 0;
         var stackHeight = 0;
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var child = _a[_i];
+        var childrenCount = this._children.length;
+        for (var index = 0; index < childrenCount; index++) {
+            var child = this._children[index];
             if (!child.isVisible || child.notRenderable) {
                 continue;
             }
@@ -13568,7 +13741,7 @@ var StackPanel = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
+                    stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             }
             else {
@@ -13583,12 +13756,12 @@ var StackPanel = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
+                    stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             }
         }
-        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
-        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+        stackWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
+        stackHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
         this._doNotTrackManualChanges = true;
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.
@@ -13637,6 +13810,9 @@ var StackPanel = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StackPanel.prototype, "isVertical", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
+    ], StackPanel.prototype, "spacing", null);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], StackPanel.prototype, "width", null);
@@ -14028,13 +14204,13 @@ var TextBlock = /** @class */ (function (_super) {
         }
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                var newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
+                var newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            var newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
+            var newHeight = (this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 var lineSpacing = 0;
                 if (this._lineSpacing.isPixel) {
@@ -14233,8 +14409,8 @@ var TextBlock = /** @class */ (function (_super) {
                 if (!this._fontOffset) {
                     this._fontOffset = _control__WEBPACK_IMPORTED_MODULE_3__["Control"]._GetFontOffset(context_1.font);
                 }
-                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context_1);
-                var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, context_1);
+                var newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lines.length;
                 if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                     var lineSpacing = 0;
                     if (this._lineSpacing.isPixel) {
@@ -15715,6 +15891,9 @@ var Style = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return ValueAndUnit; });
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+
 /**
  * Class used to specific a value and its associated unit
  */
@@ -15722,7 +15901,7 @@ var ValueAndUnit = /** @class */ (function () {
     /**
      * Creates a new ValueAndUnit
      * @param value defines the value to store
-     * @param unit defines the unit to store
+     * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
      * @param negativeValueAllowed defines a boolean indicating if the value can be negative
      */
     function ValueAndUnit(value, 
@@ -15732,21 +15911,26 @@ var ValueAndUnit = /** @class */ (function () {
     negativeValueAllowed) {
         if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
         if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
-        this.unit = unit;
         this.negativeValueAllowed = negativeValueAllowed;
         this._value = 1;
+        this._unit = ValueAndUnit.UNITMODE_PIXEL;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
          * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
          */
         this.ignoreAdaptiveScaling = false;
+        /**
+         * Observable event triggered each time the value or unit changes
+         */
+        this.onChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._value = value;
+        this._unit = unit;
         this._originalUnit = unit;
     }
     Object.defineProperty(ValueAndUnit.prototype, "isPercentage", {
         /** Gets a boolean indicating if the value is a percentage */
         get: function () {
-            return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
+            return this._unit === ValueAndUnit.UNITMODE_PERCENTAGE;
         },
         enumerable: false,
         configurable: true
@@ -15754,15 +15938,48 @@ var ValueAndUnit = /** @class */ (function () {
     Object.defineProperty(ValueAndUnit.prototype, "isPixel", {
         /** Gets a boolean indicating if the value is store as pixel */
         get: function () {
-            return this.unit === ValueAndUnit.UNITMODE_PIXEL;
+            return this._unit === ValueAndUnit.UNITMODE_PIXEL;
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(ValueAndUnit.prototype, "internalValue", {
-        /** Gets direct internal value */
+        /**
+         * Gets value (without units)
+         * @deprecated use value property instead
+         */
         get: function () {
             return this._value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ValueAndUnit.prototype, "value", {
+        /** Gets value (without units) */
+        get: function () {
+            return this._value;
+        },
+        /** Sets value (without units) */
+        set: function (value) {
+            if (value !== this._value) {
+                this._value = value;
+                this.onChangedObservable.notifyObservers();
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ValueAndUnit.prototype, "unit", {
+        /** Gets units (without value) */
+        get: function () {
+            return this._unit;
+        },
+        /** Sets units (without value) */
+        set: function (value) {
+            if (value !== this._unit) {
+                this._unit = value;
+                this.onChangedObservable.notifyObservers();
+            }
         },
         enumerable: false,
         configurable: true
@@ -15780,15 +15997,19 @@ var ValueAndUnit = /** @class */ (function () {
         return this.getValue(host) * refValue;
     };
     /**
-     * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+     * Update the current value and unit.
      * @param value defines the value to store
      * @param unit defines the unit to store
      * @returns the current ValueAndUnit
      */
     ValueAndUnit.prototype.updateInPlace = function (value, unit) {
         if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
-        this._value = value;
-        this.unit = unit;
+        if (this.value !== value || this.unit !== unit) {
+            // set member variables to notify only once
+            this._value = value;
+            this._unit = unit;
+            this.onChangedObservable.notifyObservers();
+        }
         return this;
     };
     /**
@@ -15825,7 +16046,7 @@ var ValueAndUnit = /** @class */ (function () {
      * @returns a string
      */
     ValueAndUnit.prototype.toString = function (host, decimals) {
-        switch (this.unit) {
+        switch (this._unit) {
             case ValueAndUnit.UNITMODE_PERCENTAGE:
                 var percentage = this.getValue(host) * 100;
                 return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
@@ -15833,12 +16054,12 @@ var ValueAndUnit = /** @class */ (function () {
                 var pixels = this.getValue(host);
                 return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
         }
-        return this.unit.toString();
+        return this._unit.toString();
     };
     /**
      * Store a value parsed from a string
      * @param source defines the source string
-     * @returns true if the value was successfully parsed
+     * @returns true if the value was successfully parsed and updated
      */
     ValueAndUnit.prototype.fromString = function (source) {
         var match = ValueAndUnit._Regex.exec(source.toString());
@@ -15863,11 +16084,12 @@ var ValueAndUnit = /** @class */ (function () {
                     break;
             }
         }
-        if (sourceValue === this._value && sourceUnit === this.unit) {
+        if (sourceValue === this._value && sourceUnit === this._unit) {
             return false;
         }
         this._value = sourceValue;
-        this.unit = sourceUnit;
+        this._unit = sourceUnit;
+        this.onChangedObservable.notifyObservers();
         return true;
     };
     Object.defineProperty(ValueAndUnit, "UNITMODE_PERCENTAGE", {
@@ -16828,6 +17050,8 @@ var Control3D = /** @class */ (function () {
         this._enterCount = -1;
         this._downPointerIds = {}; // Store number of pointer downs per ID, from near and far interactions
         this._isVisible = true;
+        /** @hidden */
+        this._isScaledByManager = false;
         /**
          * An event triggered when the pointer moves over the control
          */
@@ -16884,6 +17108,7 @@ var Control3D = /** @class */ (function () {
             if (!this._node) {
                 return;
             }
+            this._isScaledByManager = false;
             this._node.scaling = value;
         },
         enumerable: false,
@@ -17915,11 +18140,11 @@ var HolographicSlate = /** @class */ (function (_super) {
         /**
          * Dimensions of the slate
          */
-        _this.dimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.7, 0.4, 0.001);
+        _this.dimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](21.875, 12.5, 0.001);
         /**
          * Minimum dimensions of the slate
          */
-        _this.minDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.5, 0.2, 0.001);
+        _this.minDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](15.625, 6.25, 0.001);
         /**
          * Default dimensions of the slate
          */
@@ -17927,7 +18152,7 @@ var HolographicSlate = /** @class */ (function (_super) {
         /**
          * Dimensions of the backplate
          */
-        _this.backplateDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0.7, 0.02, 0.001);
+        _this.backplateDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](21.875, 0.625, 0.001);
         /**
          * Margin between backplate and contentplate
          */
@@ -18102,8 +18327,8 @@ var HolographicSlate = /** @class */ (function (_super) {
         this._positionElements();
         this._followButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.FOLLOW_ICON_FILENAME;
         this._closeButton.imageUrl = HolographicSlate.ASSETS_BASE_URL + HolographicSlate.CLOSE_ICON_FILENAME;
-        this._followButton.backMaterial.alpha = 0;
-        this._closeButton.backMaterial.alpha = 0;
+        this._followButton.isBackplateVisible = false;
+        this._closeButton.isBackplateVisible = false;
         this._followButton.onPointerClickObservable.add(function () {
             _this._defaultBehavior.followBehaviorEnabled = !_this._defaultBehavior.followBehaviorEnabled;
             if (_this._defaultBehavior.followBehaviorEnabled) {
@@ -18529,7 +18754,7 @@ var NearMenu = /** @class */ (function (_super) {
     };
     NearMenu.prototype._finalProcessing = function () {
         _super.prototype._finalProcessing.call(this);
-        this._pinButton.position.copyFromFloats(this._backPlate.scaling.x / 2 + 0.2, this._backPlate.scaling.y / 2, 0);
+        this._pinButton.position.copyFromFloats((this._backPlate.scaling.x + _touchHolographicMenu__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicMenu"].MENU_BUTTON_SCALE) / 2, this._backPlate.scaling.y / 2, 0);
     };
     /**
      * Disposes the near menu
@@ -19916,16 +20141,18 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
         this._currentMax.maximizeInPlace(nodePosition);
     };
     TouchHolographicMenu.prototype._updateMargins = function () {
-        this._currentMin.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
-        this._currentMax.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
-        var extendSize = this._currentMax.subtract(this._currentMin);
-        // Also add a % margin
-        this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateMargin;
-        this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateMargin;
-        this._backPlate.scaling.z = 0.001;
-        for (var i = 0; i < this._children.length; i++) {
-            this._children[i].position.subtractInPlace(this._currentMin).subtractInPlace(extendSize.scale(0.5));
-            this._children[i].position.z -= 0.01;
+        if (this._children.length > 0) {
+            this._currentMin.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
+            this._currentMax.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
+            var extendSize = this._currentMax.subtract(this._currentMin);
+            // Also add a % margin
+            this._backPlate.scaling.x = extendSize.x + this._cellWidth * this.backPlateMargin;
+            this._backPlate.scaling.y = extendSize.y + this._cellHeight * this.backPlateMargin;
+            this._backPlate.scaling.z = 0.001;
+            for (var i = 0; i < this._children.length; i++) {
+                this._children[i].position.subtractInPlace(this._currentMin).subtractInPlace(extendSize.scale(0.5));
+                this._children[i].position.z -= 0.01;
+            }
         }
         this._currentMin = null;
         this._currentMax = null;
@@ -19972,7 +20199,7 @@ var TouchHolographicMenu = /** @class */ (function (_super) {
     /**
      * Scale for the buttons added to the menu
      */
-    TouchHolographicMenu.MENU_BUTTON_SCALE = 0.32;
+    TouchHolographicMenu.MENU_BUTTON_SCALE = 1;
     return TouchHolographicMenu;
 }(_volumeBasedPanel__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]));
 
@@ -20996,6 +21223,7 @@ var GUI3DManager = /** @class */ (function () {
      */
     function GUI3DManager(scene) {
         var _this = this;
+        this._customControlScaling = 1.0;
         /** @hidden */
         this._lastControlOver = {};
         /** @hidden */
@@ -21054,6 +21282,39 @@ var GUI3DManager = /** @class */ (function () {
         /** Gets associated utility layer */
         get: function () {
             return this._utilityLayer;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(GUI3DManager.prototype, "controlScaling", {
+        /** Gets the scaling for all UI elements owned by this manager */
+        get: function () {
+            return this._customControlScaling;
+        },
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set: function (newScale) {
+            if (this._customControlScaling !== newScale && newScale > 0) {
+                var scaleRatio_1 = newScale / this._customControlScaling;
+                this._customControlScaling = newScale;
+                this._rootContainer.children.forEach(function (control) {
+                    control.scaling.scaleInPlace(scaleRatio_1);
+                    if (newScale !== 1) {
+                        control._isScaledByManager = true;
+                    }
+                });
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(GUI3DManager.prototype, "useRealisticScaling", {
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get: function () {
+            return this.controlScaling === GUI3DManager.MRTK_REALISTIC_SCALING;
+        },
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set: function (newValue) {
+            this.controlScaling = newValue ? GUI3DManager.MRTK_REALISTIC_SCALING : 1;
         },
         enumerable: false,
         configurable: true
@@ -21136,6 +21397,10 @@ var GUI3DManager = /** @class */ (function () {
      */
     GUI3DManager.prototype.addControl = function (control) {
         this._rootContainer.addControl(control);
+        if (this._customControlScaling !== 1) {
+            control.scaling.scaleInPlace(this._customControlScaling);
+            control._isScaledByManager = true;
+        }
         return this;
     };
     /**
@@ -21145,6 +21410,10 @@ var GUI3DManager = /** @class */ (function () {
      */
     GUI3DManager.prototype.removeControl = function (control) {
         this._rootContainer.removeControl(control);
+        if (control._isScaledByManager) {
+            control.scaling.scaleInPlace(1 / this._customControlScaling);
+            control._isScaledByManager = false;
+        }
         return this;
     };
     /**
@@ -21189,6 +21458,7 @@ var GUI3DManager = /** @class */ (function () {
             this._utilityLayer.dispose();
         }
     };
+    GUI3DManager.MRTK_REALISTIC_SCALING = 0.032;
     return GUI3DManager;
 }());
 

@@ -314,6 +314,7 @@ export class WebXRFeaturesManager implements IDisposable {
             feature.enabled = false;
             this.detachFeature(name);
             feature.featureImplementation.dispose();
+            delete this._features[name];
             return true;
         }
         return false;
@@ -325,7 +326,6 @@ export class WebXRFeaturesManager implements IDisposable {
     public dispose(): void {
         this.getEnabledFeatures().forEach((feature) => {
             this.disableFeature(feature);
-            this._features[feature].featureImplementation.dispose();
         });
     }
 
