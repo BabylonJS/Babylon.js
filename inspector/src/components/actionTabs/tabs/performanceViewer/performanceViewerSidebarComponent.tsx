@@ -89,7 +89,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                             {/* div with check box, color picker and category name */}
                             <div className="category">
                                 <CheckBoxLineComponent isSelected={() => !metadata.hidden} onSelect={onCheckChange(id)} faIcons={{faIconEnabled: faCheckSquare, faIconDisabled: faSquare}} />
-                                <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight hideColorRect faIcon={faSquare} />
+                                <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
                                 <span className="sidebar-item-label">{id}</span>
                             </div>
                             {/* div with category value */}
