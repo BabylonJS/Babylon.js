@@ -344,7 +344,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     }
 
     private _updateLeashing(camera: Camera) {
-        if (this.attachedNode) {
+        if (this.attachedNode && this._enabled) {
             let oldParent = this.attachedNode.parent;
             this.attachedNode.setParent(null);
 

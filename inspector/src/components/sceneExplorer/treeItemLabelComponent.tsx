@@ -24,7 +24,7 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
 
     render() {
         return (
-            <div className="title" onClick={() => this.onClick()}>
+            <div className="title" title={this.props.label} onClick={() => this.onClick()}>
                 <div className="titleIcon">
                     <FontAwesomeIcon icon={this.props.icon} color={this.props.color} />
                 </div>

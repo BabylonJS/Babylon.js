@@ -618,7 +618,7 @@ export class StandardMaterial extends PushMaterial {
      * Can this material render to prepass
      */
     public get isPrePassCapable(): boolean {
-        return true;
+        return !this.disableDepthWrite;
     }
 
     /**

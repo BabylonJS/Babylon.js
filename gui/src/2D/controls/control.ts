@@ -37,6 +37,8 @@ export class Control {
     public parent: Nullable<Container>;
     /** @hidden */
     public _currentMeasure = Measure.Empty();
+    /** @hidden */
+    public _tempPaddingMeasure = Measure.Empty();
     private _fontFamily = "Arial";
     private _fontStyle = "";
     private _fontWeight = "";
@@ -65,6 +67,7 @@ export class Control {
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @hidden */
     protected _cachedParentMeasure = Measure.Empty();
+    private _descendentsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
     private _paddingTop = new ValueAndUnit(0);
@@ -796,6 +799,24 @@ export class Control {
     }
 
     /**
+     * Gets or sets a value indicating the padding should work like in CSS.
+     * Basically, it will add the padding amount on each side of the parent control for its children.
+     */
+     @serialize()
+     public get descendentsOnlyPadding(): boolean {
+        return this._descendentsOnlyPadding;
+     }
+
+     public set descendentsOnlyPadding(value: boolean) {
+        if (this._descendentsOnlyPadding === value) {
+             return;
+        }
+
+        this._descendentsOnlyPadding = value;
+        this._markAsDirty();
+     }
+
+    /**
      * Gets or sets a value indicating the padding to use on the left of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
@@ -823,6 +844,15 @@ export class Control {
             return;
         }
         this.paddingLeft = value + "px";
+    }
+
+    /** @hidden */
+    public get _paddingLeftInPixels(): number {
+        if (this._descendentsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingLeftInPixels;
     }
 
     /**
@@ -855,6 +885,15 @@ export class Control {
         this.paddingRight = value + "px";
     }
 
+    /** @hidden */
+    public get _paddingRightInPixels(): number {
+        if (this._descendentsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingRightInPixels;
+    }
+
     /**
      * Gets or sets a value indicating the padding to use on the top of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -885,6 +924,15 @@ export class Control {
         this.paddingTop = value + "px";
     }
 
+    /** @hidden */
+    public get _paddingTopInPixels(): number {
+        if (this._descendentsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingTopInPixels;
+    }
+
     /**
      * Gets or sets a value indicating the padding to use on the bottom of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -913,6 +961,15 @@ export class Control {
             return;
         }
         this.paddingBottom = value + "px";
+    }
+
+    /** @hidden */
+    public get _paddingBottomInPixels(): number {
+        if (this._descendentsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingBottomInPixels;
     }
 
     /**
@@ -1528,6 +1585,10 @@ export class Control {
             this._fontSet = true;
         }
 
+        if (this._host && this._host.useSmallestIdeal && !this._font) {
+            this._fontSet = true;
+        }
+
         if (this._fontSet) {
             this._prepareFont();
             this._fontSet = false;
@@ -1559,10 +1620,10 @@ export class Control {
 
             this._currentMeasure.addAndTransformToRef(
                 this._transformMatrix,
-                -this.paddingLeftInPixels | 0,
-                -this.paddingTopInPixels | 0,
-                this.paddingRightInPixels | 0,
-                this.paddingBottomInPixels | 0,
+                -this._paddingLeftInPixels | 0,
+                -this._paddingTopInPixels | 0,
+                this._paddingRightInPixels | 0,
+                this._paddingBottomInPixels | 0,
                 this._prevCurrentMeasureTransformedIntoGlobalSpace
             );
 
@@ -1594,13 +1655,23 @@ export class Control {
 
     /** @hidden */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        this._currentMeasure.copyFrom(parentMeasure);
+        this._tempPaddingMeasure.copyFrom(parentMeasure);
+
+        // Apply padding if in correct mode
+        if (this.parent && this.parent.descendentsOnlyPadding) {
+            this._tempPaddingMeasure.left += this.parent.paddingLeftInPixels;
+            this._tempPaddingMeasure.top += this.parent.paddingTopInPixels;
+            this._tempPaddingMeasure.width -= this.parent.paddingLeftInPixels + this.parent.paddingRightInPixels;
+            this._tempPaddingMeasure.height -= this.parent.paddingTopInPixels + this.parent.paddingBottomInPixels;
+        }
+
+        this._currentMeasure.copyFrom(this._tempPaddingMeasure);
 
         // Let children take some pre-measurement actions
-        this._preMeasure(parentMeasure, context);
+        this._preMeasure(this._tempPaddingMeasure, context);
 
         this._measure();
-        this._computeAlignment(parentMeasure, context);
+        this._computeAlignment(this._tempPaddingMeasure, context);
 
         // Convert to int values
         this._currentMeasure.left = this._currentMeasure.left | 0;
@@ -1609,9 +1680,9 @@ export class Control {
         this._currentMeasure.height = this._currentMeasure.height | 0;
 
         // Let children add more features
-        this._additionalProcessing(parentMeasure, context);
+        this._additionalProcessing(this._tempPaddingMeasure, context);
 
-        this._cachedParentMeasure.copyFrom(parentMeasure);
+        this._cachedParentMeasure.copyFrom(this._tempPaddingMeasure);
 
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
@@ -1708,32 +1779,34 @@ export class Control {
                 break;
         }
 
-        if (this._paddingLeft.isPixel) {
-            this._currentMeasure.left += this._paddingLeft.getValue(this._host);
-            this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
-        } else {
-            this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
-            this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
-        }
+        if (!this.descendentsOnlyPadding) {
+            if (this._paddingLeft.isPixel) {
+                this._currentMeasure.left += this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
+            } else {
+                this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
+            }
 
-        if (this._paddingRight.isPixel) {
-            this._currentMeasure.width -= this._paddingRight.getValue(this._host);
-        } else {
-            this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
-        }
+            if (this._paddingRight.isPixel) {
+                this._currentMeasure.width -= this._paddingRight.getValue(this._host);
+            } else {
+                this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
+            }
 
-        if (this._paddingTop.isPixel) {
-            this._currentMeasure.top += this._paddingTop.getValue(this._host);
-            this._currentMeasure.height -= this._paddingTop.getValue(this._host);
-        } else {
-            this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
-            this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
-        }
+            if (this._paddingTop.isPixel) {
+                this._currentMeasure.top += this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= this._paddingTop.getValue(this._host);
+            } else {
+                this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
+            }
 
-        if (this._paddingBottom.isPixel) {
-            this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
-        } else {
-            this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
+            if (this._paddingBottom.isPixel) {
+                this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
+            } else {
+                this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
+            }
         }
 
         if (this._left.isPixel) {
