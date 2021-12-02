@@ -810,8 +810,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
-            let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            let engine = scene.getEngine();
+            const camera = scene.cameraToUseForPointers || scene.activeCamera;
+            const engine = scene.getEngine();
+            const originalCameraToUseForPointers = scene.cameraToUseForPointers;
 
             if (!camera) {
                 tempViewport.x = 0;
@@ -819,7 +820,30 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 tempViewport.width = engine.getRenderWidth();
                 tempViewport.height = engine.getRenderHeight();
             } else {
-                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                if (camera.rigCameras.length) {
+                    // rig camera - we need to find the camera to use for this event
+                    let rigViewport = new Viewport(0, 0, 1, 1);
+                    camera.rigCameras.forEach((rigCamera) => {
+                        // generate the viewport of this camera
+                        rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
+                        let x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport.x;
+                        let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
+                        // check if the pointer is in the camera's viewport
+                        if (x < 0 || y < 0 || x > rigViewport.width || y > rigViewport.height) {
+                            // out of viewport - don't use this camera
+                            return;
+                        }
+                        // set the camera to use for pointers until this pointer loop is over
+                        scene.cameraToUseForPointers = rigCamera;
+                        // set the viewport
+                        tempViewport.x = rigViewport.x;
+                        tempViewport.y = rigViewport.y;
+                        tempViewport.width = rigViewport.width;
+                        tempViewport.height = rigViewport.height;
+                    });
+                } else {
+                    camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                }
             }
 
             let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
@@ -832,6 +856,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             }
+            // if overridden by a rig camera - reset back to the original value
+            scene.cameraToUseForPointers = originalCameraToUseForPointers;
         });
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
