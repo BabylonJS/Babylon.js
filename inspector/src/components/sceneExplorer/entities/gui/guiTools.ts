@@ -53,7 +53,7 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
             }
         } else {
             // we are in ES6 environment
-            Tools.Error(`Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`);
+            throw `Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`;
         }
     }
     guiEditor.GUIEditor.Show({liveGuiTexture: adt});
