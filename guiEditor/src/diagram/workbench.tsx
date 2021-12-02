@@ -334,6 +334,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     blurEvent = () => {
         this._ctrlKeyIsPressed = false;
         this._constraintDirection = ConstraintDirection.NONE;
+        this.props.globalState.guiGizmo.onUp();
     };
 
     componentWillUnmount() {
