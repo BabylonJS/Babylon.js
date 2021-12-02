@@ -27,6 +27,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         super(props);
         this.props.globalState.guiGizmo = this;
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
+
+        // Set visablity
         props.globalState.onSelectionChangedObservable.add((selection) => {
             if (selection) {
                 this.scalePoints.forEach(scalePoint => {
@@ -41,7 +43,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             this.updateGizmo();
         });
 
-
         this.props.globalState.onResponsiveChangeObservable.add((value) => {
             this._responsive = value;
         });
@@ -55,13 +56,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     componentDidMount() {
     }
 
-
     updateGizmo() {
-
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
 
+            // Getting the global center point of the control.
             let size = this.props.globalState.guiTexture.getSize();
             let tempMeasure = new Measure(0, 0, 0, 0);
             node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
@@ -79,6 +79,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),]
 
+            // Calculating the offsets for each scale point.
             const halfScaleX = node.scaleX / 2;;
             const halfScaleY = node.scaleY / 2;;
             startingPositions[0].x -= node._currentMeasure.width * halfScaleX;
@@ -98,15 +99,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             startingPositions[6].x += node._currentMeasure.width * halfScaleX;
             startingPositions[7].z += node._currentMeasure.height * halfScaleY;
 
-            let pivotX = (node.transformCenterX - 0.5) * 2;
-            let pivotY = (node.transformCenterY - 0.5) * 2;
-
+            // Calculate the pivot point
+            const pivotX = (node.transformCenterX - 0.5) * 2;
+            const pivotY = (node.transformCenterY - 0.5) * 2;
+            const pivot = pivotX !== 0 || pivotY !== 0;
             startingPositions[8].x += node._currentMeasure.width * halfScaleX * pivotX;
             startingPositions[8].z += node._currentMeasure.height * halfScaleY * pivotY;
 
             const center = node.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER &&
                 node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER;
-            const pivot = node.transformCenterX !== 0.5 || node.transformCenterY !== 0.5;
 
             let index = 0;
             this.scalePoints.forEach(scalePoint => {
@@ -121,6 +122,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let translateTo = Matrix2D.Identity();
                 let resultMatrix = Matrix2D.Identity();
 
+                // Transform the cordinats into world space
                 Matrix2D.TranslationToRef(ox, oy, translateBack);
                 Matrix2D.TranslationToRef(-ox, -oy, translateTo);
                 Matrix2D.RotationToRef(node.rotation, m2d);
@@ -138,7 +140,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 resultMatrix.multiplyToRef(translateBack, resultMatrix);
                 resultMatrix.transformCoordinates(result.x, result.y, result);
 
-                //v (x,0,y); 
+                // Vector(x,0,y); 
                 res.x = result.x;
                 res.z = result.y;
 
@@ -147,11 +149,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 res.z -= (size.height / 2) - tempMeasure.height / 2;
                 res.z *= -1;
 
-                if (this._scalePointIndex != index || (center && !pivot && node.typeName != "ColorPicker")) { //need to remove for center center alignment
+                // Do not update the previous position in these conditions or it will flicker
+                if (this._scalePointIndex != index || (center && !pivot && node.typeName != "ColorPicker")) {
                     this._previousPositions[index].x = res.x;
                     this._previousPositions[index].y = res.z;
                 }
-                let camera = this.props.globalState.workbench._camera;
+
+                // Get the final projection in view space
+                const camera = this.props.globalState.workbench._camera;
                 const scene = this.props.globalState.workbench._scene;
                 const engine = scene.getEngine();
                 let finalResult = Vector3.Project(res,
@@ -159,9 +164,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scene.getTransformMatrix(),
                     camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
 
-
+                // If the scale point is outside the viewport, do not render
                 scalePoint.style.display = finalResult.x < 0 || finalResult.x < 0 ||
-                finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
+                    finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
                 if (scalePoint.style.display === "flex") {
                     scalePoint.style.left = finalResult.x + "px";
                     scalePoint.style.top = finalResult.y + "px";
@@ -177,6 +182,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     getRotation(node: Control): number {
+        // Gets rotate of a control account for all of it's parents rotations
         let rotation = node.rotation;
         let parent = node.parent;
         while (parent) { //#S69ESC
@@ -206,6 +212,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
         }
 
+        // Create the pivot point which is special
         let pivotPoint = canvas.ownerDocument!.createElement("div");
         pivotPoint.className = "ge-scalePoint";
         canvas.parentElement?.appendChild(pivotPoint);
@@ -227,14 +234,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
 
-            let camera = this.props.globalState.workbench._camera;
+            // Get the new position on the screen where the mouse was clicked.
+            const camera = this.props.globalState.workbench._camera;
             const scene = this.props.globalState.workbench._scene;
             const plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
-            let newPosition = this.props.globalState.workbench.getPosition(scene, camera, plane);
+            const newPosition = this.props.globalState.workbench.getPosition(scene, camera, plane);
 
+            // Get the delta of the mouse positions
             let dx = newPosition.x - this._previousPositions[this._scalePointIndex].x;
             let dy = newPosition.z - this._previousPositions[this._scalePointIndex].y;
 
+            // Calculate offsets from the alignment
             let offsetX = [1, 1, 1, 1];
             let offsetY = [1, 1, 1, 1]
             const alignmentFactor = -2;
@@ -255,14 +265,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     break;
             }
 
-            let pivotX = (node.transformCenterX - 0.5) * 2;
-            let pivotY = (node.transformCenterY - 0.5) * 2;
+            // Calculate the pivot
+            const pivotX = (node.transformCenterX - 0.5) * 2;
+            const pivotY = (node.transformCenterY - 0.5) * 2;
 
-            let rotation = this.getRotation(node);
-            rotation = rotation % 6.28;
-            rotation += 0.785398;
-            let rotationIndex = Math.floor(rotation / 1.5708);
-
+            // Are we locked on a specific axis?
             let lockX = 1;
             let lockY = 1;
             switch (this._scalePointIndex) {
@@ -276,10 +283,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     break;
             }
 
-            let rotationOffset = rotationIndex === 2 ? 1 : 0;
-            if (rotationIndex % 2 == 0) {
+            // Get the rotation quadrant which will determine the directions we are scaling 
+            let rotation = this.getRotation(node);
+            rotation = rotation % 6.28; // 360 degrees //TODO: use actual PI numbers
+            rotation += 0.785398; // 45 degrees
+            let rotationIndex = Math.floor(rotation / 1.5708);
 
-                const index = (this._scalePointIndex + rotationIndex) % 4;
+            let rotationOffset = rotationIndex === 2 ? 1 : 0;
+            if (rotationIndex % 2 == 0) { // 0 and 180 degreess
+
+                const index = (this._scalePointIndex + rotationIndex) % 4; // If we're rotated calculate the offset for scalePoint
                 console.log("even ", index);
                 const newWidth = dx * lockX;
                 const newHieght = dy * lockY;
@@ -356,26 +369,27 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             this._previousPositions[this._scalePointIndex].y = newPosition.z;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             this.updateGizmo();
-
         }
     }
 
-    private _calculateScaling(node: Control, w: number, h: number, l: number, t: number, plusW: number, plusH: number, plusL: number, plusT: number) {
-        node.widthInPixels += w * plusW;
-        node.heightInPixels += h * plusH;
+    private _calculateScaling(node: Control, width: number, height: number, left: number, top: number,
+        directionW: number, directionH: number, directionL: number, directionT: number) {
+
+        node.widthInPixels += width * directionW;
+        node.heightInPixels += height * directionH;
 
         if (node.widthInPixels <= 0) {
             node.widthInPixels = 0;
         }
         else {
-            node.leftInPixels += l * plusL;
+            node.leftInPixels += left * directionL;
         }
 
         if (node.heightInPixels <= 0) {
             node.heightInPixels = 0;
         }
         else {
-            node.topInPixels += t * plusT;
+            node.topInPixels += top * directionT;
         }
 
         if (node.typeName === "Image") {
