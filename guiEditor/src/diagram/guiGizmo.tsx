@@ -76,7 +76,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),
             new Vector3(ox, 0, oy),
-            new Vector3(ox, 0, oy),];
+            new Vector3(ox, 0, oy),
+            new Vector3(ox, 0, oy),]
 
             const halfScaleX = node.scaleX / 2;;
             const halfScaleY = node.scaleY / 2;;
@@ -97,9 +98,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             startingPositions[6].x += node._currentMeasure.width * halfScaleX;
             startingPositions[7].z += node._currentMeasure.height * halfScaleY;
 
+            let pivotX = (node.transformCenterX - 0.5) * 2;
+            let pivotY = (node.transformCenterY - 0.5) * 2;
+
+            startingPositions[8].x += node._currentMeasure.width * halfScaleX * pivotX;
+            startingPositions[8].z += node._currentMeasure.height * halfScaleY * pivotY;
+
             const center = node.horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER &&
                 node.verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER;
             const pivot = node.transformCenterX !== 0.5 || node.transformCenterY !== 0.5;
+
             let index = 0;
             this.scalePoints.forEach(scalePoint => {
                 //we get the corner of the control with rotation 0
@@ -117,7 +125,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 Matrix2D.TranslationToRef(-ox, -oy, translateTo);
                 Matrix2D.RotationToRef(node.rotation, m2d);
                 let parent = node.parent;
-                while (parent) { 
+                while (parent) {
                     let parentRot = parent.rotation;
                     Matrix2D.ScalingToRef(parent.scaleX, parent.scaleY, s2dP);
                     Matrix2D.RotationToRef(parentRot, m2dP);
@@ -139,7 +147,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 res.z -= (size.height / 2) - tempMeasure.height / 2;
                 res.z *= -1;
 
-                if (this._scalePointIndex != index || (center && !pivot && node.typeName != "ColorPicker") ) { //need to remove for center center alignment
+                if (this._scalePointIndex != index || (center && !pivot && node.typeName != "ColorPicker")) { //need to remove for center center alignment
                     this._previousPositions[index].x = res.x;
                     this._previousPositions[index].y = res.z;
                 }
@@ -151,6 +159,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scene.getTransformMatrix(),
                     camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
 
+
                 scalePoint.style.display = finalResult.x < 0 || finalResult.x < 0 ||
                 finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
                 if (scalePoint.style.display === "flex") {
@@ -160,6 +169,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     const rotate = this.getRotation(node) * (180 / Math.PI);
                     scalePoint.style.transform = 'translate(-50%, -50%) rotate(' + rotate + 'deg)';
                 }
+
                 ++index;
 
             });
@@ -189,12 +199,20 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.left = i * 100 + 'px';
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
-            scalePoint.addEventListener("pointerdown", () => { this._setMousePosition(i) ;});
+            scalePoint.addEventListener("pointerdown", () => { this._setMousePosition(i); });
             scalePoint.addEventListener("pointerup", this._onUp);
             this.scalePoints.push(scalePoint);
             this._previousPositions.push(new Vector2(0, 0));
+
         }
 
+        let pivotPoint = canvas.ownerDocument!.createElement("div");
+        pivotPoint.className = "ge-scalePoint";
+        canvas.parentElement?.appendChild(pivotPoint);
+        pivotPoint.style.position = "absolute";
+        pivotPoint.style.display = "none";
+        this.scalePoints.push(pivotPoint);
+        this._previousPositions.push(new Vector2(0, 0));
         this.updateGizmo();
     }
 
@@ -236,7 +254,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     offsetY = [-alignmentFactor, 0, 0, -alignmentFactor];
                     break;
             }
-        
+
             let pivotX = (node.transformCenterX - 0.5) * 2;
             let pivotY = (node.transformCenterY - 0.5) * 2;
 
@@ -263,10 +281,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 const index = (this._scalePointIndex + rotationIndex) % 4;
                 console.log("even ", index);
-                const newWidth = dx *  lockX ;
-                const newHieght = dy * lockY ;
-                const newLeft =  newWidth /2 * offsetX[index] - (newWidth * pivotX * rotationOffset);
-                const newTop = newHieght /2 *  offsetY[index] - (newHieght * pivotY * rotationOffset);
+                const newWidth = dx * lockX;
+                const newHieght = dy * lockY;
+                const newLeft = newWidth / 2 * offsetX[index] - (newWidth * pivotX * rotationOffset);
+                const newTop = newHieght / 2 * offsetY[index] - (newHieght * pivotY * rotationOffset);
 
                 switch (index) {
                     case 0:
@@ -308,9 +326,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 let newWidth = dy * 2 * lockX;
                 const newHieght = dx * 2 * lockY;
-                const newLeft = dy * offsetX[0] * lockX - (invert* dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
-                const newTop = dx * offsetY[0] * lockY - (invert *dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
-                
+                const newLeft = dy * offsetX[0] * lockX - (invert * dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+                const newTop = dx * offsetY[0] * lockY - (invert * dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+
                 console.log("odd", (this._scalePointIndex + rotationIndex - 1) % 4);
                 switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
                     case 0:
