@@ -8,6 +8,7 @@ import * as React from "react";
 import { GlobalState } from "../globalState";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
 require("./workbenchCanvas.scss");
 
@@ -57,7 +58,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     updateGizmo() {
 
-        if (this.scalePoints[0].style.display === "none") return;
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
@@ -151,7 +151,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scene.getTransformMatrix(),
                     camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
 
-                //scalePoint.style.display = finalResult.x < 0 || finalResult.y < 0 ? "none" : "flex";
+                scalePoint.style.display = finalResult.x < 0 || finalResult.x < 0 ||
+                finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
                 if (scalePoint.style.display === "flex") {
                     scalePoint.style.left = finalResult.x + "px";
                     scalePoint.style.top = finalResult.y + "px";
@@ -361,6 +362,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
         if (node.typeName === "Image") {
             (node as Image).autoScale = false;
+        }
+        if (node.typeName === "TextBlock") {
+            (node as TextBlock).resizeToFit = false;
         }
 
     }
