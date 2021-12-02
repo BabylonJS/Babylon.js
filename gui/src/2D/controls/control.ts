@@ -813,7 +813,7 @@ export class Control {
 
         this._descendentsOnlyPadding = value;
         this._markAsDirty();
-     } 
+     }
 
     /**
      * Gets or sets a value indicating the padding to use on the left of the control
@@ -922,7 +922,7 @@ export class Control {
         }
         this.paddingTop = value + "px";
     }
- 
+
     /** @hidden */
     public get _paddingTopInPixels(): number {
         if (this._descendentsOnlyPadding) {
@@ -1660,7 +1660,7 @@ export class Control {
         if (this.parent && this.parent.descendentsOnlyPadding) {
             this._tempPaddingMeasure.left += this.parent.paddingLeftInPixels;
             this._tempPaddingMeasure.top += this.parent.paddingTopInPixels;
-            this._tempPaddingMeasure.width -= this.parent.paddingLeftInPixels + this.parent.paddingRightInPixels;   
+            this._tempPaddingMeasure.width -= this.parent.paddingLeftInPixels + this.parent.paddingRightInPixels;
             this._tempPaddingMeasure.height -= this.parent.paddingTopInPixels + this.parent.paddingBottomInPixels;
         }
 
