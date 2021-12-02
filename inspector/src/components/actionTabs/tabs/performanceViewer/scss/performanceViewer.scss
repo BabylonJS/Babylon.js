@@ -1,4 +1,5 @@
 $buttonHeight: 30px;
+$squareSize: 14px;
 
 #performance-viewer {
     display: grid;
@@ -68,8 +69,17 @@ $buttonHeight: 30px;
             grid-template-columns: 10px 6fr 1fr;
             .category {
                 display: grid;
-                grid-template-columns: 20px 20px 1fr;
+                grid-template-columns: $squareSize 4px $squareSize 6px 1fr;
                 grid-column: 2;
+                align-items: center;
+
+                .color-picker {
+                    grid-column: 3;
+                }
+
+                .sidebar-item-label {
+                    grid-column: 5;
+                }
             }
 
             .value {
@@ -89,36 +99,44 @@ $buttonHeight: 30px;
     
         .checkBoxLine {
             color: white;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             .checkBox {
                 .hidden { 
                     display: none; 
                 }               
             }
         }
-        
-        .color-picker {
-            position: relative;
-            transform: rotate(0deg);
 
+        .color-picker {
+            width: 100%;
+    
+            .color-rect {
+                height: 14px;
+                width: 14px;
+                cursor: pointer;
+            }
+    
             .color-picker-cover {
-                position: absolute;
+                position: fixed;
                 top: 0px;
                 right: 0px;
                 bottom: 0px;
                 left: 0px;
                 z-index: 100;
-                width: 100vw;
-                height: 100vh;
             }
     
             .color-picker-float {
-                position: fixed;
+                position: absolute;
     
                 .color-picker-container {
-                    z-index: 101;
                     width: 200px;
                 }
-            }
+            }                
         }
+        
     }
 }
