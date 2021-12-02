@@ -46,12 +46,12 @@ export class StackPanel extends Container {
      public get spacing(): number {
          return this._spacing;
      }
- 
+
      public set spacing(value: number) {
          if (this._spacing === value) {
              return;
          }
- 
+
          this._spacing = value;
          this._markAsDirty();
      }
