@@ -116,7 +116,6 @@ export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: Corouti
                 // If shouldReschedule is defined at this point, then the coroutine must have stepped asynchronously, so stop looping and let the coroutine be resumed later.
                 reschedule = false;
             }
-
         } while (reschedule);
     }
 
