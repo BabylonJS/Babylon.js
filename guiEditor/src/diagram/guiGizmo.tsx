@@ -11,6 +11,7 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
 require("./workbenchCanvas.scss");
+const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
 
 export interface IGuiGizmoProps {
     globalState: GlobalState;
@@ -51,7 +52,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
             this.updateGizmo();
         })
-
     }
 
     componentDidMount() {
@@ -152,8 +152,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
                 // Do not update the previous position in these conditions or it will flicker
                 if (this._scalePointIndex != index || (center && !pivot && node.typeName != "ColorPicker")) {
-                    this._previousPositions[index].x = res.x;
-                    this._previousPositions[index].y = res.z;
+                    // this._previousPositions[index].x = res.x;
+                    // this._previousPositions[index].y = res.z;
                 }
 
                 // Get the final projection in view space
@@ -214,8 +214,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         }
 
         // Create the pivot point which is special
-        let pivotPoint = canvas.ownerDocument!.createElement("div");
-        pivotPoint.className = "ge-scalePoint";
+        let pivotPoint = canvas.ownerDocument!.createElement("img");
+        pivotPoint.src = gizmoPivotIcon;
+        pivotPoint.className = "ge-pivotPoint";
         canvas.parentElement?.appendChild(pivotPoint);
         pivotPoint.style.position = "absolute";
         pivotPoint.style.display = "none";
@@ -290,34 +291,37 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             rotation += 0.785398; // 45 degrees
             let rotationIndex = Math.floor(rotation / 1.5708);
             const alpha = this.getRotation(node);;
-            
+
             let rotationOffset = rotationIndex === 2 ? 1 : 0;
             if (rotationIndex % 2 == 0) { // 0 and 180 degreess
 
                 const index = (this._scalePointIndex + rotationIndex) % 4; // If we're rotated calculate the offset for scalePoint
                 console.log("even ", index);
+                console.log("dx ", dx);
+                console.log("dy ", dy);
+
                 const deltaWidth = dx * lockX;
                 const deltaHieght = dy * lockY;
-                //const deltaLeft = deltaWidth / 2 * offsetX[index] - (deltaWidth * pivotX * rotationOffset);
-                //const deltaTop = deltaHieght / 2 * offsetY[index] - (deltaHieght * pivotY * rotationOffset);
 
                 // x = dy *sin(rotation) + x*cos(rotation);
-                let deltaLeft = (deltaWidth / 2 * Math.cos(alpha)) + (deltaHieght/ 2 * Math.sin(alpha));            ///- (deltaWidth * pivotX * rotationOffset);
-                let deltaTop = (deltaHieght / 2 * Math.cos(alpha)) + (deltaWidth / 2 * Math.sin(alpha));            ///- (deltaHieght * pivotY * rotationOffset);
-                
+                let deltaPivotX = (deltaWidth * pivotX * rotationOffset);
+                let deltaPivotY = (deltaHieght * pivotY * rotationOffset);
+                let deltaLeft = (deltaWidth / 2 * Math.cos(alpha) * offsetX[index]) + (deltaHieght / 2 * Math.sin(alpha) * offsetX[index]);
+                let deltaTop = (deltaHieght / 2 * Math.cos(alpha) * offsetY[index]) + (deltaWidth / 2 * Math.sin(alpha) * offsetY[index]);
+
                 const invert = rotationIndex === 2 ? -1 : 1;
                 switch (index) {
                     case 0:
-                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, -1, 1, 1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, -1, 1 * invert, -1 * invert);
                         break;
                     case 1:
-                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, 1, 1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, 1, 1 * invert, -1 * invert);
                         break;
                     case 2:
-                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, 1, -1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, 1, 1 * invert, -1 * invert);
                         break;
                     case 3:
-                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, -1, -1, 1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, -1, 1 * invert, -1 * invert);
                         break;
                     default:
                         break;
@@ -325,43 +329,58 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             }
             else {
 
-                const invert = rotationIndex === 1 ? -1 : 1;
-                /*switch (node.horizontalAlignment) {
+                //const invert = rotationIndex === 1 ? -1 : 1;
+                const alignmentFactor = 2;
+                offsetX = [1, 1, 1, 1 ];
+                offsetY = [1, 1, 1, 1]
+                switch (node.horizontalAlignment) {
                     case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                        offsetX = [-1, -1, 0, 0];
+                        offsetX = [-1, -alignmentFactor, alignmentFactor, 0];
                         break;
                     case Control.HORIZONTAL_ALIGNMENT_RIGHT: ;
-                        offsetX = [1, 1, 0, 0];
+                        offsetX = [alignmentFactor, alignmentFactor, 0, 0];
                         break;
                 }
                 switch (node.verticalAlignment) {
                     case Control.VERTICAL_ALIGNMENT_TOP:
-                        offsetY = [-1, -1, -1, 0];
+                        offsetY = [alignmentFactor, -alignmentFactor, -alignmentFactor, 0];
                         break;
                     case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                        offsetY = [1, 0, 0, -1];
+                        offsetY = [alignmentFactor, 0, 0, -alignmentFactor];
                         break;
-                }*/
+                }
                 //#3FTIKL
 
-                let newWidth = dy * 2 * lockX;
+                /*let newWidth = dy * 2 * lockX;
                 const newHieght = dx * 2 * lockY;
                 const newLeft = dy * offsetX[0] * lockX - (invert * dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
                 const newTop = dx * offsetY[0] * lockY - (invert * dy * lockX * pivotX) - (invert * dx * lockY * pivotY);
+                */
+                const index = (this._scalePointIndex + rotationIndex - 1) % 4; // If we're rotated calculate the offset for scalePoint
+                const invert = rotationIndex === 3 ? -1 : 1;
 
-                console.log("odd", (this._scalePointIndex + rotationIndex - 1) % 4);
-                switch ((this._scalePointIndex + rotationIndex - 1) % 4) {
+                const deltaWidth = dy * lockX;
+                const deltaHieght = dx * lockY;
+
+                let deltaPivotX = (deltaWidth  * pivotX * rotationOffset);
+                let deltaPivotY = (deltaHieght* pivotY * rotationOffset);
+
+                let deltaLeft = (deltaWidth/2 *  Math.cos(alpha) * offsetX[index]) + ( deltaHieght/ 2 * Math.sin(alpha) * offsetX[index]);
+                let deltaTop = (deltaHieght / 2 * Math.cos(alpha) * offsetY[index]) + ( deltaWidth / 2 * Math.sin(alpha) * offsetY[index]);
+
+                console.log("odd", index);
+                switch (index) {
                     case 0:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, -1, 1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, -1, 1 * invert, -1 * invert);
                         break;
                     case 1:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, 1, 1, 1, 1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, 1, 1 * invert, -1 * invert);
                         break;
                     case 2:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, 1, -1, 1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, 1, 1 * invert, -1 * invert);
                         break;
                     case 3:
-                        this._calculateScaling(node, newWidth, newHieght, newLeft, newTop, -1, -1, -1, -1);
+                        this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, -1, -1, 1 * invert, -1 * invert);
                         break;
                     default:
                         break;
@@ -421,6 +440,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _setMousePosition = (index: number) => {
         this._mouseDown = true;
         this._scalePointIndex = index;
+
+        // Get the new position on the screen where the mouse was clicked.
+        const camera = this.props.globalState.workbench._camera;
+        const scene = this.props.globalState.workbench._scene;
+        const plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
+        const newPosition = this.props.globalState.workbench.getPosition(scene, camera, plane);
+        this._previousPositions[this._scalePointIndex].x = newPosition.x;
+        this._previousPositions[this._scalePointIndex].y = newPosition.z;
     }
 
     render() {
