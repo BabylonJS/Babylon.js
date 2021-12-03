@@ -77,7 +77,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                     {category
                         ? <div className="category-header header sidebar-item" key={`header-${category}`}>
                             <span className="category">{category}</span>
-                            <CheckBoxLineComponent isSelected={() => metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onSelect={onCheckAllChange(category)} faIcons={{faIconEnabled: faCheckSquare, faIconDisabled: faSquare}} />
+                            <CheckBoxLineComponent isSelected={() => metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onSelect={onCheckAllChange(category)} faIcons={{enabled: faCheckSquare, disabled: faSquare}} />
                           </div>
                         : <div className="version-header header sidebar-item" key={"header-version"}>
                             <span className="category">Version:</span>
@@ -88,7 +88,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                         return metadata && <div key={`perf-sidebar-item-${id}`} className="sidebar-item measure">
                             {/* div with check box, color picker and category name */}
                             <div className="category">
-                                <CheckBoxLineComponent isSelected={() => !metadata.hidden} onSelect={onCheckChange(id)} faIcons={{faIconEnabled: faCheckSquare, faIconDisabled: faSquare}} />
+                                <CheckBoxLineComponent isSelected={() => !metadata.hidden} onSelect={onCheckChange(id)} faIcons={{enabled: faCheckSquare, disabled: faSquare}} />
                                 <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
                                 <span className="sidebar-item-label">{id}</span>
                             </div>

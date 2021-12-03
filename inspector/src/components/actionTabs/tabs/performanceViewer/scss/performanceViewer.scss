@@ -104,8 +104,8 @@ $squareSize: 14px;
             display: flex;
             justify-content: center;
             align-items: center;
-            .checkBox {
-                display: none;                
+            .disabled {
+                color: gray;
             }
         }
 
