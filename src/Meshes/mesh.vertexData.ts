@@ -275,7 +275,7 @@ export class VertexData {
         return this;
     }
 
-    private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this) as typeof this._applyToCoroutine);
+    private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this));
 
     /** @hidden */
     public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
