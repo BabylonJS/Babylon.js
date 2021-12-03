@@ -28,6 +28,7 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
 import { Observer } from "babylonjs/Misc/observable";
 import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
+
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -78,6 +79,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
+    private _mainSelection : Nullable<Control>;
+    private _selectionDepth = 0;
+
     public get globalState() {
         return this.props.globalState;
     }
@@ -88,6 +92,27 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public get selectedGuiNodes() {
         return this._selectedGuiNodes;
+    }
+
+    private _getParentWithDepth(control: Control, depth : number) {
+        let parent = control;
+        for(let i = 0; i < depth; ++i){
+            if(parent.parent)
+            parent = parent.parent;
+        }
+        console.log(this._selectionDepth);
+        return parent;
+    }
+
+    private _getMaxParent(control: Control) {
+        let parent = control;
+        this._selectionDepth = 0;
+        while(parent.parent && parent.parent !== this.globalState.guiTexture._rootContainer) {
+            parent = parent.parent;
+            ++this._selectionDepth;
+        }
+        console.log(this._selectionDepth);
+        return parent;
     }
 
     constructor(props: IWorkbenchComponentProps) {
@@ -111,9 +136,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             this._selectedGuiNodes.splice(index, 1);
                         }
                     } else if (this._selectedGuiNodes.length <= 1) {
+
                         this.changeSelectionHighlight(false);
-                        this._selectedGuiNodes = [selection];
+                        console.log("selecting");
+
+                        if(selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+                            this._selectedGuiNodes = [this._getParentWithDepth(selection, --this._selectionDepth)];
+                            
+                        } else {
+                            this._selectedGuiNodes = [this._getMaxParent(selection)];
+                            
+                            this._mainSelection = selection;
+                        }
+                        
+
+
                         this._selectAll = false;
+
                     }
                     this.changeSelectionHighlight(true);
                 }
