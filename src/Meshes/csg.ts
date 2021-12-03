@@ -817,7 +817,7 @@ export class CSG {
                 for (var sm in (<any>subMesh_dict)[m]) {
                     subMesh_obj = (<any>subMesh_dict)[m][sm];
                     SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, <AbstractMesh>mesh);
-                    materialMaxIndex = Math.max(subMesh_obj.materialIndex, materialMaxIndex) - 1;
+                    materialMaxIndex = Math.max(subMesh_obj.materialIndex, materialMaxIndex);
                 }
                 materialIndexOffset += ++materialMaxIndex;
             }
