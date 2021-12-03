@@ -207,6 +207,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.top = i * 100 + 'px';
             scalePoint.style.transform = "translate(-50%, -50%)";
             scalePoint.addEventListener("pointerdown", () => { this._setMousePosition(i); });
+            scalePoint.ondragstart = (evt) => { evt.preventDefault();};
+            scalePoint.draggable = true;
+            scalePoint.addEventListener("pointermove", this._onMove);
             scalePoint.addEventListener("pointerup", this._onUp);
             this.scalePoints.push(scalePoint);
             this._previousPositions.push(new Vector2(0, 0));
@@ -221,11 +224,20 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         pivotPoint.style.position = "absolute";
         pivotPoint.style.display = "none";
         this.scalePoints.push(pivotPoint);
+        pivotPoint.ondragstart = (evt) => { evt.preventDefault();};
+        pivotPoint.draggable = true;
         this._previousPositions.push(new Vector2(0, 0));
         this.updateGizmo();
     }
 
     public onMove(evt: React.PointerEvent) {
+        if (this._mouseDown) {
+            this._updateScale();
+        }
+    }
+
+    
+    public _onMove() {
         if (this._mouseDown) {
             this._updateScale();
         }
@@ -296,9 +308,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             if (rotationIndex % 2 == 0) { // 0 and 180 degreess
 
                 const index = (this._scalePointIndex + rotationIndex) % 4; // If we're rotated calculate the offset for scalePoint
-                console.log("even ", index);
-                console.log("dx ", dx);
-                console.log("dy ", dy);
+                //console.log("even ", index);
+                //console.log("dx ", dx);
+                //console.log("dy ", dy);
 
                 const deltaWidth = dx * lockX;
                 const deltaHieght = dy * lockY;
@@ -306,6 +318,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 // x = dy *sin(rotation) + x*cos(rotation);
                 let deltaPivotX = (deltaWidth * pivotX * rotationOffset);
                 let deltaPivotY = (deltaHieght * pivotY * rotationOffset);
+                
                 let deltaLeft = (deltaWidth / 2 * Math.cos(alpha) * offsetX[index]) + (deltaHieght / 2 * Math.sin(alpha) * offsetX[index]);
                 let deltaTop = (deltaHieght / 2 * Math.cos(alpha) * offsetY[index]) + (deltaWidth / 2 * Math.sin(alpha) * offsetY[index]);
 
@@ -368,7 +381,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 let deltaLeft = (deltaWidth/2 *  Math.cos(alpha) * offsetX[index]) + ( deltaHieght/ 2 * Math.sin(alpha) * offsetX[index]);
                 let deltaTop = (deltaHieght / 2 * Math.cos(alpha) * offsetY[index]) + ( deltaWidth / 2 * Math.sin(alpha) * offsetY[index]);
 
-                console.log("odd", index);
+                //console.log("odd", index);
                 switch (index) {
                     case 0:
                         this._calculateScaling(node, deltaWidth, deltaHieght, deltaLeft, deltaTop, 1, -1, 1 * invert, -1 * invert);

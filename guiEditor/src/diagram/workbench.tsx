@@ -955,9 +955,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             <canvas id="workbench-canvas" onPointerMove={
                 (evt) => {
                     this.onMove(evt);
+                    //console.log(evt.target);
                     this.props.globalState.guiGizmo.onMove(evt);
                 }} onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => {
+                   // console.log(evt.target);
                     this.onUp(evt);
                     this.props.globalState.guiGizmo.onUp();
                 }}
