@@ -13,6 +13,7 @@ import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { Container } from "babylonjs-gui/2D/controls/container";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -37,6 +38,7 @@ const hAlignRightIcon: string = require("../../../../sharedUiComponents/imgs/hAl
 const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
 const vAlignTopIcon: string = require("../../../../sharedUiComponents/imgs/vAlignTopIcon.svg");
 const vAlignBottomIcon: string = require("../../../../sharedUiComponents/imgs/vAlignBottomIcon.svg");
+const descendantsOnlyPaddingIcon: string = require("../../../../sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg");
 
 interface ICommonControlPropertyGridComponentProps {
     control: Control;
@@ -224,7 +226,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <div className="ge-divider">
                     <TextInputLineComponent
                         numbersOnly={true}
-                        iconLabel={"Vertical Margins"}
+                        iconLabel={"Padding"}
                         icon={verticalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="B"
@@ -264,6 +266,16 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => this._checkAndUpdateValues("paddingRight", newValue)}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                </div>
+                <div className="ge-divider-shot">
+                <CheckBoxLineComponent
+                    iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
+                    icon={descendantsOnlyPaddingIcon}
+                    label=""
+                    target={control}
+                    propertyName="descendentsOnlyPadding"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
