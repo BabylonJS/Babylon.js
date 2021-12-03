@@ -15,7 +15,7 @@ export interface ICheckBoxLineComponentProps {
     disabled?: boolean;
     icon?: string;
     iconLabel?: string;
-    faIcons?: {faIconEnabled: IconDefinition, faIconDisabled: IconDefinition}
+    faIcons?: {enabled: IconDefinition, disabled: IconDefinition}
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean }> {
@@ -92,8 +92,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                     <div className="label" title={this.props.iconLabel}>
                         {this.props.label}
                     </div>}
-                {this.props.faIcons && <FontAwesomeIcon icon={this.state.isSelected ? this.props.faIcons.faIconEnabled : this.props.faIcons.faIconDisabled} onClick={() => !this.props.disabled && this.onChange()}/>}
-                <div className="checkBox">
+                {this.props.faIcons && <FontAwesomeIcon className={`cbx ${this.props.disabled ? "disabled" : ""}`} icon={this.state.isSelected ? this.props.faIcons.enabled : this.props.faIcons.disabled} onClick={() => !this.props.disabled && this.onChange()}/>}
+                {!this.props.faIcons && <div className="checkBox">
                     <input
                         type="checkbox"
                         id={"checkbox" + this._uniqueId}
@@ -103,7 +103,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                         disabled={!!this.props.disabled}
                     />
                     <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${!!this.props.disabled ? " disabled" : ""}`}></label>
-                </div>
+                </div>}
             </div>
         );
     }
