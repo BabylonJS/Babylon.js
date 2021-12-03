@@ -6,9 +6,6 @@ $squareSize: 14px;
     height: 100%;
     width: 100%;
     grid-template-columns: 25% 75%;
-    grid-template-rows: $buttonHeight;
-    grid-template-areas: ". liveButton"
-                         "sidebar graph";
     .performancePlayheadButton {
         grid-area: liveButton;
         height: $buttonHeight;
@@ -23,14 +20,10 @@ $squareSize: 14px;
         right: 10px;
     }
 
-    #performance-viewer-graph {
-        grid-area: graph;
-    }
-
     #performance-viewer-sidebar {
-        grid-area: sidebar;
         display: flex;
         flex-direction: column;
+        overflow-y: scroll;
 
         border: 2px solid gray;
 
