@@ -27,7 +27,7 @@ import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 
-declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
+declare type DeviceInputSystem = import("../DeviceInput").DeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -393,7 +393,7 @@ export class Engine extends ThinEngine {
     /**
      * Stores instance of DeviceInputSystem
      */
-    public deviceInputSystem: IDeviceInputSystem;
+    public deviceInputSystem: DeviceInputSystem;
 
     // Observables
 
