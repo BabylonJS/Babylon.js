@@ -12,7 +12,7 @@ import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { IDisposable, Scene } from "../../scene";
 import { Observable } from "../../Misc/observable";
 import { InstancedMesh } from "../../Meshes/instancedMesh";
-import { SceneLoader } from "../../Loading/sceneLoader";
+import { ISceneLoaderAsyncResult, SceneLoader } from "../../Loading/sceneLoader";
 import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
 import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
@@ -515,6 +515,9 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     // We want to use lightweight models, diameter will initially be 1 but scaled to the values returned from WebXR.
     private static readonly _ICOSPHERE_PARAMS = { radius: 0.5, flat: false, subdivisions: 2 };
 
+    private static rightHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
+    private static leftHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
+
     private static _generateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[], right: AbstractMesh[] } {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
@@ -553,9 +556,22 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _generateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh, right: AbstractMesh }> {
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
+            // check the cache, defensive
+            if (WebXRHandTracking.rightHandGLB?.meshes[1]?.isDisposed()) {
+                WebXRHandTracking.rightHandGLB = null;
+            }
+            if (WebXRHandTracking.leftHandGLB?.meshes[1]?.isDisposed()) {
+                WebXRHandTracking.leftHandGLB = null;
+            }
 
-            const rightHandGLB = await SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene);
-            const leftHandGLB = await SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene);
+            const handsDefined = !!(WebXRHandTracking.rightHandGLB && WebXRHandTracking.leftHandGLB);
+            // load them in parallel
+            const handGLBs = await Promise.all([
+                WebXRHandTracking.rightHandGLB || SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene),
+                WebXRHandTracking.leftHandGLB || SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene)
+            ]);
+            WebXRHandTracking.rightHandGLB = handGLBs[0];
+            WebXRHandTracking.leftHandGLB = handGLBs[1];
 
             const handShader = new NodeMaterial("handShader", scene, { emitComments: false });
             await handShader.loadAsync(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
@@ -590,8 +606,11 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             handNodes.tipFresnel.value = handColors.tipFresnel;
 
             ["left", "right"].forEach((handedness) => {
-                const handGLB = handedness == "left" ? leftHandGLB : rightHandGLB;
-
+                const handGLB = handedness == "left" ? WebXRHandTracking.leftHandGLB : WebXRHandTracking.rightHandGLB;
+                if (!handGLB) {
+                    // this should never happen!
+                    throw new Error("Could not load hand model");
+                }
                 const handMesh = handGLB.meshes[1];
                 handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
                 handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
@@ -600,7 +619,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 riggedMeshes[handedness] = handMesh;
 
                 // single change for left handed systems
-                if (!scene.useRightHandedSystem) {
+                if (!handsDefined && !scene.useRightHandedSystem) {
                     handGLB.transformNodes[0].rotate(Axis.Y, Math.PI);
                 }
             });
@@ -857,8 +876,12 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         this.onHandRemovedObservable.clear();
 
         if (this._handResources.handMeshes && !this.options.handMeshes?.customMeshes) {
+            // this will dispose the cached meshes
             this._handResources.handMeshes.left.dispose();
             this._handResources.handMeshes.right.dispose();
+            // remove the cached meshes
+            WebXRHandTracking.rightHandGLB = null;
+            WebXRHandTracking.leftHandGLB = null;
         }
 
         if (this._handResources.jointMeshes) {
