@@ -414,13 +414,13 @@ export class CanvasGraphService {
 
         const textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
 
-        const x = drawableArea.right + tickerHorizontalPadding;
-        let y = drawableArea.top + textHeight;
-        for (let i = 0; i < this._numberOfTickers; i++) {
-            const tickerItem = this._tickerItems[i];
-            ctx.fillText(tickerItem.text, x, y);
-            y += textHeight;
-        }
+        // const x = drawableArea.right + tickerHorizontalPadding;
+        // let y = drawableArea.top + textHeight;
+        // for (let i = 0; i < this._numberOfTickers; i++) {
+        //     const tickerItem = this._tickerItems[i];
+        //     ctx.fillText(tickerItem.text, x, y);
+        //     y += textHeight;
+        // }
         ctx.restore();
     }
 
