@@ -34,7 +34,6 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
-import { EventInfoHardBindForSubMesh, MaterialUserEvent } from "./materialUserEvent";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -741,10 +740,7 @@ export class StandardMaterial extends PushMaterial {
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _useLogarithmicDepth: boolean;
-
-    protected _eventInfoSTD: EventInfoHardBindForSubMesh = {
-        subMesh: undefined as any,
-    };
+    protected _cacheHasRenderTargetTextures = false;
 
     /**
      * Instantiates a new standard material.
@@ -774,6 +770,9 @@ export class StandardMaterial extends PushMaterial {
                 this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
             }
 
+            this._eventInfo.renderTargets = this._renderTargets;
+            this._callbackPluginEventFillRenderTargetTextures(this._eventInfo);
+
             return this._renderTargets;
         };
     }
@@ -790,7 +789,7 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return false;
+        return this._cacheHasRenderTargetTextures;
     }
 
     /**
@@ -911,6 +910,9 @@ export class StandardMaterial extends PushMaterial {
 
         // Textures
         if (defines._areTexturesDirty) {
+            this._eventInfo.hasRenderTargetTextures = false;
+            this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
+            this._cacheHasRenderTargetTextures = this._eventInfo.hasRenderTargetTextures;
             defines._needUVs = false;
             for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
                 defines["MAINUV" + i] = false;
@@ -1091,7 +1093,11 @@ export class StandardMaterial extends PushMaterial {
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
         }
 
-        if (!super.isReadyForSubMesh(mesh, subMesh, useInstances)) {
+        this._eventInfo.isReadyForSubMesh = true;
+        this._eventInfo.defines = defines;
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
+
+        if (!this._eventInfo.isReadyForSubMesh) {
             return false;
         }
 
@@ -1145,7 +1151,7 @@ export class StandardMaterial extends PushMaterial {
         // External config
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
-        this._callbackPluginEvent(MaterialEvent.PrepareDefines, this._eventInfo);
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1450,8 +1456,8 @@ export class StandardMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
-        this._eventInfoSTD.subMesh = subMesh;
-        this._callbackPluginEvent(MaterialUserEvent.HardBindForSubMesh, this._eventInfoSTD);
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix

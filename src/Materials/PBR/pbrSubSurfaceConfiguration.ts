@@ -17,7 +17,6 @@ import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 import { MaterialUserEvent } from "../materialUserEvent";
-import { MaterialEvent } from "../materialEvent";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -308,6 +307,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
     /** @hidden */
     public _markAllSubMeshesAsTexturesDirty(): void {
+        this._enable(this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
     /** @hidden */
@@ -317,9 +317,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
 
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
-        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines(), addToPluginList, MaterialEvent.HasRenderTargetTextures | MaterialUserEvent.FillRenderTargetTextures | MaterialUserEvent.HardBindForSubMesh | MaterialUserEvent.Unbind);
+        super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines(), addToPluginList);
 
         this._scene = material.getScene();
+        this.userEvents = MaterialUserEvent.HasRenderTargetTextures | MaterialUserEvent.FillRenderTargetTextures | MaterialUserEvent.HardBindForSubMesh;
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
@@ -360,7 +361,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
 
         if (defines._areTexturesDirty) {
-            defines.SUBSURFACE = false;
+            defines.SUBSURFACE = true;
 
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
@@ -385,44 +386,40 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
             defines.SS_USE_THICKNESS_AS_DEPTH = false;
 
-            if (this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled) {
-                defines.SUBSURFACE = true;
+            const refractionIntensityTextureIsThicknessTexture =
+                !!this._thicknessTexture &&
+                !!this._refractionIntensityTexture &&
+                this._refractionIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._refractionIntensityTexture._texture === this._thicknessTexture._texture;
 
-                const refractionIntensityTextureIsThicknessTexture =
-                    !!this._thicknessTexture &&
-                    !!this._refractionIntensityTexture &&
-                    this._refractionIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._refractionIntensityTexture._texture === this._thicknessTexture._texture;
+            const translucencyIntensityTextureIsThicknessTexture =
+                !!this._thicknessTexture &&
+                !!this._translucencyIntensityTexture &&
+                this._translucencyIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._translucencyIntensityTexture._texture === this._thicknessTexture._texture;
 
-                const translucencyIntensityTextureIsThicknessTexture =
-                    !!this._thicknessTexture &&
-                    !!this._translucencyIntensityTexture &&
-                    this._translucencyIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) && this._translucencyIntensityTexture._texture === this._thicknessTexture._texture;
+            // if true, it means the refraction/translucency textures are the same than the thickness texture so there's no need to pass them to the shader, only thicknessTexture
+            const useOnlyThicknessTexture = (refractionIntensityTextureIsThicknessTexture || !this._refractionIntensityTexture) && (translucencyIntensityTextureIsThicknessTexture || !this._translucencyIntensityTexture);
 
-                // if true, it means the refraction/translucency textures are the same than the thickness texture so there's no need to pass them to the shader, only thicknessTexture
-                const useOnlyThicknessTexture = (refractionIntensityTextureIsThicknessTexture || !this._refractionIntensityTexture) && (translucencyIntensityTextureIsThicknessTexture || !this._translucencyIntensityTexture);
+            if (defines._areTexturesDirty) {
+                if (scene.texturesEnabled) {
+                    if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
+                    }
 
-                if (defines._areTexturesDirty) {
-                    if (scene.texturesEnabled) {
-                        if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
-                            MaterialHelper.PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
-                        }
+                    if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && !useOnlyThicknessTexture) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
+                    }
 
-                        if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && !useOnlyThicknessTexture) {
-                            MaterialHelper.PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
-                        }
-
-                        if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && !useOnlyThicknessTexture) {
-                            MaterialHelper.PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
-                        }
+                    if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && !useOnlyThicknessTexture) {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
                     }
                 }
-
-                defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
-                defines.SS_MASK_FROM_THICKNESS_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
-                defines.SS_USE_GLTF_TEXTURES = this._useGltfStyleTextures;
-                defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture) && useOnlyThicknessTexture;
-                defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
             }
+
+            defines.SS_HAS_THICKNESS = (this.maximumThickness - this.minimumThickness) !== 0.0;
+            defines.SS_MASK_FROM_THICKNESS_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
+            defines.SS_USE_GLTF_TEXTURES = this._useGltfStyleTextures;
+            defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture) && useOnlyThicknessTexture;
+            defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
 
             if (this._isRefractionEnabled) {
                 if (scene.texturesEnabled) {
@@ -528,7 +525,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 }
             }
 
-            if (this.isScatteringEnabled) {
+            if (this._isScatteringEnabled) {
                 uniformBuffer.updateFloat("scatteringDiffusionProfile", this._scatteringDiffusionProfileIndex);
             }
             uniformBuffer.updateColor3("vDiffusionDistance", this.diffusionDistance);
@@ -569,20 +566,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Unbinds the material from the mesh.
-     * @param activeEffect defines the effect that should be unbound from.
-     * @returns true if unbound, otherwise false
-     */
-    public unbind(activeEffect: Effect): boolean {
-        if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-            activeEffect.setTexture("refractionSampler", null);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the texture used for refraction or null if none is used.
      * @param scene defines the scene the material belongs to.
      * @returns - Refraction texture if present.  If no refraction texture and refraction
@@ -604,7 +587,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * Returns true if alpha blending should be disabled.
      */
     public get disableAlphaBlending(): boolean {
-        return this.isRefractionEnabled && this._linkRefractionWithTransparency;
+        return this._isRefractionEnabled && this._linkRefractionWithTransparency;
     }
 
     /**

@@ -14,7 +14,6 @@ declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 declare type Material = import("./material").Material;
 declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
 declare type RenderTargetTexture = import("./Textures/renderTargetTexture").RenderTargetTexture;
-declare type Effect = import("./effect").Effect;
 
 /**
  * Base class for material plugins.
@@ -33,9 +32,18 @@ export class MaterialPluginBase {
     @serialize()
     public priority: number = 500;
 
+    @serialize()
+    public userEvents: number = 0;
+
     protected _material: Material;
     protected _pluginManager: MaterialPluginManager;
     protected _pluginDefineNames?: { [name: string]: any };
+
+    protected _enable(enable: boolean) {
+        if (enable) {
+            this._pluginManager._activatePlugin(this);
+        }
+    }
 
     /**
      * Creates a new material plugin
@@ -44,9 +52,8 @@ export class MaterialPluginBase {
      * @param priority priority of the plugin
      * @param defines list of defines used by the plugin. The value of the property is the default value for this property
      * @param addToPluginList true to add the plugin to the list of plugins managed by the material plugin manager of the material (default: true)
-     * @param flagEvents user events (from MaterialUserEvent) that the plugin wants to react to
      */
-    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true, flagEvents = 0) {
+    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true) {
         this._material = material;
         this.name = name;
         this.priority = priority;
@@ -59,7 +66,7 @@ export class MaterialPluginBase {
         this._pluginManager = material.pluginManager;
 
         if (addToPluginList) {
-            this._pluginManager._addPlugin(this, flagEvents);
+            this._pluginManager._addPlugin(this);
         }
     }
 
@@ -196,15 +203,6 @@ export class MaterialPluginBase {
      * @param samplers list that the sampler names should be added to.
      */
     public getSamplers(samplers: string[]): void {}
-
-    /**
-     * Unbinds the material from the mesh.
-     * @param activeEffect defines the effect that should be unbound from.
-     * @returns true if unbound, otherwise false
-     */
-    public unbind(activeEffect: Effect): boolean {
-        return false;
-    }
 
     /**
      * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)

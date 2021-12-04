@@ -26,8 +26,9 @@ import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import { MaterialEvent,
-    EventInfo, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoHasRenderTargetTextures, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoPrepareEffect, EventInfoPrepareUniformBuffer } from "./materialEvent";
+    EventInfo, EventInfoCreated, EventInfoDisposed, EventInfoIsReadyForSubMesh, EventInfoGetDefineNames, EventInfoBindForSubMesh, EventInfoGetActiveTextures, EventInfoHasTexture, EventInfoGetAnimatables, EventInfoPrepareDefines, EventInfoPrepareEffect, EventInfoPrepareUniformBuffer } from "./materialEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoHasRenderTargetTextures } from "./materialUserEvent";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -362,7 +363,7 @@ export class Material implements IAnimatable {
      */
     public get hasRenderTargetTextures(): boolean {
         this._eventInfo.hasRenderTargetTextures = false;
-        this._callbackPluginEvent(MaterialEvent.HasRenderTargetTextures, this._eventInfo);
+        this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
         return this._eventInfo.hasRenderTargetTextures;
     }
 
@@ -734,7 +735,6 @@ export class Material implements IAnimatable {
     protected _eventInfo:
             EventInfoCreated &
             EventInfoDisposed &
-            EventInfoHasRenderTargetTextures &
             EventInfoHasTexture &
             EventInfoIsReadyForSubMesh &
             EventInfoGetDefineNames &
@@ -743,7 +743,10 @@ export class Material implements IAnimatable {
             EventInfoPrepareUniformBuffer &
             EventInfoBindForSubMesh &
             EventInfoGetAnimatables &
-            EventInfoGetActiveTextures
+            EventInfoGetActiveTextures &
+            EventInfoFillRenderTargetTextures &
+            EventInfoHasRenderTargetTextures &
+            EventInfoHardBindForSubMesh
     = {
         forceDisposeTextures: undefined,
         isReadyForSubMesh: false,
@@ -760,10 +763,23 @@ export class Material implements IAnimatable {
         uniforms: undefined as any,
         samplers: undefined as any,
         ubo: undefined as any,
+        renderTargets: undefined as any,
     };
 
     /** @hidden */
     public _callbackPluginEvent: (id: number, info: EventInfo) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventIsReadyForSubMesh: (eventData: EventInfoIsReadyForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventPrepareDefines: (eventData: EventInfoPrepareDefines) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventHardBindForSubMesh: (eventData: EventInfoHardBindForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventBindForSubMesh: (eventData: EventInfoBindForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventHasRenderTargetTextures: (eventData: EventInfoHasRenderTargetTextures) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventFillRenderTargetTextures: (eventData: EventInfoFillRenderTargetTextures) => void = () => void(0);
 
     /**
      * Creates a material instance
@@ -878,7 +894,7 @@ export class Material implements IAnimatable {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
-        this._callbackPluginEvent(MaterialEvent.IsReadyForSubMesh, this._eventInfo);
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
 
         return this._eventInfo.isReadyForSubMesh;
     }
@@ -1072,7 +1088,7 @@ export class Material implements IAnimatable {
         }
 
         this._eventInfo.subMesh = subMesh;
-        this._callbackPluginEvent(MaterialEvent.BindForSubMesh, this._eventInfo);
+        this._callbackPluginEventBindForSubMesh(this._eventInfo);
     }
 
     /**

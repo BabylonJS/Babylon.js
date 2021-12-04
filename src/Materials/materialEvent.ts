@@ -20,11 +20,6 @@ export type EventInfoDisposed = EventInfo & {
 };
 
 /** @hidden */
-export type EventInfoHasRenderTargetTextures = EventInfo & {
-    hasRenderTargetTextures: boolean;
-};
-
-/** @hidden */
 export type EventInfoHasTexture = EventInfo & {
     hasTexture: boolean;
     texture: BaseTexture;
@@ -91,12 +86,12 @@ export type EventMapping = {
     0x0100: EventInfoGetAnimatables;
     0x0200: EventInfoGetActiveTextures;
     0x0400: EventInfoHasTexture;
-    0x0800: EventInfoHasRenderTargetTextures;
 };
 
 /**
  * @hidden
  */
+
 export enum MaterialEvent {
     Created = 0x0001,
     Disposed = 0x0002,
@@ -109,5 +104,4 @@ export enum MaterialEvent {
     GetAnimatables = 0x0100,
     GetActiveTextures = 0x0200,
     HasTexture = 0x0400,
-    HasRenderTargetTextures = 0x0800,
 }

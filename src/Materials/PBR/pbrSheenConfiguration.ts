@@ -120,6 +120,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
 
     /** @hidden */
     public _markAllSubMeshesAsTexturesDirty(): void {
+        this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
@@ -155,7 +156,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
 
     public prepareDefines(defines: MaterialSheenDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
-            defines.SHEEN = this._isEnabled;
+            defines.SHEEN = true;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
