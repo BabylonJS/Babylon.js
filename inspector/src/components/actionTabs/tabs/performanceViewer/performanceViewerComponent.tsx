@@ -28,7 +28,7 @@ const isEnabled = false;
 export enum IPerfMetadataCategory {
     Count = "Count",
     FrameSteps = "Frame Steps Duration"
- }
+}
 
 // list of strategies to add to perf graph automatically.
 const defaultStrategies = [

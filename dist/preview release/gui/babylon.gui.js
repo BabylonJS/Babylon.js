@@ -4002,7 +4002,7 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
-                    computedWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         (_a = this.parent) === null || _a === void 0 ? void 0 : _a._markAsDirty();
                         this.width = computedWidth + "px";
@@ -4010,7 +4010,7 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
-                    computedHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         (_b = this.parent) === null || _b === void 0 ? void 0 : _b._markAsDirty();
                         this.height = computedHeight + "px";

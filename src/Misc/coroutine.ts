@@ -142,19 +142,6 @@ export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: Co
     });
 }
 
-// This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
-/** @hidden */
-type ExtractCoroutineReturnType<T> =
-    T extends Coroutine<infer TReturn> ? TReturn :
-    never;
-
-// This is a helper type to extract the return type of an AsyncCoroutine<T>.
-/** @hidden */
-type ExtractAsyncCoroutineReturnType<T> =
-    T extends Coroutine<infer TReturn> ? Promise<TReturn> :
-    T extends AsyncCoroutine<infer TReturn> ? Promise<TReturn> :
-    never;
-
 /**
  * Given a function that returns a Coroutine<T>, produce a function with the same parameters that returns a T.
  * The returned function runs the coroutine synchronously.
@@ -162,10 +149,10 @@ type ExtractAsyncCoroutineReturnType<T> =
  * @returns A function that runs the coroutine synchronously.
  * @hidden
  */
-export function makeSyncFunction<TCoroutineFactory extends (...params: any[]) => Coroutine<unknown>, TReturn extends ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn {
-    return (...params: Parameters<TCoroutineFactory>): TReturn => {
+export function makeSyncFunction<TParams extends unknown[], TReturn>(coroutineFactory: (...params: TParams) => Coroutine<TReturn>, abortSignal?: AbortSignal): (...params: TParams) => TReturn {
+    return (...params: TParams) => {
         // Run the coroutine synchronously.
-        return runCoroutineSync(coroutineFactory(...params), abortSignal) as TReturn;
+        return runCoroutineSync(coroutineFactory(...params), abortSignal);
     };
 }
 
@@ -176,9 +163,9 @@ export function makeSyncFunction<TCoroutineFactory extends (...params: any[]) =>
  * @returns A function that runs the coroutine asynchronously.
  * @hidden
  */
-export function makeAsyncFunction<TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<unknown>, TReturn extends ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<unknown>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn {
-    return (...params: Parameters<TCoroutineFactory>): TReturn => {
+export function makeAsyncFunction<TParams extends unknown[], TReturn>(coroutineFactory: (...params: TParams) => AsyncCoroutine<TReturn>, scheduler: CoroutineScheduler<TReturn>, abortSignal?: AbortSignal): (...params: TParams) => Promise<TReturn> {
+    return (...params: TParams) => {
         // Run the coroutine asynchronously.
-        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as TReturn;
+        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal);
     };
 }
