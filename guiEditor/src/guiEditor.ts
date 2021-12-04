@@ -40,6 +40,10 @@ export class GUIEditor {
                     //swallow and continue
                 }
             }
+            if (options.liveGuiTexture) {
+                this._CurrentState.liveGuiTexture = options.liveGuiTexture;
+            }
+            return;
         }
 
         let hostElement = options.hostElement;
