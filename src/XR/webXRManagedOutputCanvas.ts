@@ -1,11 +1,11 @@
 import { Nullable } from "../types";
 import { ThinEngine } from "../Engines/thinEngine";
-import { WebXRLayerRenderStateInit, WebXRRenderTarget } from "./webXRTypes";
+import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
-import { WebXRLayers } from "./features/WebXRLayers";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
 
 /**
  * Configuration object for WebXR output canvas
@@ -65,14 +65,14 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     /**
      * xr layer for the canvas
      */
-    public xrLayer: Nullable<XRLayer>;
+    public xrLayer: Nullable<XRWebGLLayer>;
 
     private _xrLayerWrapper: Nullable<WebXRLayerWrapper>;
 
     /**
      * Observers registered here will be triggered when the xr layer was initialized
      */
-    public onXRLayerInitObservable: Observable<XRLayer> = new Observable();
+    public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
@@ -117,32 +117,11 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @returns a promise that will resolve once the XR Layer has been created
      */
     public async initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
-        const renderState = await this.initializeXRLayerRenderStateAsync(xrSession);
-        return renderState.baseLayer!;
-    }
-
-    /**
-     * Creates a WebXRLayerRenderStateInit with baseLayer and layers properties filled in.
-     * If you provide an instance of WebXRLayers, the layers property will be filled in with an XRProjectionLayer.
-     * If no instance of WebXRLayers is provided, the baseLayer property will be filled in with an XRWebGLLayer.
-     * @param xrSession xr session
-     * @param layersFeature an instance of the WebXRLayers feature created by the features manager
-     * @returns a promise that will resolve to the partial render state once the XR layer has been created
-     */
-    public initializeXRLayerRenderStateAsync(xrSession: XRSession, layersFeature?: WebXRLayers): Promise<WebXRLayerRenderStateInit> {
         const createRenderState = () => {
-            const renderState: WebXRLayerRenderStateInit = {};
-            if (!layersFeature) {
-                const xrWebGLLayer = this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
-                this._xrLayerWrapper = WebXRLayerWrapper.CreateFromXRWebGLLayer(xrWebGLLayer);
-                renderState.baseLayer = xrWebGLLayer;
-            } else {
-                const projectionLayer = this.xrLayer = layersFeature.createProjectionLayer();
-                this._xrLayerWrapper = layersFeature.createLayerWrapper(projectionLayer);
-                renderState.layers = [projectionLayer];
-            }
+            const xrWebGLLayer = this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+            this._xrLayerWrapper = new WebXRWebGLLayerWrapper(xrWebGLLayer);
             this.onXRLayerInitObservable.notifyObservers(this.xrLayer);
-            return renderState;
+            return this.xrLayer;
         };
 
         // support canvases without makeXRCompatible

@@ -5,11 +5,10 @@ import { Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
-import { WebXRFeaturesManager } from "./webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
-import { WebXRLayers } from "./features/WebXRLayers";
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -122,14 +121,17 @@ export class WebXRExperienceHelper implements IDisposable {
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
             await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
-            const xrLayersFeature = this.featuresManager.getEnabledFeature(WebXRLayers.Name) as WebXRLayers | undefined;
-            const xrLayerRenderState = await renderTarget.initializeXRLayerRenderStateAsync(this.sessionManager.session, xrLayersFeature);
+            const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
 
             const xrRenderState: XRRenderStateInit = {
-                ...xrLayerRenderState,
                 depthFar: this.camera.maxZ,
                 depthNear: this.camera.minZ,
             };
+
+            // The layers feature will have already initialized the xr session's layers on session init.
+            if (!this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
+                xrRenderState.baseLayer = baseLayer;
+            }
 
             this.sessionManager.updateRenderState(xrRenderState);
             // run the render loop

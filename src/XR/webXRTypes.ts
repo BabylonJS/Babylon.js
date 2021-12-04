@@ -1,6 +1,5 @@
 import { Nullable } from "../types";
 import { IDisposable } from "../scene";
-import { WebXRLayers } from "./features/WebXRLayers";
 
 /**
  * States of the webXR experience
@@ -43,19 +42,6 @@ export enum WebXRTrackingState {
 }
 
 /**
- * A partial version of XRRenderStateInit that only contains relevant data for xr session layers.
- */
-export interface WebXRLayerRenderStateInit {
-    /** An XRWebGLLayer from which the XR compositor will obtain images */
-    baseLayer?: XRWebGLLayer;
-    /**
-     * An ordered array containing XRLayer objects that are displayed by the XR compositor.
-     * The order of the layers is "back-to-front".
-     */
-    layers?: XRLayer[];
-}
-
-/**
  * Abstraction of the XR render target
  */
 export interface WebXRRenderTarget extends IDisposable {
@@ -67,7 +53,7 @@ export interface WebXRRenderTarget extends IDisposable {
     /**
      * xr layer for the canvas
      */
-    xrLayer: Nullable<XRLayer>;
+    xrLayer: Nullable<XRWebGLLayer>;
 
     /**
      * Initializes a XRWebGLLayer to be used as the session's baseLayer.
@@ -76,14 +62,4 @@ export interface WebXRRenderTarget extends IDisposable {
      * @returns a promise that will resolve once the XR Layer has been created
      */
     initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
-
-    /**
-     * Creates a WebXRLayerRenderStateInit with baseLayer and layers properties filled in.
-     * If you provide an instance of WebXRLayers, the layers property will be filled in with an XRProjectionLayer.
-     * If no instance of WebXRLayers is provided, the baseLayer property will be filled in with an XRWebGLLayer.
-     * @param xrSession xr session
-     * @param layersFeature an instance of the WebXRLayers feature created by the features manager
-     * @returns a promise that will resolve to the partial render state once the XR layer has been created
-     */
-    initializeXRLayerRenderStateAsync(xrSession: XRSession, layersFeature?: WebXRLayers): Promise<WebXRLayerRenderStateInit>;
 }

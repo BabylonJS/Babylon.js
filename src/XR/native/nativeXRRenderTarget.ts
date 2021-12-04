@@ -1,22 +1,41 @@
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Viewport } from "../../Maths/math.viewport";
 import { Nullable } from "../../types";
-import { WebXRLayers } from "../features/WebXRLayers";
-import { WebXRLayerWrapper, WebXRLayerWrapperProvider } from "../webXRLayerWrapper";
-import { WebXRRenderTargetProvider } from "../webXRRenderTargetProvider";
+import { WebXRLayerWrapper } from "../webXRLayerWrapper";
+import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetProvider";
 import { WebXRSessionManager } from "../webXRSessionManager";
-import { WebXRLayerRenderStateInit, WebXRRenderTarget } from "../webXRTypes";
+import { WebXRRenderTarget } from "../webXRTypes";
 
-/** @hidden */
-export class NativeXRLayerRenderTargetProvider extends WebXRRenderTargetProvider {
-    private _nativeRTTProvider: WebXRRenderTargetProvider;
+/**
+ * Wraps XRWebGLLayer's created by Babylon Native.
+ * @hidden
+ */
+export class NativeXRLayerWrapper extends WebXRLayerWrapper {
+    constructor(public readonly layer: XRWebGLLayer) {
+        super(
+            () => layer.framebufferWidth,
+            () => layer.framebufferHeight,
+            layer,
+            'XRWebGLLayer',
+            (sessionManager) => new NativeXRLayerRenderTargetTextureProvider(sessionManager, this));
+    }
+}
 
-    constructor(sessionManager: WebXRSessionManager, private readonly _layer: XRWebGLLayer) {
-        super(sessionManager.scene, _layer);
+/**
+ * Provides render target textures for layers created by Babylon Native.
+ * @hidden
+ */
+export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+    private _nativeRTTProvider: WebXRLayerRenderTargetTextureProvider;
+    private _nativeLayer: XRWebGLLayer;
+
+    constructor(sessionManager: WebXRSessionManager, public readonly layerWrapper: NativeXRLayerWrapper) {
+        super(sessionManager.scene, layerWrapper);
         this._nativeRTTProvider = (navigator as any).xr.getNativeRenderTargetProvider(sessionManager.session, this._createRenderTargetTexture.bind(this), this._destroyRenderTargetTexture.bind(this));
+        this._nativeLayer = layerWrapper.layer;
     }
 
-    public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
+    public trySetViewportForView(viewport: Viewport): boolean {
         viewport.x = 0;
         viewport.y = 0;
         viewport.width = 1;
@@ -24,57 +43,44 @@ export class NativeXRLayerRenderTargetProvider extends WebXRRenderTargetProvider
         return true;
     }
 
-    public getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture> {
-        return this._nativeRTTProvider.getRenderTargetForEye(eye);
+    public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
+        // TODO (rgerd): Update the contract on the BabylonNative side to call this "getRenderTargetTextureForEye"
+        return (this._nativeRTTProvider as any).getRenderTargetForEye(eye);
     }
 
-    public getRenderTargetForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this._nativeRTTProvider.getRenderTargetForEye(view.eye);
+    public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
+        return (this._nativeRTTProvider as any).getRenderTargetForEye(view.eye);
     }
 
     public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number; }> {
-        return { framebufferWidth: this._layer.framebufferWidth, framebufferHeight: this._layer.framebufferHeight };
+        return {
+            framebufferWidth: this._nativeLayer.framebufferWidth,
+            framebufferHeight: this._nativeLayer.framebufferHeight
+        };
     }
 }
 
-/** @hidden */
-export class NativeXRRenderTarget implements WebXRRenderTarget, WebXRLayerWrapperProvider {
+/**
+ * Creates the xr layer that will be used as the xr session's base layer.
+ * @hidden
+ */
+export class NativeXRRenderTarget implements WebXRRenderTarget {
     public canvasContext: WebGLRenderingContext;
-    public xrLayer: Nullable<XRLayer>;
+    public xrLayer: Nullable<XRWebGLLayer>;
 
     private _nativeRenderTarget: WebXRRenderTarget;
 
-    constructor(private readonly _xrSessionManager: WebXRSessionManager) {
+    constructor(_xrSessionManager: WebXRSessionManager) {
         this._nativeRenderTarget = (navigator as any).xr.getWebXRRenderTarget(_xrSessionManager.scene.getEngine());
-        this._xrSessionManager._addLayerWrapperProvider(this);
     }
 
     public async initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
-        this.xrLayer = (await this.initializeXRLayerRenderStateAsync(xrSession)).baseLayer!;
-        return this.xrLayer as XRWebGLLayer;
-    }
-
-    public async initializeXRLayerRenderStateAsync(xrSession: XRSession, layersFeature?: WebXRLayers): Promise<WebXRLayerRenderStateInit> {
         await this._nativeRenderTarget.initializeXRLayerAsync(xrSession);
-        this.xrLayer = this._nativeRenderTarget.xrLayer;
-        return {
-            baseLayer: this.xrLayer as XRWebGLLayer
-        };
-    }
-
-    public createLayerWrapper(layer: XRWebGLLayer): Nullable<WebXRLayerWrapper> {
-        if (layer === this.xrLayer) {
-            return new WebXRLayerWrapper(
-                () => layer.framebufferWidth,
-                () => layer.framebufferHeight,
-                layer,
-                'XRWebGLLayer',
-                (sessionManager) => new NativeXRLayerRenderTargetProvider(sessionManager, layer));
-        }
-        return null;
+        this.xrLayer = this._nativeRenderTarget.xrLayer!;
+        return this.xrLayer;
     }
 
     dispose(): void {
-        this._xrSessionManager._removeLayerWrapperProvider(this);
+        /* empty */
     }
 }

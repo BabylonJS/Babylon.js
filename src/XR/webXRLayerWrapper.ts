@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { WebXRRenderTargetProvider, XRWebGLLayerRenderTargetProvider } from "./webXRRenderTargetProvider";
+import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetProvider";
 import { WebXRSessionManager } from "./webXRSessionManager";
 
 /** Covers all supported subclasses of WebXR's XRCompositionLayer */
@@ -8,14 +8,6 @@ export type WebXRCompositionLayerType = 'XRProjectionLayer';
 
 /** Covers all supported subclasses of WebXR's XRLayer */
 export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;
-
-/**
- * Creates wrappers for XR layers
- * @hidden
- */
- export interface WebXRLayerWrapperProvider {
-    createLayerWrapper(layer: XRLayer): Nullable<WebXRLayerWrapper>;
-}
 
 /**
  * Wrapper over subclasses of XRLayer.
@@ -51,7 +43,7 @@ export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;
         }
     }
 
-    constructor(
+    protected constructor(
         /** The width of the layer's framebuffer. */
         public getWidth: () => number,
         /** The height of the layer's framebuffer. */
@@ -61,19 +53,5 @@ export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;
         /** The type of XR layer that is being wrapped. */
         public readonly layerType: WebXRLayerType,
         /** Create a render target provider for the wrapped layer. */
-        public createRenderTargetProvider: (xrSessionManager: WebXRSessionManager) => WebXRRenderTargetProvider) {}
-
-    /**
-     * Creates a WebXRLayerWrapper that wraps around an XRWebGLLayer.
-     * @param layer is the layer to be wrapped.
-     * @returns a new WebXRLayerWrapper wrapping the provided XRWebGLLayer.
-     */
-    public static CreateFromXRWebGLLayer(layer: XRWebGLLayer): WebXRLayerWrapper {
-        return new WebXRLayerWrapper(
-            () => layer.framebufferWidth,
-            () => layer.framebufferHeight,
-            layer,
-            'XRWebGLLayer',
-            (sessionManager) => new XRWebGLLayerRenderTargetProvider(sessionManager.scene, layer));
-    }
+        public createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider) {}
 }
