@@ -63,7 +63,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
-    private _forceMoving = false;
+    //private _forceMoving = false;
     private _forceSelecting = true;
     private _outlines = false;
     private _panning: boolean;
@@ -164,7 +164,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         props.globalState.onPanObservable.add(() => {
             this._forcePanning = !this._forcePanning;
             this._forceSelecting = false;
-            this._forceMoving = false;
+            //this._forceMoving = false;
             this._forceZooming = false;
             if (!this._forcePanning) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
@@ -175,7 +175,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.artBoardBackground.isHitTestVisible = true;
         });
 
-        props.globalState.onMoveObservable.add(() => {
+        /*props.globalState.onMoveObservable.add(() => {
             this._forceMoving = !this._forceMoving;
             this._forcePanning = false;
             this._forceZooming = false;
@@ -191,18 +191,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._canvas.style.cursor = "move";
             }
             this.artBoardBackground.isHitTestVisible = true;
-        });
+        });*/
 
         props.globalState.onSelectionButtonObservable.add(() => {
             this._forceSelecting = !this._forceSelecting;
             this._forcePanning = false;
             this._forceZooming = false;
-            this._forceMoving = false;
+            //this._forceMoving = false;
             this._canvas.style.cursor = "default";
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            if (this._forceMoving) {
+            /*if (this._forceMoving) {
                 this.updateHitTestForSelection(true);
-            }
+            }*/
             this.artBoardBackground.isHitTestVisible = true;
         });
 
@@ -210,7 +210,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
-            this._forceMoving = false;
+            //this._forceMoving = false;
             if (!this._forceZooming) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             } else {
@@ -777,7 +777,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        if (this._forceMoving || this._forceSelecting) {
+        if ( this._forceSelecting) {//this._forceMoving ||
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
@@ -969,10 +969,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "G":
                     this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-                case "m": //move
-                case "M":
-                    if (!this._forceMoving) this.globalState.onMoveObservable.notifyObservers();
-                    break;
+               // case "m": //move
+               // case "M":
+               //     if (!this._forceMoving) this.globalState.onMoveObservable.notifyObservers();
+               //     break;
                 case "f": //fit to window
                 case "F":
                     this.globalState.onFitToWindowObservable.notifyObservers();
