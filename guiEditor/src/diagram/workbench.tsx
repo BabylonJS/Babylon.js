@@ -81,8 +81,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _mainSelection: Nullable<Control> = null;
     private _selectionDepth = 0;
-    private _doubleClick : Nullable<Control> = null;;
-
+    private _doubleClick: Nullable<Control> = null;
+    private _lockMainSelection: boolean = false;
     public get globalState() {
         return this.props.globalState;
     }
@@ -101,7 +101,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (parent.parent)
                 parent = parent.parent;
         }
-        console.log(this._selectionDepth);
         return parent;
     }
 
@@ -112,7 +111,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             parent = parent.parent;
             ++this._selectionDepth;
         }
-        console.log(this._selectionDepth);
         return parent;
     }
 
@@ -140,25 +138,19 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     } else if (this._selectedGuiNodes.length <= 1) {
 
                         this.changeSelectionHighlight(false);
-                        console.log("selecting");
 
-                        if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
-                            this._selectedGuiNodes = [this._getParentWithDepth(selection, --this._selectionDepth)];
-
-                        } else {
-                            this._selectedGuiNodes = [this._getMaxParent(selection)];
-
+                        this._selectedGuiNodes = [selection];
+                        if (!this._lockMainSelection) {
                             this._mainSelection = selection;
                         }
-
-
-
+                        this._lockMainSelection = false;
                         this._selectAll = false;
 
                     }
                     this.changeSelectionHighlight(true);
                 }
             }
+
         });
 
         props.globalState.onPanObservable.add(() => {
@@ -253,6 +245,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         this.props.globalState.workbench = this;
+    }
+
+    determineMouseSelection(selection: Nullable<Control>) {
+        if (selection && this._selectedGuiNodes.length <= 1) {
+            if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+                selection = this._getParentWithDepth(selection, --this._selectionDepth);
+
+            } else {
+                this._mainSelection = selection;
+                selection = this._getMaxParent(selection);
+
+            }
+        }
+        this._lockMainSelection = true;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
     }
 
     keyEvent = (evt: KeyboardEvent) => {
@@ -497,28 +504,37 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
-    
+    private _isMainSelectionParent(control: Control) {
+        let parent = control;
+        if (this._mainSelection === parent) {
+            return true;
+        }
+        while (parent.parent) {
+            parent = parent.parent;
+            if (this._mainSelection === parent) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     createNewGuiNode(guiControl: Control) {
         const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
         });
 
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
-
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
                 console.log(guiControl.name);
-                if (!this._doubleClick && this._mainSelection === guiControl) {
+                if (!this._doubleClick && this._isMainSelectionParent(guiControl) ) {
                     this._doubleClick = guiControl;
-                    console.log("misss");
                     window.setTimeout(() => {
                         this._doubleClick = null;
-                        console.log("off");
-                    }, 2000);
+                    }, 1500);
                 }
                 else {
-                    this.isSelected(true, guiControl);
-                   
+                    this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }
                 this.isUp = false;
@@ -777,7 +793,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        if ( this._forceSelecting) {//this._forceMoving ||
+        if (this._forceSelecting) {//this._forceMoving ||
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
@@ -969,10 +985,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "G":
                     this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-               // case "m": //move
-               // case "M":
-               //     if (!this._forceMoving) this.globalState.onMoveObservable.notifyObservers();
-               //     break;
+                // case "m": //move
+                // case "M":
+                //     if (!this._forceMoving) this.globalState.onMoveObservable.notifyObservers();
+                //     break;
                 case "f": //fit to window
                 case "F":
                     this.globalState.onFitToWindowObservable.notifyObservers();
