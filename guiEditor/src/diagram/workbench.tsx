@@ -777,7 +777,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        if (this._forceMoving) {
+        if (this._forceMoving || this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
