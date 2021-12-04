@@ -79,8 +79,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
-    private _mainSelection : Nullable<Control>;
+    private _mainSelection: Nullable<Control> = null;
     private _selectionDepth = 0;
+    private _doubleClick : Nullable<Control> = null;;
 
     public get globalState() {
         return this.props.globalState;
@@ -94,11 +95,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._selectedGuiNodes;
     }
 
-    private _getParentWithDepth(control: Control, depth : number) {
+    private _getParentWithDepth(control: Control, depth: number) {
         let parent = control;
-        for(let i = 0; i < depth; ++i){
-            if(parent.parent)
-            parent = parent.parent;
+        for (let i = 0; i < depth; ++i) {
+            if (parent.parent)
+                parent = parent.parent;
         }
         console.log(this._selectionDepth);
         return parent;
@@ -107,7 +108,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _getMaxParent(control: Control) {
         let parent = control;
         this._selectionDepth = 0;
-        while(parent.parent && parent.parent !== this.globalState.guiTexture._rootContainer) {
+        while (parent.parent && parent.parent !== this.globalState.guiTexture._rootContainer) {
             parent = parent.parent;
             ++this._selectionDepth;
         }
@@ -125,6 +126,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
                 this._selectAll = false;
+                this._mainSelection = null;
             } else {
                 if (selection instanceof Control) {
                     if (this._ctrlKeyIsPressed) {
@@ -140,15 +142,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.changeSelectionHighlight(false);
                         console.log("selecting");
 
-                        if(selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+                        if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
                             this._selectedGuiNodes = [this._getParentWithDepth(selection, --this._selectionDepth)];
-                            
+
                         } else {
                             this._selectedGuiNodes = [this._getMaxParent(selection)];
-                            
+
                             this._mainSelection = selection;
                         }
-                        
+
 
 
                         this._selectAll = false;
@@ -495,15 +497,30 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
+    
     createNewGuiNode(guiControl: Control) {
         const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
         });
 
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
+
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
-                this.isSelected(true, guiControl);
+                console.log(guiControl.name);
+                if (!this._doubleClick && this._mainSelection === guiControl) {
+                    this._doubleClick = guiControl;
+                    console.log("misss");
+                    window.setTimeout(() => {
+                        this._doubleClick = null;
+                        console.log("off");
+                    }, 2000);
+                }
+                else {
+                    this.isSelected(true, guiControl);
+                   
+                    this._doubleClick = null;
+                }
                 this.isUp = false;
             }
         });
@@ -816,7 +833,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             const block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
             block.texture = this.globalState.guiTexture;
         }
-        
+
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
