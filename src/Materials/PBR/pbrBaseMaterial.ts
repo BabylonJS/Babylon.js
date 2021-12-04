@@ -42,7 +42,6 @@ import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
-import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoUnbind, MaterialUserEvent } from "../materialUserEvent";
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -952,18 +951,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly detailMap: DetailMapConfiguration;
 
-    protected _eventInfoPBR:
-            EventInfoFillRenderTargetTextures &
-            EventInfoUnbind &
-            EventInfoHardBindForSubMesh
-    = {
-        renderTargets: undefined as any,
-        subMesh: undefined as any,
-        needMarkAsTextureDirty: false,
-        effect: undefined as any,
-    };
-
     protected _internalPluginsUniformList: string[] = [];
+    protected _cacheHasRenderTargetTextures = false;
 
     /**
      * Instantiates a new PBRMaterial instance.
@@ -993,8 +982,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             //this.subSurface.fillRenderTargetTextures(this._renderTargets);
 
-            this._eventInfoPBR.renderTargets = this._renderTargets;
-            this._callbackPluginEvent(MaterialUserEvent.FillRenderTargetTextures, this._eventInfoPBR);
+            this._eventInfo.renderTargets = this._renderTargets;
+            this._callbackPluginEventFillRenderTargetTextures(this._eventInfo);
 
             return this._renderTargets;
         };
@@ -1015,10 +1004,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }*/
 
-        // super.hasRenderTargetTextures is not allowed (because we are in a getter), so code is replicated here
-        this._eventInfo.hasRenderTargetTextures = false;
-        this._callbackPluginEvent(MaterialEvent.HasRenderTargetTextures, this._eventInfo);
-        return this._eventInfo.hasRenderTargetTextures;
+        return this._cacheHasRenderTargetTextures;
     }
 
     /**
@@ -1054,9 +1040,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
-        return (this.subSurface?.disableAlphaBlending ||
+        return (
             this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE ||
-            this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
+            this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST ||
+            this.subSurface?.disableAlphaBlending);
     }
 
     /**
@@ -1138,6 +1125,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const engine = scene.getEngine();
 
         if (defines._areTexturesDirty) {
+            this._eventInfo.hasRenderTargetTextures = false;
+            this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
+            this._cacheHasRenderTargetTextures = this._eventInfo.hasRenderTargetTextures;
             if (scene.texturesEnabled) {
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                     if (!this._albedoTexture.isReadyOrNotBlocking()) {
@@ -1236,7 +1226,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
-        this._callbackPluginEvent(MaterialEvent.IsReadyForSubMesh, this._eventInfo);
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
 
         if (!this._eventInfo.isReadyForSubMesh) {
             return false;
@@ -1821,7 +1811,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
-        this._callbackPluginEvent(MaterialEvent.PrepareDefines, this._eventInfo);
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
@@ -1948,29 +1938,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Unbinds the material from the mesh
-     */
-    public unbind(): void {
-        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
-            let needFlag = false;
-            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("reflection2DSampler", null);
-                needFlag = true;
-            }
-
-            this._eventInfoPBR.needMarkAsTextureDirty = needFlag;
-            this._eventInfoPBR.effect = this._activeEffect;
-            this._callbackPluginEvent(MaterialUserEvent.Unbind, this._eventInfoPBR);
-
-            if (this._eventInfoPBR.needMarkAsTextureDirty) {
-                this._markAllSubMeshesAsTexturesDirty();
-            }
-        }
-
-        super.unbind();
-    }
-
-    /**
      * Binds the submesh data.
      * @param world - The world matrix.
      * @param mesh - The BJS mesh.
@@ -2004,8 +1971,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         //this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
-        this._eventInfoPBR.subMesh = subMesh;
-        this._callbackPluginEvent(MaterialUserEvent.HardBindForSubMesh, this._eventInfoPBR);
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -2280,7 +2247,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             //super.bindForSubMesh(world, mesh, subMesh);
             this._eventInfo.subMesh = subMesh;
-            this._callbackPluginEvent(MaterialEvent.BindForSubMesh, this._eventInfo);
+            this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);

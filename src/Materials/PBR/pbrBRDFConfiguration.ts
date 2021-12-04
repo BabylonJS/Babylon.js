@@ -103,6 +103,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         super(material, "PBRBRDF", 90, new MaterialBRDFDefines(), addToPluginList);
 
         this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
+        this._enable(true);
     }
 
     public prepareDefines(defines: MaterialBRDFDefines, scene: Scene, mesh: AbstractMesh): void {

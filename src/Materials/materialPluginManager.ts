@@ -9,7 +9,6 @@ import {
     EventInfoGetActiveTextures,
     EventInfoGetAnimatables,
     EventInfoGetDefineNames,
-    EventInfoHasRenderTargetTextures,
     EventInfoHasTexture,
     EventInfoIsReadyForSubMesh,
     EventInfoPrepareDefines,
@@ -17,7 +16,7 @@ import {
     MaterialEvent,
     EventInfo,
 } from "./materialEvent";
-import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoUnbind, MaterialUserEvent } from "./materialUserEvent";
+import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoHasRenderTargetTextures, MaterialUserEvent } from "./materialUserEvent";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -41,6 +40,7 @@ export class MaterialPluginManager {
     protected _scene: Scene;
     protected _engine: Engine;
     protected _plugins: MaterialPluginBase[] = [];
+    protected _activePlugins: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };
     protected _uboDeclaration: string;
@@ -50,7 +50,6 @@ export class MaterialPluginManager {
     protected _samplerList: string[];
     protected _pluginsForHasRenderTargetTextures: MaterialPluginBase[] = [];
     protected _pluginsForFillRenderTargetTextures: MaterialPluginBase[] = [];
-    protected _pluginsForUnbind: MaterialPluginBase[] = [];
     protected _pluginsForHardBindForSubMesh: MaterialPluginBase[] = [];
 
     /**
@@ -64,7 +63,7 @@ export class MaterialPluginManager {
     }
 
     /** @hidden */
-    public _addPlugin(plugin: MaterialPluginBase, flagEvents: number): void {
+    public _addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === plugin.name) {
                 throw `Plugin "${plugin.name}" already added to the material "${this._material.name}"!`;
@@ -76,6 +75,12 @@ export class MaterialPluginManager {
         }
 
         this._material._callbackPluginEvent = this._handlePluginEvent.bind(this);
+        this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
+        this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
+        this._material._callbackPluginEventHardBindForSubMesh = this._handlePluginEventHardBindForSubMesh.bind(this);
+        this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
+        this._material._callbackPluginEventHasRenderTargetTextures = this._handlePluginEventHasRenderTargetTextures.bind(this);
+        this._material._callbackPluginEventFillRenderTargetTextures = this._handlePluginEventFillRenderTargetTextures.bind(this);
 
         this._plugins.push(plugin);
         this._plugins.sort((a, b) => a.priority - b.priority);
@@ -94,22 +99,27 @@ export class MaterialPluginManager {
         } else {
             delete this._defineNamesFromPlugins;
         }
+    }
 
-        if (flagEvents & MaterialEvent.HasRenderTargetTextures) {
-            this._pluginsForHasRenderTargetTextures.push(plugin);
-            this._pluginsForHasRenderTargetTextures.sort((a, b) => a.priority - b.priority);
-        }
-        if (flagEvents & MaterialUserEvent.FillRenderTargetTextures) {
-            this._pluginsForFillRenderTargetTextures.push(plugin);
-            this._pluginsForFillRenderTargetTextures.sort((a, b) => a.priority - b.priority);
-        }
-        if (flagEvents & MaterialUserEvent.Unbind) {
-            this._pluginsForUnbind.push(plugin);
-            this._pluginsForUnbind.sort((a, b) => a.priority - b.priority);
-        }
-        if (flagEvents & MaterialUserEvent.HardBindForSubMesh) {
-            this._pluginsForHardBindForSubMesh.push(plugin);
-            this._pluginsForHardBindForSubMesh.sort((a, b) => a.priority - b.priority);
+    /** @hidden */
+    public _activatePlugin(plugin: MaterialPluginBase): void {
+        if (this._activePlugins.indexOf(plugin) === -1) {
+            this._activePlugins.push(plugin);
+
+            const flagEvents = plugin.userEvents;
+
+            if (flagEvents & MaterialUserEvent.HasRenderTargetTextures) {
+                this._pluginsForHasRenderTargetTextures.push(plugin);
+                this._pluginsForHasRenderTargetTextures.sort((a, b) => a.priority - b.priority);
+            }
+            if (flagEvents & MaterialUserEvent.FillRenderTargetTextures) {
+                this._pluginsForFillRenderTargetTextures.push(plugin);
+                this._pluginsForFillRenderTargetTextures.sort((a, b) => a.priority - b.priority);
+            }
+            if (flagEvents & MaterialUserEvent.HardBindForSubMesh) {
+                this._pluginsForHardBindForSubMesh.push(plugin);
+                this._pluginsForHardBindForSubMesh.sort((a, b) => a.priority - b.priority);
+            }
         }
     }
 
@@ -127,59 +137,54 @@ export class MaterialPluginManager {
         return null;
     }
 
+    protected _handlePluginEventIsReadyForSubMesh(eventData: EventInfoIsReadyForSubMesh): void {
+        let isReady = true;
+        for (const plugin of this._activePlugins) {
+            isReady = isReady && plugin.isReadyForSubMesh(eventData.defines, this._scene, this._engine, eventData.subMesh);
+        }
+        eventData.isReadyForSubMesh = isReady;
+    }
+
+    protected _handlePluginEventPrepareDefines(eventData: EventInfoPrepareDefines): void {
+        for (const plugin of this._activePlugins) {
+            plugin.prepareDefines(eventData.defines, this._scene, eventData.mesh);
+        }
+    }
+
+    protected _handlePluginEventHardBindForSubMesh(eventData: EventInfoHardBindForSubMesh): void {
+        for (const plugin of this._pluginsForHardBindForSubMesh) {
+            plugin.hardBindForSubMesh(this._material._uniformBuffer, this._scene, this._engine, eventData.subMesh);
+        }
+    }
+
+    protected _handlePluginEventBindForSubMesh(eventData: EventInfoBindForSubMesh): void {
+        for (const plugin of this._activePlugins) {
+            plugin.bindForSubMesh(this._material._uniformBuffer, this._scene, this._engine, eventData.subMesh);
+        }
+    }
+
+    protected _handlePluginEventHasRenderTargetTextures(eventData: EventInfoHasRenderTargetTextures): void {
+        let hasRenderTargetTextures = false;
+        for (const plugin of this._pluginsForHasRenderTargetTextures) {
+            hasRenderTargetTextures = plugin.hasRenderTargetTextures();
+            if (hasRenderTargetTextures) {
+                break;
+            }
+        }
+        eventData.hasRenderTargetTextures = hasRenderTargetTextures;
+    }
+
+    protected _handlePluginEventFillRenderTargetTextures(eventData: EventInfoFillRenderTargetTextures): void {
+        for (const plugin of this._pluginsForFillRenderTargetTextures) {
+            plugin.fillRenderTargetTextures(eventData.renderTargets);
+        }
+    }
+
     protected _handlePluginEvent(id: number, info: EventInfo): void {
         switch (id) {
-            case MaterialEvent.IsReadyForSubMesh: {
-                const eventData = info as EventInfoIsReadyForSubMesh;
-
-                let isReady = true;
-                for (const plugin of this._plugins) {
-                    isReady = isReady && plugin.isReadyForSubMesh(eventData.defines, this._scene, this._engine, eventData.subMesh);
-                }
-                eventData.isReadyForSubMesh = isReady;
-                break;
-            }
-
-            case MaterialEvent.PrepareDefines: {
-                const eventData = info as EventInfoPrepareDefines;
-                for (const plugin of this._plugins) {
-                    plugin.prepareDefines(eventData.defines, this._scene, eventData.mesh);
-                }
-                break;
-            }
-
-            case MaterialUserEvent.HardBindForSubMesh: {
-                const eventData = info as EventInfoHardBindForSubMesh;
-                for (const plugin of this._pluginsForHardBindForSubMesh) {
-                    plugin.hardBindForSubMesh(this._material._uniformBuffer, this._scene, this._engine, eventData.subMesh);
-                }
-                break;
-            }
-
-            case MaterialEvent.BindForSubMesh: {
-                const eventData = info as EventInfoBindForSubMesh;
-                for (const plugin of this._plugins) {
-                    plugin.bindForSubMesh(this._material._uniformBuffer, this._scene, this._engine, eventData.subMesh);
-                }
-                break;
-            }
-
-            case MaterialEvent.HasRenderTargetTextures: {
-                const eventData = info as EventInfoHasRenderTargetTextures;
-                let hasRenderTargetTextures = false;
-                for (const plugin of this._pluginsForHasRenderTargetTextures) {
-                    hasRenderTargetTextures = plugin.hasRenderTargetTextures();
-                    if (hasRenderTargetTextures) {
-                        break;
-                    }
-                }
-                eventData.hasRenderTargetTextures = hasRenderTargetTextures;
-                break;
-            }
-
             case MaterialEvent.GetActiveTextures: {
                 const eventData = info as EventInfoGetActiveTextures;
-                for (const plugin of this._plugins) {
+                for (const plugin of this._activePlugins) {
                     plugin.getActiveTextures(eventData.activeTextures);
                 }
                 break;
@@ -187,7 +192,7 @@ export class MaterialPluginManager {
 
             case MaterialEvent.GetAnimatables: {
                 const eventData = info as EventInfoGetAnimatables;
-                for (const plugin of this._plugins) {
+                for (const plugin of this._activePlugins) {
                     plugin.getAnimatables(eventData.animatables);
                 }
                 break;
@@ -196,21 +201,13 @@ export class MaterialPluginManager {
             case MaterialEvent.HasTexture: {
                 const eventData = info as EventInfoHasTexture;
                 let hasTexture = false;
-                for (const plugin of this._plugins) {
+                for (const plugin of this._activePlugins) {
                     hasTexture = plugin.hasTexture(eventData.texture);
                     if (hasTexture) {
                         break;
                     }
                 }
                 eventData.hasTexture = hasTexture;
-                break;
-            }
-
-            case MaterialUserEvent.FillRenderTargetTextures: {
-                const eventData = info as EventInfoFillRenderTargetTextures;
-                for (const plugin of this._pluginsForFillRenderTargetTextures) {
-                    plugin.fillRenderTargetTextures(eventData.renderTargets);
-                }
                 break;
             }
 
@@ -230,7 +227,7 @@ export class MaterialPluginManager {
 
             case MaterialEvent.PrepareEffect: {
                 const eventData = info as EventInfoPrepareEffect;
-                for (const plugin of this._plugins) {
+                for (const plugin of this._activePlugins) {
                     eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
                 }
                 if (this._uniformList.length > 0) {
@@ -269,16 +266,6 @@ export class MaterialPluginManager {
                     }
                     plugin.getSamplers(this._samplerList);
                 }
-                break;
-            }
-
-            case MaterialUserEvent.Unbind: {
-                const eventData = info as EventInfoUnbind;
-                let res = false;
-                for (const plugin of this._pluginsForUnbind) {
-                    res ||= plugin.unbind(eventData.effect);
-                }
-                eventData.needMarkAsTextureDirty ||= res;
                 break;
             }
         }

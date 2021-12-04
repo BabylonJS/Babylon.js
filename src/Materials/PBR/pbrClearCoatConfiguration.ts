@@ -172,6 +172,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
 
     /** @hidden */
     public _markAllSubMeshesAsTexturesDirty(): void {
+        this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
