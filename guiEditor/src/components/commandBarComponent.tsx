@@ -26,7 +26,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _panning: boolean = false;
     private _zooming: boolean = false;
     private _selecting: boolean = true;
-    private _moving: boolean = false;
+    //private _moving: boolean = false;
     private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
@@ -35,7 +35,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._panning = !this._panning;
             this._zooming = false;
             this._selecting = false;
-            this._moving = false;
+            //this._moving = false;
             this.forceUpdate();
         });
 
@@ -43,7 +43,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._selecting = !this._selecting;
             this._panning = false;
             this._zooming = false;
-            this._moving = false;
+           // this._moving = false;
             this.forceUpdate();
         });
 
@@ -51,18 +51,18 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._zooming = !this._zooming;
             this._panning = false;
             this._selecting = false;
-            this._moving = false;
+         //   this._moving = false;
             this.forceUpdate();
         });
 
-        props.globalState.onMoveObservable.add(() => {
+      /*  props.globalState.onMoveObservable.add(() => {
             this._zooming = false;
             this._panning = false;
             this._selecting = false;
             this._moving = !this._moving;
             this.forceUpdate();
         });
-
+*/
         props.globalState.onOutlinesObservable.add(() => {
             this._outlines = !this._outlines;
             const nodes = this.props.globalState.workbench.nodes;
@@ -137,15 +137,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         isActive={this._selecting}
                         onClick={() => {
                             if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers();
-                        }}
-                    />
-                    <CommandButtonComponent
-                        tooltip="Move"
-                        icon={moveIcon}
-                        shortcut="M"
-                        isActive={this._moving}
-                        onClick={() => {
-                            if (!this._moving) this.props.globalState.onMoveObservable.notifyObservers();
                         }}
                     />
                     <CommandButtonComponent
