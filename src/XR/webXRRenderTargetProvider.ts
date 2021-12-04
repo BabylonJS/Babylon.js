@@ -3,22 +3,49 @@ import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrap
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Viewport } from "../Maths/math.viewport";
-import { Scene } from "../scene";
+import { IDisposable, Scene } from "../scene";
 import { Nullable } from "../types";
+import { WebXRLayerWrapper } from "./webXRLayerWrapper";
+
+/**
+ * An interface for objects that provide render target textures for XR rendering.
+ */
+export interface IWebXRRenderTargetTextureProvider extends IDisposable {
+    /**
+     * Attempts to set the framebuffer-size-normalized viewport to be rendered this frame for this view.
+     * In the event of a failure, the supplied viewport is not updated.
+     * @param viewport the viewport to which the view will be rendered
+     * @param view the view for which to set the viewport
+     * @returns whether the operation was successful
+     */
+    trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+    /**
+     * Gets the correct render target texture to be rendered this frame for this eye
+     * @param eye the eye for which to get the render target
+     * @returns the render target for the specified eye or null if not available
+     */
+    getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+    /**
+     * Gets the correct render target texture to be rendered this frame for this view
+     * @param view the view for which to get the render target
+     * @returns the render target for the specified view or null if not available
+     */
+    getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
+}
 
 /**
  * Provides render target textures and other important rendering information for a given XRLayer.
  * @hidden
  */
-export abstract class WebXRRenderTargetProvider {
+export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRenderTargetTextureProvider {
     public abstract trySetViewportForView(viewport: Viewport, view: XRView): boolean;
-    public abstract getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture>;
-    public abstract getRenderTargetForView(view: XRView): Nullable<RenderTargetTexture>;
-    public abstract getFramebufferDimensions(): Nullable<{ framebufferWidth: number, framebufferHeight: number }>;
+    public abstract getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+    public abstract getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
 
     protected _renderTargetTextures = new Array<RenderTargetTexture>();
+    protected _framebufferDimensions: Nullable<{ framebufferWidth: number, framebufferHeight: number }>;
 
-    constructor(private readonly _scene: Scene, public readonly layer: XRLayer) {
+    constructor(private readonly _scene: Scene, public readonly layerWrapper: WebXRLayerWrapper) {
     }
 
     protected _createRenderTargetTexture(
@@ -71,63 +98,12 @@ export abstract class WebXRRenderTargetProvider {
         renderTargetTexture.dispose();
     }
 
+    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number, framebufferHeight: number }> {
+        return this._framebufferDimensions;
+    }
+
     public dispose() {
         this._renderTargetTextures.forEach((rtt) => rtt.dispose());
         this._renderTargetTextures.length = 0;
-    }
-}
-
-/**
- * Provides render target textures and other important rendering information for a given XRWebGLLayer.
- * @hidden
- */
-export class XRWebGLLayerRenderTargetProvider extends WebXRRenderTargetProvider {
-    private _rtt: Nullable<RenderTargetTexture>;
-    private _framebuffer: WebGLFramebuffer;
-    private _framebufferWidth: number;
-    private _framebufferHeight: number;
-
-    constructor(scene: Scene, private readonly _layer: XRWebGLLayer) {
-        super(scene, _layer);
-    }
-
-    public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
-        const xrViewport = this._layer.getViewport(view);
-        const framebufferWidth = this._layer.framebufferWidth;
-        const framebufferHeight = this._layer.framebufferHeight;
-        viewport.x = xrViewport.x / framebufferWidth;
-        viewport.y = xrViewport.y / framebufferHeight;
-        viewport.width = xrViewport.width / framebufferWidth;
-        viewport.height = xrViewport.height / framebufferHeight;
-        return true;
-    }
-
-    public getRenderTargetForEye(eye: XREye): Nullable<RenderTargetTexture> {
-        const layerWidth = this._layer.framebufferWidth;
-        const layerHeight = this._layer.framebufferHeight;
-        const framebuffer = this._layer.framebuffer;
-
-        if (!this._rtt ||
-            layerWidth !== this._framebufferWidth ||
-            layerHeight !== this._framebufferHeight ||
-            framebuffer !== this._framebuffer) {
-            if (this._rtt) {
-                this._rtt.dispose();
-            }
-            this._rtt = this._createRenderTargetTexture(layerWidth, layerHeight, framebuffer);
-            this._framebufferWidth = layerWidth;
-            this._framebufferHeight = layerHeight;
-            this._framebuffer = framebuffer;
-        }
-
-        return this._rtt;
-    }
-
-    public getRenderTargetForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this.getRenderTargetForEye(view.eye);
-    }
-
-    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number; }> {
-        return { framebufferWidth: this._layer.framebufferWidth, framebufferHeight: this._layer.framebufferHeight };
     }
 }
