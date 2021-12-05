@@ -1406,30 +1406,6 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Unbinds the material from the mesh
-     */
-    public unbind(): void {
-        if (this._activeEffect && !this.getScene().getEngine()._features.needToAlwaysBindUniformBuffers) {
-            let needFlag = false;
-            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("reflection2DSampler", null);
-                needFlag = true;
-            }
-
-            if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("refraction2DSampler", null);
-                needFlag = true;
-            }
-
-            if (needFlag) {
-                this._markAllSubMeshesAsTexturesDirty();
-            }
-        }
-
-        super.unbind();
-    }
-
-    /**
      * Binds the submesh to this material by preparing the effect and shader to draw
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
@@ -1456,9 +1432,10 @@ export class StandardMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
+        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
-        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -1651,7 +1628,8 @@ export class StandardMaterial extends PushMaterial {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
-            super.bindForSubMesh(world, mesh, subMesh);
+            this._eventInfo.subMesh = subMesh;
+            this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);
@@ -1659,7 +1637,6 @@ export class StandardMaterial extends PushMaterial {
             // Colors
             this.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
-            ubo.bindToEffect(effect, "Material");
             this._needToBindSceneUbo = true;
         }
 
