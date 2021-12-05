@@ -77,10 +77,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
 
-    public DETAIL = false;
-    public DETAILDIRECTUV = 0;
-    public DETAIL_NORMALBLENDMETHOD = 0;
-
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
 
     public AMBIENT = false;
@@ -163,7 +159,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public INVERTCUBICMAP = false;
     public USESPHERICALFROMREFLECTIONMAP = false;
     public USEIRRADIANCEMAP = false;
-    public SPHERICAL_HARMONICS = false;
     public USESPHERICALINVERTEX = false;
     public REFLECTIONMAP_OPPOSITEZ = false;
     public LODINREFLECTIONALPHA = false;
@@ -243,73 +238,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public FORCENORMALFORWARD = false;
 
     public SPECULARAA = false;
-
-    public CLEARCOAT = false;
-    public CLEARCOAT_DEFAULTIOR = false;
-    public CLEARCOAT_TEXTURE = false;
-    public CLEARCOAT_TEXTURE_ROUGHNESS = false;
-    public CLEARCOAT_TEXTUREDIRECTUV = 0;
-    public CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
-    public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
-    public CLEARCOAT_BUMP = false;
-    public CLEARCOAT_BUMPDIRECTUV = 0;
-    public CLEARCOAT_REMAP_F0 = true;
-    public CLEARCOAT_TINT = false;
-    public CLEARCOAT_TINT_TEXTURE = false;
-    public CLEARCOAT_TINT_GAMMATEXTURE = false;
-    public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
-
-    public ANISOTROPIC = false;
-    public ANISOTROPIC_TEXTURE = false;
-    public ANISOTROPIC_TEXTUREDIRECTUV = 0;
-
-    public BRDF_V_HEIGHT_CORRELATED = false;
-    public MS_BRDF_ENERGY_CONSERVATION = false;
-    public SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
-
-    public SHEEN = false;
-    public SHEEN_TEXTURE = false;
-    public SHEEN_GAMMATEXTURE = false;
-    public SHEEN_TEXTURE_ROUGHNESS = false;
-    public SHEEN_TEXTUREDIRECTUV = 0;
-    public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
-    public SHEEN_LINKWITHALBEDO = false;
-    public SHEEN_ROUGHNESS = false;
-    public SHEEN_ALBEDOSCALING = false;
-    public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-    public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
-
-    public SUBSURFACE = false;
-
-    public SS_REFRACTION = false;
-    public SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
-    public SS_TRANSLUCENCY = false;
-    public SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
-    public SS_SCATTERING = false;
-
-    public SS_THICKNESSANDMASK_TEXTURE = false;
-    public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
-    public SS_HAS_THICKNESS = false;
-    public SS_REFRACTIONINTENSITY_TEXTURE = false;
-    public SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
-    public SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
-    public SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
-
-    public SS_REFRACTIONMAP_3D = false;
-    public SS_REFRACTIONMAP_OPPOSITEZ = false;
-    public SS_LODINREFRACTIONALPHA = false;
-    public SS_GAMMAREFRACTION = false;
-    public SS_RGBDREFRACTION = false;
-    public SS_LINEARSPECULARREFRACTION = false;
-    public SS_LINKREFRACTIONTOTRANSPARENCY = false;
-    public SS_ALBEDOFORREFRACTIONTINT = false;
-    public SS_ALBEDOFORTRANSLUCENCYTINT = false;
-    public SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
-    public SS_USE_THICKNESS_AS_DEPTH = false;
-
-    public SS_MASK_FROM_THICKNESS_TEXTURE = false;
-    public SS_USE_GLTF_TEXTURES = false;
 
     public UNLIT = false;
 
@@ -951,7 +879,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly detailMap: DetailMapConfiguration;
 
-    protected _internalPluginsUniformList: string[] = [];
     protected _cacheHasRenderTargetTextures = false;
 
     /**
@@ -980,8 +907,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
             }
 
-            //this.subSurface.fillRenderTargetTextures(this._renderTargets);
-
             this._eventInfo.renderTargets = this._renderTargets;
             this._callbackPluginEventFillRenderTargetTextures(this._eventInfo);
 
@@ -999,10 +924,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (MaterialFlags.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
             return true;
         }
-
-        /*if (this.subSurface.hasRenderTargetTextures()) {
-            return true;
-        }*/
 
         return this._cacheHasRenderTargetTextures;
     }
@@ -1215,14 +1136,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
             }
         }
-
-        /*if (!this.subSurface.isReadyForSubMesh(defines as MaterialSubSurfaceDefines, scene, engine) ||
-            !this.clearCoat.isReadyForSubMesh(defines as MaterialClearCoatDefines, scene, engine) ||
-            !this.sheen.isReadyForSubMesh(defines as MaterialSheenDefines, scene, engine) ||
-            !this.anisotropy.isReadyForSubMesh(defines as MaterialAnisotropicDefines, scene, engine) ||
-            !this.detailMap.isReadyForSubMesh(defines as MaterialDetailMapDefines, scene, engine)) {
-            return false;
-        }*/
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
@@ -1441,13 +1354,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
-        /*uniforms.push(...this._internalPluginsUniformList);
-
-        this.detailMap.getSamplers(samplers);
-        this.subSurface.getSamplers(samplers);
-        this.clearCoat.getSamplers(samplers);
-        this.anisotropy.getSamplers(samplers);
-        this.sheen.getSamplers(samplers);*/
+        this._eventInfo.fallbacks = fallbacks;
+        this._eventInfo.fallbackRank = fallbackRank;
+        this._eventInfo.defines = defines;
+        this._eventInfo.uniforms = uniforms;
+        this._eventInfo.samplers = samplers;
+        this._eventInfo.customCode = undefined;
+        this._callbackPluginEvent(MaterialEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1456,14 +1369,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
             ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
         }
-
-        this._eventInfo.customCode = undefined;
-        this._eventInfo.fallbacks = fallbacks;
-        this._eventInfo.fallbackRank = fallbackRank;
-        this._eventInfo.defines = defines;
-        this._eventInfo.uniforms = uniforms;
-        this._eventInfo.samplers = samplers;
-        this._callbackPluginEvent(MaterialEvent.PrepareEffect, this._eventInfo);
 
         MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
             uniformsNames: uniforms,
@@ -1802,13 +1707,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // External config
-        /*this.detailMap.prepareDefines(defines as MaterialDetailMapDefines, scene, mesh);
-        this.subSurface.prepareDefines(defines as MaterialSubSurfaceDefines, scene, mesh);
-        this.clearCoat.prepareDefines(defines as MaterialClearCoatDefines, scene, mesh);
-        this.anisotropy.prepareDefines(defines as MaterialAnisotropicDefines, scene, mesh);
-        this.brdf.prepareDefines(defines as MaterialBRDFDefines, scene, mesh);
-        this.sheen.prepareDefines(defines as MaterialSheenDefines, scene, mesh);*/
-
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
         this._callbackPluginEventPrepareDefines(this._eventInfo);
@@ -1903,17 +1801,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectanceInfos", 2);
         ubo.addUniform("reflectanceMatrix", 16);
 
-        /*const internalPlugins = [this.clearCoat, this.anisotropy, this.sheen, this.subSurface, this.detailMap];
-        for (const plugin of internalPlugins) {
-            const uniforms = plugin.getUniforms();
-            if (uniforms?.ubo) {
-                for (const uniform of uniforms.ubo) {
-                    ubo.addUniform(uniform.name, uniform.size);
-                    this._internalPluginsUniformList.push(uniform.name);
-                }
-            }
-        }*/
-
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);
         ubo.addUniform("vSphericalL10", 3);
@@ -1968,7 +1855,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
-        //this.subSurface.hardBindForSubMesh(this._uniformBuffer, scene, engine, subMesh);
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         this._eventInfo.subMesh = subMesh;
@@ -2239,13 +2125,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this.getScene().depthPeelingRenderer!.bind(effect);
             }
 
-            /*this.detailMap.bindForSubMesh(ubo, scene, engine, subMesh);
-            this.subSurface.bindForSubMesh(ubo, scene, engine, subMesh);
-            this.clearCoat.bindForSubMesh(ubo, scene, engine, subMesh);
-            this.anisotropy.bindForSubMesh(ubo, scene, engine, subMesh);
-            this.sheen.bindForSubMesh(ubo, scene, engine, subMesh);*/
-
-            //super.bindForSubMesh(world, mesh, subMesh);
             this._eventInfo.subMesh = subMesh;
             this._callbackPluginEventBindForSubMesh(this._eventInfo);
 

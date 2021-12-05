@@ -75,12 +75,6 @@ export class MaterialPluginManager {
         }
 
         this._material._callbackPluginEvent = this._handlePluginEvent.bind(this);
-        this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
-        this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
-        this._material._callbackPluginEventHardBindForSubMesh = this._handlePluginEventHardBindForSubMesh.bind(this);
-        this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
-        this._material._callbackPluginEventHasRenderTargetTextures = this._handlePluginEventHasRenderTargetTextures.bind(this);
-        this._material._callbackPluginEventFillRenderTargetTextures = this._handlePluginEventFillRenderTargetTextures.bind(this);
 
         this._plugins.push(plugin);
         this._plugins.sort((a, b) => a.priority - b.priority);
@@ -106,19 +100,26 @@ export class MaterialPluginManager {
         if (this._activePlugins.indexOf(plugin) === -1) {
             this._activePlugins.push(plugin);
 
+            this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
+            this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
+            this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
+    
             const flagEvents = plugin.userEvents;
 
             if (flagEvents & MaterialUserEvent.HasRenderTargetTextures) {
                 this._pluginsForHasRenderTargetTextures.push(plugin);
                 this._pluginsForHasRenderTargetTextures.sort((a, b) => a.priority - b.priority);
+                this._material._callbackPluginEventHasRenderTargetTextures = this._handlePluginEventHasRenderTargetTextures.bind(this);
             }
             if (flagEvents & MaterialUserEvent.FillRenderTargetTextures) {
                 this._pluginsForFillRenderTargetTextures.push(plugin);
                 this._pluginsForFillRenderTargetTextures.sort((a, b) => a.priority - b.priority);
+                this._material._callbackPluginEventFillRenderTargetTextures = this._handlePluginEventFillRenderTargetTextures.bind(this);
             }
             if (flagEvents & MaterialUserEvent.HardBindForSubMesh) {
                 this._pluginsForHardBindForSubMesh.push(plugin);
                 this._pluginsForHardBindForSubMesh.sort((a, b) => a.priority - b.priority);
+                this._material._callbackPluginEventHardBindForSubMesh = this._handlePluginEventHardBindForSubMesh.bind(this);
             }
         }
     }
