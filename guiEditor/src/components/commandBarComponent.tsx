@@ -117,6 +117,27 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 },
                             },
                             {
+                                label: "Copy Selected",
+                                onClick: () => {
+                                    this.props.globalState.workbench.copyToClipboard();
+                                    this.props.globalState.workbench.pasteFromClipboard();
+
+                                },
+                            },
+                            {
+                                label: "Delete Selected",
+                                onClick: () => {
+                                    this.props.globalState.workbench.selectedGuiNodes.forEach((guiNode) => {
+                                        if (guiNode !== this.props.globalState.guiTexture.getChildren()[0]) {
+                                            this.props.globalState.guiTexture.removeControl(guiNode);
+                                            this.props.globalState.liveGuiTexture?.removeControl(guiNode);
+                                            guiNode.dispose();
+                                        }
+                                    });
+                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                                },
+                            },
+                            {
                                 label: "Help",
                                 onClick: () => {
                                     window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
@@ -128,6 +149,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
                                 },
                             },
+
                         ]}
                     />
                     <CommandButtonComponent
