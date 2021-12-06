@@ -38,17 +38,27 @@ export class DeviceInputSystem {
     public static Create(engine: Engine): DeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
         if (!engine.deviceInputSystem) {
+            let selectedDIS;
+
             if (typeof _native !== 'undefined') {
-                engine.deviceInputSystem = new DeviceInputSystem((_native.DeviceInputSystem) ? new NativeDeviceInputSystem(new _native.DeviceInputSystem()) : new NativeDeviceInputSystem());
+                selectedDIS = (_native.DeviceInputSystem) ? new NativeDeviceInputSystem(new _native.DeviceInputSystem()) : new NativeDeviceInputSystem();
             }
             else {
-                engine.deviceInputSystem = new DeviceInputSystem(new WebDeviceInputSystem(engine));
+                selectedDIS = new WebDeviceInputSystem(engine);
+            }
+
+            if (selectedDIS) {
+                engine.deviceInputSystem = new DeviceInputSystem(selectedDIS);
             }
         }
 
         return engine.deviceInputSystem;
     }
 
+    /**
+     * DeviceInputSystem constructor
+     * @param deviceInputSystem Web or Native implementation of DeviceInputSystem
+     */
     constructor(deviceInputSystem: IDeviceInputSystem) {
         this._deviceInputSystem = deviceInputSystem;
         this.onDeviceConnectedObservable = new Observable();
@@ -68,18 +78,36 @@ export class DeviceInputSystem {
         };
     }
 
+    /**
+     * Configure events to talk with DeviceInputSystem
+     */
     public configureEvents() {
         this._deviceInputSystem.configureEvents();
     }
 
+    /**
+     * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     * @param inputIndex Id of input to be checked
+     * @returns Current value of input
+     */
     public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
         return this._deviceInputSystem.pollInput(deviceType, deviceSlot, inputIndex);
     }
 
+    /**
+     * Check if there's an instance of device on given DeviceInputSystem
+     * @param deviceType Enum specifiying device type
+     * @returns
+     */
     public isDeviceAvailable(deviceType: DeviceType): boolean {
         return this._deviceInputSystem.isDeviceAvailable(deviceType);
     }
 
+    /**
+     * Dispose of DeviceInputSystem sub-elements
+     */
     public dispose() {
         this.onDeviceConnectedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();

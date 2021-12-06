@@ -70,10 +70,19 @@ export interface INativeInput extends IDisposable {
  */
 export interface IDeviceInputSystem extends IDisposable {
     // Callbacks
+    /**
+     * Callback for when a device is connected
+     */
     onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
 
+    /**
+     * Callback for when a device is disconnected
+     */
     onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
 
+    /**
+     * Callback for when an input is changed
+     */
     onInputChanged: (deviceEvent: IDeviceEvent) => void;
 
     /**
