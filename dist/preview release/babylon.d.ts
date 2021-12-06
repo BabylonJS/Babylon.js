@@ -54595,6 +54595,8 @@ declare module BABYLON {
         /** The URL pointing to the default hand model NodeMaterial shader. */
         static DEFAULT_HAND_MODEL_SHADER_URL: string;
         private static readonly _ICOSPHERE_PARAMS;
+        private static rightHandGLB;
+        private static leftHandGLB;
         private static _generateTrackedJointMeshes;
         private static _generateDefaultHandMeshesAsync;
         /**
