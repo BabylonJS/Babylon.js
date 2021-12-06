@@ -10,7 +10,7 @@ import { IDeviceEvent, IDeviceInputSystem } from "../Interfaces/inputInterfaces"
 /** @hidden */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
-    public set onDeviceConnected (callback: (deviceType: DeviceType, deviceSlot: number) => void) {
+    public set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void) {
         this._onDeviceConnected = callback;
 
         // Iterate through each active device and rerun new callback
@@ -27,7 +27,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
     }
 
-    public get onDeviceConnected (): (deviceType: DeviceType, deviceSlot: number) => void {
+    public get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void {
         return this._onDeviceConnected;
     }
 
@@ -79,9 +79,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._eventPrefix = Tools.GetPointerPrefix(engine);
         this._engine = engine;
 
-        this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => {};
-        this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => {};
-        this.onInputChanged = (deviceEvent: IDeviceEvent) => {};
+        this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
+        this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
+        this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
         this.configureEvents();
     }
@@ -150,9 +150,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     public dispose(): void {
         // Observables
-        this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => {};
-        this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => {};
-        this.onInputChanged = (deviceEvent: IDeviceEvent) => {};
+        this.onDeviceConnected = () => { };
+        this.onDeviceDisconnected = () => { };
+        this.onInputChanged = () => { };
 
         if (this._elementToAttachTo) {
             this._removeEvents();
