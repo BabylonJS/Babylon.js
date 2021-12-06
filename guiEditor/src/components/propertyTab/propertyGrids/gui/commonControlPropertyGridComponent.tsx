@@ -90,6 +90,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         this.forceUpdate();
     }
 
+    private _markChildrenAsDirty() {
+        if (this.props.control instanceof Container)
+            (this.props.control as Container)._children.forEach(child => {
+                child._markAsDirty();
+            });
+    }
+
     render() {
         const control = this.props.control;
         var horizontalAlignment = this.props.control.horizontalAlignment;
@@ -232,7 +239,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="B"
                         target={control}
                         propertyName="paddingBottom"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingBottom", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingBottom", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
@@ -241,7 +248,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="T"
                         target={control}
                         propertyName="paddingTop"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingTop", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingTop", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
@@ -254,7 +261,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="L"
                         target={control}
                         propertyName="paddingLeft"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingLeft", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingLeft", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
@@ -263,19 +270,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="R"
                         target={control}
                         propertyName="paddingRight"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingRight", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingRight", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
                 <div className="ge-divider-shot">
-                <CheckBoxLineComponent
-                    iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
-                    icon={descendantsOnlyPaddingIcon}
-                    label=""
-                    target={control}
-                    propertyName="descendentsOnlyPadding"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                    <CheckBoxLineComponent
+                        iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
+                        icon={descendantsOnlyPaddingIcon}
+                        label=""
+                        target={control}
+                        propertyName="descendentsOnlyPadding"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
