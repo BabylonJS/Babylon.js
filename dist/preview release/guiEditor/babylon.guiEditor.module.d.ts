@@ -726,8 +726,8 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private updateHitTest;
         private updateHitTestForSelection;
         private setCameraRadius;
-        private copyToClipboard;
-        private pasteFromClipboard;
+        copyToClipboard(): void;
+        pasteFromClipboard(): void;
         CopyGUIControl(original: Control): void;
         private selectAllGUI;
         blurEvent: () => void;
@@ -1275,6 +1275,7 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
+        private _markChildrenAsDirty;
         render(): JSX.Element;
     }
 }
@@ -3559,8 +3560,8 @@ declare module GUIEDITOR {
         private updateHitTest;
         private updateHitTestForSelection;
         private setCameraRadius;
-        private copyToClipboard;
-        private pasteFromClipboard;
+        copyToClipboard(): void;
+        pasteFromClipboard(): void;
         CopyGUIControl(original: Control): void;
         private selectAllGUI;
         blurEvent: () => void;
@@ -4061,6 +4062,7 @@ declare module GUIEDITOR {
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
+        private _markChildrenAsDirty;
         render(): JSX.Element;
     }
 }
