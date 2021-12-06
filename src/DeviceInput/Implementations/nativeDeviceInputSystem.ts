@@ -5,17 +5,14 @@ import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "../Interfaces/in
 
 /** @hidden */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
-    public onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-    public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-    public onInputChanged: (deviceEvent: IDeviceEvent) => void;
+    public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
+    public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
+    public onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
-    private _nativeInput: INativeInput;
+    private readonly _nativeInput: INativeInput;
 
     public constructor(nativeInput?: INativeInput) {
         this._nativeInput = nativeInput || this._createDummyNativeInput();
-        this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
         this._nativeInput.onDeviceConnected = (deviceType, deviceSlot) => {
             this.onDeviceConnected(deviceType, deviceSlot);
@@ -72,9 +69,9 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
      * Dispose of all the observables
      */
     public dispose(): void {
-        this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
+        this.onDeviceConnected = () => { };
+        this.onDeviceDisconnected = () => { };
+        this.onInputChanged = () => { };
     }
 
     /**
