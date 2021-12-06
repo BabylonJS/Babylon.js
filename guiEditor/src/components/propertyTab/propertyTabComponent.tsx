@@ -530,30 +530,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             lockObject={this._lockObject}
                         ></ParentingPropertyGridComponent>
                     )}
-                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && (
-                        <>
-                            <hr className="ge" />
-                            <ButtonLineComponent
-                                label="DELETE ELEMENT"
-                                onClick={() => {
-                                    if (this.state.currentNode) {
-                                        this.props.globalState.guiTexture.removeControl(this.state.currentNode);
-                                        this.props.globalState.liveGuiTexture?.removeControl(this.state.currentNode);
-                                        this.state.currentNode.dispose();
-                                    }
-                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                                }}
-                            />
-                            <ButtonLineComponent
-                                label="COPY ELEMENT"
-                                onClick={() => {
-                                    if (this.state.currentNode) {
-                                        this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                                    }
-                                }}
-                            />
-                        </>
-                    )}
                 </div>
             );
         }

@@ -285,7 +285,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._cameraRadias += this._cameraRadias - this._cameraRadias / 1.5;
     }
 
-    private copyToClipboard() {
+    public copyToClipboard() {
         if (this._selectAll) {
             let index = 0;
             this.nodes.forEach((node) => {
@@ -299,7 +299,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    private pasteFromClipboard() {
+    public pasteFromClipboard() {
         this._clipboard.forEach((control) => {
             this.CopyGUIControl(control);
         });
