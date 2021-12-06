@@ -28,6 +28,7 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
 import { Observer } from "babylonjs/Misc/observable";
 import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
+const DOUBLE_CLICK = 1500;
 
 require("./workbenchCanvas.scss");
 
@@ -94,6 +95,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._selectedGuiNodes;
     }
 
+    // given a depth and a control gets the parent up the tree depth times
     private _getParentWithDepth(control: Control, depth: number) {
         let parent = control;
         for (let i = 0; i < depth; ++i) {
@@ -103,6 +105,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return parent;
     }
 
+    //gets the higher parent of a given control.
     private _getMaxParent(control: Control) {
         let parent = control;
         this._selectionDepth = 0;
@@ -139,7 +142,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.changeSelectionHighlight(false);
 
                         this._selectedGuiNodes = [selection];
-                        if (!this._lockMainSelection) {
+                        if (!this._lockMainSelection) { //incase the selection did not come from the canvas and mouse
                             this._mainSelection = selection;
                         }
                         this._lockMainSelection = false;
@@ -225,10 +228,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     determineMouseSelection(selection: Nullable<Control>) {
         if (selection && this._selectedGuiNodes.length <= 1) {
+            // if we're still on the same main selection, got down the tree.
             if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
                 selection = this._getParentWithDepth(selection, --this._selectionDepth);
 
-            } else {
+            } else { // get the start of our tree by getting our max parent and storing our main selected control
                 this._mainSelection = selection;
                 selection = this._getMaxParent(selection);
 
@@ -480,13 +484,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
-    private _isMainSelectionParent(control: Control) {
-    do {
-        if (this._mainSelection === control) {
-            return true;
-        };
-        control = control.parent;
-    } while(control);
+    //is the
+    private _isMainSelectionParent(control: Nullable<Control>) {
+        do {
+            if (this._mainSelection === control) {
+                return true;
+            };
+            control = control?.parent || null;
+        } while (control);
+        return false;
     }
 
     createNewGuiNode(guiControl: Control) {
@@ -497,14 +503,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
-                console.log(guiControl.name);
+                // if this is our first click or the clicked control is a parent of the previous clicked control.
                 if (!this._doubleClick && this._isMainSelectionParent(guiControl)) {
                     this._doubleClick = guiControl;
                     window.setTimeout(() => {
                         this._doubleClick = null;
-                    }, 1500);
+                    }, DOUBLE_CLICK);
                 }
-                else {
+                else { //select our new main control.
                     this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }
