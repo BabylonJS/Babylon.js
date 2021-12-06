@@ -83,25 +83,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         }
     }
 
-    /*{this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && (
-        <>
-            <hr className="ge" />
-            <ButtonLineComponent
-                label="DELETE ELEMENT"
-                onClick={() => {
-                    if (this.state.currentNode) {
-
-                }}
-            />
-            <ButtonLineComponent
-                label="COPY ELEMENT"
-                onClick={() => {
-
-                }}
-            />
-        </>
-    )}*/
-
     public render() {
         return (
             <div className={"ge-commands"}>
