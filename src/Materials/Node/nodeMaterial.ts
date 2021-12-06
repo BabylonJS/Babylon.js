@@ -1383,7 +1383,17 @@ export class NodeMaterial extends PushMaterial {
             block.dispose();
         }
 
+        this.attachedBlocks = [];
+        (this._sharedData as any) = null;
+        (this._vertexCompilationState as any) = null;
+        (this._fragmentCompilationState as any) = null;
+
         this.onBuildObservable.clear();
+
+        if (this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            this._imageProcessingObserver = null;
+        }
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
