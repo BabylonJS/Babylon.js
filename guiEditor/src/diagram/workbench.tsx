@@ -481,17 +481,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private _isMainSelectionParent(control: Control) {
-        let parent = control;
-        if (this._mainSelection === parent) {
+    do {
+        if (this._mainSelection === control) {
             return true;
-        }
-        while (parent.parent) {
-            parent = parent.parent;
-            if (this._mainSelection === parent) {
-                return true;
-            }
-        }
-        return false;
+        };
+        control = control.parent;
+    } while(control);
     }
 
     createNewGuiNode(guiControl: Control) {
