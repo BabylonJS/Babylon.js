@@ -8,7 +8,7 @@ import { setVRRigMode } from "../RigModes/vrRigMode";
 
 import "../Inputs/arcRotateCameraVRDeviceOrientationInput";
 
-Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
+Node.AddNodeConstructor("VRDeviceOrientationArcRotateCamera", (name, scene) => {
     return () => new VRDeviceOrientationArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
 });
 
