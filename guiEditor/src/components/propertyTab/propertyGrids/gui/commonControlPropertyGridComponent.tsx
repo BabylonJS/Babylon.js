@@ -192,7 +192,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            } else if (this.props.control.typeName === "ColorPicker") {
+                            }
+                            else if (control instanceof Container) {
+                                (control as Container).adaptWidthToChildren = false;
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
                                 if (newValue === "0" || newValue === "-") {
                                     newValue = "1";
                                 }
@@ -211,7 +215,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            } else if (this.props.control.typeName === "ColorPicker") {
+                            }
+                            else if (control instanceof Container) {
+                                (control as Container).adaptHeightToChildren = false;
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
                                 if (newValue === "0" || newValue === "-") {
                                     newValue = "1";
                                 }
