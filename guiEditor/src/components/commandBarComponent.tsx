@@ -12,7 +12,6 @@ const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
 const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
 const canvasFitIcon: string = require("../../public/imgs/canvasFitIcon.svg");
-const moveIcon: string = require("../../public/imgs/moveIcon.svg");
 
 require("../scss/commandBar.scss");
 
@@ -26,7 +25,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _panning: boolean = false;
     private _zooming: boolean = false;
     private _selecting: boolean = true;
-    //private _moving: boolean = false;
     private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
@@ -35,7 +33,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._panning = !this._panning;
             this._zooming = false;
             this._selecting = false;
-            //this._moving = false;
             this.forceUpdate();
         });
 
@@ -43,7 +40,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._selecting = !this._selecting;
             this._panning = false;
             this._zooming = false;
-           // this._moving = false;
             this.forceUpdate();
         });
 
@@ -51,18 +47,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this._zooming = !this._zooming;
             this._panning = false;
             this._selecting = false;
-         //   this._moving = false;
             this.forceUpdate();
         });
 
-      /*  props.globalState.onMoveObservable.add(() => {
-            this._zooming = false;
-            this._panning = false;
-            this._selecting = false;
-            this._moving = !this._moving;
-            this.forceUpdate();
-        });
-*/
         props.globalState.onOutlinesObservable.add(() => {
             this._outlines = !this._outlines;
             const nodes = this.props.globalState.workbench.nodes;
