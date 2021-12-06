@@ -863,7 +863,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export interface ICheckBoxLineComponentProps {
-        label: string;
+        label?: string;
         target?: any;
         propertyName?: string;
         isSelected?: () => boolean;
@@ -873,6 +873,8 @@ declare module GUIEDITOR {
         disabled?: boolean;
         icon?: string;
         iconLabel?: string;
+        faIcons?: {
+        };
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
