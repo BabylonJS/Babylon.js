@@ -2150,7 +2150,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/checkBoxLineCompo
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedUiComponents/propertyChangedEvent";
     export interface ICheckBoxLineComponentProps {
-        label: string;
+        label?: string;
         target?: any;
         propertyName?: string;
         isSelected?: () => boolean;
@@ -2160,6 +2160,8 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/checkBoxLineCompo
         disabled?: boolean;
         icon?: string;
         iconLabel?: string;
+        faIcons?: {
+        };
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -4871,7 +4873,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
-        label: string;
+        label?: string;
         target?: any;
         propertyName?: string;
         isSelected?: () => boolean;
@@ -4881,6 +4883,8 @@ declare module NODEEDITOR {
         disabled?: boolean;
         icon?: string;
         iconLabel?: string;
+        faIcons?: {
+        };
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;

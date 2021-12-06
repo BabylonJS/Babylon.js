@@ -1789,7 +1789,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
-        label: string;
+        label?: string;
         target?: any;
         propertyName?: string;
         isSelected?: () => boolean;
@@ -1799,6 +1799,8 @@ declare module NODEEDITOR {
         disabled?: boolean;
         icon?: string;
         iconLabel?: string;
+        faIcons?: {
+        };
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
