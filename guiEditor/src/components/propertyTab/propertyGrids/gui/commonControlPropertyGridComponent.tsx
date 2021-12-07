@@ -13,6 +13,7 @@ import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { Container } from "babylonjs-gui/2D/controls/container";
+import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -37,6 +38,7 @@ const hAlignRightIcon: string = require("../../../../sharedUiComponents/imgs/hAl
 const vAlignCenterIcon: string = require("../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg");
 const vAlignTopIcon: string = require("../../../../sharedUiComponents/imgs/vAlignTopIcon.svg");
 const vAlignBottomIcon: string = require("../../../../sharedUiComponents/imgs/vAlignBottomIcon.svg");
+const descendantsOnlyPaddingIcon: string = require("../../../../sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg");
 
 interface ICommonControlPropertyGridComponentProps {
     control: Control;
@@ -86,6 +88,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         (this.props.control as any)[propertyName] = newValue;
         this.forceUpdate();
+    }
+
+    private _markChildrenAsDirty() {
+        if (this.props.control instanceof Container)
+            (this.props.control as Container)._children.forEach(child => {
+                child._markAsDirty();
+            });
     }
 
     render() {
@@ -192,7 +201,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            } else if (this.props.control.typeName === "ColorPicker") {
+                            }
+                            else if (control instanceof Container) {
+                                (control as Container).adaptWidthToChildren = false;
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
                                 if (newValue === "0" || newValue === "-") {
                                     newValue = "1";
                                 }
@@ -211,7 +224,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => {
                             if (control.typeName === "Image") {
                                 (control as Image).autoScale = false;
-                            } else if (this.props.control.typeName === "ColorPicker") {
+                            }
+                            else if (control instanceof Container) {
+                                (control as Container).adaptHeightToChildren = false;
+                            }
+                            else if (this.props.control.typeName === "ColorPicker") {
                                 if (newValue === "0" || newValue === "-") {
                                     newValue = "1";
                                 }
@@ -224,13 +241,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <div className="ge-divider">
                     <TextInputLineComponent
                         numbersOnly={true}
-                        iconLabel={"Vertical Margins"}
+                        iconLabel={"Padding"}
                         icon={verticalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="B"
                         target={control}
                         propertyName="paddingBottom"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingBottom", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingBottom", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
@@ -239,7 +256,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="T"
                         target={control}
                         propertyName="paddingTop"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingTop", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingTop", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
@@ -252,7 +269,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="L"
                         target={control}
                         propertyName="paddingLeft"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingLeft", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingLeft", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
@@ -261,7 +278,17 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="R"
                         target={control}
                         propertyName="paddingRight"
-                        onChange={(newValue) => this._checkAndUpdateValues("paddingRight", newValue)}
+                        onChange={(newValue) => { this._checkAndUpdateValues("paddingRight", newValue); this._markChildrenAsDirty(); }}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </div>
+                <div className="ge-divider-shot">
+                    <CheckBoxLineComponent
+                        iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
+                        icon={descendantsOnlyPaddingIcon}
+                        label=""
+                        target={control}
+                        propertyName="descendentsOnlyPadding"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
