@@ -32,8 +32,11 @@ export class MaterialPluginBase {
     @serialize()
     public priority: number = 500;
 
+    /**
+     * Indicates that this plugin should be notified for the extra events (HasRenderTargetTextures / FillRenderTargetTextures / HardBindForSubMesh)
+     */
     @serialize()
-    public userEvents: number = 0;
+    public registerForExtraEvents: boolean = false;
 
     protected _material: Material;
     protected _pluginManager: MaterialPluginManager;

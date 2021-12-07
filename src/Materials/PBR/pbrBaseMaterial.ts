@@ -18,7 +18,7 @@ import { Scalar } from "../../Maths/math.scalar";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
-import { MaterialEvent } from "../../Materials/materialEvent";
+import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -1033,7 +1033,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            this._callbackPluginEvent(MaterialEvent.GetDefineNames, this._eventInfo);
+            this._callbackPluginEvent(MaterialPluginEvent.GetDefineNames, this._eventInfo);
             subMesh.materialDefines = new PBRMaterialDefines(this._eventInfo.defineNames);
         }
 
@@ -1360,7 +1360,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.uniforms = uniforms;
         this._eventInfo.samplers = samplers;
         this._eventInfo.customCode = undefined;
-        this._callbackPluginEvent(MaterialEvent.PrepareEffect, this._eventInfo);
+        this._callbackPluginEvent(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1732,7 +1732,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.buildUniformLayout();
         }
 
-        this._callbackPluginEvent(MaterialEvent.GetDefineNames, this._eventInfo);
+        this._callbackPluginEvent(MaterialPluginEvent.GetDefineNames, this._eventInfo);
         const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
         const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
@@ -2010,7 +2010,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     TmpColors.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
-                    const ior = this.subSurface?.indexOfRefraction ?? 1.5;
+                    const ior = this.subSurface?._indexOfRefraction ?? 1.5;
                     const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
@@ -2030,7 +2030,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vEmissiveColor", MaterialFlags.EmissiveTextureEnabled ? this._emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor3("vReflectionColor", this._reflectionColor);
-                if (!defines.SS_REFRACTION && this.subSurface?.linkRefractionWithTransparency) {
+                if (!defines.SS_REFRACTION && this.subSurface?._linkRefractionWithTransparency) {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, 1);
                 }
                 else {
@@ -2348,7 +2348,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param prePassRenderer defines the prepass renderer to setup
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        if (this.subSurface.isScatteringEnabled) {
+        if (this.subSurface?.isScatteringEnabled) {
             let subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
             if (subSurfaceConfiguration) {
                 subSurfaceConfiguration.enabled = true;

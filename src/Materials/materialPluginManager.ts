@@ -3,20 +3,21 @@ import { EventState } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Material } from "./material";
 import {
-    EventInfoPrepareEffect,
-    EventInfoBindForSubMesh,
-    EventInfoDisposed,
-    EventInfoGetActiveTextures,
-    EventInfoGetAnimatables,
-    EventInfoGetDefineNames,
-    EventInfoHasTexture,
-    EventInfoIsReadyForSubMesh,
-    EventInfoPrepareDefines,
-    EventInfoPrepareUniformBuffer,
-    MaterialEvent,
-    EventInfo,
-} from "./materialEvent";
-import { EventInfoFillRenderTargetTextures, EventInfoHardBindForSubMesh, EventInfoHasRenderTargetTextures, MaterialUserEvent } from "./materialUserEvent";
+    MaterialPluginPrepareEffect,
+    MaterialPluginBindForSubMesh,
+    MaterialPluginDisposed,
+    MaterialPluginGetActiveTextures,
+    MaterialPluginGetAnimatables,
+    MaterialPluginGetDefineNames,
+    MaterialPluginHasTexture,
+    MaterialPluginIsReadyForSubMesh,
+    MaterialPluginPrepareDefines,
+    MaterialPluginPrepareUniformBuffer,
+    MaterialPluginEvent,
+    MaterialPluginHardBindForSubMesh,
+    MaterialPluginHasRenderTargetTextures,
+    MaterialPluginFillRenderTargetTextures,
+} from "./materialPluginEvent";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -41,6 +42,7 @@ export class MaterialPluginManager {
     protected _engine: Engine;
     protected _plugins: MaterialPluginBase[] = [];
     protected _activePlugins: MaterialPluginBase[] = [];
+    protected _activePluginsForExtraEvents: MaterialPluginBase[] = [];
     protected _codeInjectionPoints: { [shaderType: string]: { [codeName: string]: boolean } };
     protected _defineNamesFromPlugins?: { [name: string]: { type: string; default: any } };
     protected _uboDeclaration: string;
@@ -48,9 +50,6 @@ export class MaterialPluginManager {
     protected _fragmentDeclaration: string;
     protected _uniformList: string[];
     protected _samplerList: string[];
-    protected _pluginsForHasRenderTargetTextures: MaterialPluginBase[] = [];
-    protected _pluginsForFillRenderTargetTextures: MaterialPluginBase[] = [];
-    protected _pluginsForHardBindForSubMesh: MaterialPluginBase[] = [];
 
     /**
      * Creates a new instance of the plugin manager
@@ -99,26 +98,17 @@ export class MaterialPluginManager {
     public _activatePlugin(plugin: MaterialPluginBase): void {
         if (this._activePlugins.indexOf(plugin) === -1) {
             this._activePlugins.push(plugin);
+            this._activePlugins.sort((a, b) => a.priority - b.priority);
 
             this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
             this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
             this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
-    
-            const flagEvents = plugin.userEvents;
 
-            if (flagEvents & MaterialUserEvent.HasRenderTargetTextures) {
-                this._pluginsForHasRenderTargetTextures.push(plugin);
-                this._pluginsForHasRenderTargetTextures.sort((a, b) => a.priority - b.priority);
+            if (plugin.registerForExtraEvents) {
+                this._activePluginsForExtraEvents.push(plugin);
+                this._activePluginsForExtraEvents.sort((a, b) => a.priority - b.priority);
                 this._material._callbackPluginEventHasRenderTargetTextures = this._handlePluginEventHasRenderTargetTextures.bind(this);
-            }
-            if (flagEvents & MaterialUserEvent.FillRenderTargetTextures) {
-                this._pluginsForFillRenderTargetTextures.push(plugin);
-                this._pluginsForFillRenderTargetTextures.sort((a, b) => a.priority - b.priority);
                 this._material._callbackPluginEventFillRenderTargetTextures = this._handlePluginEventFillRenderTargetTextures.bind(this);
-            }
-            if (flagEvents & MaterialUserEvent.HardBindForSubMesh) {
-                this._pluginsForHardBindForSubMesh.push(plugin);
-                this._pluginsForHardBindForSubMesh.sort((a, b) => a.priority - b.priority);
                 this._material._callbackPluginEventHardBindForSubMesh = this._handlePluginEventHardBindForSubMesh.bind(this);
             }
         }
@@ -138,7 +128,7 @@ export class MaterialPluginManager {
         return null;
     }
 
-    protected _handlePluginEventIsReadyForSubMesh(eventData: EventInfoIsReadyForSubMesh): void {
+    protected _handlePluginEventIsReadyForSubMesh(eventData: MaterialPluginIsReadyForSubMesh): void {
         let isReady = true;
         for (const plugin of this._activePlugins) {
             isReady = isReady && plugin.isReadyForSubMesh(eventData.defines, this._scene, this._engine, eventData.subMesh);
@@ -146,27 +136,27 @@ export class MaterialPluginManager {
         eventData.isReadyForSubMesh = isReady;
     }
 
-    protected _handlePluginEventPrepareDefines(eventData: EventInfoPrepareDefines): void {
+    protected _handlePluginEventPrepareDefines(eventData: MaterialPluginPrepareDefines): void {
         for (const plugin of this._activePlugins) {
             plugin.prepareDefines(eventData.defines, this._scene, eventData.mesh);
         }
     }
 
-    protected _handlePluginEventHardBindForSubMesh(eventData: EventInfoHardBindForSubMesh): void {
-        for (const plugin of this._pluginsForHardBindForSubMesh) {
+    protected _handlePluginEventHardBindForSubMesh(eventData: MaterialPluginHardBindForSubMesh): void {
+        for (const plugin of this._activePluginsForExtraEvents) {
             plugin.hardBindForSubMesh(this._material._uniformBuffer, this._scene, this._engine, eventData.subMesh);
         }
     }
 
-    protected _handlePluginEventBindForSubMesh(eventData: EventInfoBindForSubMesh): void {
+    protected _handlePluginEventBindForSubMesh(eventData: MaterialPluginBindForSubMesh): void {
         for (const plugin of this._activePlugins) {
             plugin.bindForSubMesh(this._material._uniformBuffer, this._scene, this._engine, eventData.subMesh);
         }
     }
 
-    protected _handlePluginEventHasRenderTargetTextures(eventData: EventInfoHasRenderTargetTextures): void {
+    protected _handlePluginEventHasRenderTargetTextures(eventData: MaterialPluginHasRenderTargetTextures): void {
         let hasRenderTargetTextures = false;
-        for (const plugin of this._pluginsForHasRenderTargetTextures) {
+        for (const plugin of this._activePluginsForExtraEvents) {
             hasRenderTargetTextures = plugin.hasRenderTargetTextures();
             if (hasRenderTargetTextures) {
                 break;
@@ -175,32 +165,42 @@ export class MaterialPluginManager {
         eventData.hasRenderTargetTextures = hasRenderTargetTextures;
     }
 
-    protected _handlePluginEventFillRenderTargetTextures(eventData: EventInfoFillRenderTargetTextures): void {
-        for (const plugin of this._pluginsForFillRenderTargetTextures) {
+    protected _handlePluginEventFillRenderTargetTextures(eventData: MaterialPluginFillRenderTargetTextures): void {
+        for (const plugin of this._activePluginsForExtraEvents) {
             plugin.fillRenderTargetTextures(eventData.renderTargets);
         }
     }
 
-    protected _handlePluginEvent(id: number, info: EventInfo): void {
+    protected _handlePluginEvent(
+        id: number,
+        info:
+            | MaterialPluginGetActiveTextures
+            | MaterialPluginGetAnimatables
+            | MaterialPluginHasTexture
+            | MaterialPluginDisposed
+            | MaterialPluginGetDefineNames
+            | MaterialPluginPrepareEffect
+            | MaterialPluginPrepareUniformBuffer
+    ): void {
         switch (id) {
-            case MaterialEvent.GetActiveTextures: {
-                const eventData = info as EventInfoGetActiveTextures;
+            case MaterialPluginEvent.GetActiveTextures: {
+                const eventData = info as MaterialPluginGetActiveTextures;
                 for (const plugin of this._activePlugins) {
                     plugin.getActiveTextures(eventData.activeTextures);
                 }
                 break;
             }
 
-            case MaterialEvent.GetAnimatables: {
-                const eventData = info as EventInfoGetAnimatables;
+            case MaterialPluginEvent.GetAnimatables: {
+                const eventData = info as MaterialPluginGetAnimatables;
                 for (const plugin of this._activePlugins) {
                     plugin.getAnimatables(eventData.animatables);
                 }
                 break;
             }
 
-            case MaterialEvent.HasTexture: {
-                const eventData = info as EventInfoHasTexture;
+            case MaterialPluginEvent.HasTexture: {
+                const eventData = info as MaterialPluginHasTexture;
                 let hasTexture = false;
                 for (const plugin of this._activePlugins) {
                     hasTexture = plugin.hasTexture(eventData.texture);
@@ -212,22 +212,22 @@ export class MaterialPluginManager {
                 break;
             }
 
-            case MaterialEvent.Disposed: {
-                const eventData = info as EventInfoDisposed;
+            case MaterialPluginEvent.Disposed: {
+                const eventData = info as MaterialPluginDisposed;
                 for (const plugin of this._plugins) {
                     plugin.dispose(eventData.forceDisposeTextures);
                 }
                 break;
             }
 
-            case MaterialEvent.GetDefineNames: {
-                const eventData = info as EventInfoGetDefineNames;
+            case MaterialPluginEvent.GetDefineNames: {
+                const eventData = info as MaterialPluginGetDefineNames;
                 eventData.defineNames = this._defineNamesFromPlugins;
                 break;
             }
 
-            case MaterialEvent.PrepareEffect: {
-                const eventData = info as EventInfoPrepareEffect;
+            case MaterialPluginEvent.PrepareEffect: {
+                const eventData = info as MaterialPluginPrepareEffect;
                 for (const plugin of this._activePlugins) {
                     eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
                 }
@@ -241,8 +241,8 @@ export class MaterialPluginManager {
                 break;
             }
 
-            case MaterialEvent.PrepareUniformBuffer: {
-                const eventData = info as EventInfoPrepareUniformBuffer;
+            case MaterialPluginEvent.PrepareUniformBuffer: {
+                const eventData = info as MaterialPluginPrepareUniformBuffer;
                 this._uboDeclaration = "";
                 this._vertexDeclaration = "";
                 this._fragmentDeclaration = "";
@@ -349,7 +349,7 @@ export function RegisterMaterialPlugin(pluginName: string, factory: PluginMateri
             for (const [_name, factory] of _Plugins) {
                 factory(material);
             }
-        }, MaterialEvent.Created);
+        }, MaterialPluginEvent.Created);
         _Inited = true;
     }
     const existing = _Plugins.filter(([name, _factory]) => name === pluginName);

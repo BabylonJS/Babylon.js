@@ -1,4 +1,5 @@
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { SmartArray } from "../Misc/smartArray";
 
 declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
 declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
@@ -7,38 +8,36 @@ declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
 declare type SubMesh = import("../Meshes/subMesh").SubMesh;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
+declare type RenderTargetTexture = import("./Textures/renderTargetTexture").RenderTargetTexture;
 
 /** @hidden */
-export type EventInfo = {};
+export type MaterialPluginCreated = {};
 
 /** @hidden */
-export type EventInfoCreated = EventInfo & {};
-
-/** @hidden */
-export type EventInfoDisposed = EventInfo & {
+export type MaterialPluginDisposed = {
     forceDisposeTextures?: boolean;
 };
 
 /** @hidden */
-export type EventInfoHasTexture = EventInfo & {
+export type MaterialPluginHasTexture = {
     hasTexture: boolean;
     texture: BaseTexture;
 };
 
 /** @hidden */
-export type EventInfoIsReadyForSubMesh = EventInfo & {
+export type MaterialPluginIsReadyForSubMesh = {
     isReadyForSubMesh: boolean;
     defines: MaterialDefines;
     subMesh: SubMesh;
 };
 
 /** @hidden */
-export type EventInfoGetDefineNames = EventInfo & {
+export type MaterialPluginGetDefineNames = {
     defineNames?: { [name: string]: { type: string; default: any } };
 };
 
 /** @hidden */
-export type EventInfoPrepareEffect = EventInfo & {
+export type MaterialPluginPrepareEffect = {
     defines: MaterialDefines;
     fallbacks: EffectFallbacks;
     fallbackRank: number;
@@ -48,51 +47,54 @@ export type EventInfoPrepareEffect = EventInfo & {
 };
 
 /** @hidden */
-export type EventInfoPrepareDefines = EventInfo & {
+export type MaterialPluginPrepareDefines = {
     defines: MaterialDefines;
     mesh: AbstractMesh;
 };
 
 /** @hidden */
-export type EventInfoPrepareUniformBuffer = EventInfo & {
+export type MaterialPluginPrepareUniformBuffer = {
     ubo: UniformBuffer;
 };
 
 /** @hidden */
-export type EventInfoBindForSubMesh = EventInfo & {
+export type MaterialPluginBindForSubMesh = {
     subMesh: SubMesh;
 };
 
 /** @hidden */
-export type EventInfoGetAnimatables = EventInfo & {
+export type MaterialPluginGetAnimatables = {
     animatables: IAnimatable[];
 };
 
 /** @hidden */
-export type EventInfoGetActiveTextures = EventInfo & {
+export type MaterialPluginGetActiveTextures = {
     activeTextures: BaseTexture[];
 };
 
+/**
+ * Properties used by the FillRenderTargetTextures event
+ */
+export type MaterialPluginFillRenderTargetTextures = {
+    renderTargets: SmartArray<RenderTargetTexture>;
+};
+
 /** @hidden */
-export type EventMapping = {
-    0x0001: EventInfoCreated;
-    0x0002: EventInfoDisposed;
-    0x0004: EventInfoGetDefineNames;
-    0x0008: EventInfoPrepareUniformBuffer;
-    0x0010: EventInfoIsReadyForSubMesh;
-    0x0020: EventInfoPrepareDefines;
-    0x0040: EventInfoBindForSubMesh;
-    0x0080: EventInfoPrepareEffect;
-    0x0100: EventInfoGetAnimatables;
-    0x0200: EventInfoGetActiveTextures;
-    0x0400: EventInfoHasTexture;
+export type MaterialPluginHasRenderTargetTextures = {
+    hasRenderTargetTextures: boolean;
+};
+
+/**
+ * Properties used by the HardBindForSubMesh event
+ */
+export type MaterialPluginHardBindForSubMesh = {
+    subMesh: SubMesh;
 };
 
 /**
  * @hidden
  */
-
-export enum MaterialEvent {
+export enum MaterialPluginEvent {
     Created = 0x0001,
     Disposed = 0x0002,
     GetDefineNames = 0x0004,
@@ -104,4 +106,7 @@ export enum MaterialEvent {
     GetAnimatables = 0x0100,
     GetActiveTextures = 0x0200,
     HasTexture = 0x0400,
+    FillRenderTargetTextures = 0x0800,
+    HasRenderTargetTextures = 0x1000,
+    HardBindForSubMesh = 0x2000,
 }
