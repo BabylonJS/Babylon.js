@@ -16,13 +16,11 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
-import { MaterialUserEvent } from "../materialUserEvent";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
-declare type Effect = import("../effect").Effect;
 
 /**
  * @hidden
@@ -165,7 +163,8 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture> = null;
 
-    private _indexOfRefraction = 1.5;
+    /** @hidden */
+    public _indexOfRefraction = 1.5;
     /**
      * Index of refraction of the material base layer.
      * https://en.wikipedia.org/wiki/List_of_refractive_indices
@@ -211,7 +210,8 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public invertRefractionY = false;
 
-    private _linkRefractionWithTransparency = false;
+    /** @hidden */
+    public _linkRefractionWithTransparency = false;
     /**
      * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
@@ -320,7 +320,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         super(material, "PBRSubSurface", 130, new MaterialSubSurfaceDefines(), addToPluginList);
 
         this._scene = material.getScene();
-        this.userEvents = MaterialUserEvent.HasRenderTargetTextures | MaterialUserEvent.FillRenderTargetTextures | MaterialUserEvent.HardBindForSubMesh;
+        this.registerForExtraEvents = true;
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];

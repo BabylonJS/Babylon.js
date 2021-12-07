@@ -17,7 +17,7 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
-import { MaterialEvent } from "./materialEvent";
+import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -883,7 +883,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            this._callbackPluginEvent(MaterialEvent.GetDefineNames, this._eventInfo);
+            this._callbackPluginEvent(MaterialPluginEvent.GetDefineNames, this._eventInfo);
             subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
@@ -1278,7 +1278,7 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.uniforms = uniforms;
             this._eventInfo.samplers = samplers;
             this._eventInfo.customCode = undefined;
-            this._callbackPluginEvent(MaterialEvent.PrepareEffect, this._eventInfo);
+            this._callbackPluginEvent(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
