@@ -1,11 +1,13 @@
 import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
+import { Observable } from "babylonjs/Misc/observable";
 
 /**
- * Defines a structure to hold max and min.
+ * Defines a structure to hold max, min and a optional current.
  */
 export interface IPerfMinMax {
     min: number;
     max: number;
+    current?: number;
 }
 
 /**
@@ -63,11 +65,16 @@ export interface IPerfTicker extends IPerfMinMax {
     text: string;
 }
 
+export interface IVisibleRangeChangedObservableProps {
+    valueMap: Map<string, {min: number, max: number, current: number}>;
+};
+
 /**
  * Defines what settings our canvas graphing service accepts
  */
 export interface ICanvasGraphServiceSettings {
     datasets: IPerfDatasets;
+    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
 }
 
 /**
