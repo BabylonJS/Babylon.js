@@ -78,7 +78,7 @@ export class DeviceSourceManager implements IDisposable {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
-        this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        this._deviceInputSystem = DeviceInputSystem._Create(engine);
 
         this._deviceInputSystem.onDeviceConnectedObservable.add((eventData) => {
             this._addDevice(eventData.deviceType, eventData.deviceSlot);

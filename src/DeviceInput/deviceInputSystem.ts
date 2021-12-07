@@ -30,12 +30,9 @@ export class DeviceInputSystem {
     public readonly onInputChangedObservable: Observable<IDeviceEvent>;
 
     private _deviceInputSystem: IDeviceInputSystem;
-    /**
-     * Creates a new DeviceInputSystem instance or returns existing one in engine
-     * @param engine Engine to assign input system to
-     * @returns The new instance
-     */
-    public static Create(engine: Engine): DeviceInputSystem {
+
+    /** @hidden */
+    public static _Create(engine: Engine): DeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
         if (!engine.deviceInputSystem) {
             let selectedDIS;
