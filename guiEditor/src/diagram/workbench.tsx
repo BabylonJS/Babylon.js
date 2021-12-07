@@ -28,7 +28,8 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
 import { Observer } from "babylonjs/Misc/observable";
 import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
-const DOUBLE_CLICK = 1500;
+
+const DOUBLE_CLICK = Scene.DoubleClickDelay;
 
 require("./workbenchCanvas.scss");
 
@@ -95,12 +96,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._selectedGuiNodes;
     }
 
-    // given a depth and a control gets the parent up the tree depth times
-    private _getParentWithDepth(control: Control, depth: number) {
+    // given a control gets the parent up the tree selectionDepth times. Selection depth is altered as we go down the tree.
+    private _getParentWithDepth(control: Control) {
+        --this._selectionDepth;
         let parent = control;
-        for (let i = 0; i < depth; ++i) {
-            if (parent.parent)
+        for (let i = 0; i < this._selectionDepth; ++i) {
+            if (parent.parent) {
                 parent = parent.parent;
+            }
+            else {
+                break;
+            }
         }
         return parent;
     }
@@ -230,7 +236,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (selection && this._selectedGuiNodes.length <= 1) {
             // if we're still on the same main selection, got down the tree.
             if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
-                selection = this._getParentWithDepth(selection, --this._selectionDepth);
+                selection = this._getParentWithDepth(selection);
 
             } else { // get the start of our tree by getting our max parent and storing our main selected control
                 this._mainSelection = selection;
@@ -503,14 +509,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
-                // if this is our first click or the clicked control is a parent of the previous clicked control.
+                // if this is our first click and the clicked control is a child the of the main selected control.
                 if (!this._doubleClick && this._isMainSelectionParent(guiControl)) {
                     this._doubleClick = guiControl;
                     window.setTimeout(() => {
                         this._doubleClick = null;
                     }, DOUBLE_CLICK);
                 }
-                else { //select our new main control.
+                else { //function will either select our new main control or contrue down the tree.
                     this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }
