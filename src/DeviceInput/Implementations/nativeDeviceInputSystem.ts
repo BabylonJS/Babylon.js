@@ -4,7 +4,7 @@ import { DeviceType } from "../InputDevices/deviceEnums";
 import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "../Interfaces/inputInterfaces";
 
 /** @hidden */
-export class NativeDeviceInputSystem implements IDeviceInputSystem {
+export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
     public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onInputChanged = (deviceEvent: IDeviceEvent) => { };

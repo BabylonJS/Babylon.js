@@ -1,8 +1,8 @@
 import { Engine } from '../Engines/engine';
 import { INative } from '../Engines/Native/nativeInterfaces';
 import { Observable } from '../Misc/observable';
-import { NativeDeviceInputSystem } from './Implementations/nativeDeviceInputSystem';
-import { WebDeviceInputSystem } from './Implementations/webDeviceInputSystem';
+import { NativeDeviceInputSystemImpl } from './Implementations/nativeDeviceInputSystem';
+import { WebDeviceInputSystemImpl } from './Implementations/webDeviceInputSystem';
 import { DeviceType } from './InputDevices/deviceEnums';
 import { IDeviceEvent, IDeviceInputSystem } from './Interfaces/inputInterfaces';
 
@@ -41,10 +41,10 @@ export class DeviceInputSystem {
             let selectedDIS;
 
             if (typeof _native !== 'undefined') {
-                selectedDIS = (_native.DeviceInputSystem) ? new NativeDeviceInputSystem(new _native.DeviceInputSystem()) : new NativeDeviceInputSystem();
+                selectedDIS = (_native.DeviceInputSystem) ? new NativeDeviceInputSystemImpl(new _native.DeviceInputSystem()) : new NativeDeviceInputSystemImpl();
             }
             else {
-                selectedDIS = new WebDeviceInputSystem(engine);
+                selectedDIS = new WebDeviceInputSystemImpl(engine);
             }
 
             if (selectedDIS) {

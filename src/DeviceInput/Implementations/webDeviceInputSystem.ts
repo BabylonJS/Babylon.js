@@ -8,7 +8,7 @@ import { DeviceType, PointerInput } from "../InputDevices/deviceEnums";
 import { IDeviceEvent, IDeviceInputSystem } from "../Interfaces/inputInterfaces";
 
 /** @hidden */
-export class WebDeviceInputSystem implements IDeviceInputSystem {
+export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     /** onDeviceConnected property */
     public set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void) {
         this._onDeviceConnected = callback;
@@ -209,7 +209,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number) {
         this._pointerActive = true;
-        this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystem.MAX_POINTER_INPUTS);
+        this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystemImpl.MAX_POINTER_INPUTS);
         const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
         pointer[0] = currentX;
         pointer[1] = currentY;
@@ -261,7 +261,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._keyboardDownEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystem.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystemImpl.MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -282,7 +282,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._keyboardUpEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystem.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystemImpl.MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -635,7 +635,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystem.MAX_POINTER_INPUTS);
+                this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystemImpl.MAX_POINTER_INPUTS);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
