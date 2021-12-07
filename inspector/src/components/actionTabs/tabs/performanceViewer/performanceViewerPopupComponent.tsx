@@ -17,8 +17,6 @@ interface IPerformanceViewerPopupComponentProps {
     performanceCollector: PerformanceViewerCollector;
 }
 
-
-
 export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps> = (props: IPerformanceViewerPopupComponentProps) => {
     const { scene, layoutObservable, returnToLiveObservable, performanceCollector } = props;
     const [ onVisibleRangeChangedObservable ] = useState(new Observable<IVisibleRangeChangedObservableProps>());

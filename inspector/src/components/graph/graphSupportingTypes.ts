@@ -66,7 +66,7 @@ export interface IPerfTicker extends IPerfMinMax {
 }
 
 export interface IVisibleRangeChangedObservableProps {
-    valueMap: Map<string, {min: number, max: number, current: number}>;
+    valueMap: Map<string, IPerfMinMax>;
 };
 
 /**

@@ -381,7 +381,7 @@ export class CanvasGraphService {
         // create the ticker objects for each of the non hidden items.
         let longestText: string = "";
         this._numberOfTickers = 0;
-        const valueMap = new Map<string, {min: number, max: number, current: number}>();
+        const valueMap = new Map<string, IPerfMinMax>();
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -421,17 +421,6 @@ export class CanvasGraphService {
             this._tickerTextCache.width = width;
         }
 
-        // drawableArea.right -= width;
-
-        // const textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
-
-        // const x = drawableArea.right + tickerHorizontalPadding;
-        // let y = drawableArea.top + textHeight;
-        // for (let i = 0; i < this._numberOfTickers; i++) {
-        //     const tickerItem = this._tickerItems[i];
-        //     ctx.fillText(tickerItem.text, x, y);
-        //     y += textHeight;
-        // }
         ctx.restore();
     }
 

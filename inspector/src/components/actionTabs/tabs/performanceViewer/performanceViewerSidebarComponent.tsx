@@ -7,7 +7,7 @@ import { ColorPickerLineComponent } from "../../../../sharedUiComponents/lines/c
 import { faSquare, faCheckSquare } from "@fortawesome/free-solid-svg-icons";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { Observable } from "babylonjs/Misc/observable";
-import { IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
+import { IPerfMinMax, IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
 
 interface IPerformanceViewerSidebarComponentProps {
     collector: PerformanceViewerCollector;
@@ -25,7 +25,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
     // List of ordered categories
     const [metadataCategories, setMetadataCategories] = useState<string[]>();
     // Min/Max/Current values of the ids
-    const [valueMap, setValueMap] = useState<Map<string, {min: number, max: number, current: number}>>();
+    const [valueMap, setValueMap] = useState<Map<string, IPerfMinMax>>();
 
     useEffect(() => {
         const observer = (props: IVisibleRangeChangedObservableProps) => {
