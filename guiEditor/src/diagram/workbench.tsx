@@ -28,9 +28,6 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
 import { TextureBlock } from "babylonjs/Materials/Node/Blocks/Dual/textureBlock";
 import { Observer } from "babylonjs/Misc/observable";
 import { GUIEditorNodeMaterial } from "./GUIEditorNodeMaterial";
-
-const DOUBLE_CLICK = Scene.DoubleClickDelay;
-
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -105,11 +102,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
               break;
             }
             parent = parent.parent;
-                parent = parent.parent;
-            }
-            else {
-                break;
-            }
         }
         return parent;
     }
@@ -517,7 +509,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this._doubleClick = guiControl;
                     window.setTimeout(() => {
                         this._doubleClick = null;
-                    }, DOUBLE_CLICK);
+                    }, Scene.DoubleClickDelay);
                 }
                 else { //function will either select our new main control or contrue down the tree.
                     this.determineMouseSelection(guiControl);
