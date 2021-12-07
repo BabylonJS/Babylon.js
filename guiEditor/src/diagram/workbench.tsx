@@ -101,7 +101,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         --this._selectionDepth;
         let parent = control;
         for (let i = 0; i < this._selectionDepth; ++i) {
-            if (parent.parent) {
+            if (!parent.parent) {
+              break;
+            }
+            parent = parent.parent;
                 parent = parent.parent;
             }
             else {
