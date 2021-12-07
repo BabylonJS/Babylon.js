@@ -66,10 +66,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
 
-        let vau = (this.props.control as any)["_" +propertyName];
+        // checking the previous state unit to see what it was.
+        const vau = (this.props.control as any)["_" +propertyName];
         let percentage = (vau as ValueAndUnit).isPercentage;
         
-        //check if it contains either a px or a % sign
+        // now checking if the new string contains either a px or a % sign in case we need to change the unit.
         let negative = value.charAt(0) === "-";
         if (value.charAt(value.length - 1) === "%") {
             percentage = true;
