@@ -495,7 +495,7 @@ export class InputManager {
         if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
 
         if (!this._deviceInputSystem) {
-            this._deviceInputSystem = DeviceInputSystem.Create(engine);
+            this._deviceInputSystem = DeviceInputSystem._Create(engine);
         }
         else {
             this._deviceInputSystem.configureEvents();
