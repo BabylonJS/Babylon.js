@@ -66,7 +66,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
 
-        // checking the previous state unit to see what it was.
+        // checking the previous value unit to see what it was.
         const vau = (this.props.control as any)["_" +propertyName];
         let percentage = (vau as ValueAndUnit).isPercentage;
         
