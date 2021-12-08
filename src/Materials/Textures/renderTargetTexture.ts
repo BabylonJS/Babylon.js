@@ -1229,7 +1229,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      *  This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
      */
     public disposeFramebufferObjects(): void {
-        this._renderTarget?._swapAndDie(null);
+        this._renderTarget?.dispose(true);
     }
 
     /**

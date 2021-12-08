@@ -1,5 +1,4 @@
 import { IEvent } from "../../Events/deviceInputEvents";
-import { Observable } from "../../Misc/observable";
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
 import { DeviceType } from "../InputDevices/deviceEnums";
@@ -70,19 +69,21 @@ export interface INativeInput extends IDisposable {
  * Interface for DeviceInputSystem implementations (JS and Native)
  */
 export interface IDeviceInputSystem extends IDisposable {
-    // Observables
+    // Callbacks
     /**
-     * Observable for devices being connected
+     * Callback for when a device is connected
      */
-    readonly onDeviceConnectedObservable: Observable<{ deviceType: DeviceType, deviceSlot: number }>;
+    onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+
     /**
-     * Observable for devices being disconnected
+     * Callback for when a device is disconnected
      */
-    readonly onDeviceDisconnectedObservable: Observable<{ deviceType: DeviceType, deviceSlot: number }>;
+    onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+
     /**
-     * Observable for changes to device input
+     * Callback for when an input is changed
      */
-    readonly onInputChangedObservable: Observable<IDeviceEvent>;
+    onInputChanged: (deviceEvent: IDeviceEvent) => void;
 
     /**
      * Configures events to work with an engine's active element

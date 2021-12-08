@@ -378,6 +378,46 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module INSPECTOR {
+    export interface ICheckBoxLineComponentProps {
+        label?: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+        icon?: string;
+        iconLabel?: string;
+        faIcons?: {
+        };
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IPerformanceViewerSidebarComponentProps {
         collector: BABYLON.PerformanceViewerCollector;
     }
@@ -656,44 +696,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module INSPECTOR {
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
     interface IRenderGridPropertyGridComponentProps {
         globalState: GlobalState;
         scene: BABYLON.Scene;
@@ -866,6 +868,7 @@ declare module INSPECTOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2271,6 +2274,18 @@ declare module INSPECTOR {
         uploadTexture(file: File): void;
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: BABYLON.GUI.AdvancedDynamicTexture): Promise<void>;
 }
 declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
