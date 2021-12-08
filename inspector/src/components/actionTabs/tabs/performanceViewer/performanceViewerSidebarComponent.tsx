@@ -28,12 +28,15 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
     const [valueMap, setValueMap] = useState<Map<string, IPerfMinMax>>();
 
     useEffect(() => {
+        if (!onVisibleRangeChangedObservable) {
+            return;
+        }
         const observer = (props: IVisibleRangeChangedObservableProps) => {
             setValueMap(props.valueMap);
         }
-        onVisibleRangeChangedObservable?.add(observer);
+        onVisibleRangeChangedObservable.add(observer);
         return () => {
-            onVisibleRangeChangedObservable?.removeCallback(observer);
+            onVisibleRangeChangedObservable.removeCallback(observer);
         }
     }, [onVisibleRangeChangedObservable]);
 
