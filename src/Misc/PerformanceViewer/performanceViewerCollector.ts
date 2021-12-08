@@ -25,6 +25,24 @@ const numPointsColHeader = "numPoints";
 const carriageReturnRegex = /\r/g;
 
 /**
+ * Callback strategy and optional category for data collection
+ */
+interface IPerformanceViewerStrategyParameter {
+    /**
+     * The strategy for collecting data. Available strategies are located on the PerfCollectionStrategy class
+     */
+    strategyCallback: PerfStrategyInitialization;
+    /**
+     * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
+     */
+    category?: string;
+    /**
+     * Starts hidden
+     */
+    hidden?: boolean;
+}
+
+/**
  * The collector class handles the collection and storage of data into the appropriate array.
  * The collector also handles notifying any observers of any updates.
  */
@@ -69,7 +87,7 @@ export class PerformanceViewerCollector {
      * @param _scene the scene to collect on.
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
-    constructor(private _scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]) {
+    constructor(private _scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]) {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
@@ -92,9 +110,10 @@ export class PerformanceViewerCollector {
      * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
      * @param name The name of the event to register
      * @param forceUpdate if the code should force add an event, and replace the last one.
+     * @param category the category for that event
      * @returns The event registered, used in sendEvent
      */
-    public registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined {
+    public registerEvent(name: string, forceUpdate?: boolean, category?: string): IPerfCustomEvent | undefined {
         if (this._strategies.has(name) && !forceUpdate) {
             return;
         }
@@ -139,7 +158,7 @@ export class PerformanceViewerCollector {
         };
 
         this._eventRestoreSet.add(name);
-        this.addCollectionStrategies(strategy);
+        this.addCollectionStrategies({strategyCallback: strategy, category});
 
         return event;
     }
@@ -167,8 +186,8 @@ export class PerformanceViewerCollector {
      * This method adds additional collection strategies for data collection purposes.
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
-    public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
-        for (const strategyCallback of strategyCallbacks) {
+    public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
+        for (const {strategyCallback, category, hidden} of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
@@ -179,6 +198,8 @@ export class PerformanceViewerCollector {
 
             this._datasetMeta.set(strategy.id, {
                 color: this._getHexColorFromId(strategy.id),
+                category,
+                hidden
             });
 
             this._strategies.set(strategy.id, strategy);

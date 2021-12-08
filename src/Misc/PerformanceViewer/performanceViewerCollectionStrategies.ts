@@ -96,7 +96,7 @@ export class PerfCollectionStrategy {
      * Gets the initializer for the strategy used for collection of active indices metrics.
      * @returns the initializer for the active indices strategy
      */
-    public static ActiveIndiciesStrategy(): PerfStrategyInitialization {
+    public static ActiveIndicesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
                 id: "active indices",

@@ -215,8 +215,8 @@ export class RenderTargetWrapper {
     }
 
     /** @hidden */
-    public _swapAndDie(target: Nullable<InternalTexture>): void {
-        if (target && this.texture) {
+    public _swapAndDie(target: InternalTexture): void {
+        if (this.texture) {
             this.texture._swapAndDie(target);
         }
         this._textures = null;

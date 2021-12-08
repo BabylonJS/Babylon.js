@@ -1,13 +1,11 @@
 $buttonHeight: 30px;
+$squareSize: 14px;
 
 #performance-viewer {
     display: grid;
     height: 100%;
     width: 100%;
     grid-template-columns: 25% 75%;
-    grid-template-rows: $buttonHeight;
-    grid-template-areas: ". liveButton"
-                         "sidebar graph";
     .performancePlayheadButton {
         grid-area: liveButton;
         height: $buttonHeight;
@@ -17,53 +15,119 @@ $buttonHeight: 30px;
         color: #2e3f47;
         outline: 2px #2e3f47;
         margin: 5px;
-    }
-
-    #performance-viewer-graph {
-        grid-area: graph;
+        position: absolute;
+        top: 10px;
+        right: 10px;
     }
 
     #performance-viewer-sidebar {
-        grid-area: sidebar;
         display: flex;
         flex-direction: column;
-        
+        overflow-y: scroll;
+
+        border: 2px solid gray;
+
         .sidebar-item {
-            display: inline-flex;
-            flex-direction: row;    
+            display: grid;
             width: 100%;
-            .sidebar-item-label {
-                width: 100%;
+            
+            align-items: center;
+            padding: 5px 0px;
+        }
+
+        .header {
+            color: white;
+            grid-template-columns: 10px 9fr 1fr 10px;
+
+            .category {
+                grid-column: 2;
             }
-            .color-picker {
-                height: calc(100% - 8px);
-                margin: 4px;
-                width: 100%;
-        
-                .color-rect {
-                    height: calc(100% - 4px);
-                    border: 2px white solid;
-                    cursor: pointer;
-                    min-height: 18px;
-                }
-        
-                .color-picker-cover {
-                    position: fixed;
-                    top: 0px;
-                    right: 0px;
-                    bottom: 0px;
-                    left: 0px;
-                    z-index: 100;
-                }
-        
-                .color-picker-float {
-                    position: absolute;
-        
-                    .color-picker-container {
-                        width: 200px;
-                    }
-                }                
+
+            .value {
+                grid-column: 3;
             }
         }
+        
+        .version-header {
+            background-color: darkslategray;
+        }
+        
+        // mid-dark color
+        .category-header {
+            background-color: royalblue;
+        }
+
+        .measure {
+            color: black;
+            grid-template-columns: 10px 6fr 1fr;
+            .category {
+                display: grid;
+                grid-template-columns: $squareSize 4px $squareSize 6px 1fr;
+                grid-column: 2;
+                align-items: center;
+
+                .color-picker {
+                    grid-column: 3;
+                }
+
+                .sidebar-item-label {
+                    grid-column: 5;
+                }
+            }
+
+            .value {
+                grid-column: 3;
+            }
+        }
+
+        //darker color
+        .measure:nth-child(odd) {
+            background-color: lightsteelblue;
+        }
+        
+        // lighter color
+        .measure:nth-child(even) {
+            background-color: lightgrey;
+        }
+    
+        .checkBoxLine {
+            color: white;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            .disabled {
+                color: gray;
+            }
+        }
+
+        .color-picker {
+            width: 100%;
+    
+            .color-rect {
+                height: $squareSize;
+                width: $squareSize;
+                cursor: pointer;
+            }
+    
+            .color-picker-cover {
+                position: fixed;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                left: 0px;
+                z-index: 100;
+            }
+    
+            .color-picker-float {
+                position: absolute;
+    
+                .color-picker-container {
+                    width: 200px;
+                }
+            }                
+        }
+        
     }
 }

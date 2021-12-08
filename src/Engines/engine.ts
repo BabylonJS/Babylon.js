@@ -27,7 +27,7 @@ import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 
-declare type IDeviceInputSystem = import("../DeviceInput/Interfaces/inputInterfaces").IDeviceInputSystem;
+declare type DeviceInputSystem = import("../DeviceInput").DeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -393,7 +393,7 @@ export class Engine extends ThinEngine {
     /**
      * Stores instance of DeviceInputSystem
      */
-    public deviceInputSystem: IDeviceInputSystem;
+    public deviceInputSystem: DeviceInputSystem;
 
     // Observables
 
@@ -657,16 +657,10 @@ export class Engine extends ThinEngine {
         };
 
         this._onCanvasPointerOut = (ev) => {
-            // Check for canvas and if there is a canvas, make sure that this callback is only fired when the cursor exits the canvas
+            // Check that the element at the point of the pointer out isn't the canvas and if it isn't, notify observers
             // Note: This is a workaround for a bug with Safari
-            let rect = this.getInputElementClientRect();
-
-            if (rect) {
-                let pointerX = ev.clientX - rect.left;
-                let pointerY = ev.clientY - rect.top;
-                if (pointerX < 0 || pointerX > rect.width || pointerY < 0 || pointerY > rect.height) {
-                    this.onCanvasPointerOutObservable.notifyObservers(ev);
-                }
+            if (document.elementFromPoint(ev.clientX, ev.clientY) !== canvas) {
+                this.onCanvasPointerOutObservable.notifyObservers(ev);
             }
         };
 

@@ -1,38 +1,25 @@
-import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType } from "../InputDevices/deviceEnums";
 import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "../Interfaces/inputInterfaces";
 
 /** @hidden */
-export class NativeDeviceInputWrapper implements IDeviceInputSystem {
-    /**
-     * Observable for devices being connected
-     */
-    public readonly onDeviceConnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
-    /**
-     * Observable for devices being disconnected
-     */
-    public readonly onDeviceDisconnectedObservable: Observable<{ deviceType: DeviceType; deviceSlot: number; }>;
-    /**
-     * Observable for changes to device input
-     */
-    public readonly onInputChangedObservable: Observable<IDeviceEvent>;
+export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
+    public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
+    public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
+    public onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
-    private _nativeInput: INativeInput;
+    private readonly _nativeInput: INativeInput;
 
     public constructor(nativeInput?: INativeInput) {
         this._nativeInput = nativeInput || this._createDummyNativeInput();
-        this.onDeviceConnectedObservable = new Observable<{ deviceType: DeviceType; deviceSlot: number; }>();
-        this.onDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType; deviceSlot: number; }>();
-        this.onInputChangedObservable = new Observable<IDeviceEvent>();
 
         this._nativeInput.onDeviceConnected = (deviceType, deviceSlot) => {
-            this.onDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
+            this.onDeviceConnected(deviceType, deviceSlot);
         };
 
         this._nativeInput.onDeviceDisconnected = (deviceType, deviceSlot) => {
-            this.onDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
+            this.onDeviceDisconnected(deviceType, deviceSlot);
         };
 
         this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
@@ -45,7 +32,7 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
             deviceEvent.previousState = previousState;
             deviceEvent.currentState = currentState;
 
-            this.onInputChangedObservable.notifyObservers(deviceEvent);
+            this.onInputChanged(deviceEvent);
         };
     }
 
@@ -82,9 +69,9 @@ export class NativeDeviceInputWrapper implements IDeviceInputSystem {
      * Dispose of all the observables
      */
     public dispose(): void {
-        this.onDeviceConnectedObservable.clear();
-        this.onDeviceDisconnectedObservable.clear();
-        this.onInputChangedObservable.clear();
+        this.onDeviceConnected = () => { };
+        this.onDeviceDisconnected = () => { };
+        this.onInputChanged = () => { };
     }
 
     /**
