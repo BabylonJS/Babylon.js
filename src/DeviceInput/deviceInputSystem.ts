@@ -58,12 +58,7 @@ export class DeviceInputSystem {
      */
     constructor(deviceInputSystem: IDeviceInputSystem) {
         this._deviceInputSystem = deviceInputSystem;
-        // Adds a callback that reassigns onDeviceConnected's callback to trigger the observable's observers for already connected devices
-        this.onDeviceConnectedObservable = new Observable((observer) => {
-            this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
-                this.onDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
-            };
-        });
+        this.onDeviceConnectedObservable = new Observable();
         this.onDeviceDisconnectedObservable = new Observable();
         this.onInputChangedObservable = new Observable<IDeviceEvent>();
 

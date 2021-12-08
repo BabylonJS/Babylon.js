@@ -94,6 +94,11 @@ export class DeviceSourceManager implements IDisposable {
         this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
             this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)?.onInputChangedObservable.notifyObservers(eventData);
         });
+
+        // Since the mouse is already added in the DeviceInputSystem for some scenarios, add it here automatically
+        if (this._deviceInputSystem.isDeviceAvailable(DeviceType.Mouse)) {
+            this._addDevice(DeviceType.Mouse, 0);
+        }
     }
 
     // Public Functions
