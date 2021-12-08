@@ -36,6 +36,10 @@ interface IPerformanceViewerStrategyParameter {
      * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
      */
     category?: string;
+    /**
+     * Starts hidden
+     */
+    hidden?: boolean;
 }
 
 /**
@@ -183,7 +187,7 @@ export class PerformanceViewerCollector {
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
     public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
-        for (const {strategyCallback, category} of strategyCallbacks) {
+        for (const {strategyCallback, category, hidden} of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
@@ -194,7 +198,8 @@ export class PerformanceViewerCollector {
 
             this._datasetMeta.set(strategy.id, {
                 color: this._getHexColorFromId(strategy.id),
-                category
+                category,
+                hidden
             });
 
             this._strategies.set(strategy.id, strategy);
