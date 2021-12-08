@@ -72,17 +72,17 @@ export class CustomBlock extends NodeMaterialBlock {
         // Generate the function call
         state.compilationString += functionName + "(";
 
-        let hasComma = false;
+        let hasInput = false;
         this._inputs.forEach((input, index) => {
             if (index > 0) {
                 state.compilationString += ", ";
-                hasComma = true;
             }
             state.compilationString += input.associatedVariableName;
+            hasInput = true;
         });
 
         this._outputs.forEach((output, index) => {
-            if (index > 0 || hasComma) {
+            if (index > 0 || hasInput) {
                 state.compilationString += ", ";
             }
             state.compilationString += output.associatedVariableName;
