@@ -11,7 +11,7 @@ import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/key
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
-import { IDeviceEvent, IDeviceInputSystem } from "../DeviceInput/Interfaces/inputInterfaces";
+import { IDeviceEvent } from "../DeviceInput/Interfaces/inputInterfaces";
 
 declare type Scene = import("../scene").Scene;
 
@@ -113,7 +113,7 @@ export class InputManager {
     private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
-    private _deviceInputSystem: IDeviceInputSystem;
+    private _deviceInputSystem: DeviceInputSystem;
 
     /**
      * Creates a new InputManager
@@ -495,7 +495,7 @@ export class InputManager {
         if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
 
         if (!this._deviceInputSystem) {
-            this._deviceInputSystem = DeviceInputSystem.Create(engine);
+            this._deviceInputSystem = DeviceInputSystem._Create(engine);
         }
         else {
             this._deviceInputSystem.configureEvents();
@@ -661,6 +661,11 @@ export class InputManager {
             }
 
             if (!scene.cameraToUseForPointers && !scene.activeCamera) {
+                return;
+            }
+
+            if (scene.skipPointerMovePicking) {
+                this._processPointerMove(new PickingInfo(), evt as IPointerEvent);
                 return;
             }
 

@@ -20,6 +20,7 @@ export enum DragOverLocation {
 
 export class GlobalState {
     [x: string]: any;
+    liveGuiTexture: Nullable<AdvancedDynamicTexture>;
     guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
@@ -35,6 +36,7 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onNewSceneObservable = new Observable<Nullable<Scene>>();
     onGuiNodeRemovalObservable = new Observable<Control>();
+    onPopupClosedObservable = new Observable<void>();
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;

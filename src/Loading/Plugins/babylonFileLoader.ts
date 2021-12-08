@@ -118,7 +118,7 @@ var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 };
 
 var findParent = (parentId: any, scene: Scene) => {
-    if (isNaN(parentId)) {
+    if (typeof parentId !== "number") {
         return scene.getLastEntryById(parentId);
     }
 

@@ -4,11 +4,13 @@ import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
 import { Observable } from "babylonjs/Misc/observable";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 /**
  * Interface used to specify creation options for the gui editor
  */
 export interface IGUIEditorOptions {
+    liveGuiTexture?: AdvancedDynamicTexture;
     customLoad: { label: string; action: (data: string) => Promise<string>; } | undefined;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<string> };
@@ -38,16 +40,22 @@ export class GUIEditor {
                     //swallow and continue
                 }
             }
+            if (options.liveGuiTexture) {
+                this._CurrentState.liveGuiTexture = options.liveGuiTexture;
+            }
             return;
         }
 
         let hostElement = options.hostElement;
 
         if (!hostElement) {
-            hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800)!;
+            hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800)!;
         }
 
         let globalState = new GlobalState();
+        if (options.liveGuiTexture) {
+            globalState.liveGuiTexture = options.liveGuiTexture;
+        }
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
@@ -91,6 +99,8 @@ export class GUIEditor {
                 }
             };
         }
-        window.addEventListener("beforeunload", () => { });
+        globalState.hostWindow.addEventListener("beforeunload", () => {
+            globalState.onPopupClosedObservable.notifyObservers();
+        });
     }
 }

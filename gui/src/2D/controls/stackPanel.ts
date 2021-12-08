@@ -16,9 +16,10 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
+    private _spacing = 0;
 
     /**
-     * Gets or sets a boolean indicating that layou warnings should be ignored
+     * Gets or sets a boolean indicating that layout warnings should be ignored
      */
     @serialize()
     public ignoreLayoutWarnings = false;
@@ -37,6 +38,23 @@ export class StackPanel extends Container {
         this._isVertical = value;
         this._markAsDirty();
     }
+
+    /**
+     * Gets or sets the spacing (in pixels) between each child.
+     */
+     @serialize()
+     public get spacing(): number {
+         return this._spacing;
+     }
+
+     public set spacing(value: number) {
+         if (this._spacing === value) {
+             return;
+         }
+
+         this._spacing = value;
+         this._markAsDirty();
+     }
 
     /**
      * Gets or sets panel width.
@@ -127,9 +145,11 @@ export class StackPanel extends Container {
     }
 
     protected _postMeasure(): void {
-        var stackWidth = 0;
-        var stackHeight = 0;
-        for (var child of this._children) {
+        let stackWidth = 0;
+        let stackHeight = 0;
+        const childrenCount = this._children.length;
+        for (let index = 0; index < childrenCount; index++) {
+            const child = this._children[index];
             if (!child.isVisible || child.notRenderable) {
                 continue;
             }
@@ -146,7 +166,7 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }
                 } else {
-                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
+                    stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             } else {
                 if (child.left !== stackWidth + "px") {
@@ -160,13 +180,13 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
                 } else {
-                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
+                    stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             }
         }
 
-        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
-        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+        stackWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
+        stackHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
 
         this._doNotTrackManualChanges = true;
 
