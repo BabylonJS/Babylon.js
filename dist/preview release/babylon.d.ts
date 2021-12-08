@@ -46755,7 +46755,7 @@ declare module BABYLON {
          * Gets the initializer for the strategy used for collection of active indices metrics.
          * @returns the initializer for the active indices strategy
          */
-        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
+        static ActiveIndicesStrategy(): PerfStrategyInitialization;
         /**
          * Gets the initializer for the strategy used for collection of active faces metrics.
          * @returns the initializer for the active faces strategy
@@ -46866,6 +46866,10 @@ declare module BABYLON {
          * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
          */
         category?: string;
+        /**
+         * Starts hidden
+         */
+        hidden?: boolean;
     }
     /**
      * The collector class handles the collection and storage of data into the appropriate array.
@@ -65508,6 +65512,7 @@ declare module BABYLON {
         get msaaTexture(): Nullable<GPUTexture>;
         set msaaTexture(texture: Nullable<GPUTexture>);
         view: Nullable<GPUTextureView>;
+        viewForWriting: Nullable<GPUTextureView>;
         format: GPUTextureFormat;
         textureUsages: number;
         textureAdditionalUsages: number;
@@ -65515,7 +65520,7 @@ declare module BABYLON {
         set(hardwareTexture: GPUTexture): void;
         setMSAATexture(hardwareTexture: GPUTexture): void;
         setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
-        createView(descriptor?: GPUTextureViewDescriptor): void;
+        createView(descriptor?: GPUTextureViewDescriptor, createViewForWriting?: boolean): void;
         reset(): void;
         release(): void;
     }
