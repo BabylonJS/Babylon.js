@@ -3,7 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import { CanvasGraphService } from "./canvasGraphService";
-import { IPerfLayoutSize } from "./graphSupportingTypes";
+import { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 import { IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scene } from "babylonjs/scene";
 
@@ -13,10 +13,11 @@ interface ICanvasGraphComponentProps {
     collector: PerformanceViewerCollector;
     layoutObservable?: Observable<IPerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
+    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
-    const { id, collector, scene, layoutObservable, returnToPlayheadObservable } = props;
+    const { id, collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable } = props;
     const canvasRef: React.MutableRefObject<HTMLCanvasElement | null> = useRef(null);
 
     useEffect(() => {
@@ -27,7 +28,7 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         let cs: CanvasGraphService | undefined;
 
         try {
-            cs = new CanvasGraphService(canvasRef.current, { datasets: collector.datasets });
+            cs = new CanvasGraphService(canvasRef.current, { datasets: collector.datasets, onVisibleRangeChangedObservable });
         } catch (error) {
             console.error(error);
             return;
