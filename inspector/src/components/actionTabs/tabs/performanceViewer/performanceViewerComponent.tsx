@@ -12,6 +12,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { Inspector } from "../../../../inspector";
 import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
+import { ComputePressureObserverWrapper } from "babylonjs/Misc/computePressure";
 
 require("./scss/performanceViewer.scss");
 
@@ -138,6 +139,11 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     useEffect(() => {
         const perfCollector = scene.getPerfCollector();
         perfCollector.addCollectionStrategies(...defaultStrategies);
+        if (ComputePressureObserverWrapper.IsAvailable) {
+            perfCollector.addCollectionStrategies({
+                strategyCallback: PerfCollectionStrategy.CpuStrategy(), category: IPerfMetadataCategory.FrameSteps
+            });
+        }
         setPerformanceCollector(perfCollector);
     }, []);
 
