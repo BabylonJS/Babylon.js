@@ -872,8 +872,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //Get pos on plane
-    public getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane) {
-        const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
+    public getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane, x = scene.pointerX, y = scene.pointerY) {
+        const ray = scene.createPickingRay(x, y, Matrix.Identity(), camera, false);
         const distance = ray.intersectsPlane(plane);
 
         //not using this ray again, so modifying its vectors here is fine
@@ -961,7 +961,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onPointerUp={(evt) => {
                    // console.log(evt.target);
                     this.onUp(evt);
-                    this.props.globalState.guiGizmo.onUp();
+                    this.props.globalState.guiGizmo.onUp(evt);
                 }}
                 ref={this._rootContainer}>
 
