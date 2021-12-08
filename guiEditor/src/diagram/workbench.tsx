@@ -143,7 +143,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.changeSelectionHighlight(false);
 
                         this._selectedGuiNodes = [selection];
-                        if (!this._lockMainSelection) { //incase the selection did not come from the canvas and mouse
+                        if (!this._lockMainSelection && selection != this.props.globalState.guiTexture._rootContainer) {
+                            //incase the selection did not come from the canvas and mouse
                             this._mainSelection = selection;
                         }
                         this._lockMainSelection = false;
@@ -512,6 +513,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     }, Scene.DoubleClickDelay);
                 }
                 else { //function will either select our new main control or contrue down the tree.
+                    
                     this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }
