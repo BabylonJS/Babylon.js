@@ -12,7 +12,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { Inspector } from "../../../../inspector";
 import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
-import { ComputePressureObserverWrapper } from "babylonjs/Misc/index";
+import { ComputePressureObserverWrapper } from "babylonjs/Misc/computePressure";
 
 require("./scss/performanceViewer.scss");
 
