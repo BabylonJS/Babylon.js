@@ -1236,6 +1236,7 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
+        const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
 
         gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
@@ -1243,7 +1244,7 @@ export class WebGPUTextureHelper {
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment :
                 texture._source === InternalTextureSource.DepthStencil ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.RenderAttachment : -1;
 
-        gpuTextureWrapper.textureAdditionalUsages = (creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE ? WebGPUConstants.TextureUsage.StorageBinding : 0;
+        gpuTextureWrapper.textureAdditionalUsages = isStorageTexture ? WebGPUConstants.TextureUsage.StorageBinding : 0;
 
         const hasMipMaps = texture.generateMipMaps;
         const layerCount = depth || 1;
@@ -1260,7 +1261,7 @@ export class WebGPUTextureHelper {
                 baseMipLevel: 0,
                 arrayLayerCount: 6,
                 aspect: WebGPUConstants.TextureAspect.All
-            });
+            }, isStorageTexture);
         } else {
             const gpuTexture = this.createTexture({ width, height, layers: layerCount }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, 1, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages, gpuTextureWrapper.textureAdditionalUsages);
 
@@ -1273,7 +1274,7 @@ export class WebGPUTextureHelper {
                 baseMipLevel: 0,
                 arrayLayerCount: texture.is3D ? 1 : layerCount,
                 aspect: WebGPUConstants.TextureAspect.All
-            });
+            }, isStorageTexture);
         }
 
         texture.width = texture.baseWidth = width;

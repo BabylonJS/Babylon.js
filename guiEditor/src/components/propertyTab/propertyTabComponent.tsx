@@ -57,7 +57,7 @@ require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
-const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
+const artboardColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const rectangleIcon: string = require("../../../public/imgs/rectangleIconDark.svg");
 const ellipseIcon: string = require("../../../public/imgs/ellipseIconDark.svg");
 const gridIcon: string = require("../../../public/imgs/gridIconDark.svg");
@@ -168,7 +168,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             const json = JSON.stringify(this.props.globalState.guiTexture.serializeContent());
             StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiTexture.json");
         } catch (error) {
-            alert("Unable to save your GUI");
+            this.props.globalState.hostWindow.alert("Unable to save your GUI");
+            Tools.Error("Unable to save your GUI");
         }
     };
 
@@ -225,24 +226,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     navigator.clipboard
                         .writeText(adt.snippetId)
                         .then(() => {
-                            alert(`${alertMessage}. The ID was copied to your clipboard.`);
+                            this.props.globalState.hostWindow.alert(`${alertMessage}. The ID was copied to your clipboard.`);
                         })
                         .catch((err: any) => {
-                            alert(alertMessage);
+                            this.props.globalState.hostWindow.alert(alertMessage);
                         });
                 } else {
-                    alert(alertMessage);
+                    this.props.globalState.hostWindow.alert(alertMessage);
                 }
                 this.props.globalState.onBuiltObservable.notifyObservers();
             })
             .catch((err: any) => {
-                alert(err);
+                this.props.globalState.hostWindow.alert(err);
             });
         this.forceUpdate();
     };
 
     loadFromSnippet() {
-        const snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = this.props.globalState.hostWindow.prompt("Please enter the snippet ID to use");
         if (!snippedId) {
             return;
         }
@@ -528,26 +529,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                             lockObject={this._lockObject}
                         ></ParentingPropertyGridComponent>
-                    )}
-                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && (
-                        <>
-                            <hr className="ge" />
-                            <ButtonLineComponent
-                                label="DELETE ELEMENT"
-                                onClick={() => {
-                                    this.state.currentNode?.dispose();
-                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                                }}
-                            />
-                            <ButtonLineComponent
-                                label="COPY ELEMENT"
-                                onClick={() => {
-                                    if (this.state.currentNode) {
-                                        this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                                    }
-                                }}
-                            />
-                        </>
                     )}
                 </div>
             );
