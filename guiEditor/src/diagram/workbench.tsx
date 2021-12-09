@@ -335,7 +335,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public pasteFromClipboard() {
-        console.log("paste");
         this._clipboard.forEach((control) => {
             this.CopyGUIControl(control);
         });
