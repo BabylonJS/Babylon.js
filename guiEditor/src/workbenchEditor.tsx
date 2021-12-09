@@ -255,11 +255,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <div className="diagram-container"
                         onDrop={(event) => {
                             if(this._draggedItem != null) {
-+
-                                //this.props.globalState.workbench.getPosition();
-                                console.log(event.screenX,event.screenY);
                                 this.onCreate(this._draggedItem);
-                                
                             }
                             this._draggedItem = null;
 
@@ -453,9 +449,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     <div
                                         className={"toolbar-label" + (m.isActive ? " active" : "")}
                                         key={m.label}
-                                        draggable={true}
                                         onDragStart={(evt) => { this._draggedItem = m.label}}
-                                        
                                         onClick={() => {
                                             if (!m.onClick) {
                                                 this.forceUpdate();

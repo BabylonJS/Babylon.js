@@ -24,6 +24,7 @@ interface IFloatLineComponentProps {
     onEnter?: (newValue: number) => void;
     icon?: string;
     iconLabel?: string;
+    defaultValue?: number
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -100,6 +101,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     valueString = valueAsNumber.toString();
                 }
             }
+        } else if (this.props.defaultValue != null) {
+            valueAsNumber = this.props.defaultValue;
         }
 
         this._localChange = true;
