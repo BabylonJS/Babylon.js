@@ -38,6 +38,9 @@ vec4 bx2(vec4 x)
 }
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
 #include<clipPlaneFragment>
 
@@ -99,4 +102,6 @@ void main(void) {
 	gl_FragColor = color;
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

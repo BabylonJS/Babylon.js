@@ -52,6 +52,8 @@ varying vec2 vDistortionCoords3;
 
 void main(void) {
 
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
@@ -97,4 +99,6 @@ void main(void) {
 	vDistortionCoords3.x = uv.x;
 	vDistortionCoords3.y = uv.y + layerSpeed.z * time / 1000.0;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

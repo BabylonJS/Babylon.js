@@ -37,6 +37,9 @@ uniform vec2 vDiffuseInfos;
 #include<fogFragmentDeclaration>
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
@@ -98,4 +101,6 @@ void main(void) {
 	gl_FragColor = color;
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

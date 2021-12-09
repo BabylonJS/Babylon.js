@@ -75,6 +75,9 @@ varying vec3 vPosition;
 #include<fogFragmentDeclaration>
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
     #include<clipPlaneFragment>
 
@@ -244,7 +247,7 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 #include<logDepthFragment>
 #include<fogFragment>
 
-// Apply image processing if relevant. As this applies in linear space, 
+// Apply image processing if relevant. As this applies in linear space,
 // We first move from gamma to linear.
 #ifdef IMAGEPROCESSINGPOSTPROCESS
 	color.rgb = toLinearSpace(color.rgb);
@@ -252,6 +255,8 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
     color.rgb = toLinearSpace(color.rgb);
     color = applyImageProcessing(color);
 #endif
-	
+
 	gl_FragColor = color;
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

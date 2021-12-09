@@ -24,7 +24,12 @@ float fbm(vec2 n) {
 }
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	float ratioy = mod(gl_FragCoord.y * 100.0 , fbm(vUV * 2.0));
 	vec3 color = roadColor * ratioy;
 	gl_FragColor = vec4(color, 1.0);
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

@@ -9,6 +9,9 @@ uniform vec4 color;
 #include<helperFunctions>
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	vec4 baseColor = texture2D(textureSampler, vUV);
 	
 #ifdef LINEAR
@@ -23,4 +26,7 @@ void main(void) {
 
 
 	gl_FragColor = baseColor * color;
+
+#define CUSTOM_FRAGMENT_MAIN_END
+	
 }

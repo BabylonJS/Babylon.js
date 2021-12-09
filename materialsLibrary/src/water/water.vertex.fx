@@ -73,6 +73,8 @@ varying vec3 vReflectionMapTexCoord;
 
 void main(void) {
 
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
     #include<instancesVertex>
     #include<bonesVertex>
     #include<bakedVertexAnimation>
@@ -155,4 +157,5 @@ void main(void) {
 
 #include<logDepthVertex>
 
+#define CUSTOM_VERTEX_MAIN_END
 }
