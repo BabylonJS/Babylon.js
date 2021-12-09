@@ -121,6 +121,9 @@ export class MaterialPluginBase {
      * Returns a list of custom shader code fragments to customize the shader.
      * @param shaderType "vertex" or "fragment"
      * @returns null if no code to be added, or a list of pointName => code.
+     * Note that `pointName` can also be a regular expression if it starts with a `!`. 
+     * In that case, the string found by the regular expression (if any) will be 
+     * replaced by the code provided.
      */
     public getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         return null;

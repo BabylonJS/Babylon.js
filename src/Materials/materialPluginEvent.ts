@@ -72,9 +72,7 @@ export type MaterialPluginGetActiveTextures = {
     activeTextures: BaseTexture[];
 };
 
-/**
- * Properties used by the FillRenderTargetTextures event
- */
+/** @hidden */
 export type MaterialPluginFillRenderTargetTextures = {
     renderTargets: SmartArray<RenderTargetTexture>;
 };
@@ -84,9 +82,7 @@ export type MaterialPluginHasRenderTargetTextures = {
     hasRenderTargetTextures: boolean;
 };
 
-/**
- * Properties used by the HardBindForSubMesh event
- */
+/** @hidden */
 export type MaterialPluginHardBindForSubMesh = {
     subMesh: SubMesh;
 };

@@ -35,7 +35,7 @@ declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 }
 
 /**
- * Define the code related to the Sheen parameters of the pbr material.
+ * Plugin that implements the sheen component of the PBR material.
  */
 export class PBRSheenConfiguration extends MaterialPluginBase {
     private _isEnabled = false;
