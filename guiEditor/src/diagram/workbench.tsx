@@ -99,7 +99,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let parent = control;
         for (let i = 0; i < this._selectionDepth; ++i) {
             if (!parent.parent) {
-              break;
+                break;
             }
             parent = parent.parent;
         }
@@ -107,10 +107,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //gets the higher parent of a given control.
-    private _getMaxParent(control: Control) {
+    private _getMaxParent(control: Control, maxParent: Control) {
         let parent = control;
         this._selectionDepth = 0;
-        while (parent.parent && parent.parent !== this.globalState.guiTexture._rootContainer) {
+        while (parent.parent && parent.parent !== maxParent) {
             parent = parent.parent;
             ++this._selectionDepth;
         }
@@ -235,9 +235,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 selection = this._getParentWithDepth(selection);
 
             } else { // get the start of our tree by getting our max parent and storing our main selected control
+                if (this._isMainSelectionParent(selection) && this._mainSelection) {
+                    selection = this._getMaxParent(selection, this._mainSelection);
+                    selection = this._getParentWithDepth(selection);
+                }
+                else {
+                    selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
+                }
                 this._mainSelection = selection;
-                selection = this._getMaxParent(selection);
-
             }
         }
         this._lockMainSelection = true;
@@ -330,6 +335,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public pasteFromClipboard() {
+        console.log("paste");
         this._clipboard.forEach((control) => {
             this.CopyGUIControl(control);
         });
@@ -513,7 +519,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     }, Scene.DoubleClickDelay);
                 }
                 else { //function will either select our new main control or contrue down the tree.
-                    
+
                     this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }
