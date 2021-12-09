@@ -30,7 +30,7 @@ export class ShaderProcessor {
 
     public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
         if (options.processor?.preProcessShaderCode) {
-            sourceCode = options.processor.preProcessShaderCode(sourceCode);
+            sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
         }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
@@ -40,7 +40,7 @@ export class ShaderProcessor {
 
     public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
         if (options.processor?.preProcessShaderCode) {
-            sourceCode = options.processor.preProcessShaderCode(sourceCode);
+            sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
         }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);

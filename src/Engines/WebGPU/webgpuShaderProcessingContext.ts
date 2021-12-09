@@ -93,8 +93,9 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         "Light29": { binding: { groupIndex: -1, bindingIndex: -1 } },
         "Light30": { binding: { groupIndex: -1, bindingIndex: -1 } },
         "Light31": { binding: { groupIndex: -1, bindingIndex: -1 } },
-        "Material": { binding: { groupIndex: -1, bindingIndex: -1 } },
-        "Mesh":     { binding: { groupIndex: -1, bindingIndex: -1 } },
+        "Material":     { binding: { groupIndex: -1, bindingIndex: -1 } },
+        "Mesh":         { binding: { groupIndex: -1, bindingIndex: -1 } },
+        "InternalUB":   { binding: { groupIndex: -1, bindingIndex: -1 } },
     };
 
     protected static _KnownUBOs: { [key: string]: WebGPUBufferDescription } = {
@@ -133,8 +134,9 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         "Light30": { binding: { groupIndex: 1, bindingIndex: 30 } },
         "Light31": { binding: { groupIndex: 1, bindingIndex: 31 } },
 
-        "Material": { binding: { groupIndex: 2, bindingIndex: 0 } },
-        "Mesh":     { binding: { groupIndex: 2, bindingIndex: 1 } },
+        "Material":     { binding: { groupIndex: 2, bindingIndex: 0 } },
+        "Mesh":         { binding: { groupIndex: 2, bindingIndex: 1 } },
+        "InternalUB":   { binding: { groupIndex: 2, bindingIndex: 2 } },
     };
 
     public static get KnownUBOs() {

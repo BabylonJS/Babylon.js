@@ -38,6 +38,15 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         this._textureArrayProcessing.length = 0;
     }
 
+    public preProcessShaderCode(code: string, isFragment: boolean): string {
+        const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalUniformBuffer} {\nfloat yFactor__;\nfloat textureOutputHeight__;\n};\n`;
+
+        if (isFragment) {
+            return ubDeclaration + "##INJECTCODE##\n" + code;
+        }
+        return ubDeclaration + code;
+    }
+
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
         this._preProcessors = preProcessors;
 
@@ -213,6 +222,21 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return uniformBuffer;
     }
 
+    private _generateDerivativeFunctionsInjection(): string {
+        const s = [];
+        const funcs = ["dFdy", "dFdyFine", "dFdyCoarse"];
+        const typesIn = ["float", "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4"];
+        const typesOut = ["float", "vec2", "vec3", "vec4", "vec2", "vec3", "vec4"];
+        for (const func of funcs) {
+            for (let i = 0; i < typesIn.length; ++i) {
+                const typeIn = typesIn[i];
+                const typeOut = typesOut[i];
+                s.push(`${typeOut} __${func}(${typeIn} p) { return ${func}(p) * (-yFactor__); }\n`);
+            }
+        }
+        return s.join("\n");
+    }
+
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
@@ -223,13 +247,45 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         // Replace instructions
         code = code.replace(/texture2D\s*\(/g, "texture(");
         if (isFragment) {
+            const hasFragCoord = code.indexOf("gl_FragCoord") >= 0;
+            const fragCoordCode = `
+                glFragCoord__ = gl_FragCoord;
+                if (yFactor__ == 1.) {
+                    glFragCoord__.y = textureOutputHeight__ - glFragCoord__.y;
+                }
+            `;
+
+            let injectCode = "";
+            if (hasFragCoord) {
+                injectCode += "vec4 glFragCoord__;\n";
+            }
+            injectCode += this._generateDerivativeFunctionsInjection();
+
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCube\s*\(/g, "texture(");
             code = code.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
             code = code.replace(/gl_FragColor/g, "glFragColor");
             code = code.replace(/gl_FragData/g, "glFragData");
+            code = code.replace(/gl_FragCoord/g, "glFragCoord__");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
+            code = code.replace(/dFdy/g, "__dFdy"); // will also handle dFdyCoarse and dFdyFine
+            code = code.replace("##INJECTCODE##", injectCode);
+
+            if (hasFragCoord) {
+                let idx = code.indexOf("void main(");
+                if (idx >= 0) {
+                    while (idx++ < code.length && code.charAt(idx) != '{') { }
+                    if (idx < code.length) {
+                        while (idx++ < code.length && code.charAt(idx) != '\n') { }
+                        if (idx < code.length) {
+                            const part1 = code.substring(0, idx + 1);
+                            const part2 = code.substring(idx + 1);
+                            code = part1 + fragCoordCode + part2;
+                        }
+                    }
+                }
+            }
         } else {
             code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");
             code = code.replace(/gl_VertexID/g, "gl_VertexIndex");
@@ -243,7 +299,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         if (!isFragment) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
-            code += "gl_Position.y *= -1.;\n";
+            code += "gl_Position.y *= yFactor__;\n";
             if (!engine.isNDCHalfZRange) {
                 code += "gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;\n";
             }

@@ -9,6 +9,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
 
     public static readonly AutoSamplerSuffix = "Sampler";
     public static readonly LeftOvertUBOName = "LeftOver";
+    public static readonly InternalUniformBuffer = "InternalUB";
 
     public static UniformSizes: { [type: string]: number } = {
         // GLSL types
