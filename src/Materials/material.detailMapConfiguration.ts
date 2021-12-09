@@ -27,7 +27,7 @@ export class MaterialDetailMapDefines extends MaterialDefines {
 }
 
 /**
- * Define the code related to the detail map parameters of a material
+ * Plugin that implements the detail map component of a material
  *
  * Inspired from:
  *   Unity: https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@9.0/manual/Mask-Map-and-Detail-Map.html and https://docs.unity3d.com/Manual/StandardShaderMaterialParameterDetail.html
@@ -89,10 +89,6 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    /**
-     * Instantiate a new detail map
-     * @param material The material implementing this plugin.
-     */
     constructor(material: PBRBaseMaterial | StandardMaterial, addToPluginList = true) {
         super(material, "DetailMap", 140, new MaterialDetailMapDefines(), addToPluginList);
 

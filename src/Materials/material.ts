@@ -181,7 +181,7 @@ export class Material implements IAnimatable {
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
 
     /**
-     * Event observable which raises global events common to all materials (like MaterialEvent.Created)
+     * Event observable which raises global events common to all materials (like MaterialPluginEvent.Created)
      */
     public static OnEventObservable = new Observable<Material>();
 
@@ -1408,7 +1408,6 @@ export class Material implements IAnimatable {
 
     /**
      * Resets the draw wrappers cache for all submeshes that are using this material
-     * @param func defines a function which checks material defines against the submeshes
      */
     public resetDrawCache(): void {
         const meshes = this.getScene().meshes;
