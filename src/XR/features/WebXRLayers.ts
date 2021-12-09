@@ -246,11 +246,11 @@ export class WebXRLayers extends WebXRAbstractFeature {
     }
 
     /**
-     * Sets the layers to be used by the XR session. 
-     * Note that you must call this function with any layers you wish to render to 
-     * since it adds them to the XR session's render state 
-     * (replacing any layers that were added in a previous call to setXRSessionLayers or updateRenderState). 
-     * This method also sets up the session manager's render target texture provider 
+     * Sets the layers to be used by the XR session.
+     * Note that you must call this function with any layers you wish to render to
+     * since it adds them to the XR session's render state
+     * (replacing any layers that were added in a previous call to setXRSessionLayers or updateRenderState).
+     * This method also sets up the session manager's render target texture provider
      * as the first layer in the array, which feeds the WebXR camera(s) attached to the session.
      * @param wrappedLayers An array of WebXRLayerWrapper, usually returned from the WebXRLayers createLayer functions.
      */
