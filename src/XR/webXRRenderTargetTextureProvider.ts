@@ -45,8 +45,9 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
     protected _renderTargetTextures = new Array<RenderTargetTexture>();
     protected _framebufferDimensions: Nullable<{ framebufferWidth: number, framebufferHeight: number }>;
 
-    constructor(private readonly _scene: Scene, public readonly layerWrapper: WebXRLayerWrapper) {
-    }
+    constructor(
+        private readonly _scene: Scene,
+        public readonly layerWrapper: WebXRLayerWrapper) {}
 
     protected _createRenderTargetTexture(
         width: number,

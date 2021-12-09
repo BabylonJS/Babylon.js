@@ -65,9 +65,9 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     /**
      * xr layer for the canvas
      */
-    public xrLayer: Nullable<XRWebGLLayer>;
+    public xrLayer: Nullable<XRWebGLLayer> = null;
 
-    private _xrLayerWrapper: Nullable<WebXRLayerWrapper>;
+    private _xrLayerWrapper: Nullable<WebXRLayerWrapper> = null;
 
     /**
      * Observers registered here will be triggered when the xr layer was initialized
@@ -112,21 +112,20 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
 
     /**
      * Initializes a XRWebGLLayer to be used as the session's baseLayer.
-     * Note that this method is deprecated in favor of initializeXRLayerRenderStateAsync.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
     public async initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
-        const createRenderState = () => {
-            const xrWebGLLayer = this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
-            this._xrLayerWrapper = new WebXRWebGLLayerWrapper(xrWebGLLayer);
+        const createLayer = () => {
+            this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+            this._xrLayerWrapper = new WebXRWebGLLayerWrapper(this.xrLayer);
             this.onXRLayerInitObservable.notifyObservers(this.xrLayer);
             return this.xrLayer;
         };
 
         // support canvases without makeXRCompatible
         if (!(this.canvasContext as any).makeXRCompatible) {
-            return Promise.resolve(createRenderState());
+            return Promise.resolve(createLayer());
         }
 
         return (this.canvasContext as any)
@@ -140,7 +139,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 }
             )
             .then(() => {
-                return createRenderState();
+                return createLayer();
             });
     }
 

@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetProvider";
+import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 import { WebXRSessionManager } from "./webXRSessionManager";
 
 /** Covers all supported subclasses of WebXR's XRCompositionLayer */

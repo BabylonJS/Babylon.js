@@ -2,7 +2,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager"
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Nullable } from "../../types";
-import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetProvider";
+import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { WebXRLayerType, WebXRLayerWrapper } from "../webXRLayerWrapper";
