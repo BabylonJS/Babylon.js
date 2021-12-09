@@ -2,7 +2,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { Viewport } from "../../Maths/math.viewport";
 import { Nullable } from "../../types";
 import { WebXRLayerWrapper } from "../webXRLayerWrapper";
-import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetProvider";
+import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRRenderTarget } from "../webXRTypes";
 

@@ -7,7 +7,7 @@ import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";
 import { WebXRTrackingState } from "./webXRTypes";
-import { IWebXRRenderTargetTextureProvider } from "./webXRRenderTargetProvider";
+import { IWebXRRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 
 /**
  * WebXR Camera which holds the views for the xrSession

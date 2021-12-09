@@ -3,7 +3,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
-import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetProvider";
+import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 
 /**
  * Wraps xr webgl layers.

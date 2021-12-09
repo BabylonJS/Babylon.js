@@ -57,7 +57,6 @@ export interface WebXRRenderTarget extends IDisposable {
 
     /**
      * Initializes a XRWebGLLayer to be used as the session's baseLayer.
-     * Note that this method is deprecated in favor of initializeXRLayerRenderStateAsync.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */

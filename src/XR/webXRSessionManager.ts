@@ -6,7 +6,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import { Engine } from "../Engines/engine";
-import { IWebXRRenderTargetTextureProvider, WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetProvider";
+import { IWebXRRenderTargetTextureProvider, WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 import { Viewport } from "../Maths/math.viewport";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
@@ -227,11 +227,13 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                         this._engine._renderLoop();
                     }
 
-                    // Dispose render target textures
-                    if (this._baseLayerRTTProvider) {
-                        this._baseLayerRTTProvider.dispose();
-                        this._baseLayerRTTProvider = null;
+                    // Dispose render target textures.
+                    // Only dispose on native because we can't destroy opaque textures on browser.
+                    if (this.isNative) {
+                        this._baseLayerRTTProvider?.dispose();
                     }
+                    this._baseLayerRTTProvider = null;
+                    this._baseLayerWrapper = null;
                 },
                 { once: true }
             );
@@ -337,7 +339,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
 
     /**
      * Updates the render state of the session.
-     * Note that this is deprecated in favor of webXRSessionManager.updateRenderState().
+     * Note that this is deprecated in favor of WebXRSessionManager.updateRenderState().
      * @param state state to set
      * @returns a promise that resolves once the render state has been updated
      * @deprecated
