@@ -1385,6 +1385,13 @@
             "title": "Baked Vertex Animation",
             "playgroundId": "#14WJWW#11",
             "referenceImage": "bakedVertexAnimation.png"
+        },
+        {
+            "title": "Bones and morphs computation order",
+            "renderCount": 40,
+            "playgroundId": "#WGZLGJ#4040",
+            "referenceImage": "bonesMorphsCompute.png",
+            "errorRatio": 1
         }
     ]
 }

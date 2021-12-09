@@ -57,7 +57,7 @@ require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
 const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
 const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
-const artboardColorIcon: string = require("../../../public/imgs/artboardColorIcon.svg");
+const artboardColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const rectangleIcon: string = require("../../../public/imgs/rectangleIconDark.svg");
 const ellipseIcon: string = require("../../../public/imgs/ellipseIconDark.svg");
 const gridIcon: string = require("../../../public/imgs/gridIconDark.svg");
@@ -529,30 +529,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                             lockObject={this._lockObject}
                         ></ParentingPropertyGridComponent>
-                    )}
-                    {this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && (
-                        <>
-                            <hr className="ge" />
-                            <ButtonLineComponent
-                                label="DELETE ELEMENT"
-                                onClick={() => {
-                                    if (this.state.currentNode) {
-                                        this.props.globalState.guiTexture.removeControl(this.state.currentNode);
-                                        this.props.globalState.liveGuiTexture?.removeControl(this.state.currentNode);
-                                        this.state.currentNode.dispose();
-                                    }
-                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                                }}
-                            />
-                            <ButtonLineComponent
-                                label="COPY ELEMENT"
-                                onClick={() => {
-                                    if (this.state.currentNode) {
-                                        this.props.globalState.workbench.CopyGUIControl(this.state.currentNode);
-                                    }
-                                }}
-                            />
-                        </>
                     )}
                 </div>
             );
