@@ -275,8 +275,10 @@ export class WebGPUEngine extends Engine {
     private _mainTextureExtends: GPUExtent3D;
     private _depthTextureFormat: GPUTextureFormat | undefined;
     private _colorFormat: GPUTextureFormat;
-    private _ubInvertY: WebGPUDataBuffer;
-    private _ubDontInvertY: WebGPUDataBuffer;
+    /** @hidden */
+    public _ubInvertY: WebGPUDataBuffer;
+    /** @hidden */
+    public _ubDontInvertY: WebGPUDataBuffer;
 
     // Frame Life Cycle (recreated each frame)
     /** @hidden */
@@ -1068,7 +1070,9 @@ export class WebGPUEngine extends Engine {
         let y = Math.floor(this._viewportCached.y);
         const h = Math.floor(this._viewportCached.w);
 
-        y = this.getRenderHeight() - y - h;
+        if (!this._currentRenderTarget) {
+            y = this.getRenderHeight() - y - h;
+        }
 
         renderPass.setViewport(Math.floor(this._viewportCached.x), y, Math.floor(this._viewportCached.z), h, 0, 1);
 
@@ -1121,7 +1125,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _applyScissor(renderPass: GPURenderPassEncoder): void {
-        renderPass.setScissorRect(this._scissorCached.x, this.getRenderHeight() - this._scissorCached.w - this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
+        renderPass.setScissorRect(this._scissorCached.x, this._currentRenderTarget ? this._scissorCached.y : this.getRenderHeight() - this._scissorCached.w - this._scissorCached.y, this._scissorCached.z, this._scissorCached.w);
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) { (this as any)._count = 0; }
