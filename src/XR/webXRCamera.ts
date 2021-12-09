@@ -7,7 +7,6 @@ import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";
 import { WebXRTrackingState } from "./webXRTypes";
-import { IWebXRRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -20,18 +19,6 @@ export class WebXRCamera extends FreeCamera {
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
     private _referencedPosition: Vector3 = new Vector3();
     private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
-    private _rttProvider: IWebXRRenderTargetTextureProvider;
-
-    /** Get the RTT provider the camera is currently rendering to. */
-    private get _renderTargetTextureProvider(): IWebXRRenderTargetTextureProvider {
-        return this._rttProvider;
-    }
-
-    /** Set the RTT provider the camera is currently rendering to. */
-    private set _renderTargetTextureProvider(provider: IWebXRRenderTargetTextureProvider) {
-        this._rttProvider?.dispose();
-        this._rttProvider = provider;
-    }
 
     /**
      * Observable raised before camera teleportation
@@ -98,8 +85,6 @@ export class WebXRCamera extends FreeCamera {
             undefined,
             true
         );
-
-        this._renderTargetTextureProvider = this._xrSessionManager;
     }
 
     /**
@@ -263,10 +248,10 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Update viewport
-            this._renderTargetTextureProvider.trySetViewportForView(currentRig.viewport, view);
+            this._xrSessionManager.trySetViewportForView(currentRig.viewport, view);
 
             // Set cameras to render to the session's render target
-            currentRig.outputRenderTarget = this._renderTargetTextureProvider.getRenderTargetTextureForView(view);
+            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForView(view);
         });
     }
 
