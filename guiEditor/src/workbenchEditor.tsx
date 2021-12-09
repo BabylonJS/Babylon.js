@@ -10,7 +10,7 @@ import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 
 import { CommandBarComponent } from "./components/commandBarComponent";
-import { Nullable } from "babylonjs";
+import { Nullable } from "babylonjs/types";
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -254,7 +254,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     {/* The gui workbench diagram */}
                     <div className="diagram-container"
                         onDrop={(event) => {
-                            if(this._draggedItem != null) {
+                            if (this._draggedItem != null) {
                                 this.onCreate(this._draggedItem);
                             }
                             this._draggedItem = null;
@@ -449,7 +449,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     <div
                                         className={"toolbar-label" + (m.isActive ? " active" : "")}
                                         key={m.label}
-                                        onDragStart={(evt) => { this._draggedItem = m.label}}
+                                        onDragStart={(evt) => { this._draggedItem = m.label }}
                                         onClick={() => {
                                             if (!m.onClick) {
                                                 this.forceUpdate();
