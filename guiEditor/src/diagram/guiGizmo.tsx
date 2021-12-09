@@ -3,12 +3,10 @@ import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Measure } from "babylonjs-gui/2D/measure";
 import { Axis } from "babylonjs/Maths/math.axis";
 import { Plane } from "babylonjs/Maths/math.plane";
-import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { Image } from "babylonjs-gui/2D/controls/image";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
-import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
 require("./workbenchCanvas.scss");
 const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
@@ -63,8 +61,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             let tempMeasure = new Measure(0, 0, 0, 0);
             node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
 
-            var ox = tempMeasure.left;
-            var oy = tempMeasure.top;
+            var ox = 0;
+            node.leftInPixels;
+            tempMeasure.left;
+            var oy = 0;
+            node.topInPixels;
+            tempMeasure.top;
 
             let startingPositions = [
                 new Vector3(ox, 0, oy),
@@ -79,25 +81,25 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             ];
 
             // Calculating the offsets for each scale point.
-            const scale = this.getScale(node, true);
-            const halfScaleX = scale.x / 2;
-            const halfScaleY = scale.y / 2;
-            startingPositions[0].x -= node._currentMeasure.width * halfScaleX;
-            startingPositions[0].z += node._currentMeasure.height * halfScaleY;
+            // const scale = this.getScale(node, true);
+            const halfScaleX = 1 / 2;
+            const halfScaleY = 1 / 2;
+            startingPositions[0].x -= node.widthInPixels * halfScaleX;
+            startingPositions[0].z += node.heightInPixels * halfScaleY;
 
-            startingPositions[1].x -= node._currentMeasure.width * halfScaleX;
-            startingPositions[1].z -= node._currentMeasure.height * halfScaleY;
+            startingPositions[1].x -= node.widthInPixels * halfScaleX;
+            startingPositions[1].z -= node.heightInPixels * halfScaleY;
 
-            startingPositions[2].x += node._currentMeasure.width * halfScaleX;
-            startingPositions[2].z -= node._currentMeasure.height * halfScaleY;
+            startingPositions[2].x += node.widthInPixels * halfScaleX;
+            startingPositions[2].z -= node.heightInPixels * halfScaleY;
 
-            startingPositions[3].x += node._currentMeasure.width * halfScaleX;
-            startingPositions[3].z += node._currentMeasure.height * halfScaleY;
+            startingPositions[3].x += node.widthInPixels * halfScaleX;
+            startingPositions[3].z += node.heightInPixels * halfScaleY;
 
-            startingPositions[4].x -= node._currentMeasure.width * halfScaleX;
-            startingPositions[5].z -= node._currentMeasure.height * halfScaleY;
-            startingPositions[6].x += node._currentMeasure.width * halfScaleX;
-            startingPositions[7].z += node._currentMeasure.height * halfScaleY;
+            startingPositions[4].x -= node.widthInPixels * halfScaleX;
+            startingPositions[5].z -= node.heightInPixels * halfScaleY;
+            startingPositions[6].x += node.widthInPixels * halfScaleX;
+            startingPositions[7].z += node.heightInPixels * halfScaleY;
 
             // Calculate the pivot point
             const pivotX = (node.transformCenterX - 0.5) * 2;
@@ -112,7 +114,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 const result = new Vector2(res.x, res.z);
                 // TODO optimize this - unify?
                 this._nodeToRTTSpace(node, result.x, result.y, result);
-                const finalResult = this._rttSpaceToCanvasSpace(node, result.x, result.y);
+                const finalResult = this._rttToCanvasSpace(node, result.x, result.y);
 
                 // check if back-conversion works
                 // const backToRTT = this._canvasSpaceToRTTSpace(node, finalResult);
@@ -135,7 +137,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scalePoint.style.top = finalResult.y + "px";
 
                     const rotate = this.getRotation(node) * (180 / Math.PI);
-                    scalePoint.style.transform = "rotate(" + rotate + "deg) translate(-50%, -50%)";
+                    scalePoint.style.transform = "translate(-50%, -50%) rotate(" + rotate + "deg)";
                 }
             });
         }
@@ -143,37 +145,85 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
-    private _nodeToRTTWorldMatrix(node: Control) {
-        node._currentMeasure.transformToRef(node._transformMatrix, this._tempMeasure);
+    private _getNodeMatrix(node: Control): Matrix2D {
+        const size = this.props.globalState.guiTexture.getSize();
+        const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
+        const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        let x = 0;
+        let y = 0;
+
+        switch (node.horizontalAlignment) {
+            case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                x = -(parentWidth - node._currentMeasure.width) / 2;
+                break;
+            case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                x = (parentWidth - node._currentMeasure.width) / 2;
+                break;
+            case Control.HORIZONTAL_ALIGNMENT_CENTER:
+                x = 0;
+                break;
+        }
+
+        switch (node.verticalAlignment) {
+            case Control.VERTICAL_ALIGNMENT_TOP:
+                y = -(parentHeight - node._currentMeasure.height) / 2;
+                break;
+            case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                y = (parentHeight - node._currentMeasure.height) / 2;
+                break;
+            case Control.VERTICAL_ALIGNMENT_CENTER:
+                y = 0;
+                break;
+        }
+
         const m2d = Matrix2D.Identity();
-        const m2dP = Matrix2D.Identity();
-        const s2dP = Matrix2D.Identity();
-        const translateBack = Matrix2D.Identity();
         const translateTo = Matrix2D.Identity();
         const resultMatrix = Matrix2D.Identity();
 
         // Transform the coordinates into world space
-        Matrix2D.TranslationToRef(this._tempMeasure.left, this._tempMeasure.top, translateBack);
-        Matrix2D.TranslationToRef(-this._tempMeasure.left, -this._tempMeasure.top, translateTo);
-        Matrix2D.RotationToRef(node.rotation, m2d);
-        let parentNode = node.parent;
-        while (parentNode) {
-            const parentRot = parentNode.rotation;
-            Matrix2D.ScalingToRef(parentNode.scaleX, parentNode.scaleY, s2dP);
-            Matrix2D.RotationToRef(parentRot, m2dP);
-            m2d.multiplyToRef(m2dP, m2d);
-            m2d.multiplyToRef(s2dP, m2d);
-            parentNode = parentNode.parent;
+
+        // the pivot point around which the object transforms
+        let offsetX = node.widthInPixels * node.transformCenterX - node.widthInPixels / 2;
+        let offsetY = node.heightInPixels * node.transformCenterY - node.heightInPixels / 2;
+        // pivot changes this point's position! but only in legacy pivot mode
+        if (!(node as any).descendentsOnlyPadding) {
+            // padding needs to also take scaling into account
+            offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * node.scaleX) / 2;
+            offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * node.scaleY) / 2;
         }
 
-        translateTo.multiplyToRef(m2d, resultMatrix);
-        resultMatrix.multiplyToRef(translateBack, resultMatrix);
+        Matrix2D.TranslationToRef(x + node.leftInPixels, y + node.topInPixels, translateTo);
+        // without parents, calculate world matrix for each
+        const rotation = this.getRotation(node, true);
+        const scaling = this.getScale(node, true);
+        Matrix2D.ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
+        resultMatrix.multiplyToRef(m2d, resultMatrix);
+        resultMatrix.multiplyToRef(translateTo, resultMatrix);
         return resultMatrix;
     }
+
+    private _nodeToRTTWorldMatrix(node: Control) {
+        const listOfNodes = [node];
+        let p = node.parent;
+        while (p) {
+            listOfNodes.push(p);
+            p = p.parent;
+        }
+        const matrices = listOfNodes.map((node) => this._getNodeMatrix(node));
+        return matrices.reduce((acc, cur) => {
+            acc.multiplyToRef(cur, acc);
+            return acc;
+        }, Matrix2D.Identity());
+    }
+
+    private _roundFactor = 1;
 
     private _nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2()) {
         const worldMatrix = this._nodeToRTTWorldMatrix(node);
         worldMatrix.transformCoordinates(x, y, reference);
+        // round to 1 decimal points
+        reference.x = Math.round(reference.x * this._roundFactor) / this._roundFactor;
+        reference.y = Math.round(reference.y * this._roundFactor) / this._roundFactor;
         return reference;
     }
 
@@ -183,57 +233,55 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         worldMatrix.invertToRef(inv);
         inv.transformCoordinates(x, y, reference);
         // round to 1 decimal points
-        reference.x = Math.round(reference.x * 10) / 10;
-        reference.y = Math.round(reference.y * 10) / 10;
+        reference.x = Math.round(reference.x * this._roundFactor) / this._roundFactor;
+        reference.y = Math.round(reference.y * this._roundFactor) / this._roundFactor;
         return reference;
     }
 
-    private _rttSpaceToCanvasSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2()) {
-        node._currentMeasure.transformToRef(node._transformMatrix, this._tempMeasure);
-        let size = this.props.globalState.guiTexture.getSize();
-        const tmpVec = new Vector3(x, 0, y);
-        // Project to screen space
-        tmpVec.x -= size.width / 2 - this._tempMeasure.width / 2;
-        tmpVec.z -= size.height / 2 - this._tempMeasure.height / 2;
-        tmpVec.z *= -1;
+    private _rttToCanvasSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2()) {
+        const tmpVec = new Vector3(x, 0, -y);
 
         // Get the final projection in view space
         const camera = this.props.globalState.workbench._camera;
         const scene = this.props.globalState.workbench._scene;
         const engine = scene.getEngine();
         // TODO - to ref
-        return Vector3.Project(tmpVec, Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+        const projected = Vector3.Project(tmpVec, Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+        // round to 1 decimal points
+        projected.x = Math.round(projected.x * this._roundFactor) / this._roundFactor;
+        projected.y = Math.round(projected.y * this._roundFactor) / this._roundFactor;
+        return projected;
     }
 
     private _canvasSpaceToRTTSpace(node: Control, projected: Vector3) {
-        node._currentMeasure.transformToRef(node._transformMatrix, this._tempMeasure);
+        // node._currentMeasure.transformToRef(node._transformMatrix, this._tempMeasure);
         const camera = this.props.globalState.workbench._camera;
         const scene = this.props.globalState.workbench._scene;
         const engine = scene.getEngine();
         const viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
         const unproject = Vector3.Unproject(projected, viewport.width, viewport.height, Matrix.Identity(), camera.getViewMatrix(), scene.getProjectionMatrix());
-        let size = this.props.globalState.guiTexture.getSize();
+        // let size = this.props.globalState.guiTexture.getSize();
         unproject.z *= -1;
-        unproject.x += size.width / 2 - this._tempMeasure.width / 2;
-        unproject.z += size.height / 2 - this._tempMeasure.height / 2;
+        // unproject.x += size.width / 2 - this._tempMeasure.width / 2;
+        // unproject.z += size.height / 2 - this._tempMeasure.height / 2;
         // round to 2 decimal points
-        return new Vector2(Math.round(unproject.x * 10) / 10, Math.round(unproject.z * 10) / 10);
+        return new Vector2(Math.round(unproject.x * this._roundFactor) / this._roundFactor, Math.round(unproject.z * this._roundFactor) / this._roundFactor);
     }
 
     private _plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
     private _mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
-        node._currentMeasure.transformToRef(node._transformMatrix, this._tempMeasure);
+        // node._currentMeasure.transformToRef(node._transformMatrix, this._tempMeasure);
         const camera = this.props.globalState.workbench._camera;
         const scene = this.props.globalState.workbench._scene;
         const newPosition = this.props.globalState.workbench.getPosition(scene, camera, this._plane, x ?? scene.pointerX, y || scene.pointerY);
-        let size = this.props.globalState.guiTexture.getSize();
+        // let size = this.props.globalState.guiTexture.getSize();
         newPosition.z *= -1;
-        newPosition.x += size.width / 2 - this._tempMeasure.width / 2;
-        newPosition.z += size.height / 2 - this._tempMeasure.height / 2;
+        // newPosition.x += size.width / 2 - this._tempMeasure.width / 2;
+        // newPosition.z += size.height / 2 - this._tempMeasure.height / 2;
         // round to 10
         return {
-            x: Math.round(newPosition.x * 10) / 10,
-            y: Math.round(newPosition.z * 10) / 10,
+            x: Math.round(newPosition.x * this._roundFactor) / this._roundFactor,
+            y: Math.round(newPosition.z * this._roundFactor) / this._roundFactor,
         };
     }
 
@@ -364,10 +412,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
             if (selectedGuiNodes.length > 0) {
                 const node = selectedGuiNodes[0];
-                this._nodeToCorners(node);
+                // this._nodeToCorners(node);
                 const inRTT = this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
                 const inNodeSpace = this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y);
-                // console.log(inNodeSpace);
                 this._setNodeCorner(node, inNodeSpace, this._scalePointIndex);
                 // const backToRTT = this._nodeToRTTSpace(node, inNodeSpace.x, inNodeSpace.y);
                 // const backToCanvas = this._rttSpaceToCanvasSpace(node, backToRTT.x, backToRTT.y);
@@ -454,42 +501,24 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         let tempMeasure = new Measure(0, 0, 0, 0);
         node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
 
-        console.log(node._currentMeasure, tempMeasure);
-
-        var ox = tempMeasure.left;
-        var oy = tempMeasure.top;
-
-        console.log(ox, oy, node._currentMeasure.left, node._currentMeasure.top, node.leftInPixels, node.topInPixels);
+        var ox = 0;
+        var oy = 0;
 
         // TODO optimize
-        this._corners = [
-            new Vector2(ox, oy),
-            new Vector2(ox, oy),
-            new Vector2(ox, oy),
-            new Vector2(ox, oy),
-        ];
+        this._corners = [new Vector2(ox, oy), new Vector2(ox, oy), new Vector2(ox, oy), new Vector2(ox, oy)];
 
-        // Calculating the offsets for each scale point.
-        const scale = this.getScale(node, true);
-        const halfScaleX = scale.x / 2;
-        const halfScaleY = scale.y / 2;
-        this._corners[0].x -= node._currentMeasure.width * halfScaleX;
-        this._corners[0].y += node._currentMeasure.height * halfScaleY;
+        const half = 1 / 2;
+        this._corners[0].x -= node.widthInPixels * half;
+        this._corners[0].y += node.heightInPixels * half;
 
-        this._corners[1].x -= node._currentMeasure.width * halfScaleX;
-        this._corners[1].y -= node._currentMeasure.height * halfScaleY;
+        this._corners[1].x -= node.widthInPixels * half;
+        this._corners[1].y -= node.heightInPixels * half;
 
-        this._corners[2].x += node._currentMeasure.width * halfScaleX;
-        this._corners[2].y -= node._currentMeasure.height * halfScaleY;
+        this._corners[2].x += node.widthInPixels * half;
+        this._corners[2].y -= node.heightInPixels * half;
 
-        this._corners[3].x += node._currentMeasure.width * halfScaleX;
-        this._corners[3].y += node._currentMeasure.height * halfScaleY;
-
-        // Calculate the pivot point
-        // const pivotX = (node.transformCenterX - 0.5) * 2;
-        // const pivotY = (node.transformCenterY - 0.5) * 2;
-        // this._corners[4].x += node._currentMeasure.width * halfScaleX * pivotX;
-        // this._corners[4].y += node._currentMeasure.height * halfScaleY * pivotY;
+        this._corners[3].x += node.widthInPixels * half;
+        this._corners[3].y += node.heightInPixels * half;
         console.log(this._corners);
     }
 
@@ -497,88 +526,22 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         // take point 0 and 2
         const upperLeft = this._corners[1];
         const lowerRight = this._corners[3];
-        const scale = this.getScale(node, true);
-        const width = (lowerRight.x - upperLeft.x) / scale.x;
-        const height = (lowerRight.y - upperLeft.y) / scale.y;
+        const width = (lowerRight.x - upperLeft.x);
+        const height = (lowerRight.y - upperLeft.y);
         console.log("new size", width, height);
-        // node.widthInPixels = width;
-        // node.heightInPixels = height;
-
-        // use upper left to calculate the top/left
-        const clone = upperLeft.clone();
-        const halfScaleX = scale.x / 2;
-        const halfScaleY = scale.y / 2;
-        clone.x += width * halfScaleX;
-        clone.y += height * halfScaleY;
-        const invMat = Matrix2D.Identity();
-        node._transformMatrix.invertToRef(invMat);
-
-        // TODO will probably need to inverse-matrix clone, as this is the transformed measure's left/top
-
-        const size = this.props.globalState.guiTexture.getSize();
-        const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
-        const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
-        let x = 0;
-        let y = 0;
-        switch (node.horizontalAlignment) {
-            case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                x = 0;
-                break;
-            case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                x = parentWidth - width;
-                break;
-            case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                x = (parentWidth - width) / 2;
-                break;
-        }
-
-        switch (node.verticalAlignment) {
-            case Control.VERTICAL_ALIGNMENT_TOP:
-                y = 0;
-                break;
-            case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                y = parentHeight - height;
-                break;
-            case Control.VERTICAL_ALIGNMENT_CENTER:
-                y = (parentHeight - height) / 2;
-                break;
-        }
-        console.log("top right", clone.x, clone.y);
-        console.log("alignment adjustment", x, y);
-        const left = clone.x - x;
-        const top = clone.y - y;
-        console.log("new left top", left, top);
+        // calculate the center point
+        // round
+        const center = new Vector2(Math.round(upperLeft.x + width / 2), Math.round(upperLeft.y + height / 2));
 
         // // set the node
-        // node.leftInPixels = left;
-        // node.topInPixels = top;
+        node.leftInPixels = this._initX + center.x;
+        node.topInPixels = this._initY + center.y;
         node.widthInPixels = Math.max(10, width);
         node.heightInPixels = Math.max(10, height);
-
-        // let tempMeasure = new Measure(0, 0, 0, 0);
-        // node._currentMeasure.transformToRef(node._transformMatrix, tempMeasure);
-        // node.leftInPixels = clone.x;
-        // node.topInPixels = clone.y;
-        // let left = width / 2 + upperLeft.x;
-        // let top = height / 2 + upperLeft.y;
-        // if(node.verticalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER) {
-        //     left -= width / 2;
-        // } else if(node.verticalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT) {
-        //     left -= width;
-        // }
-        // if(node.horizontalAlignment === Control.VERTICAL_ALIGNMENT_CENTER) {
-        //     top -= height / 2;
-        // } else if(node.horizontalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM) {
-        //     top -= height;
-        // }
-
-        // Setting it
-        // node.leftInPixels = left;
-        // node.topInPixels = top;
     }
 
     private _setNodeCorner(node: Control, corner: Vector2, cornerIndex: number) {
-        console.log(corner, this._corners[cornerIndex]);
+        console.log(corner);
         this._corners[cornerIndex].copyFrom(corner);
         // also update the other corners
         const next = (cornerIndex + 1) % 4;
@@ -606,11 +569,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
             this._nodeToCorners(node);
-            this._updateNodeFromCorners(node);
             this._initW = node.widthInPixels;
             this._initH = node.heightInPixels;
             this._initY = node.topInPixels;
             this._initX = node.leftInPixels;
+            this._updateNodeFromCorners(node);
         }
         this.forceUpdate();
     };
@@ -705,7 +668,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     //                 break;
     //         }
 
-    //         // Get the rotation quadrant which will determine the directions we are scaling 
+    //         // Get the rotation quadrant which will determine the directions we are scaling
     //         let rotation = this.getRotation(node);
     //         rotation = rotation % 6.28; // 360 degrees //TODO: use actual PI numbers
     //         rotation += 0.785398; // 45 degrees
@@ -718,7 +681,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     //             const deltaWidth = dx * lockX;
     //             const deltaHieght = dy * lockY;
-                
+
     //             //need to account for pivots
     //             const deltaPivotX = (deltaWidth * pivotX);
     //             const deltaPivotY = (deltaHieght * pivotY);
