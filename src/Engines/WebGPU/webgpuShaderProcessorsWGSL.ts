@@ -35,6 +35,7 @@ const builtInName_frag_depth = "gl_FragDepth";
 const builtInName_FragColor = "gl_FragColor";
 
 const leftOverVarName = "uniforms";
+const internalUBVarName = "internals";
 
 const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<GPUTextureViewDimension> } = {
     "texture_1d": WebGPUConstants.TextureViewDimension.E1d,
@@ -105,8 +106,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         this._varyingNamesWGSL = [];
     }
 
-    public preProcessShaderCode(code: string): string {
-        return RemoveComments(code);
+    public preProcessShaderCode(code: string, isFragment: boolean): string {
+        code = RemoveComments(code);
+
+        const ubDeclaration = `[[block]] struct ${WebGPUShaderProcessor.InternalUniformBuffer} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalUBVarName} : ${WebGPUShaderProcessor.InternalUniformBuffer};\n`;
+
+        if (isFragment) {
+            return ubDeclaration + "##INJECTCODE##\n" + code;
+        }
+        return ubDeclaration + code;
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
@@ -229,6 +237,17 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
+        //const hasFragCoord = fragmentCode.indexOf("gl_FragCoord") >= 0;
+        const fragCoordCode = `
+            if (internals.yFactor__ == 1.) {
+                gl_FragCoord.y = internals.textureOutputHeight__ - gl_FragCoord.y;
+            }
+        `;
+
+        let injectCode = "";
+
+        fragmentCode = fragmentCode.replace("##INJECTCODE##", injectCode);
+
         // Add the group/binding info to the sampler declaration (var xxx: sampler|sampler_comparison)
         vertexCode = this._processSamplers(vertexCode, true);
         fragmentCode = this._processSamplers(fragmentCode, false);
@@ -273,7 +292,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexStartingCode += `  ${name} = input.${name};\n`;
         }
 
-        let vertexEndingCode = `  output.position = ${builtInName_position};\n  output.position.y = -output.position.y;\n`;
+        let vertexEndingCode = `  output.position = ${builtInName_position};\n  output.position.y = output.position.y * internals.yFactor__;\n`;
 
         for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
             const name = this._varyingNamesWGSL[i];
@@ -313,7 +332,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
                 }
                 idx--;
             }
-            idx = saveIndex + 12;
+            idx = saveIndex + builtInName_frag_depth.length;
         }
 
         if (hasFragDepth) {
@@ -324,7 +343,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         fragmentCode = fragmentBuiltinDecl + fragmentFragmentInputs + varyingsDecl + fragmentOutputs + fragmentCode;
 
-        let fragmentStartingCode = `  var output : FragmentOutputs;\n  ${builtInName_position_frag} = input.position;\n  ${builtInName_front_facing} = input.frontFacing;\n`;
+        let fragmentStartingCode = `  var output : FragmentOutputs;\n  ${builtInName_position_frag} = input.position;\n  ${builtInName_front_facing} = input.frontFacing;\n` + fragCoordCode;
 
         for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
             const name = this._varyingNamesWGSL[i];
