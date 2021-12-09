@@ -24,6 +24,9 @@ varying vec4 vColor;
 #endif
 
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
@@ -45,4 +48,6 @@ void main(void) {
 	// Vertex color
 	vColor = color;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

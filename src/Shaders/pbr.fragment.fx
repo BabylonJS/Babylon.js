@@ -653,4 +653,7 @@ void main(void) {
 #endif
 
     #include<pbrDebug>
+
+    #define CUSTOM_FRAGMENT_MAIN_END
+
 }
