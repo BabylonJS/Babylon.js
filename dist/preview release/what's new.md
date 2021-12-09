@@ -352,6 +352,7 @@
 - Fix glTFLoader 2.0 when dealing with glTF files that contain no meshes ([simonihmig](https://github.com/simonihmig))
 - Fix issue with setParent and meshes with a pivot ([RaananW](https://github.com/RaananW))
 - Fix Button3D and HolographicButton text when scene is right-handed ([carolhmj](https://github.com/carolhmj))
+- Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 
 ## Breaking changes
 

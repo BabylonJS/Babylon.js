@@ -17,7 +17,7 @@ import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
-import { Color3 } from 'babylonjs/Maths/math.color';
+import { Color3 } from "babylonjs/Maths/math.color";
 import { DomManagement } from "babylonjs/Misc/domManagement";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 
@@ -106,7 +106,7 @@ export class HolographicButton extends Button3D {
             this._tooltipTextBlock.color = "white";
             this._tooltipTextBlock.fontSize = 130;
             this._tooltipTexture.addControl(this._tooltipTextBlock);
-            
+
             // Add hover action to tooltip
             this._tooltipFade = new FadeInOutBehavior();
             this._tooltipFade.delay = 500;
@@ -257,17 +257,25 @@ export class HolographicButton extends Button3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._backPlate = CreateBox(this.name + "BackMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: 0.08
-        }, scene);
+        this._backPlate = CreateBox(
+            this.name + "BackMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 0.08,
+            },
+            scene
+        );
 
-        this._frontPlate = CreateBox(this.name + "FrontMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: 0.08
-        }, scene);
+        this._frontPlate = CreateBox(
+            this.name + "FrontMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 0.08,
+            },
+            scene
+        );
 
         this._frontPlate.parent = this._backPlate;
         this._frontPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-0.08);

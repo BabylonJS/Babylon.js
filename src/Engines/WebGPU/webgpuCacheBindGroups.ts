@@ -162,12 +162,12 @@ export class WebGPUCacheBindGroups {
                         }
                         const hardwareTexture = (bindingInfo.texture as InternalTexture)._hardwareTexture as WebGPUHardwareTexture;
 
-                        if (this._engine.dbgSanityChecks && (!hardwareTexture || !hardwareTexture.view)) {
-                            Logger.Error(`Trying to bind a null gpu texture! entry=${JSON.stringify(entry)}, name=${name}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
+                        if (this._engine.dbgSanityChecks && (!hardwareTexture || entry.texture && !hardwareTexture.view || entry.storageTexture && !hardwareTexture.viewForWriting)) {
+                            Logger.Error(`Trying to bind a null gpu texture or view! entry=${JSON.stringify(entry)}, name=${name}, bindingInfo=${JSON.stringify(bindingInfo, (key: string, value: any) => key === 'texture' ? '<no dump>' : value)}, isReady=${bindingInfo.texture?.isReady}, materialContext.uniqueId=${materialContext.uniqueId}`, 50);
                             continue;
                         }
 
-                        entries[j].resource = hardwareTexture.view!;
+                        entries[j].resource = entry.storageTexture ? hardwareTexture.viewForWriting! : hardwareTexture.view!;
                     } else {
                         Logger.Error(`Texture "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) => key === 'texture' || key === 'sampler' ? '<no dump>' : value)}`, 50);
                     }

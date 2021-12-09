@@ -62,7 +62,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _constraintDirection = ConstraintDirection.NONE;
     private _forcePanning = false;
     private _forceZooming = false;
-    private _forceMoving = false;
     private _forceSelecting = true;
     private _outlines = false;
     private _panning: boolean;
@@ -78,6 +77,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
+    private _mainSelection: Nullable<Control> = null;
+    private _selectionDepth = 0;
+    private _doubleClick: Nullable<Control> = null;
+    private _lockMainSelection: boolean = false;
     public get globalState() {
         return this.props.globalState;
     }
@@ -90,6 +93,30 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._selectedGuiNodes;
     }
 
+    // given a control gets the parent up the tree selectionDepth times. Selection depth is altered as we go down the tree.
+    private _getParentWithDepth(control: Control) {
+        --this._selectionDepth;
+        let parent = control;
+        for (let i = 0; i < this._selectionDepth; ++i) {
+            if (!parent.parent) {
+              break;
+            }
+            parent = parent.parent;
+        }
+        return parent;
+    }
+
+    //gets the higher parent of a given control.
+    private _getMaxParent(control: Control) {
+        let parent = control;
+        this._selectionDepth = 0;
+        while (parent.parent && parent.parent !== this.globalState.guiTexture._rootContainer) {
+            parent = parent.parent;
+            ++this._selectionDepth;
+        }
+        return parent;
+    }
+
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         this._rootContainer = React.createRef();
@@ -100,6 +127,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.changeSelectionHighlight(false);
                 this._selectedGuiNodes = [];
                 this._selectAll = false;
+                this._mainSelection = null;
             } else {
                 if (selection instanceof Control) {
                     if (this._ctrlKeyIsPressed) {
@@ -111,19 +139,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             this._selectedGuiNodes.splice(index, 1);
                         }
                     } else if (this._selectedGuiNodes.length <= 1) {
+
                         this.changeSelectionHighlight(false);
+
                         this._selectedGuiNodes = [selection];
+                        if (!this._lockMainSelection) { //incase the selection did not come from the canvas and mouse
+                            this._mainSelection = selection;
+                        }
+                        this._lockMainSelection = false;
                         this._selectAll = false;
+
                     }
                     this.changeSelectionHighlight(true);
                 }
             }
+
         });
 
         props.globalState.onPanObservable.add(() => {
             this._forcePanning = !this._forcePanning;
             this._forceSelecting = false;
-            this._forceMoving = false;
             this._forceZooming = false;
             if (!this._forcePanning) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
@@ -134,34 +169,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.artBoardBackground.isHitTestVisible = true;
         });
 
-        props.globalState.onMoveObservable.add(() => {
-            this._forceMoving = !this._forceMoving;
-            this._forcePanning = false;
-            this._forceZooming = false;
-            this._forceSelecting = false;
-            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            if (!this._forceSelecting) {
-                this.updateHitTestForSelection(true);
-            }
-
-            if (!this._forceMoving) {
-                this.globalState.onSelectionButtonObservable.notifyObservers();
-            } else {
-                this._canvas.style.cursor = "move";
-            }
-            this.artBoardBackground.isHitTestVisible = true;
-        });
 
         props.globalState.onSelectionButtonObservable.add(() => {
             this._forceSelecting = !this._forceSelecting;
             this._forcePanning = false;
             this._forceZooming = false;
-            this._forceMoving = false;
             this._canvas.style.cursor = "default";
             this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            if (this._forceMoving) {
-                this.updateHitTestForSelection(true);
-            }
             this.artBoardBackground.isHitTestVisible = true;
         });
 
@@ -169,7 +183,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
-            this._forceMoving = false;
             if (!this._forceZooming) {
                 this.globalState.onSelectionButtonObservable.notifyObservers();
             } else {
@@ -212,6 +225,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         this.props.globalState.workbench = this;
+    }
+
+    determineMouseSelection(selection: Nullable<Control>) {
+        if (selection && this._selectedGuiNodes.length <= 1) {
+            // if we're still on the same main selection, got down the tree.
+            if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+                selection = this._getParentWithDepth(selection);
+
+            } else { // get the start of our tree by getting our max parent and storing our main selected control
+                this._mainSelection = selection;
+                selection = this._getMaxParent(selection);
+
+            }
+        }
+        this._lockMainSelection = true;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
     }
 
     keyEvent = (evt: KeyboardEvent) => {
@@ -285,7 +314,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._cameraRadias += this._cameraRadias - this._cameraRadias / 1.5;
     }
 
-    private copyToClipboard() {
+    public copyToClipboard() {
         if (this._selectAll) {
             let index = 0;
             this.nodes.forEach((node) => {
@@ -299,7 +328,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    private pasteFromClipboard() {
+    public pasteFromClipboard() {
         this._clipboard.forEach((control) => {
             this.CopyGUIControl(control);
         });
@@ -456,6 +485,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return newGuiNode;
     }
 
+    //is the
+    private _isMainSelectionParent(control: Nullable<Control>) {
+        do {
+            if (this._mainSelection === control) {
+                return true;
+            };
+            control = control?.parent || null;
+        } while (control);
+        return false;
+    }
+
     createNewGuiNode(guiControl: Control) {
         const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
             this.clicked = false;
@@ -464,7 +504,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
-                this.isSelected(true, guiControl);
+                // if this is our first click and the clicked control is a child the of the main selected control.
+                if (!this._doubleClick && this._isMainSelectionParent(guiControl)) {
+                    this._doubleClick = guiControl;
+                    window.setTimeout(() => {
+                        this._doubleClick = null;
+                    }, Scene.DoubleClickDelay);
+                }
+                else { //function will either select our new main control or contrue down the tree.
+                    this.determineMouseSelection(guiControl);
+                    this._doubleClick = null;
+                }
                 this.isUp = false;
             }
         });
@@ -721,7 +771,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        if (this._forceMoving) {
+        if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
@@ -777,7 +827,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             const block = nodeMaterial.getBlockByName("Texture") as TextureBlock;
             block.texture = this.globalState.guiTexture;
         }
-        
+
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
         this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
@@ -912,10 +962,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "g": //outlines
                 case "G":
                     this.globalState.onOutlinesObservable.notifyObservers();
-                    break;
-                case "m": //move
-                case "M":
-                    if (!this._forceMoving) this.globalState.onMoveObservable.notifyObservers();
                     break;
                 case "f": //fit to window
                 case "F":

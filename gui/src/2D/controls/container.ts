@@ -392,7 +392,7 @@ export class Container extends Control {
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
-                    computedWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
@@ -400,7 +400,7 @@ export class Container extends Control {
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
-                    computedHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
