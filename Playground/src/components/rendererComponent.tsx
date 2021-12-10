@@ -142,16 +142,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             globalObject.canvas = canvas;
 
             if (useWebGPU) {
-                const glslangOptions = { 
-                    jsPath: "/dist/preview%20release/glslang/glslang.js",
-                    wasmPath: "/dist/preview%20release/glslang/glslang.wasm"
-                };
-        
-                var twgslOptions = { 
-                    jsPath: "/dist/preview release/twgsl/twgsl.js",
-                    wasmPath: "/dist/preview release/twgsl/twgsl.wasm"
-                };
-
                 globalObject.createDefaultEngine = async function () {
                     var engine = new WebGPUEngine(canvas, {
                         deviceDescriptor: {
@@ -167,7 +157,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                             ],
                         },
                     });
-                    await engine.initAsync(glslangOptions, twgslOptions);
+                    await engine.initAsync();
                     return engine;
                 };
             } else {
