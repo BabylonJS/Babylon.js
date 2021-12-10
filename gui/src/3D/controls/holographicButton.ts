@@ -17,8 +17,9 @@ import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
-import { Color3 } from 'babylonjs/Maths/math.color';
+import { Color3 } from "babylonjs/Maths/math.color";
 import { DomManagement } from "babylonjs/Misc/domManagement";
+import { Texture } from "babylonjs/Materials/Textures/texture";
 
 /**
  * Class used to create a holographic button in 3D
@@ -83,6 +84,7 @@ export class HolographicButton extends Button3D {
             return;
         }
         if (!this._tooltipFade) {
+            const rightHandedScene = this._backPlate._scene.useRightHandedSystem;
             // Create tooltip with mesh and text
             this._tooltipMesh = CreatePlane("", { size: 1 }, this._backPlate._scene);
             var tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
@@ -91,10 +93,9 @@ export class HolographicButton extends Button3D {
             tooltipBackground.material = mat;
             tooltipBackground.isPickable = false;
             this._tooltipMesh.addChild(tooltipBackground);
-            tooltipBackground.position.z = 0.05;
+            tooltipBackground.position = Vector3.Forward(rightHandedScene).scale(0.05);
             this._tooltipMesh.scaling.y = 1 / 3;
-            this._tooltipMesh.position.y = 0.7;
-            this._tooltipMesh.position.z = -0.15;
+            this._tooltipMesh.position = Vector3.Up().scale(0.7).add(Vector3.Forward(rightHandedScene).scale(-0.15));
             this._tooltipMesh.isPickable = false;
             this._tooltipMesh.parent = this._backPlate;
 
@@ -256,32 +257,45 @@ export class HolographicButton extends Button3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this._backPlate = CreateBox(this.name + "BackMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: 0.08
-        }, scene);
+        this._backPlate = CreateBox(
+            this.name + "BackMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 0.08,
+            },
+            scene
+        );
 
-        this._frontPlate = CreateBox(this.name + "FrontMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: 0.08
-        }, scene);
+        this._frontPlate = CreateBox(
+            this.name + "FrontMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 0.08,
+            },
+            scene
+        );
 
         this._frontPlate.parent = this._backPlate;
-        this._frontPlate.position.z = -0.08;
+        this._frontPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-0.08);
         this._frontPlate.isPickable = false;
         this._frontPlate.setEnabled(false);
 
         this._textPlate = <Mesh>super._createNode(scene);
         this._textPlate.parent = this._backPlate;
-        this._textPlate.position.z = -0.08;
+        this._textPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-0.08);
         this._textPlate.isPickable = false;
 
         return this._backPlate;
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+        const textureInRightHandedScene = facadeTexture.getScene()?.useRightHandedSystem;
+        if (textureInRightHandedScene) {
+            facadeTexture.wrapU = Texture.MIRROR_ADDRESSMODE;
+            facadeTexture.uOffset = 1;
+        }
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
     }

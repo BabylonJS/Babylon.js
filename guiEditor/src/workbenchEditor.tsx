@@ -451,7 +451,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                         {!m.icon && <div className="toolbar-label-text">{(m.isActive ? "> " : "") + m.label}</div>}
                                         {m.icon && (
                                             <div className="toolbar-icon">
-                                                <img src={m.icon} />
+                                                <img src={m.icon} width="40px" height={"40px"} />
                                             </div>
                                         )}
                                         {m.onCheck && (
