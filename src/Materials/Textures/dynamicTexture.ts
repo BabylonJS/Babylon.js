@@ -9,7 +9,7 @@ import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 /**
  * A class extending Texture allowing drawing on a texture
- * @see https://doc.babylonjs.com/how_to/dynamictexture
+ * @see https:///dynamictexture
  */
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
