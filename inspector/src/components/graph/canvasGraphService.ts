@@ -358,7 +358,14 @@ export class CanvasGraphService {
                 }
 
                 ctx.moveTo(prevPoint[0], prevPoint[1]);
-                ctx.lineTo(drawableTime, drawableValue);
+                const xDifference = drawableTime - prevPoint[0];
+                const skipLine = xDifference > 0.25*(right-left);
+                if (skipLine) {
+                    ctx.fillStyle = 'grey';
+                    ctx.fillRect(prevPoint[0], prevPoint[1], xDifference, drawableValue-prevPoint[1]);
+                } else {
+                    ctx.lineTo(drawableTime, drawableValue);
+                }
                 prevPoint[0] = drawableTime;
                 prevPoint[1] = drawableValue;
             }
