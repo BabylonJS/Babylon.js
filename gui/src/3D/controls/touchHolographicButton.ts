@@ -20,7 +20,6 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SceneLoader } from "babylonjs/Loading/sceneLoader";
 import { DomManagement } from "babylonjs/Misc/domManagement";
 import { Scalar } from "babylonjs/Maths/math.scalar";
-import { Texture } from "babylonjs/Materials/Textures/texture";
 
 /**
  * Class used to create a holographic button in 3D
@@ -370,11 +369,6 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
-        const textureInRightHandedScene = facadeTexture.getScene()?.useRightHandedSystem;
-        if (textureInRightHandedScene) {
-            facadeTexture.wrapU = Texture.MIRROR_ADDRESSMODE;
-            facadeTexture.uOffset = 1;
-        }
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
         this._plateMaterial.diffuseColor = new Color3(0.4, 0.4, 0.4);
