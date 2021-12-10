@@ -13,9 +13,9 @@ function createObservableScheduler<T>(observable: Observable<any>): { scheduler:
         }
     });
 
-    const scheduler = (coroutine: AsyncCoroutine<T>, onSuccess: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
+    const scheduler = (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
         coroutines.push(coroutine);
-        onSteps.push(onSuccess);
+        onSteps.push(onStep);
         onErrors.push(onError);
     };
 

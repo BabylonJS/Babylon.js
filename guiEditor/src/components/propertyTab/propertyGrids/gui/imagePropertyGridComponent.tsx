@@ -107,6 +107,58 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     onSelect={(value) => this.setState({ mode: value })}
                 />
+                {image.stretch === Image.STRETCH_NINE_PATCH && <>
+                    <div className="ge-divider">
+                    <FloatLineComponent
+                        iconLabel={"Slice"}
+                        icon={cropIcon}
+                        lockObject={this.props.lockObject}
+                        label="L"
+                        target={image}
+                        propertyName="sliceLeft"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="R"
+                        target={image}
+                        propertyName="sliceRight"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
+                    />
+                </div>
+                <div className="ge-divider">
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="T"
+                        target={image}
+                        icon={cropIcon}
+                        iconLabel={"Slice"}
+                        propertyName="sliceTop"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="B"
+                        target={image}
+                        propertyName="sliceBottom"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
+                    />
+                </div>
+                <CheckBoxLineComponent
+                    iconLabel={"populateNinePatchSlicesFromImage"}
+                    icon={autoResizeIcon}
+                    label="SLICE FROM IMAGE"
+                    target={image}
+                    propertyName="populateNinePatchSlicesFromImage"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onValueChanged={() =>{ this.forceUpdate(); image._markAsDirty();} }
+                />
+                </>
+                }
                 <hr />
                 <TextLineComponent label="ANIMATION SHEET" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider-short">

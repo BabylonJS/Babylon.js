@@ -686,7 +686,6 @@ declare module GUIEDITOR {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
-        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -700,27 +699,37 @@ declare module GUIEDITOR {
         private _cameraMaxRadiasFactor;
         private _pasted;
         private _engine;
+        private _liveRenderObserver;
+        private _guiRenderObserver;
+        private _mainSelection;
+        private _selectionDepth;
+        private _doubleClick;
+        private _lockMainSelection;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
+        private _getParentWithDepth;
+        private _getMaxParent;
         constructor(props: IWorkbenchComponentProps);
+        determineMouseSelection(selection: BABYLON.Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
         private updateHitTest;
         private updateHitTestForSelection;
         private setCameraRadius;
-        private copyToClipboard;
-        private pasteFromClipboard;
+        copyToClipboard(): void;
+        pasteFromClipboard(): void;
         CopyGUIControl(original: Control): void;
         private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedId: string): Promise<void>;
+        loadFromSnippet(snippetId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
+        private _isMainSelectionParent;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
         private _convertToPixels;
@@ -730,13 +739,13 @@ declare module GUIEDITOR {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
-        componentDidMount(): void;
         onMove(evt: React.PointerEvent): void;
         getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
         createGUICanvas(): void;
+        synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
         getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
@@ -775,6 +784,7 @@ declare module GUIEDITOR {
     }
     export class GlobalState {
         [x: string]: any;
+        liveGuiTexture: BABYLON.Nullable<AdvancedDynamicTexture>;
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
@@ -790,6 +800,7 @@ declare module GUIEDITOR {
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
         onNewSceneObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Scene>>;
         onGuiNodeRemovalObservable: BABYLON.Observable<Control>;
+        onPopupClosedObservable: BABYLON.Observable<void>;
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
@@ -859,7 +870,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export interface ICheckBoxLineComponentProps {
-        label: string;
+        label?: string;
         target?: any;
         propertyName?: string;
         isSelected?: () => boolean;
@@ -869,6 +880,8 @@ declare module GUIEDITOR {
         disabled?: boolean;
         icon?: string;
         iconLabel?: string;
+        faIcons?: {
+        };
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -1001,6 +1014,7 @@ declare module GUIEDITOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -1202,10 +1216,10 @@ declare module GUIEDITOR {
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         private _width;
         private _height;
-        private _responsive;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
+        private _markChildrenAsDirty;
         render(): JSX.Element;
     }
 }
@@ -1719,7 +1733,6 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
-        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -1739,10 +1752,8 @@ declare module GUIEDITOR {
         private _leftWidth;
         private _rightWidth;
         private _toolBarIconSize;
-        private _onWidgetKeyUpPointer;
         private _popUpWindow;
         componentDidMount(): void;
-        componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         showWaitScreen(): void;
         hideWaitScreen(): void;
@@ -1782,6 +1793,7 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        liveGuiTexture?: AdvancedDynamicTexture;
         customLoad: {
             label: string;
             action: (data: string) => Promise<string>;

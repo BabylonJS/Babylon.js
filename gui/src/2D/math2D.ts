@@ -136,6 +136,15 @@ export class Matrix2D {
         return new Matrix2D(1, 0, 0, 1, 0, 0);
     }
 
+    public static IdentityToRef(result: Matrix2D): void {
+        result.m[0] = 1; 
+        result.m[1] = 0;
+        result.m[2] = 0;
+        result.m[3] = 1;
+        result.m[4] = 0;
+        result.m[5] = 0;
+    }
+
     /**
      * Creates a translation matrix and stores it in a target matrix
      * @param x defines the x coordinate of the translation

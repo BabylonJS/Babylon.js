@@ -131,6 +131,7 @@
 - Add support to export .env environment textures using WebP ([simonihmig](https://github.com/simonihmig))
 - ACE usability improvements and addition of new Step Tangent interpolation. ([carolhmj](https://github.com/carolhmj))
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
+- Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 
 ### Playground
 
@@ -350,6 +351,7 @@
 - Fix glTF exporter exports unused materials from excluded meshes ([daoshengmu](https://github.com/daoshengmu))
 - Fix glTFLoader 2.0 when dealing with glTF files that contain no meshes ([simonihmig](https://github.com/simonihmig))
 - Fix issue with setParent and meshes with a pivot ([RaananW](https://github.com/RaananW))
+- Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 
 ## Breaking changes
 
