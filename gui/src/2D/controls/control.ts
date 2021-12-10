@@ -67,7 +67,7 @@ export class Control {
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @hidden */
     protected _cachedParentMeasure = Measure.Empty();
-    private _descendentsOnlyPadding = false;
+    private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
     private _paddingTop = new ValueAndUnit(0);
@@ -138,6 +138,10 @@ export class Control {
 
     public set isReadOnly(value: boolean) {
         this._isReadOnly = value;
+    }
+
+    public get transformedMeasure(): Measure {
+        return this._evaluatedMeasure;
     }
 
     /**
@@ -803,16 +807,16 @@ export class Control {
      * Basically, it will add the padding amount on each side of the parent control for its children.
      */
      @serialize()
-     public get descendentsOnlyPadding(): boolean {
-        return this._descendentsOnlyPadding;
+     public get descendantsOnlyPadding(): boolean {
+        return this._descendantsOnlyPadding;
      }
 
-     public set descendentsOnlyPadding(value: boolean) {
-        if (this._descendentsOnlyPadding === value) {
+     public set descendantsOnlyPadding(value: boolean) {
+        if (this._descendantsOnlyPadding === value) {
              return;
         }
 
-        this._descendentsOnlyPadding = value;
+        this._descendantsOnlyPadding = value;
         this._markAsDirty();
      }
 
@@ -848,7 +852,7 @@ export class Control {
 
     /** @hidden */
     public get _paddingLeftInPixels(): number {
-        if (this._descendentsOnlyPadding) {
+        if (this._descendantsOnlyPadding) {
             return 0;
         }
 
@@ -887,7 +891,7 @@ export class Control {
 
     /** @hidden */
     public get _paddingRightInPixels(): number {
-        if (this._descendentsOnlyPadding) {
+        if (this._descendantsOnlyPadding) {
             return 0;
         }
 
@@ -926,7 +930,7 @@ export class Control {
 
     /** @hidden */
     public get _paddingTopInPixels(): number {
-        if (this._descendentsOnlyPadding) {
+        if (this._descendantsOnlyPadding) {
             return 0;
         }
 
@@ -965,7 +969,7 @@ export class Control {
 
     /** @hidden */
     public get _paddingBottomInPixels(): number {
-        if (this._descendentsOnlyPadding) {
+        if (this._descendantsOnlyPadding) {
             return 0;
         }
 
@@ -1658,7 +1662,7 @@ export class Control {
         this._tempPaddingMeasure.copyFrom(parentMeasure);
 
         // Apply padding if in correct mode
-        if (this.parent && this.parent.descendentsOnlyPadding) {
+        if (this.parent && this.parent.descendantsOnlyPadding) {
             this._tempPaddingMeasure.left += this.parent.paddingLeftInPixels;
             this._tempPaddingMeasure.top += this.parent.paddingTopInPixels;
             this._tempPaddingMeasure.width -= this.parent.paddingLeftInPixels + this.parent.paddingRightInPixels;
@@ -1672,26 +1676,25 @@ export class Control {
 
         this._measure();
         this._computeAlignment(this._tempPaddingMeasure, context);
-
+        
         // Convert to int values
         this._currentMeasure.left = this._currentMeasure.left | 0;
         this._currentMeasure.top = this._currentMeasure.top | 0;
         this._currentMeasure.width = this._currentMeasure.width | 0;
         this._currentMeasure.height = this._currentMeasure.height | 0;
-
+        
         // Let children add more features
         this._additionalProcessing(this._tempPaddingMeasure, context);
-
+        
         this._cachedParentMeasure.copyFrom(this._tempPaddingMeasure);
-
+        
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
         }
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
-        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
-
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
@@ -1779,7 +1782,7 @@ export class Control {
                 break;
         }
 
-        if (!this.descendentsOnlyPadding) {
+        if (!this.descendantsOnlyPadding) {
             if (this._paddingLeft.isPixel) {
                 this._currentMeasure.left += this._paddingLeft.getValue(this._host);
                 this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
