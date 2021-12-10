@@ -99,7 +99,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let parent = control;
         for (let i = 0; i < this._selectionDepth; ++i) {
             if (!parent.parent) {
-              break;
+                break;
             }
             parent = parent.parent;
         }
@@ -324,13 +324,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this._clipboard.push(node);
                 }
             });
-        } else if(this.selectedGuiNodes.length === 1) {
+        } else {
             this._clipboard = this.selectedGuiNodes;
-        } 
-        else {
-
         }
-        console.log(this._clipboard.length);
     }
 
     public pasteFromClipboard() {
@@ -376,7 +372,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
         }
         this._selectAll = true;
-        console.log(this.selectedGuiNodes.length);
     }
 
     blurEvent = () => {
