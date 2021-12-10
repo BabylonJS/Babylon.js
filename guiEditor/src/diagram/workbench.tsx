@@ -314,7 +314,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._cameraRadias += this._cameraRadias - this._cameraRadias / 1.5;
     }
 
-    private copyToClipboard() {
+    public copyToClipboard() {
         this._clipboard = [];
         if (this._selectAll) {
             let index = 0;
@@ -324,8 +324,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this._clipboard.push(node);
                 }
             });
-        } else {
+        } else if(this.selectedGuiNodes.length === 1) {
             this._clipboard = this.selectedGuiNodes;
+        } 
+        else {
+
         }
         console.log(this._clipboard.length);
     }
