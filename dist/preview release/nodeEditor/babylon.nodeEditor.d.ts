@@ -2076,6 +2076,7 @@ declare module NODEEDITOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
