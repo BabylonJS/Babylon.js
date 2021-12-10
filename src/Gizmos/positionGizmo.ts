@@ -83,7 +83,7 @@ export class PositionGizmo extends Gizmo {
     }
     public set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
-        this._nodeAttached = null;
+        this._nodeAttached = node;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;

@@ -224,12 +224,14 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/fileButtonLineCompo
 }
 declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
     import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer";
+    import { Observable } from "babylonjs/Misc/observable";
     /**
-     * Defines a structure to hold max and min.
+     * Defines a structure to hold max, min and a optional current.
      */
     export interface IPerfMinMax {
         min: number;
         max: number;
+        current?: number;
     }
     /**
      * Defines structure of the object which contains information related to panning.
@@ -279,11 +281,15 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         id: string;
         text: string;
     }
+    export interface IVisibleRangeChangedObservableProps {
+        valueMap: Map<string, IPerfMinMax>;
+    }
     /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
         datasets: IPerfDatasets;
+        onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
     }
     /**
      * Defines the structure representing the preprocessable tooltip information.
@@ -455,8 +461,11 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/checkBoxLineCompone
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent" {
     import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { IVisibleRangeChangedObservableProps } from "babylonjs-inspector/components/graph/graphSupportingTypes";
     interface IPerformanceViewerSidebarComponentProps {
         collector: PerformanceViewerCollector;
+        onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
@@ -490,6 +499,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _tickerItems;
         private _preprocessedTooltipInfo;
         private _numberOfTickers;
+        private _onVisibleRangeChangedObservable?;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: IPerfDatasets;
@@ -701,7 +711,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
     import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
     import { Observable } from "babylonjs/Misc/observable";
     import * as React from "react";
-    import { IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
+    import { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "babylonjs-inspector/components/graph/graphSupportingTypes";
     import { Scene } from "babylonjs/scene";
     interface ICanvasGraphComponentProps {
         id: string;
@@ -709,6 +719,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
         collector: PerformanceViewerCollector;
         layoutObservable?: Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: Observable<void>;
+        onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -944,6 +955,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5181,11 +5193,12 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     /**
-     * Defines a structure to hold max and min.
+     * Defines a structure to hold max, min and a optional current.
      */
     export interface IPerfMinMax {
         min: number;
         max: number;
+        current?: number;
     }
     /**
      * Defines structure of the object which contains information related to panning.
@@ -5235,11 +5248,15 @@ declare module INSPECTOR {
         id: string;
         text: string;
     }
+    export interface IVisibleRangeChangedObservableProps {
+        valueMap: Map<string, IPerfMinMax>;
+    }
     /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
         datasets: BABYLON.IPerfDatasets;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     /**
      * Defines the structure representing the preprocessable tooltip information.
@@ -5403,6 +5420,7 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface IPerformanceViewerSidebarComponentProps {
         collector: BABYLON.PerformanceViewerCollector;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
 }
@@ -5432,6 +5450,7 @@ declare module INSPECTOR {
         private _tickerItems;
         private _preprocessedTooltipInfo;
         private _numberOfTickers;
+        private _onVisibleRangeChangedObservable?;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
@@ -5646,6 +5665,7 @@ declare module INSPECTOR {
         collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: BABYLON.Observable<void>;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -5851,6 +5871,7 @@ declare module INSPECTOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
