@@ -5,7 +5,7 @@ import { Scene } from '../../scene';
 
 /**
  * Class used to define an additional view for the engine
- * @see https://doc.babylonjs.com/how_to/multi_canvases
+ * @see https:///multi_canvases
  */
 export class EngineView {
     /** Defines the canvas where to render the view */

@@ -218,7 +218,7 @@ export class LinesMesh extends Mesh {
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https:///how_to_use_instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */
