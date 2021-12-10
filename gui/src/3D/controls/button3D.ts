@@ -9,7 +9,6 @@ import { Scene } from "babylonjs/scene";
 import { AbstractButton3D } from "./abstractButton3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Color3 } from "babylonjs/Maths/math.color";
-import { Texture } from "babylonjs/Materials/Textures/texture";
 
 /**
  * Class used to create a button in 3D
@@ -60,11 +59,6 @@ export class Button3D extends AbstractButton3D {
      * @param facadeTexture defines the AdvancedDynamicTexture to use
      */
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
-        const textureInRightHandedScene = facadeTexture.getScene()?.useRightHandedSystem;
-        if (textureInRightHandedScene) {
-            facadeTexture.wrapU = Texture.MIRROR_ADDRESSMODE;
-            facadeTexture.uOffset = 1;
-        }
         (<any>this._currentMaterial).emissiveTexture = facadeTexture;
     }
 
@@ -80,7 +74,8 @@ export class Button3D extends AbstractButton3D {
             faceUV[i] = new Vector4(0, 0, 0, 0);
         }
         if (scene.useRightHandedSystem) {
-            faceUV[0] = new Vector4(0, 0, 1, 1);
+            // Flip the u on the texture 
+            faceUV[0] = new Vector4(1, 0, 0, 1);
         } else {
             faceUV[1] = new Vector4(0, 0, 1, 1);
         }

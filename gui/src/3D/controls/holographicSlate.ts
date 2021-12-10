@@ -20,6 +20,7 @@ import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { DomManagement } from "babylonjs/Misc/domManagement";
+import { Vector4 } from "babylonjs/Maths/math";
 
 /**
  * Class used to create a holographic slate
@@ -266,7 +267,11 @@ export class HolographicSlate extends ContentDisplay3D {
         const node = new Mesh("slate" + this.name, scene);
 
         this._backPlate = CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = CreateBox("contentPlate" + this.name, { size: 1 }, scene);
+        const faceUV = new Array(6).fill(new Vector4(0,0,1,1));
+        if (scene.useRightHandedSystem) {
+            faceUV[0] = new Vector4(0,1,1,0);
+        }
+        this._contentPlate = CreateBox("contentPlate" + this.name, { size: 1, faceUV }, scene);
 
         this._backPlate.parent = node;
         this._backPlate.isNearGrabbable = true;
