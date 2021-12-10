@@ -455,7 +455,7 @@ export class NodeMaterialBlock {
         }
 
         if (this.target === NodeMaterialBlockTargets.Vertex) {
-            return true;
+            return false;
         }
 
         if (this.target === NodeMaterialBlockTargets.VertexAndFragment || this.target === NodeMaterialBlockTargets.Neutral) {
