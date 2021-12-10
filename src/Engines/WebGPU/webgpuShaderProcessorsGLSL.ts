@@ -240,7 +240,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 }
             `;
 
-            let injectCode = hasFragCoord ? "vec4 glFragCoord__;\n" : "";
+            const injectCode = hasFragCoord ? "vec4 glFragCoord__;\n" : "";
 
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
@@ -254,18 +254,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace("##INJECTCODE##", injectCode);
 
             if (hasFragCoord) {
-                let idx = code.indexOf("void main(");
-                if (idx >= 0) {
-                    while (idx++ < code.length && code.charAt(idx) != '{') { }
-                    if (idx < code.length) {
-                        while (idx++ < code.length && code.charAt(idx) != '\n') { }
-                        if (idx < code.length) {
-                            const part1 = code.substring(0, idx + 1);
-                            const part2 = code.substring(idx + 1);
-                            code = part1 + fragCoordCode + part2;
-                        }
-                    }
-                }
+                code = this._injectStartingAndEndingCode(code, "void main", fragCoordCode);
             }
         } else {
             code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");

@@ -289,7 +289,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         vertexEndingCode += "  return output;";
 
-        vertexCode = this._injectStartingAndEndingCode(vertexCode, vertexStartingCode, vertexEndingCode);
+        vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexStartingCode, vertexEndingCode);
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
@@ -347,7 +347,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         fragmentEndingCode += "  return output;";
 
-        fragmentCode = this._injectStartingAndEndingCode(fragmentCode, fragmentStartingCode, fragmentEndingCode);
+        fragmentCode = this._injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();
@@ -377,31 +377,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         ubo += `[[group(${uniformBufferDescription.binding.groupIndex}), binding(${uniformBufferDescription.binding.bindingIndex})]] var<uniform> ${leftOverVarName} : ${name};\n`;
 
         return ubo;
-    }
-
-    private _injectStartingAndEndingCode(code: string, startingCode?: string, endingCode?: string): string {
-        if (startingCode) {
-            let idx = code.indexOf("fn main");
-            if (idx >= 0) {
-                while (idx++ < code.length && code.charAt(idx) != '{') { }
-                if (idx < code.length) {
-                    while (idx++ < code.length && code.charAt(idx) != '\n') { }
-                    if (idx < code.length) {
-                        const part1 = code.substring(0, idx + 1);
-                        const part2 = code.substring(idx + 1);
-                        code = part1 + startingCode + part2;
-                    }
-                }
-            }
-        }
-
-        if (endingCode) {
-            const lastClosingCurly = code.lastIndexOf("}");
-            code = code.substring(0, lastClosingCurly);
-            code += endingCode + "\n}";
-        }
-
-        return code;
     }
 
     private _processSamplers(code: string, isVertex: boolean): string {

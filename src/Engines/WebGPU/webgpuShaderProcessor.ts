@@ -269,4 +269,29 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
+
+    protected _injectStartingAndEndingCode(code: string, mainFuncDecl: string, startingCode?: string, endingCode?: string): string {
+        if (startingCode) {
+            let idx = code.indexOf(mainFuncDecl);
+            if (idx >= 0) {
+                while (idx++ < code.length && code.charAt(idx) != '{') { }
+                if (idx < code.length) {
+                    while (idx++ < code.length && code.charAt(idx) != '\n') { }
+                    if (idx < code.length) {
+                        const part1 = code.substring(0, idx + 1);
+                        const part2 = code.substring(idx + 1);
+                        code = part1 + startingCode + part2;
+                    }
+                }
+            }
+        }
+
+        if (endingCode) {
+            const lastClosingCurly = code.lastIndexOf("}");
+            code = code.substring(0, lastClosingCurly);
+            code += endingCode + "\n}";
+        }
+
+        return code;
+    }
 }
