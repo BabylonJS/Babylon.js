@@ -91,7 +91,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let parent = control;
         for (let i = 0; i < this._selectionDepth; ++i) {
             if (!parent.parent) {
-              break;
+                break;
             }
             parent = parent.parent;
         }
@@ -701,11 +701,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    componentDidMount() {
-        this._rootContainer = React.createRef();
-    }
-
-    convertToPercentage(guiControl: Control, includeScale :boolean) {
+    convertToPercentage(guiControl: Control, includeScale: boolean) {
         let ratioX = this._textureMesh.scaling.x;
         let ratioY = this._textureMesh.scaling.z;
         if (guiControl.parent) {
@@ -728,7 +724,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.left = `${left.toFixed(2)}%`;
         guiControl.top = `${top.toFixed(2)}%`;
 
-        if(includeScale) {
+        if (includeScale) {
             const width = (guiControl.widthInPixels * 100) / ratioX;
             const height = (guiControl.heightInPixels * 100) / ratioY;
             guiControl.width = `${width.toFixed(2)}%`;
@@ -804,6 +800,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Create our first scene.
         this._scene = new Scene(this._engine);
+        
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
@@ -1080,12 +1077,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
             <canvas id="workbench-canvas" onPointerMove={
                 (evt) => {
-                    this.onMove(evt);
-                    //console.log(evt.target);
-                    this.props.globalState.guiGizmo.onMove(evt);
+                    if (this.props.globalState.guiTexture) {
+                        this.onMove(evt);
+                    }
+                    if (this.props.globalState.guiGizmo) {
+                        this.props.globalState.guiGizmo.onMove(evt);
+                    }
                 }} onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => {
-                   // console.log(evt.target);
                     this.onUp(evt);
                     this.props.globalState.guiGizmo.onUp(evt);
                 }}

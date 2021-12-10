@@ -19,7 +19,7 @@ const round = (value: number) => Math.round(value * roundFactor) / roundFactor;
 
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     scalePoints: HTMLDivElement[] = [];
-    private _scalePointIndex: number = -1;
+    public _scalePointIndex: number = -1;
     private _pointerData: { corners: Vector2[]; pointerDown: boolean };
     private _htmlPoints: Vector2[];
     private _matrixCache: Matrix2D[];
