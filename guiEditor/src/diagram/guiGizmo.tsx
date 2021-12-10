@@ -114,7 +114,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         this._matrixCache.forEach((matrix) => {
             Matrix2D.IdentityToRef(matrix);
         });
-    };
+    }
 
     private _getNodeMatrix(node: Control, useStoredValues?: boolean): Matrix2D {
         const size = this.props.globalState.guiTexture.getSize();
@@ -350,6 +350,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 const inRTT = this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
                 const inNodeSpace = this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
                 this._setNodeCorner(node, inNodeSpace, this._scalePointIndex);
+                //convert to percentage
+                if (this._responsive) {
+                    this.props.globalState.workbench.convertToPercentage(node, false);
+                }
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
         }
@@ -381,7 +385,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const localRotation = this.getRotation(node, true);
         const localScaling = this.getScale(node, true);
         const absoluteCenter = new Vector2(upperLeft.x + width * 0.5, upperLeft.y + height * 0.5);
-        const center = absoluteCenter.multiply(localScaling);
+        const center = absoluteCenter.clone();
+        // move to pivot
+        center.x += width * node.transformCenterX;
+        center.y += height * node.transformCenterY;
+        center.multiplyInPlace(localScaling);
         const cosRotation = Math.cos(localRotation);
         const sinRotation = Math.sin(localRotation);
         const cosRotation180 = Math.cos(localRotation + Math.PI);
@@ -409,19 +417,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
                 break;
         }
-        // let offsetX = width * node.transformCenterX - width / 2;
-        // let offsetY = height * node.transformCenterY - height / 2;
-        // // pivot changes this point's position! but only in legacy pivot mode
-        // if (!(node as any).descendantsOnlyPadding) {
-        //     // padding needs to also take scaling into account
-        //     offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * 1) / 2;
-        //     offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
-        // }
-        // console.log("offset", offsetX, offsetY);
 
         // rotate the center around 0,0
         const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
-
         // round
         node.leftInPixels = round(this._initX + rotatedCenter.x);
         node.topInPixels = round(this._initY + rotatedCenter.y);
