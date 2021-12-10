@@ -6,6 +6,8 @@ import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { Image } from "babylonjs-gui/2D/controls/image";
+import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 
 require("./workbenchCanvas.scss");
 const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
@@ -458,6 +460,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         node.topInPixels = round(this._initY + rotatedCenter.y);
         node.widthInPixels = round(Math.max(10, width));
         node.heightInPixels = round(Math.max(10, height));
+
+        if(node.typeName === "Image") {
+            (node as Image).autoScale = false;
+        }
+        else if(node.typeName === "TextBlock") {
+            (node as TextBlock).resizeToFit = false;
+        }
+
     }
 
     private _rotate(x: number, y: number, centerX: number, centerY: number, angle: number) {
