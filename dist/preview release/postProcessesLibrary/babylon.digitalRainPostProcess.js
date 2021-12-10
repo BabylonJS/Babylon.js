@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -595,6 +595,10 @@ var DigitalRainPostProcess = /** @class */ (function (_super) {
          * This number is defined between 0 and 1;
          */
         _this.mixToNormal = 0;
+        /**
+         * Speed of the effect
+         */
+        _this.speed = 0.003;
         // Default values.
         var font = "15px Monospace";
         var characterSet = "古池や蛙飛び込む水の音ふるいけやかわずとびこむみずのおと初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり江戸の雨何石呑んだ時鳥えどのあめなんごくのんだほととぎす";
@@ -619,7 +623,7 @@ var DigitalRainPostProcess = /** @class */ (function (_super) {
             effect.setFloat4("digitalRainFontInfos", _this._digitalRainFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
             effect.setFloat4("digitalRainOptions", _this.width, _this.height, _this.mixToNormal, _this.mixToTile);
             effect.setMatrix("matrixSpeed", matrix);
-            alpha += 0.003;
+            alpha += _this.speed;
             cosTimeZeroOne = alpha;
             effect.setFloat('cosTimeZeroOne', cosTimeZeroOne);
         };
