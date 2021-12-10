@@ -39,7 +39,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
-        const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalUniformBuffer} {\nfloat yFactor__;\nfloat textureOutputHeight__;\n};\n`;
+        const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor__;\nfloat textureOutputHeight__;\n};\n`;
 
         if (isFragment) {
             return ubDeclaration + "##INJECTCODE##\n" + code;

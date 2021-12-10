@@ -35,7 +35,7 @@ const builtInName_frag_depth = "gl_FragDepth";
 const builtInName_FragColor = "gl_FragColor";
 
 const leftOverVarName = "uniforms";
-const internalUBVarName = "internals";
+const internalsVarName = "internals";
 
 const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<GPUTextureViewDimension> } = {
     "texture_1d": WebGPUConstants.TextureViewDimension.E1d,
@@ -107,7 +107,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
-        return `[[block]] struct ${WebGPUShaderProcessor.InternalUniformBuffer} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalUBVarName} : ${WebGPUShaderProcessor.InternalUniformBuffer};\n` + RemoveComments(code);
+        return `[[block]] struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` + RemoveComments(code);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
