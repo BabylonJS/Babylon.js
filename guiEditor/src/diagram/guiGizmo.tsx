@@ -59,6 +59,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     componentDidMount() {}
 
+    /**
+     * Update the gizmo's corners positions
+     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+     */
     updateGizmo(force?: boolean) {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (selectedGuiNodes.length > 0 && (force || this._pointerData.pointerDown)) {
@@ -116,8 +120,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         });
     }
 
+    /**
+     * This function calculates a local matrix for a node, including it's full transformation and pivot point
+     *
+     * @param node the node to calculate the matrix for
+     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+     * @returns a new matrix for the control
+     */
     private _getNodeMatrix(node: Control, useStoredValues?: boolean): Matrix2D {
         const size = this.props.globalState.guiTexture.getSize();
+        // parent should always be defined, but stay safe
         const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
         const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
         let x = 0;
@@ -158,8 +170,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         // as this is used later it needs to persist
         const resultMatrix = Matrix2D.Identity();
 
-        // Transform the coordinates into world space
-
         // the pivot point around which the object transforms
         let offsetX = width * node.transformCenterX - width / 2;
         let offsetY = height * node.transformCenterY - height / 2;
@@ -183,6 +193,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         return resultMatrix;
     }
 
+    /**
+     * Using the node's tree, calculate its world matrix and return it
+     * @param node the node to calculate the matrix for
+     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+     * @returns the world matrix for this node
+     */
     private _nodeToRTTWorldMatrix(node: Control, useStoredValuesIfPossible?: boolean): Matrix2D {
         const listOfNodes = [node];
         let p = node.parent;
@@ -197,6 +213,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             return acc;
         }, this._matrixCache[2]);
     }
+
 
     private _nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), useStoredValuesIfPossible?: boolean) {
         const worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
@@ -252,6 +269,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         return new Vector2(round(newPosition.x), round(newPosition.z));
     }
 
+    /**
+     * Get the scaling of a specific GUI control
+     * @param node the node for which we are getting the scaling
+     * @param relative should we return only the relative scaling (relative to the parent)
+     * @returns an X,Y vector of the scaling
+     */
     getScale(node: Control, relative?: boolean): Vector2 {
         let x = node.scaleX;
         let y = node.scaleY;
@@ -325,6 +348,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     private _onUp = (evt?: React.PointerEvent | PointerEvent) => {
+        // cleanup on pointer up
         this._pointerData.pointerDown = false;
         document.querySelectorAll(".ge-scalePoint").forEach((scalePoint) => {
             (scalePoint as HTMLElement).style.pointerEvents = "auto";
@@ -347,8 +371,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
             if (selectedGuiNodes.length > 0) {
                 const node = selectedGuiNodes[0];
+                // get the mouse position in node space
                 const inRTT = this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
                 const inNodeSpace = this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
+                // set the corner
                 this._setNodeCorner(node, inNodeSpace, this._scalePointIndex);
                 //convert to percentage
                 if (this._responsive) {
@@ -359,6 +385,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         }
     };
 
+    /**
+     * Calculate the 4 corners in node space
+     * @param node The node to use
+     */
     private _nodeToCorners(node: Control) {
         const half = 0.5;
         this._pointerData.corners[0].x = -node.widthInPixels * half;
@@ -374,6 +404,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         this._pointerData.corners[3].y = node.heightInPixels * half;
     }
 
+    /**
+     * Computer the node's width, height, top and left, using the 4 corners
+     * @param node the node we use
+     */
     private _updateNodeFromCorners(node: Control) {
         const upperLeft = this._pointerData.corners[1];
         const lowerRight = this._pointerData.corners[3];
@@ -394,6 +428,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const sinRotation180 = Math.sin(localRotation + Math.PI);
         const widthDelta = (this._initW - width) * 0.5;
         const heightDelta = (this._initH - height) * 0.5;
+        // alignment compensation
         switch (node.horizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
                 center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
@@ -418,7 +453,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
         // rotate the center around 0,0
         const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
-        // round
+        // round the values and set them
         node.leftInPixels = round(this._initX + rotatedCenter.x);
         node.topInPixels = round(this._initY + rotatedCenter.y);
         node.widthInPixels = round(Math.max(10, width));
@@ -433,17 +468,33 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     private _setNodeCorner(node: Control, corner: Vector2, cornerIndex: number) {
-        this._pointerData.corners[cornerIndex].copyFrom(corner);
+        // are we in a fixed-axis situation
+        const fixedAxis = cornerIndex >=3;
+        // the actual corner to update. This relies on the fact that the corners are in a specific order
+        const toUpdate = cornerIndex % 4;
+        if(fixedAxis) {
+            // check which axis is fixed
+            if(cornerIndex === 4 || cornerIndex === 6) {
+                // set the corner's y axis correctly
+                corner.y = this._pointerData.corners[toUpdate].y;
+            } else {
+                // set the corner's x axis correctly
+                corner.x = this._pointerData.corners[toUpdate].x;
+            }
+        }
+        this._pointerData.corners[toUpdate].copyFrom(corner);
         // also update the other corners
         const next = (cornerIndex + 1) % 4;
         const prev = (cornerIndex + 3) % 4;
-        if (cornerIndex % 2 === 0) {
-            this._pointerData.corners[next].x = this._pointerData.corners[cornerIndex].x;
-            this._pointerData.corners[prev].y = this._pointerData.corners[cornerIndex].y;
+        // Update the next and the previous points
+        if (toUpdate % 2 === 0) {
+            this._pointerData.corners[next].x = this._pointerData.corners[toUpdate].x;
+            this._pointerData.corners[prev].y = this._pointerData.corners[toUpdate].y;
         } else {
-            this._pointerData.corners[next].y = this._pointerData.corners[cornerIndex].y;
-            this._pointerData.corners[prev].x = this._pointerData.corners[cornerIndex].x;
+            this._pointerData.corners[next].y = this._pointerData.corners[toUpdate].y;
+            this._pointerData.corners[prev].x = this._pointerData.corners[toUpdate].x;
         }
+        // update the transformation accordingly
         this._updateNodeFromCorners(node);
     }
 
