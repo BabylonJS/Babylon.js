@@ -19,7 +19,6 @@ import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { DomManagement } from "babylonjs/Misc/domManagement";
-import { Texture } from "babylonjs/Materials/Textures/texture";
 
 /**
  * Class used to create a holographic button in 3D
@@ -291,11 +290,6 @@ export class HolographicButton extends Button3D {
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
-        const textureInRightHandedScene = facadeTexture.getScene()?.useRightHandedSystem;
-        if (textureInRightHandedScene) {
-            facadeTexture.wrapU = Texture.MIRROR_ADDRESSMODE;
-            facadeTexture.uOffset = 1;
-        }
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
     }
