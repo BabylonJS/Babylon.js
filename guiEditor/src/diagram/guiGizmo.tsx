@@ -387,8 +387,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const absoluteCenter = new Vector2(upperLeft.x + width * 0.5, upperLeft.y + height * 0.5);
         const center = absoluteCenter.clone();
         // move to pivot
-        center.x += width * node.transformCenterX;
-        center.y += height * node.transformCenterY;
         center.multiplyInPlace(localScaling);
         const cosRotation = Math.cos(localRotation);
         const sinRotation = Math.sin(localRotation);
