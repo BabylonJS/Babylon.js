@@ -5,7 +5,7 @@ import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
-import { IDeviceEvent, IDeviceInputSystem } from '../Interfaces/inputInterfaces';
+import { IDeviceEvent } from '../Interfaces/inputInterfaces';
 
 /**
  * Class that handles all input for a specific device
@@ -18,7 +18,7 @@ export class DeviceSource<T extends DeviceType> {
     public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
 
     // Private Members
-    private readonly _deviceInputSystem: IDeviceInputSystem;
+    private readonly _deviceInputSystem: DeviceInputSystem;
 
     /**
      * Default Constructor
@@ -26,7 +26,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param deviceType Type of device
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    constructor(deviceInputSystem: IDeviceInputSystem,
+    constructor(deviceInputSystem: DeviceInputSystem,
         /** Type of device */
         public readonly deviceType: DeviceType,
         /** "Slot" or index that device is referenced in */
@@ -68,7 +68,7 @@ export class DeviceSourceManager implements IDisposable {
     // Private Members
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
-    private readonly _deviceInputSystem: IDeviceInputSystem;
+    private readonly _deviceInputSystem: DeviceInputSystem;
 
     /**
      * Default Constructor
@@ -78,7 +78,7 @@ export class DeviceSourceManager implements IDisposable {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
-        this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        this._deviceInputSystem = DeviceInputSystem._Create(engine);
 
         this._deviceInputSystem.onDeviceConnectedObservable.add((eventData) => {
             this._addDevice(eventData.deviceType, eventData.deviceSlot);

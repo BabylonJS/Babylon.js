@@ -52,7 +52,7 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepRe
                     step.value = undefined;
                     onStep(step as {done: typeof step.done, value: typeof step.value});
                 },
-                (error) => onError(error),
+                onError,
             );
         }
     } catch (error) {
@@ -84,26 +84,40 @@ export function createYieldingScheduler<T>(yieldAfterMS = 25) {
 // Runs the specified coroutine with the specified scheduler. The success or error callback will be invoked when the coroutine finishes.
 /** @hidden */
 export function runCoroutine<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, onSuccess: (result: T) => void, onError: (error: any) => void, abortSignal?: AbortSignal) {
-    function resume() {
-        if (!abortSignal || !abortSignal.aborted) {
-            scheduler(coroutine,
-                (stepResult: CoroutineStep<T>) => {
-                    if (stepResult.done) {
-                        // If the coroutine is done, report success.
-                        onSuccess(stepResult.value);
-                    } else {
-                        // If the coroutine is not done, resume the coroutine (via the scheduler).
-                        resume();
-                    }
-                },
-                (error: any) => {
-                    // If the coroutine threw an error, report the error.
-                    onError(error);
-                });
-        } else {
-            onError("Aborted");
-        }
-    }
+    const resume = () => {
+        let reschedule: boolean | undefined;
+
+        const onStep = (stepResult: CoroutineStep<T>) => {
+            if (stepResult.done) {
+                // If the coroutine is done, report success.
+                onSuccess(stepResult.value);
+            } else {
+                // If the coroutine is not done, resume the coroutine (via the scheduler).
+                if (reschedule === undefined) {
+                    // If reschedule is undefined at this point, then the coroutine must have stepped synchronously, so just flag another loop iteration.
+                    reschedule = true;
+                } else {
+                    // If reschedule is defined at this point, then the coroutine must have stepped asynchronously, so call resume to restart the step loop.
+                    resume();
+                }
+            }
+        };
+
+        do {
+            reschedule = undefined;
+
+            if (!abortSignal || !abortSignal.aborted) {
+                scheduler(coroutine, onStep, onError);
+            } else {
+                onError(new Error("Aborted"));
+            }
+
+            if (reschedule === undefined) {
+                // If reschedule is undefined at this point, then the coroutine must have stepped asynchronously, so stop looping and let the coroutine be resumed later.
+                reschedule = false;
+            }
+        } while (reschedule);
+    };
 
     resume();
 }
@@ -128,19 +142,6 @@ export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: Co
     });
 }
 
-// This is a helper type to extract the return type of a Coroutine<T>. It is conceptually very similar to the Awaited<T> utility type.
-/** @hidden */
-type ExtractCoroutineReturnType<T> =
-    T extends Coroutine<infer TReturn> ? TReturn :
-    never;
-
-// This is a helper type to extract the return type of an AsyncCoroutine<T>.
-/** @hidden */
-type ExtractAsyncCoroutineReturnType<T> =
-    T extends Coroutine<infer TReturn> ? Promise<TReturn> :
-    T extends AsyncCoroutine<infer TReturn> ? Promise<TReturn> :
-    never;
-
 /**
  * Given a function that returns a Coroutine<T>, produce a function with the same parameters that returns a T.
  * The returned function runs the coroutine synchronously.
@@ -148,10 +149,10 @@ type ExtractAsyncCoroutineReturnType<T> =
  * @returns A function that runs the coroutine synchronously.
  * @hidden
  */
-export function makeSyncFunction<TCoroutineFactory extends (...params: any[]) => Coroutine<unknown>, TReturn extends ExtractCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn {
-    return (...params: Parameters<TCoroutineFactory>): TReturn => {
+export function makeSyncFunction<TParams extends unknown[], TReturn>(coroutineFactory: (...params: TParams) => Coroutine<TReturn>, abortSignal?: AbortSignal): (...params: TParams) => TReturn {
+    return (...params: TParams) => {
         // Run the coroutine synchronously.
-        return runCoroutineSync(coroutineFactory(...params), abortSignal) as TReturn;
+        return runCoroutineSync(coroutineFactory(...params), abortSignal);
     };
 }
 
@@ -162,9 +163,9 @@ export function makeSyncFunction<TCoroutineFactory extends (...params: any[]) =>
  * @returns A function that runs the coroutine asynchronously.
  * @hidden
  */
-export function makeAsyncFunction<TCoroutineFactory extends (...params: any[]) => AsyncCoroutine<unknown>, TReturn extends ExtractAsyncCoroutineReturnType<ReturnType<TCoroutineFactory>>>(coroutineFactory: TCoroutineFactory, scheduler: CoroutineScheduler<unknown>, abortSignal?: AbortSignal): (...params: Parameters<TCoroutineFactory>) => TReturn {
-    return (...params: Parameters<TCoroutineFactory>): TReturn => {
+export function makeAsyncFunction<TParams extends unknown[], TReturn>(coroutineFactory: (...params: TParams) => AsyncCoroutine<TReturn>, scheduler: CoroutineScheduler<TReturn>, abortSignal?: AbortSignal): (...params: TParams) => Promise<TReturn> {
+    return (...params: TParams) => {
         // Run the coroutine asynchronously.
-        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal) as TReturn;
+        return runCoroutineAsync(coroutineFactory(...params), scheduler, abortSignal);
     };
 }
