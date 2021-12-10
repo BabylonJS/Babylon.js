@@ -835,7 +835,10 @@ export class WebGPUEngine extends Engine {
             depthOrArrayLayers: 1
         };
 
-        this._bufferManager.setSubData(this._ubDontInvertY, 4, new Float32Array([this.getRenderHeight()]))
+        const bufferDataUpdate = new Float32Array([this.getRenderHeight()]);
+
+        this._bufferManager.setSubData(this._ubInvertY, 4, bufferDataUpdate);
+        this._bufferManager.setSubData(this._ubDontInvertY, 4, bufferDataUpdate);
 
         let mainColorAttachments: GPURenderPassColorAttachment[];
 
@@ -2839,7 +2842,7 @@ export class WebGPUEngine extends Engine {
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalUniformBuffer);
+        this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
         if (webgpuPipelineContext.uniformBuffer) {
             webgpuPipelineContext.uniformBuffer.update();

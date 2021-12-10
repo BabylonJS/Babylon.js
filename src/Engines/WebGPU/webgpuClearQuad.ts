@@ -98,10 +98,10 @@ export class WebGPUClearQuad {
 
         webgpuPipelineContext.uniformBuffer!.update();
 
-        const bufferInternalUB = isRTTPass ? this._engine._ubInvertY : this._engine._ubDontInvertY;
-        const buffer = webgpuPipelineContext.uniformBuffer!.getBuffer() as WebGPUDataBuffer;
+        const bufferInternals = isRTTPass ? this._engine._ubInvertY : this._engine._ubDontInvertY;
+        const bufferLeftOver = webgpuPipelineContext.uniformBuffer!.getBuffer() as WebGPUDataBuffer;
 
-        const key = buffer.uniqueId + "-" + bufferInternalUB.uniqueId;
+        const key = bufferLeftOver.uniqueId + "-" + bufferInternals.uniqueId;
 
         let bindGroups = this._bindGroups[key];
 
@@ -128,14 +128,14 @@ export class WebGPUClearQuad {
                     entries: [{
                         binding: 0,
                         resource: {
-                            buffer: bufferInternalUB.underlyingResource,
-                            size: bufferInternalUB.capacity
+                            buffer: bufferInternals.underlyingResource,
+                            size: bufferInternals.capacity
                         },
                     }, {
                         binding: 1,
                         resource: {
-                            buffer: buffer.underlyingResource,
-                            size: buffer.capacity
+                            buffer: bufferLeftOver.underlyingResource,
+                            size: bufferLeftOver.capacity
                         },
                     }],
                 })
