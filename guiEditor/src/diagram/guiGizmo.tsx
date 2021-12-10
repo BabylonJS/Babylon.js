@@ -14,17 +14,24 @@ export interface IGuiGizmoProps {
     globalState: GlobalState;
 }
 
+const roundFactor = 100;
+const round = (value: number) => Math.round(value * roundFactor) / roundFactor;
+
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     scalePoints: HTMLDivElement[] = [];
-    private _mouseDown: boolean = false;
     private _scalePointIndex: number = -1;
-    private _pointerData: { onDown: { x: number; y: number }; onMove: { x: number; y: number }; active: boolean };
+    private _pointerData: { corners: Vector2[]; pointerDown: boolean };
+    private _htmlPoints: Vector2[];
+    private _matrixCache: Matrix2D[];
     private _responsive: boolean;
 
     constructor(props: IGuiGizmoProps) {
         super(props);
         this.props.globalState.guiGizmo = this;
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
+        this._pointerData = { corners: [new Vector2(), new Vector2(), new Vector2(), new Vector2()], pointerDown: false };
+        this._htmlPoints = [new Vector2(), new Vector2(), new Vector2(), new Vector2(), new Vector2(), new Vector2(), new Vector2(), new Vector2(), new Vector2()];
+        this._matrixCache = [Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity()];
 
         // Set visibility
         props.globalState.onSelectionChangedObservable.add((selection) => {
@@ -37,7 +44,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                     scalePoint.style.display = "none";
                 });
             }
-            this.updateGizmo();
+            this.updateGizmo(true);
         });
 
         this.props.globalState.onResponsiveChangeObservable.add((value) => {
@@ -45,57 +52,50 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         });
 
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
-            this.updateGizmo();
+            // TODO - no need to update on each frame.
+            this.updateGizmo(true);
         });
     }
 
     componentDidMount() {}
 
-    updateGizmo() {
+    updateGizmo(force?: boolean) {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-        if (selectedGuiNodes.length > 0) {
+        if (selectedGuiNodes.length > 0 && (force || this._pointerData.pointerDown)) {
             const node = selectedGuiNodes[0];
-
-            let startingPositions = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()];
 
             // Calculating the offsets for each scale point.
             const half = 1 / 2;
-            startingPositions[0].x -= node.widthInPixels * half;
-            startingPositions[0].z += node.heightInPixels * half;
+            this._htmlPoints[0].x = -node.widthInPixels * half;
+            this._htmlPoints[0].y = node.heightInPixels * half;
 
-            startingPositions[1].x -= node.widthInPixels * half;
-            startingPositions[1].z -= node.heightInPixels * half;
+            this._htmlPoints[1].x = -node.widthInPixels * half;
+            this._htmlPoints[1].y = -node.heightInPixels * half;
 
-            startingPositions[2].x += node.widthInPixels * half;
-            startingPositions[2].z -= node.heightInPixels * half;
+            this._htmlPoints[2].x = node.widthInPixels * half;
+            this._htmlPoints[2].y = -node.heightInPixels * half;
 
-            startingPositions[3].x += node.widthInPixels * half;
-            startingPositions[3].z += node.heightInPixels * half;
+            this._htmlPoints[3].x = node.widthInPixels * half;
+            this._htmlPoints[3].y = node.heightInPixels * half;
 
-            startingPositions[4].x -= node.widthInPixels * half;
-            startingPositions[5].z -= node.heightInPixels * half;
-            startingPositions[6].x += node.widthInPixels * half;
-            startingPositions[7].z += node.heightInPixels * half;
+            this._htmlPoints[4].x = -node.widthInPixels * half;
+            this._htmlPoints[5].y = -node.heightInPixels * half;
+            this._htmlPoints[6].x = node.widthInPixels * half;
+            this._htmlPoints[7].y = node.heightInPixels * half;
 
             // Calculate the pivot point
             const pivotX = (node.transformCenterX - 0.5) * 2;
             const pivotY = (node.transformCenterY - 0.5) * 2;
-            startingPositions[8].x += node.widthInPixels * half * pivotX;
-            startingPositions[8].z += node.heightInPixels * half * pivotY;
+            this._htmlPoints[8].x = node.widthInPixels * half * pivotX;
+            this._htmlPoints[8].y = node.heightInPixels * half * pivotY;
 
             this.scalePoints.forEach((scalePoint, index) => {
-                //we get the corner of the control with rotation 0
-                let res = startingPositions[index];
-
-                const result = new Vector2(res.x, res.z);
                 // TODO optimize this - unify?
-                this._nodeToRTTSpace(node, result.x, result.y, result, false);
+                const result = this._nodeToRTTSpace(node, this._htmlPoints[index].x, this._htmlPoints[index].y, undefined, false);
                 const finalResult = this._rttToCanvasSpace(node, result.x, result.y);
 
-                // TODO - is that needed?
                 const scene = this.props.globalState.workbench._scene;
                 const engine = scene.getEngine();
-
                 // If the scale point is outside the viewport, do not render
                 scalePoint.style.display =
                     finalResult.x < 0 || finalResult.x < 0 || finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
@@ -109,6 +109,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             });
         }
     }
+
+    private _resetMatrixArray() {
+        this._matrixCache.forEach((matrix) => {
+            Matrix2D.IdentityToRef(matrix);
+        });
+    };
 
     private _getNodeMatrix(node: Control, useStoredValues?: boolean): Matrix2D {
         const size = this.props.globalState.guiTexture.getSize();
@@ -145,9 +151,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 y = 0;
                 break;
         }
+        this._resetMatrixArray();
 
-        const m2d = Matrix2D.Identity();
-        const translateTo = Matrix2D.Identity();
+        const m2d = this._matrixCache[0];
+        const translateTo = this._matrixCache[1];
+        // as this is used later it needs to persist
         const resultMatrix = Matrix2D.Identity();
 
         // Transform the coordinates into world space
@@ -162,11 +170,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
         }
 
+        // Set the translation
         Matrix2D.TranslationToRef(x + left, y + top, translateTo);
-        // without parents, calculate world matrix for each
+        // without parents scaling and rotation, calculate world matrix for each
         const rotation = this.getRotation(node, true);
         const scaling = this.getScale(node, true);
+        // COmpose doesn't actually translate, but creates a form of pivot in a specific position
         Matrix2D.ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
+        // actually compose the matrix
         resultMatrix.multiplyToRef(m2d, resultMatrix);
         resultMatrix.multiplyToRef(translateTo, resultMatrix);
         return resultMatrix;
@@ -179,32 +190,31 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             listOfNodes.push(p);
             p = p.parent;
         }
-        const matrices = listOfNodes.map((node, index) => this._getNodeMatrix(node, index === 0 && this._mouseDown && useStoredValuesIfPossible));
+        this._resetMatrixArray();
+        const matrices = listOfNodes.map((node, index) => this._getNodeMatrix(node, index === 0 && this._pointerData.pointerDown && useStoredValuesIfPossible));
         return matrices.reduce((acc, cur) => {
             acc.multiplyToRef(cur, acc);
             return acc;
-        }, Matrix2D.Identity());
+        }, this._matrixCache[2]);
     }
-
-    private _roundFactor = 1;
 
     private _nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), useStoredValuesIfPossible?: boolean) {
         const worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
         worldMatrix.transformCoordinates(x, y, reference);
         // round
-        reference.x = Math.round(reference.x * this._roundFactor) / this._roundFactor;
-        reference.y = Math.round(reference.y * this._roundFactor) / this._roundFactor;
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
         return reference;
     }
 
     private _rttToLocalNodeSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), useStoredValuesIfPossible?: boolean) {
         const worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
-        const inv = Matrix2D.Identity();
+        const inv = this._matrixCache[3];
         worldMatrix.invertToRef(inv);
         inv.transformCoordinates(x, y, reference);
         // round
-        reference.x = Math.round(reference.x * this._roundFactor) / this._roundFactor;
-        reference.y = Math.round(reference.y * this._roundFactor) / this._roundFactor;
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
         return reference;
     }
 
@@ -218,8 +228,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         // TODO - to ref
         const projected = Vector3.Project(tmpVec, Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
         // round to 1 decimal points
-        projected.x = Math.round(projected.x * this._roundFactor) / this._roundFactor;
-        projected.y = Math.round(projected.y * this._roundFactor) / this._roundFactor;
+        projected.x = round(projected.x);
+        projected.y = round(projected.y);
         return projected;
     }
 
@@ -239,10 +249,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const scene = this.props.globalState.workbench._scene;
         const newPosition = this.props.globalState.workbench.getPosition(scene, camera, this._plane, x ?? scene.pointerX, y || scene.pointerY);
         newPosition.z *= -1;
-        return {
-            x: Math.round(newPosition.x * this._roundFactor) / this._roundFactor,
-            y: Math.round(newPosition.z * this._roundFactor) / this._roundFactor,
-        };
+        return new Vector2(round(newPosition.x), round(newPosition.z));
     }
 
     getScale(node: Control, relative?: boolean): Vector2 {
@@ -296,17 +303,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.draggable = true;
             scalePoint.addEventListener("pointerup", this._onUp);
             this.scalePoints.push(scalePoint);
-            this._pointerData = {
-                onDown: {
-                    x: 0,
-                    y: 0,
-                },
-                onMove: {
-                    x: 0,
-                    y: 0,
-                },
-                active: false,
-            };
         }
 
         // Create the pivot point which is special
@@ -321,17 +317,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             evt.preventDefault();
         };
         pivotPoint.draggable = true;
-        this._pointerData = {
-            onDown: {
-                x: 0,
-                y: 0,
-            },
-            onMove: {
-                x: 0,
-                y: 0,
-            },
-            active: false,
-        };
         this.updateGizmo();
     }
 
@@ -340,19 +325,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     private _onUp = (evt?: React.PointerEvent | PointerEvent) => {
-        this._mouseDown = false;
-        // TODO - reinstate
-        // this._corners.length = 0;
+        this._pointerData.pointerDown = false;
         document.querySelectorAll(".ge-scalePoint").forEach((scalePoint) => {
             (scalePoint as HTMLElement).style.pointerEvents = "auto";
         });
-        // TODO - this fails
-        // this._pointerData[this._scalePointIndex].active = false;
         this._scalePointIndex = -1;
     };
 
     public onMove(evt: React.PointerEvent) {
-        this._onMove(evt);
+        this._onMove();
     }
 
     private _initH = 0;
@@ -360,12 +341,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _initX = 0;
     private _initY = 0;
 
-    private _onMove = (evt: React.PointerEvent | PointerEvent) => {
-        if (this._mouseDown) {
+    private _onMove = () => {
+        if (this._pointerData.pointerDown) {
             const scene = this.props.globalState.workbench._scene;
-            this._pointerData.onMove.x = scene.pointerX;
-            this._pointerData.onMove.y = scene.pointerY;
-
             const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
             if (selectedGuiNodes.length > 0) {
                 const node = selectedGuiNodes[0];
@@ -377,30 +355,24 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         }
     };
 
-    private _corners: Vector2[] = [];
-
     private _nodeToCorners(node: Control) {
-        // TODO optimize
-        this._corners = [new Vector2(), new Vector2(), new Vector2(), new Vector2()];
+        const half = 0.5;
+        this._pointerData.corners[0].x = -node.widthInPixels * half;
+        this._pointerData.corners[0].y = node.heightInPixels * half;
 
-        const half = 1 / 2;
-        this._corners[0].x -= node.widthInPixels * half;
-        this._corners[0].y += node.heightInPixels * half;
+        this._pointerData.corners[1].x = -node.widthInPixels * half;
+        this._pointerData.corners[1].y = -node.heightInPixels * half;
 
-        this._corners[1].x -= node.widthInPixels * half;
-        this._corners[1].y -= node.heightInPixels * half;
+        this._pointerData.corners[2].x = node.widthInPixels * half;
+        this._pointerData.corners[2].y = -node.heightInPixels * half;
 
-        this._corners[2].x += node.widthInPixels * half;
-        this._corners[2].y -= node.heightInPixels * half;
-
-        this._corners[3].x += node.widthInPixels * half;
-        this._corners[3].y += node.heightInPixels * half;
+        this._pointerData.corners[3].x = node.widthInPixels * half;
+        this._pointerData.corners[3].y = node.heightInPixels * half;
     }
 
     private _updateNodeFromCorners(node: Control) {
-        // take point 0 and 2
-        const upperLeft = this._corners[1];
-        const lowerRight = this._corners[3];
+        const upperLeft = this._pointerData.corners[1];
+        const lowerRight = this._pointerData.corners[3];
         const width = lowerRight.x - upperLeft.x;
         const height = lowerRight.y - upperLeft.y;
         const left = this._scalePointIndex === 0 || this._scalePointIndex === 1;
@@ -409,38 +381,32 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         const localRotation = this.getRotation(node, true);
         const localScaling = this.getScale(node, true);
         const absoluteCenter = new Vector2(upperLeft.x + width * 0.5, upperLeft.y + height * 0.5);
-        const center = absoluteCenter.multiplyInPlace(localScaling);
+        const center = absoluteCenter.multiply(localScaling);
         const cosRotation = Math.cos(localRotation);
         const sinRotation = Math.sin(localRotation);
         const cosRotation180 = Math.cos(localRotation + Math.PI);
         const sinRotation180 = Math.sin(localRotation + Math.PI);
-        const widthDelta = this._initW - width;
-        const heightDelta = this._initH - height;
+        const widthDelta = (this._initW - width) * 0.5;
+        const heightDelta = (this._initH - height) * 0.5;
         switch (node.horizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                center.x += (left ? widthDelta * 0.5 : -absoluteCenter.x) * cosRotation;
-                center.y += (left ? -(widthDelta * 0.5) : absoluteCenter.x) * sinRotation;
+                center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
+                center.y += (left ? -widthDelta : absoluteCenter.x) * sinRotation;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                center.x += (left ? -(widthDelta * 0.5) : absoluteCenter.x) * cosRotation;
-                center.y += (left ? widthDelta * 0.5 : -absoluteCenter.x) * sinRotation;
-                break;
-            case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                // x = upperLeft.x + width * 0.5;
+                center.x += (left ? -widthDelta : absoluteCenter.x) * cosRotation;
+                center.y += (left ? widthDelta : -absoluteCenter.x) * sinRotation;
                 break;
         }
 
         switch (node.verticalAlignment) {
             case Control.VERTICAL_ALIGNMENT_TOP:
-                center.y += (top ? -(heightDelta * 0.5) : absoluteCenter.y) * cosRotation180;
-                center.x += (top ? -(heightDelta * 0.5) : absoluteCenter.y) * sinRotation180;
+                center.y += (top ? -heightDelta : absoluteCenter.y) * cosRotation180;
+                center.x += (top ? -heightDelta : absoluteCenter.y) * sinRotation180;
                 break;
             case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                center.y += (top ? heightDelta * 0.5 : -absoluteCenter.y) * cosRotation180;
-                center.x += (top ? heightDelta * 0.5 : -absoluteCenter.y) * sinRotation180;
-                break;
-            case Control.VERTICAL_ALIGNMENT_CENTER:
-                // y = upperLeft.y + height * 0.5;
+                center.y += (top ? heightDelta : -absoluteCenter.y) * cosRotation180;
+                center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
                 break;
         }
         // let offsetX = width * node.transformCenterX - width / 2;
@@ -453,31 +419,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         // }
         // console.log("offset", offsetX, offsetY);
 
-        // x = left ? -x : x;
-        // y = top ? -y : y;
-        // x = x * Math.cos(localRotation) - y * Math.sin(localRotation);
-        // y = x * Math.sin(localRotation) + y * Math.cos(localRotation);
-        // y = y * Math.cos(localRotation);
-
-        const pivotX = 0.5; // (1 - node.transformCenterX);
-        const pivotY = 0.5; // (1 - node.transformCenterY);
-        // const center = new Vector2(x, y);
-        // center.x *= localScaling.x;
-        // center.y *= localScaling.y;
-        // const multipliedCenterX = center.x * x;
-        // const multipliedCenterY = center.y * y;
-        // center.x += multipliedCenterX;
-        // center.y += multipliedCenterY;
-        console.log("center", center);
+        // rotate the center around 0,0
         const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
 
         // round
-        rotatedCenter.x = Math.round(rotatedCenter.x);
-        rotatedCenter.y = Math.round(rotatedCenter.y);
-        node.leftInPixels = this._initX + rotatedCenter.x;
-        node.topInPixels = this._initY + rotatedCenter.y;
-        node.widthInPixels = Math.max(10, width);
-        node.heightInPixels = Math.max(10, height);
+        node.leftInPixels = round(this._initX + rotatedCenter.x);
+        node.topInPixels = round(this._initY + rotatedCenter.y);
+        node.widthInPixels = round(Math.max(10, width));
+        node.heightInPixels = round(Math.max(10, height));
     }
 
     private _rotate(x: number, y: number, centerX: number, centerY: number, angle: number) {
@@ -488,28 +437,23 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     }
 
     private _setNodeCorner(node: Control, corner: Vector2, cornerIndex: number) {
-        this._corners[cornerIndex].copyFrom(corner);
+        this._pointerData.corners[cornerIndex].copyFrom(corner);
         // also update the other corners
         const next = (cornerIndex + 1) % 4;
         const prev = (cornerIndex + 3) % 4;
         if (cornerIndex % 2 === 0) {
-            this._corners[next].x = this._corners[cornerIndex].x;
-            this._corners[prev].y = this._corners[cornerIndex].y;
+            this._pointerData.corners[next].x = this._pointerData.corners[cornerIndex].x;
+            this._pointerData.corners[prev].y = this._pointerData.corners[cornerIndex].y;
         } else {
-            this._corners[next].y = this._corners[cornerIndex].y;
-            this._corners[prev].x = this._corners[cornerIndex].x;
+            this._pointerData.corners[next].y = this._pointerData.corners[cornerIndex].y;
+            this._pointerData.corners[prev].x = this._pointerData.corners[cornerIndex].x;
         }
         this._updateNodeFromCorners(node);
     }
 
     private _setMousePosition = (index: number) => {
-        this._mouseDown = true;
+        this._pointerData.pointerDown = true;
         this._scalePointIndex = index;
-        const scene = this.props.globalState.workbench._scene;
-        this._pointerData.onDown.x = scene.pointerX;
-        this._pointerData.onDown.y = scene.pointerY;
-        this._pointerData.active = true;
-
         document.querySelectorAll(".ge-scalePoint").forEach((scalePoint) => {
             (scalePoint as HTMLElement).style.pointerEvents = "none";
         });
@@ -518,14 +462,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
             this._nodeToCorners(node);
-            console.log(this._corners);
             this._initW = node.widthInPixels;
             this._initH = node.heightInPixels;
             this._initY = node.topInPixels;
             this._initX = node.leftInPixels;
-            this._updateNodeFromCorners(node);
         }
-        this.forceUpdate();
     };
 
     render() {
