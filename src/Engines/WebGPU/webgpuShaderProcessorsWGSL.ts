@@ -107,14 +107,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
-        code = RemoveComments(code);
-
-        const ubDeclaration = `[[block]] struct ${WebGPUShaderProcessor.InternalUniformBuffer} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalUBVarName} : ${WebGPUShaderProcessor.InternalUniformBuffer};\n`;
-
-        if (isFragment) {
-            return ubDeclaration + "##INJECTCODE##\n" + code;
-        }
-        return ubDeclaration + code;
+        return `[[block]] struct ${WebGPUShaderProcessor.InternalUniformBuffer} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalUBVarName} : ${WebGPUShaderProcessor.InternalUniformBuffer};\n` + RemoveComments(code);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
@@ -237,16 +230,11 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
-        //const hasFragCoord = fragmentCode.indexOf("gl_FragCoord") >= 0;
-        const fragCoordCode = `
+        const fragCoordCode = fragmentCode.indexOf("gl_FragCoord") >= 0 ? `
             if (internals.yFactor__ == 1.) {
                 gl_FragCoord.y = internals.textureOutputHeight__ - gl_FragCoord.y;
             }
-        `;
-
-        let injectCode = "";
-
-        fragmentCode = fragmentCode.replace("##INJECTCODE##", injectCode);
+        ` : "";
 
         // Add the group/binding info to the sampler declaration (var xxx: sampler|sampler_comparison)
         vertexCode = this._processSamplers(vertexCode, true);
@@ -305,6 +293,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
+        fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor__)*dpdy"); // will also handle dpdyCoarse and dpdyFine
 
         let fragmentBuiltinDecl = `var<private> ${builtInName_position_frag} : vec4<f32>;\nvar<private> ${builtInName_front_facing} : bool;\nvar<private> ${builtInName_FragColor} : vec4<f32>;\nvar<private> ${builtInName_frag_depth} : f32;\n`;
 

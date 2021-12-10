@@ -222,21 +222,6 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return uniformBuffer;
     }
 
-    private _generateDerivativeFunctionsInjection(): string {
-        const s = [];
-        const funcs = ["dFdy", "dFdyFine", "dFdyCoarse"];
-        const typesIn = ["float", "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4"];
-        const typesOut = ["float", "vec2", "vec3", "vec4", "vec2", "vec3", "vec4"];
-        for (const func of funcs) {
-            for (let i = 0; i < typesIn.length; ++i) {
-                const typeIn = typesIn[i];
-                const typeOut = typesOut[i];
-                s.push(`${typeOut} __${func}(${typeIn} p) { return ${func}(p) * (-yFactor__); }\n`);
-            }
-        }
-        return s.join("\n");
-    }
-
     public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
@@ -255,11 +240,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 }
             `;
 
-            let injectCode = "";
-            if (hasFragCoord) {
-                injectCode += "vec4 glFragCoord__;\n";
-            }
-            injectCode += this._generateDerivativeFunctionsInjection();
+            let injectCode = hasFragCoord ? "vec4 glFragCoord__;\n" : "";
 
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
@@ -269,7 +250,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/gl_FragCoord/g, "glFragCoord__");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
-            code = code.replace(/dFdy/g, "__dFdy"); // will also handle dFdyCoarse and dFdyFine
+            code = code.replace(/dFdy/g, "(-yFactor__)*dFdy"); // will also handle dFdyCoarse and dFdyFine
             code = code.replace("##INJECTCODE##", injectCode);
 
             if (hasFragCoord) {
