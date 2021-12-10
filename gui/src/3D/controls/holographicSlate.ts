@@ -267,9 +267,9 @@ export class HolographicSlate extends ContentDisplay3D {
         const node = new Mesh("slate" + this.name, scene);
 
         this._backPlate = CreateBox("backPlate" + this.name, { size: 1 }, scene);
-        const faceUV = new Array(6).fill(new Vector4(0,0,1,1));
+        const faceUV = new Array(6).fill(new Vector4(0, 0, 1, 1));
         if (scene.useRightHandedSystem) {
-            faceUV[0].copyFromFloats(0,1,1,0);
+            faceUV[0].copyFromFloats(0, 1, 1, 0);
         }
         this._contentPlate = CreateBox("contentPlate" + this.name, { size: 1, faceUV }, scene);
 
