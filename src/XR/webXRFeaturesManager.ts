@@ -132,6 +132,10 @@ export class WebXRFeatureName {
      * The name of the walking locomotion feature
      */
     public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion";
+    /**
+     * The name of the composition layers feature
+     */
+    public static readonly LAYERS = "xr-layers";
 }
 
 /**
