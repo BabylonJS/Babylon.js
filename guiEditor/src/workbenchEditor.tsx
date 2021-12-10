@@ -10,6 +10,7 @@ import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 
 import { CommandBarComponent } from "./components/commandBarComponent";
+import { Nullable } from "babylonjs/types";
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -50,6 +51,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _toolBarIconSize = 55;
 
     private _popUpWindow: Window;
+    private _draggedItem: Nullable<string>;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -250,7 +252,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                     {this.createToolbar()}
                     {/* The gui workbench diagram */}
-                    <div className="diagram-container">
+                    <div className="diagram-container"
+                        onDrop={(event) => {
+                            if (this._draggedItem != null) {
+                                this.onCreate(this._draggedItem);
+                            }
+                            this._draggedItem = null;
+
+                        }}
+                        onDragOver={(event) => {
+                            event.preventDefault();
+                        }}>
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                     </div>
 
@@ -437,6 +449,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     <div
                                         className={"toolbar-label" + (m.isActive ? " active" : "")}
                                         key={m.label}
+                                        onDragStart={(evt) => { this._draggedItem = m.label }}
                                         onClick={() => {
                                             if (!m.onClick) {
                                                 this.forceUpdate();
@@ -450,7 +463,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     >
                                         {!m.icon && <div className="toolbar-label-text">{(m.isActive ? "> " : "") + m.label}</div>}
                                         {m.icon && (
-                                            <div className="toolbar-icon">
+                                            <div className="toolbar-icon" draggable={true}>
                                                 <img src={m.icon} width="40px" height={"40px"} />
                                             </div>
                                         )}
