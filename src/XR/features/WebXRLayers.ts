@@ -53,9 +53,6 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
         if (!this._renderTargetTextures[subImageIndex] ||
             lastSubImage?.textureWidth !== subImage.textureWidth ||
             lastSubImage?.textureHeight != subImage.textureHeight) {
-            if (this._renderTargetTextures[subImageIndex]) {
-                this._destroyRenderTargetTexture(this._renderTargetTextures[subImageIndex]);
-            }
             const colorTexture = new WebGLHardwareTexture(subImage.colorTexture, this._glContext);
             const depthStencilTexture = new WebGLHardwareTexture(subImage.depthStencilTexture, this._glContext);
             this._renderTargetTextures[subImageIndex] = this._createRenderTargetTexture(
@@ -199,6 +196,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      */
     public static readonly Version = 1;
 
+    private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
 
     constructor(_xrSessionManager: WebXRSessionManager) {
@@ -217,8 +215,8 @@ export class WebXRLayers extends WebXRAbstractFeature {
             return false;
         }
 
-        const glContext = this._xrSessionManager.scene.getEngine()._gl;
-        this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, glContext);
+        this._glContext = this._xrSessionManager.scene.getEngine()._gl;
+        this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this.setXRSessionLayers([this.createProjectionLayer()]);
 
         return true;
@@ -230,8 +228,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @returns the XRWebGLLayer
      */
     public createXRWebGLLayer(params = defaultXRWebGLLayerInit): WebXRWebGLLayerWrapper {
-        const glContext = this._xrSessionManager.scene.getEngine()._gl;
-        const layer = new XRWebGLLayer(this._xrSessionManager.session, glContext, params);
+        const layer = new XRWebGLLayer(this._xrSessionManager.session, this._glContext, params);
         return new WebXRWebGLLayerWrapper(layer);
     }
 
@@ -260,7 +257,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         renderStateInit.baseLayer = undefined;
         renderStateInit.layers = wrappedLayers.map((wrappedLayer) => wrappedLayer.layer);
         this._xrSessionManager.updateRenderState(renderStateInit);
-        this._xrSessionManager._setBaseLayerWrapper(wrappedLayers[0]);
+        this._xrSessionManager._setBaseLayerWrapper((wrappedLayers.length > 0) ? wrappedLayers[0] : null);
     }
 
     public isCompatible(): boolean {

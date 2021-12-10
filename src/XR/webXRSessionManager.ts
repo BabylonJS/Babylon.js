@@ -349,10 +349,12 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     }
 
     /** @hidden */
-    public _setBaseLayerWrapper(baseLayerWrapper: WebXRLayerWrapper): void {
-        this._baseLayerRTTProvider?.dispose();
+    public _setBaseLayerWrapper(baseLayerWrapper: Nullable<WebXRLayerWrapper>): void {
+        if (this.isNative) {
+            this._baseLayerRTTProvider?.dispose();
+        }
         this._baseLayerWrapper = baseLayerWrapper;
-        this._baseLayerRTTProvider = this._baseLayerWrapper.createRenderTargetTextureProvider(this);
+        this._baseLayerRTTProvider = this._baseLayerWrapper?.createRenderTargetTextureProvider(this) || null;
     }
 
     /**
