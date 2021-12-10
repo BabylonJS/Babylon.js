@@ -315,6 +315,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private copyToClipboard() {
+        this._clipboard = [];
         if (this._selectAll) {
             let index = 0;
             this.nodes.forEach((node) => {
@@ -326,6 +327,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else {
             this._clipboard = this.selectedGuiNodes;
         }
+        console.log(this._clipboard.length);
     }
 
     private pasteFromClipboard() {
@@ -371,6 +373,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
         }
         this._selectAll = true;
+        console.log(this.selectedGuiNodes.length);
     }
 
     blurEvent = () => {
