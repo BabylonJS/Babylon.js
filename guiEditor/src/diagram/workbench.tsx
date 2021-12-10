@@ -321,6 +321,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public copyToClipboard() {
+        this._clipboard = [];
         if (this._selectAll) {
             let index = 0;
             this.nodes.forEach((node) => {
