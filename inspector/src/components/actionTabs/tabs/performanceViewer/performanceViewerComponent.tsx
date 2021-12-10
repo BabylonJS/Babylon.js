@@ -157,11 +157,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
     useEffect(() => {
         if (recordingState === RecordingState.Recording) {
-            if (performanceCollector?.hasLoadedData) {
-                performanceCollector?.clear(true);
-                performanceCollector?.addCollectionStrategies(...defaultStrategies);
-            }
-            performanceCollector?.start();
+            performanceCollector?.start(true); //preserve data
         } else {
             performanceCollector?.stop();
         }
