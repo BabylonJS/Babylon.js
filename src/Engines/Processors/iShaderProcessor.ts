@@ -13,7 +13,7 @@ export interface IShaderProcessor {
     textureRegexp?: RegExp;
     noPrecision?: boolean;
 
-    preProcessShaderCode?: (code: string) => string;
+    preProcessShaderCode?: (code: string, isFragment: boolean) => string;
     attributeProcessor?: (attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
     varyingProcessor?: (varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
     uniformProcessor?: (uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
