@@ -1755,7 +1755,6 @@ export class NativeEngine extends Engine {
         }
 
         return this.setFloatArray(uniform, new Float32Array(array));
-        return true;
     }
 
     public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
@@ -1763,8 +1762,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this.setFloatArray2(uniform, new Float32Array(array));
-        return true;
+        return this.setFloatArray2(uniform, new Float32Array(array));
     }
 
     public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
@@ -1772,8 +1770,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this.setFloatArray3(uniform, new Float32Array(array));
-        return true;
+        return this.setFloatArray3(uniform, new Float32Array(array));
     }
 
     public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
@@ -1781,8 +1778,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this.setFloatArray4(uniform, new Float32Array(array));
-        return true;
+        return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
     public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
