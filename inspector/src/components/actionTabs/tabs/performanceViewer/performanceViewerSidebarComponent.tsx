@@ -98,7 +98,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                             <span className="category">{category}</span>
                             <CheckBoxLineComponent isSelected={() => metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onSelect={onCheckAllChange(category)} faIcons={{enabled: faCheckSquare, disabled: faSquare}} />
                           </div>
-                        : <div className="version-header main-header sidebar-item" key={"header-version"}>
+                        : <div className="version-header sidebar-item" key={"header-version"}>
                             <span className="category">Version:</span>
                             <span className="value">{Engine.Version}</span>
                         </div>}
