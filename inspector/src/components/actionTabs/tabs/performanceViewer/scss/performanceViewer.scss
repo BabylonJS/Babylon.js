@@ -50,6 +50,18 @@ $squareSize: 14px;
         
         .version-header {
             background-color: darkslategray;
+            color: white;
+            grid-template-columns: 10px 1fr 1fr 10px;
+    
+            .category {
+                grid-column: 2;
+            }
+    
+            .value {
+                grid-column: 3;
+                display: flex;
+                justify-content: end;
+            }
         }
         
         // mid-dark color
