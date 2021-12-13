@@ -479,7 +479,7 @@ export class PerformanceViewerCollector {
             this.datasets.data = new DynamicFloat32Array(initialArraySize);
             this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
             this._startingTimestamp = PrecisionDate.Now;
-        } else if (!this._startingTimestamp) {
+        } else if (this._startingTimestamp === undefined) {
             this._startingTimestamp = PrecisionDate.Now;
         }
         this._scene.onAfterRenderObservable.add(this._collectDataAtFrame);
