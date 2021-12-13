@@ -51,6 +51,7 @@ export class PerformanceViewerCollector {
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
     private _hasLoadedData: boolean;
+    private _isStarted: boolean;
     private readonly _customEventObservable: Observable<IPerfCustomEvent>;
     private readonly _eventRestoreSet: Set<string>;
 
@@ -356,7 +357,7 @@ export class PerformanceViewerCollector {
      * @param data string content representing the file data.
      * @returns true if the data was successfully loaded, false otherwise.
      */
-    public loadFromFileData(data: string): boolean {
+    public loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean {
         const lines =
             data.replace(carriageReturnRegex, '').split('\n')
                 .map((line) => (
@@ -423,13 +424,17 @@ export class PerformanceViewerCollector {
         this.datasets.ids = parsedDatasets.ids;
         this.datasets.data = parsedDatasets.data;
         this.datasets.startingIndices = parsedDatasets.startingIndices;
-        this._datasetMeta.clear();
+        if (!keepDatasetMeta) {
+            this._datasetMeta.clear();
+        }
         this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
 
         // populate metadata.
-        for (const id of this.datasets.ids) {
-            this._datasetMeta.set(id, {color: this._getHexColorFromId(id)});
+        if (!keepDatasetMeta) {
+            for (const id of this.datasets.ids) {
+                this._datasetMeta.set(id, {color: this._getHexColorFromId(id)});
+            }
         }
         this.metadataObservable.notifyObservers(this._datasetMeta);
         this._hasLoadedData = true;
@@ -484,6 +489,7 @@ export class PerformanceViewerCollector {
         }
         this._scene.onAfterRenderObservable.add(this._collectDataAtFrame);
         this._restoreStringEvents();
+        this._isStarted = true;
     }
 
     /**
@@ -491,6 +497,14 @@ export class PerformanceViewerCollector {
      */
     public stop() {
         this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._isStarted = false;
+    }
+
+    /**
+     * Returns if the perf collector has been started or not.
+     */
+    public get isStarted() : boolean {
+        return this._isStarted;
     }
 
     /**
@@ -504,6 +518,7 @@ export class PerformanceViewerCollector {
         });
         this.datasetObservable.clear();
         this.metadataObservable.clear();
+        this._isStarted = false;
         (<any>this.datasets) = null;
     }
 }
