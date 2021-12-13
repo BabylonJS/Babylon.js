@@ -71,6 +71,7 @@ float Rand(vec3 rv) {
 }
 
 void main(void) {
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
 	#include<instancesVertex>
     #include<bonesVertex>
@@ -171,4 +172,6 @@ float r = Rand(position);
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

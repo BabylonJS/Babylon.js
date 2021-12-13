@@ -89,6 +89,9 @@ vec3 Uncharted2Tonemap(vec3 x)
 }
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
 #include<clipPlaneFragment>
 
@@ -170,4 +173,6 @@ void main(void) {
 	gl_FragColor = color;
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

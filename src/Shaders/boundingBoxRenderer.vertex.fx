@@ -4,6 +4,9 @@ attribute vec3 position;
 #include<__decl__boundingBoxRendererVertex>
 
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
     vec4 worldPos = world * vec4(position, 1.0);
 
 #ifdef MULTIVIEW
@@ -15,4 +18,6 @@ void main(void) {
 #else
 	gl_Position = viewProjection * worldPos;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

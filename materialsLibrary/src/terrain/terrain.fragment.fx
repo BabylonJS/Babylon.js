@@ -96,6 +96,9 @@ vec3 perturbNormal(vec3 viewDir, vec3 mixColor)
 
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
 	#include<clipPlaneFragment>
 
@@ -183,4 +186,5 @@ void main(void) {
 
 #include<imageProcessingCompatibility>
 
+#define CUSTOM_FRAGMENT_MAIN_END
 }

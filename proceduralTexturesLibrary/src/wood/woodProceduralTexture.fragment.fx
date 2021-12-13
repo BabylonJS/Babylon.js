@@ -27,7 +27,12 @@ float fbm(vec2 n) {
 }
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	float ratioy = mod(vUV.x * ampScale, 2.0 + fbm(vUV * 0.8));
 	vec3 wood = woodColor * ratioy;
 	gl_FragColor = vec4(wood, 1.0);
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

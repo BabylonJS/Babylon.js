@@ -1,35 +1,40 @@
 import { Nullable } from "../types";
-import { Scene } from "../scene";
 import { Material } from "./material";
-import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from '../Misc/decorators';
-import { MaterialFlags } from './materialFlags';
-import { MaterialHelper } from './materialHelper';
-import { BaseTexture } from './Textures/baseTexture';
-import { UniformBuffer } from './uniformBuffer';
-import { IAnimatable } from '../Animations/animatable.interface';
+import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
+import { MaterialFlags } from "./materialFlags";
+import { MaterialHelper } from "./materialHelper";
+import { BaseTexture } from "./Textures/baseTexture";
+import { UniformBuffer } from "./uniformBuffer";
+import { IAnimatable } from "../Animations/animatable.interface";
+import { MaterialDefines } from "./materialDefines";
+import { MaterialPluginBase } from "./materialPluginBase";
+import { Constants } from "../Engines/constants";
+import { SubMesh } from "../Meshes/subMesh";
+
+declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+declare type StandardMaterial = import("./standardMaterial").StandardMaterial;
+declare type PBRBaseMaterial = import("./PBR/pbrBaseMaterial").PBRBaseMaterial;
 
 /**
  * @hidden
  */
-export interface IMaterialDetailMapDefines {
-    DETAIL: boolean;
-    DETAILDIRECTUV: number;
-    DETAIL_NORMALBLENDMETHOD: number;
-
-    /** @hidden */
-    _areTexturesDirty: boolean;
+export class MaterialDetailMapDefines extends MaterialDefines {
+    DETAIL = false;
+    DETAILDIRECTUV = 0;
+    DETAIL_NORMALBLENDMETHOD = 0;
 }
 
 /**
- * Define the code related to the detail map parameters of a material
+ * Plugin that implements the detail map component of a material
  *
  * Inspired from:
  *   Unity: https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@9.0/manual/Mask-Map-and-Detail-Map.html and https://docs.unity3d.com/Manual/StandardShaderMaterialParameterDetail.html
  *   Unreal: https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/HowTo/DetailTexturing/index.html
  *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
  */
-export class DetailMapConfiguration {
-
+export class DetailMapConfiguration extends MaterialPluginBase {
     private _texture: Nullable<BaseTexture> = null;
     /**
      * The detail texture of the material.
@@ -80,29 +85,20 @@ export class DetailMapConfiguration {
 
     /** @hidden */
     public _markAllSubMeshesAsTexturesDirty(): void {
+        this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
-    /**
-     * Instantiate a new detail map
-     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
-     */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
-        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+    constructor(material: PBRBaseMaterial | StandardMaterial, addToPluginList = true) {
+        super(material, "DetailMap", 140, new MaterialDetailMapDefines(), addToPluginList);
+
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    /**
-     * Gets whether the submesh is ready to be used or not.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene the material belongs to.
-     * @returns - boolean indicating that the submesh is ready or not.
-     */
-    public isReadyForSubMesh(defines: IMaterialDetailMapDefines, scene: Scene): boolean {
+    public isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
-
-        const engine = scene.getEngine();
 
         if (defines._areTexturesDirty && scene.texturesEnabled) {
             if (engine.getCaps().standardDerivatives && this._texture && MaterialFlags.DetailTextureEnabled) {
@@ -116,12 +112,7 @@ export class DetailMapConfiguration {
         return true;
     }
 
-    /**
-     * Update the defines for detail map usage
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene the material belongs to.
-     */
-    public prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialDetailMapDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
 
@@ -140,16 +131,12 @@ export class DetailMapConfiguration {
         }
     }
 
-    /**
-     * Binds the material data.
-     * @param uniformBuffer defines the Uniform buffer to fill in.
-     * @param scene defines the scene the material belongs to.
-     * @param isFrozen defines whether the material is frozen or not.
-     */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }
+
+        const isFrozen = this._material.isFrozen;
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.DetailTextureEnabled) {
@@ -166,11 +153,6 @@ export class DetailMapConfiguration {
         }
     }
 
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
     public hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
@@ -179,93 +161,38 @@ export class DetailMapConfiguration {
         return false;
     }
 
-    /**
-     * Returns an array of the actively used textures.
-     * @param activeTextures Array of BaseTextures
-     */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
     }
 
-    /**
-     * Returns the animatable textures.
-     * @param animatables Array of animatable textures.
-     */
     public getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
         }
     }
 
-    /**
-     * Disposes the resources of the material.
-     * @param forceDisposeTextures - Forces the disposal of all textures.
-     */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
         }
     }
 
-    /**
-    * Get the current class name useful for serialization or dynamic coding.
-    * @returns "DetailMapConfiguration"
-    */
     public getClassName(): string {
         return "DetailMapConfiguration";
     }
 
-    /**
-     * Add the required uniforms to the current list.
-     * @param uniforms defines the current uniform list.
-     */
-    public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("vDetailInfos");
-        uniforms.push("detailMatrix");
-    }
-
-    /**
-     * Add the required samplers to the current list.
-     * @param samplers defines the current sampler list.
-     */
-    public static AddSamplers(samplers: string[]): void {
+    public getSamplers(samplers: string[]): void {
         samplers.push("detailSampler");
     }
 
-    /**
-     * Add the required uniforms to the current buffer.
-     * @param uniformBuffer defines the current uniform buffer.
-     */
-    public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.addUniform("vDetailInfos", 4);
-        uniformBuffer.addUniform("detailMatrix", 16);
-    }
-
-    /**
-     * Makes a duplicate of the current instance into another one.
-     * @param detailMap define the instance where to copy the info
-     */
-    public copyTo(detailMap: DetailMapConfiguration): void {
-        SerializationHelper.Clone(() => detailMap, this);
-    }
-
-    /**
-     * Serializes this detail map instance
-     * @returns - An object with the serialized instance.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a detail map setting from a serialized object.
-     * @param source - Serialized object.
-     * @param scene Defines the scene we are parsing for
-     * @param rootUrl Defines the rootUrl to load from
-     */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
-        SerializationHelper.Parse(() => this, source, scene, rootUrl);
+    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+        return {
+            ubo: [
+                { name: "vDetailInfos", size: 4, type: "vec4" },
+                { name: "detailMatrix", size: 16, type: "mat4" },
+            ],
+        };
     }
 }
