@@ -32,7 +32,7 @@ export enum IPerfMetadataCategory {
 }
 
 // list of strategies to add to perf graph automatically.
-const defaultStrategies = [
+const defaultStrategiesList = [
     {strategyCallback: PerfCollectionStrategy.FpsStrategy()},
     {strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
     {strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
@@ -57,16 +57,10 @@ const defaultStrategies = [
     {strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
 ];
 
-enum RecordingState {
-    NotRecording = "Begin Recording",
-    Recording = "Stop Recording",
-}
-
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
     const { scene } = props;
     const [isOpen, setIsOpen] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [recordingState, setRecordingState] = useState(RecordingState.NotRecording);
+    const [isLoadedFromCsv, setIsLoadedFromCsv] = useState(false);
     const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
     const [returnToLiveObservable] = useState(new Observable<void>());
@@ -76,12 +70,24 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         if (window) {
             window.close();
         }
+        if (isLoadedFromCsv) {
+            setIsLoadedFromCsv(false);
+            // If we load or unload a window from CSV data, we should clear the performanceCollector
+            // so that it can properly capture realtime performance
+            if (performanceCollector) {
+                performanceCollector.clear();
+                addStrategies(performanceCollector);
+            }
+        }
         setIsOpen(false);
-        setIsLoaded(false);
     };
 
     const startPerformanceViewerPopup = () => {
         if (performanceCollector) {
+            if (!performanceCollector.isStarted) {
+                performanceCollector.start(true);
+            }
+
             Inspector._CreatePersistentPopup({
                 props: {
                     id: "performance-viewer",
@@ -96,7 +102,6 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }
 
     const onPerformanceButtonClick = () => {
-        setIsLoaded(false);
         setIsOpen(true);
         startPerformanceViewerPopup();
     };
@@ -105,13 +110,12 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         Tools.ReadFile(file, (data: string) => {
             // reopen window and load data!
             setIsOpen(false);
-            setIsLoaded(true);
             setIsOpen(true);
+            setIsLoadedFromCsv(true);
             const isValid = performanceCollector?.loadFromFileData(data);
             if (!isValid) {
                 // if our data isnt valid we close the window.
                 setIsOpen(false);
-                setIsLoaded(false);
             } else {
                 startPerformanceViewerPopup();
             }
@@ -129,43 +133,27 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     };
 
     const onToggleRecording = () => {
-        if (recordingState === RecordingState.Recording) {
-            setRecordingState(RecordingState.NotRecording);
+        if (!performanceCollector?.isStarted) {
+            performanceCollector?.start(true);
         } else {
-            setRecordingState(RecordingState.Recording);
+            performanceCollector?.stop();
         }
     };
 
-    useEffect(() => {
-        const perfCollector = scene.getPerfCollector();
-        perfCollector.addCollectionStrategies(...defaultStrategies);
+    const addStrategies = (perfCollector : PerformanceViewerCollector) => {
+        perfCollector.addCollectionStrategies(...defaultStrategiesList);
         if (ComputePressureObserverWrapper.IsAvailable) {
             perfCollector.addCollectionStrategies({
                 strategyCallback: PerfCollectionStrategy.CpuStrategy(), category: IPerfMetadataCategory.FrameSteps
             });
         }
+    }
+
+    useEffect(() => {
+        const perfCollector = scene.getPerfCollector();
+        addStrategies(perfCollector);
         setPerformanceCollector(perfCollector);
     }, []);
-
-    useEffect(() => {
-        if (isOpen && !isLoaded) {
-            setRecordingState(RecordingState.Recording);
-        } else {
-            setRecordingState(RecordingState.NotRecording);
-        }
-    }, [isOpen]);
-
-    useEffect(() => {
-        if (recordingState === RecordingState.Recording) {
-            performanceCollector?.start(true); //preserve data
-        } else {
-            performanceCollector?.stop();
-        }
-
-        return () => {
-            performanceCollector?.stop();
-        };
-    }, [recordingState]);
 
     return (
         <>
@@ -174,7 +162,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                     <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
                     <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
-                    {!isOpen && <ButtonLineComponent label={recordingState} onClick={onToggleRecording} />}
+                    {!isOpen && <ButtonLineComponent label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
                 </LineContainerComponent>
             )}
         </>
