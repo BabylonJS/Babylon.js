@@ -32,6 +32,9 @@ float roundF(float number){
 	return sign(number)*floor(abs(number) + 0.5);
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	float brickW = 1.0 / numberOfBricksWidth;

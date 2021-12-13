@@ -57,6 +57,9 @@ float random( vec3 scale, float seed ){
 }
 
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN

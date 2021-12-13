@@ -3,6 +3,9 @@ varying vec2 vUV;
 uniform sampler2D textureSampler;
 uniform sampler2D leftSampler;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     vec4 leftFrag = texture2D(leftSampler, vUV);

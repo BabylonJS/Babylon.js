@@ -88,6 +88,9 @@ vec3 Uncharted2Tonemap(vec3 x)
 	return ((x*(A*x+C*B)+D*EEE)/(x*(A*x+B)+D*F))-EEE/F;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
