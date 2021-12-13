@@ -7,6 +7,9 @@ uniform sampler2D diffuseSampler;
 
 #include<clipPlaneFragmentDeclaration>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 #include<clipPlaneFragment>

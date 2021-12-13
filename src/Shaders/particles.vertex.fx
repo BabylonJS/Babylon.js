@@ -75,6 +75,9 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 }
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

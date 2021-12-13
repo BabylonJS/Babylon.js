@@ -42,6 +42,9 @@ attribute vec2 uv2;
 	varying vec4 vColor;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
 	vec3 positionUpdated = position;

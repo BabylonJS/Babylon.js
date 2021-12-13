@@ -3,6 +3,9 @@ attribute vec3 position;
 
 #include<__decl__boundingBoxRendererVertex>
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

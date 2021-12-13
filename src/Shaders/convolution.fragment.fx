@@ -5,6 +5,9 @@ uniform sampler2D textureSampler;
 uniform vec2 screenSize;
 uniform float kernel[9];
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec2 onePixel = vec2(1.0, 1.0) / screenSize;

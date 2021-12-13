@@ -15,6 +15,9 @@ uniform mat4 inverseViewProjection;
 uniform mat4 prevViewProjection;
 #endif
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     #ifdef GEOMETRY_SUPPORTED

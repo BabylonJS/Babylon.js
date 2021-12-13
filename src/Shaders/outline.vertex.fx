@@ -27,6 +27,9 @@ attribute vec2 uv2;
 #endif
 #include<logDepthDeclaration>
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;
