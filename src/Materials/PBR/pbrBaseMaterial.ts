@@ -1033,7 +1033,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            this._callbackPluginEvent(MaterialPluginEvent.GetDefineNames, this._eventInfo);
+            this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
             subMesh.materialDefines = new PBRMaterialDefines(this._eventInfo.defineNames);
         }
 
@@ -1360,7 +1360,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.uniforms = uniforms;
         this._eventInfo.samplers = samplers;
         this._eventInfo.customCode = undefined;
-        this._callbackPluginEvent(MaterialPluginEvent.PrepareEffect, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
@@ -1732,7 +1732,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.buildUniformLayout();
         }
 
-        this._callbackPluginEvent(MaterialPluginEvent.GetDefineNames, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
         const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
         const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
