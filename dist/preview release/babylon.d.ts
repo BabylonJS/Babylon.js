@@ -2325,7 +2325,7 @@ declare module BABYLON {
         uniformBufferRegexp?: RegExp;
         textureRegexp?: RegExp;
         noPrecision?: boolean;
-        preProcessShaderCode?: (code: string) => string;
+        preProcessShaderCode?: (code: string, isFragment: boolean) => string;
         attributeProcessor?: (attribute: string, preProcessors: {
             [key: string]: string;
         }, processingContext: Nullable<ShaderProcessingContext>) => string;
@@ -16533,7 +16533,7 @@ declare module BABYLON {
      *
      * This returned material effects how the mesh will look based on the code in the shaders.
      *
-     * @see https://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/advanced_topics/shaders/shaderMaterial
      */
     export class ShaderMaterial extends PushMaterial {
         private _shaderPath;
@@ -17013,7 +17013,7 @@ declare module BABYLON {
         clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): LinesMesh;
         /**
          * Creates a new InstancedLinesMesh object from the mesh model.
-         * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/copies/instances
          * @param name defines the name of the new instance
          * @returns a new InstancedLinesMesh
          */
@@ -27471,7 +27471,7 @@ declare module BABYLON {
              * @param scene defines the hosting scene
              * @param updatable defines if the mesh must be flagged as updatable
              * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-             * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
+             * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#ribbon)
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
@@ -27571,7 +27571,7 @@ declare module BABYLON {
              * @param points is an array successive Vector3
              * @param scene defines the hosting scene
              * @param updatable defines if the mesh must be flagged as updatable
-             * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
+             * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#lines-and-dashedlines).
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
@@ -27585,7 +27585,7 @@ declare module BABYLON {
              * @param dashNb is the intended total number of dashes (positive integer, default 200)
              * @param scene defines the hosting scene
              * @param updatable defines if the mesh must be flagged as updatable
-             * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
+             * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#lines-and-dashedlines)
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
@@ -27638,7 +27638,7 @@ declare module BABYLON {
              * @param scene defines the hosting scene
              * @param updatable defines if the mesh must be flagged as updatable
              * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-             * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
+             * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#extruded-shape)
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
@@ -27660,7 +27660,7 @@ declare module BABYLON {
              * @param scene defines the hosting scene
              * @param updatable defines if the mesh must be flagged as updatable
              * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-             * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
+             * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#extruded-shape)
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
@@ -27760,7 +27760,7 @@ declare module BABYLON {
              * @param scene defines the hosting scene
              * @param updatable defines if the mesh must be flagged as updatable
              * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-             * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
+             * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#tube)
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
@@ -27808,7 +27808,7 @@ declare module BABYLON {
              * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
              * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
              * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-             * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
+             * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/icosphere
              * @param name defines the name of the mesh
              * @param options defines the options used to create the mesh
              * @param scene defines the hosting scene
@@ -27841,7 +27841,7 @@ declare module BABYLON {
              * @param options the constructors options used to shape the mesh.
              * @param scene defines the scene the mesh is scoped to.
              * @returns the capsule mesh
-             * @see https://doc.babylonjs.com/how_to/capsule_shape
+             * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/capsule
              * @deprecated Please use MeshBuilder instead
              */
             function CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
@@ -29951,7 +29951,7 @@ declare module BABYLON {
      * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
      * @param options the constructors options used to shape the mesh.
      * @returns the capsule VertexData
-     * @see https://doc.babylonjs.com/how_to/capsule_shape
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/capsule
      */
     export function CreateCapsuleVertexData(options?: ICreateCapsuleOptions): VertexData;
     /**
@@ -31439,7 +31439,7 @@ declare module BABYLON {
     };
     /**
      * This represents all the required information to add a fresnel effect on a material:
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/divingDeeper/materials/using/fresnelParameters
      */
     export class FresnelParameters {
         private _isEnabled;
@@ -33738,7 +33738,7 @@ declare module BABYLON {
         useOctreeForCollisions: boolean;
         /**
          * Gets or sets the current layer mask (default is 0x0FFFFFFF)
-         * @see https://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
+         * @see https://doc.babylonjs.com/divingDeeper/cameras/layerMasksAndMultiCam
          */
         get layerMask(): number;
         set layerMask(value: number);
@@ -42814,7 +42814,7 @@ declare module BABYLON {
     /**
      * If you want to display a video in your scene, this is the special texture for that.
      * This special texture works similar to other textures, with the exception of a few parameters.
-     * @see https://doc.babylonjs.com/how_to/video_texture
+     * @see https://doc.babylonjs.com/divingDeeper/materials/using/videoTexture
      */
     export class VideoTexture extends Texture {
         /**
@@ -46427,7 +46427,7 @@ declare module BABYLON {
         /**
          * Instantiates a new Animation Group.
          * This helps managing several animations at once.
-         * @see https://doc.babylonjs.com/how_to/group
+         * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
          * @param name Defines the name of the group
          * @param scene Defines the scene the group belongs to
          */
@@ -46755,7 +46755,7 @@ declare module BABYLON {
          * Gets the initializer for the strategy used for collection of active indices metrics.
          * @returns the initializer for the active indices strategy
          */
-        static ActiveIndiciesStrategy(): PerfStrategyInitialization;
+        static ActiveIndicesStrategy(): PerfStrategyInitialization;
         /**
          * Gets the initializer for the strategy used for collection of active faces metrics.
          * @returns the initializer for the active faces strategy
@@ -46866,6 +46866,10 @@ declare module BABYLON {
          * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
          */
         category?: string;
+        /**
+         * Starts hidden
+         */
+        hidden?: boolean;
     }
     /**
      * The collector class handles the collection and storage of data into the appropriate array.
@@ -49185,7 +49189,7 @@ declare module BABYLON {
         animations: Animation[];
         /**
         * All of the animation groups added to this scene
-        * @see https://doc.babylonjs.com/how_to/group
+        * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
         */
         animationGroups: AnimationGroup[];
         /**
@@ -52273,11 +52277,141 @@ declare module BABYLON {
          */
         xrLayer: Nullable<XRWebGLLayer>;
         /**
-         * Initializes the xr layer for the session
+         * Initializes a XRWebGLLayer to be used as the session's baseLayer.
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
         initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
+    }
+}
+declare module BABYLON {
+    /**
+     * An interface for objects that provide render target textures for XR rendering.
+     */
+    export interface IWebXRRenderTargetTextureProvider extends IDisposable {
+        /**
+         * Attempts to set the framebuffer-size-normalized viewport to be rendered this frame for this view.
+         * In the event of a failure, the supplied viewport is not updated.
+         * @param viewport the viewport to which the view will be rendered
+         * @param view the view for which to set the viewport
+         * @returns whether the operation was successful
+         */
+        trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+        /**
+         * Gets the correct render target texture to be rendered this frame for this eye
+         * @param eye the eye for which to get the render target
+         * @returns the render target for the specified eye or null if not available
+         */
+        getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+        /**
+         * Gets the correct render target texture to be rendered this frame for this view
+         * @param view the view for which to get the render target
+         * @returns the render target for the specified view or null if not available
+         */
+        getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
+    }
+    /**
+     * Provides render target textures and other important rendering information for a given XRLayer.
+     * @hidden
+     */
+    export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRenderTargetTextureProvider {
+        private readonly _scene;
+        readonly layerWrapper: WebXRLayerWrapper;
+        abstract trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+        abstract getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+        abstract getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
+        protected _renderTargetTextures: RenderTargetTexture[];
+        protected _framebufferDimensions: Nullable<{
+            framebufferWidth: number;
+            framebufferHeight: number;
+        }>;
+        constructor(_scene: Scene, layerWrapper: WebXRLayerWrapper);
+        protected _createRenderTargetTexture(width: number, height: number, framebuffer: Nullable<WebGLFramebuffer>, colorTexture?: WebGLHardwareTexture, depthStencilTexture?: WebGLHardwareTexture): RenderTargetTexture;
+        protected _destroyRenderTargetTexture(renderTargetTexture: RenderTargetTexture): void;
+        getFramebufferDimensions(): Nullable<{
+            framebufferWidth: number;
+            framebufferHeight: number;
+        }>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** Covers all supported subclasses of WebXR's XRCompositionLayer */
+    export type WebXRCompositionLayerType = 'XRProjectionLayer';
+    /** Covers all supported subclasses of WebXR's XRLayer */
+    export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;
+    /**
+     * Wrapper over subclasses of XRLayer.
+     * @hidden
+     */
+    export class WebXRLayerWrapper {
+        /** The width of the layer's framebuffer. */
+        getWidth: () => number;
+        /** The height of the layer's framebuffer. */
+        getHeight: () => number;
+        /** The XR layer that this WebXRLayerWrapper wraps. */
+        readonly layer: XRLayer;
+        /** The type of XR layer that is being wrapped. */
+        readonly layerType: WebXRLayerType;
+        /** Create a render target provider for the wrapped layer. */
+        createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider;
+        /**
+         * Check if fixed foveation is supported on this device
+         */
+        get isFixedFoveationSupported(): boolean;
+        /**
+         * Get the fixed foveation currently set, as specified by the webxr specs
+         * If this returns null, then fixed foveation is not supported
+         */
+        get fixedFoveation(): Nullable<number>;
+        /**
+         * Set the fixed foveation to the specified value, as specified by the webxr specs
+         * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
+         */
+        set fixedFoveation(value: Nullable<number>);
+        protected constructor(
+        /** The width of the layer's framebuffer. */
+        getWidth: () => number, 
+        /** The height of the layer's framebuffer. */
+        getHeight: () => number, 
+        /** The XR layer that this WebXRLayerWrapper wraps. */
+        layer: XRLayer, 
+        /** The type of XR layer that is being wrapped. */
+        layerType: WebXRLayerType, 
+        /** Create a render target provider for the wrapped layer. */
+        createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider);
+    }
+}
+declare module BABYLON {
+    /**
+     * Wraps xr webgl layers.
+     * @hidden
+     */
+    export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
+        readonly layer: XRWebGLLayer;
+        /**
+         * @param layer is the layer to be wrapped.
+         * @returns a new WebXRLayerWrapper wrapping the provided XRWebGLLayer.
+         */
+        constructor(layer: XRWebGLLayer);
+    }
+    /**
+     * Provides render target textures and other important rendering information for a given XRWebGLLayer.
+     * @hidden
+     */
+    export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+        readonly layerWrapper: WebXRWebGLLayerWrapper;
+        protected _framebufferDimensions: {
+            framebufferWidth: number;
+            framebufferHeight: number;
+        };
+        private _rtt;
+        private _framebuffer;
+        private _layer;
+        constructor(scene: Scene, layerWrapper: WebXRWebGLLayerWrapper);
+        trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+        getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+        getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
     }
 }
 declare module BABYLON {
@@ -52321,6 +52455,7 @@ declare module BABYLON {
          * xr layer for the canvas
          */
         xrLayer: Nullable<XRWebGLLayer>;
+        private _xrLayerWrapper;
         /**
          * Observers registered here will be triggered when the xr layer was initialized
          */
@@ -52336,7 +52471,7 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Initializes the xr layer for the session
+         * Initializes a XRWebGLLayer to be used as the session's baseLayer.
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
@@ -52349,19 +52484,57 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Wraps XRWebGLLayer's created by Babylon Native.
+     * @hidden
+     */
+    export class NativeXRLayerWrapper extends WebXRLayerWrapper {
+        readonly layer: XRWebGLLayer;
+        constructor(layer: XRWebGLLayer);
+    }
+    /**
+     * Provides render target textures for layers created by Babylon Native.
+     * @hidden
+     */
+    export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+        readonly layerWrapper: NativeXRLayerWrapper;
+        private _nativeRTTProvider;
+        private _nativeLayer;
+        constructor(sessionManager: WebXRSessionManager, layerWrapper: NativeXRLayerWrapper);
+        trySetViewportForView(viewport: Viewport): boolean;
+        getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+        getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
+        getFramebufferDimensions(): Nullable<{
+            framebufferWidth: number;
+            framebufferHeight: number;
+        }>;
+    }
+    /**
+     * Creates the xr layer that will be used as the xr session's base layer.
+     * @hidden
+     */
+    export class NativeXRRenderTarget implements WebXRRenderTarget {
+        canvasContext: WebGLRenderingContext;
+        xrLayer: Nullable<XRWebGLLayer>;
+        private _nativeRenderTarget;
+        constructor(_xrSessionManager: WebXRSessionManager);
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Manages an XRSession to work with Babylon's engine
      * @see https://doc.babylonjs.com/how_to/webxr_session_manager
      */
-    export class WebXRSessionManager implements IDisposable {
+    export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextureProvider {
         /** The scene which the session should be created for */
         scene: Scene;
         private _engine;
         private _referenceSpace;
-        private _rttProvider;
+        private _baseLayerWrapper;
+        private _baseLayerRTTProvider;
         private _sessionEnded;
         private _xrNavigator;
-        private _baseLayer;
-        private _renderTargetTextures;
         private _sessionMode;
         /**
          * The base reference space from which the session started. good if you want to reset your
@@ -52435,11 +52608,25 @@ declare module BABYLON {
          */
         exitXRAsync(): Promise<void>;
         /**
+         * Attempts to set the framebuffer-size-normalized viewport to be rendered this frame for this view.
+         * In the event of a failure, the supplied viewport is not updated.
+         * @param viewport the viewport to which the view will be rendered
+         * @param view the view for which to set the viewport
+         * @returns whether the operation was successful
+         */
+        trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+        /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
          * @returns the render target for the specified eye or null if not available
          */
         getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+        /**
+         * Gets the correct render target texture to be rendered this frame for this view
+         * @param view the view for which to get the render target
+         * @returns the render target for the specified view or null if not available
+         */
+        getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
@@ -52481,11 +52668,20 @@ declare module BABYLON {
          */
         setReferenceSpaceTypeAsync(referenceSpaceType?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
         /**
-         * Updates the render state of the session
+         * Updates the render state of the session.
+         * Note that this is deprecated in favor of WebXRSessionManager.updateRenderState().
          * @param state state to set
          * @returns a promise that resolves once the render state has been updated
+         * @deprecated
          */
         updateRenderStateAsync(state: XRRenderState): Promise<void>;
+        /** @hidden */
+        _setBaseLayerWrapper(baseLayerWrapper: Nullable<WebXRLayerWrapper>): void;
+        /**
+         * Updates the render state of the session
+         * @param state state to set
+         */
+        updateRenderState(state: XRRenderStateInit): void;
         /**
          * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
          * @param sessionMode defines the session to test
@@ -52524,8 +52720,6 @@ declare module BABYLON {
          * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
          */
         set fixedFoveation(value: Nullable<number>);
-        private _createRenderTargetTexture;
-        private _destroyRenderTargetTexture;
     }
 }
 declare module BABYLON {
@@ -52652,6 +52846,10 @@ declare module BABYLON {
          * The name of the walking locomotion feature
          */
         static readonly WALKING_LOCOMOTION: string;
+        /**
+         * The name of the composition layers feature
+         */
+        static readonly LAYERS: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -57915,7 +58113,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * A class extending Texture allowing drawing on a texture
-     * @see https://doc.babylonjs.com/how_to/dynamictexture
+     * @see https://doc.babylonjs.com/divingDeeper/materials/using/dynamicTexture
      */
     export class DynamicTexture extends Texture {
         private _generateMipMaps;
@@ -59585,7 +59783,7 @@ declare module BABYLON {
     }
     /**
      * Helps to quickly add VR support to an existing scene.
-     * See https://doc.babylonjs.com/how_to/webvr_helper
+     * See https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
      */
     export class VRExperienceHelper {
         /** Options to modify the vr experience helper's behavior. */
@@ -63399,7 +63597,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Class used to define an additional view for the engine
-     * @see https://doc.babylonjs.com/how_to/multi_canvases
+     * @see https://doc.babylonjs.com/divingDeeper/scene/multiCanvas
      */
     export class EngineView {
         /** Defines the canvas where to render the view */
@@ -64922,6 +65120,7 @@ declare module BABYLON {
     export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         static readonly AutoSamplerSuffix: string;
         static readonly LeftOvertUBOName: string;
+        static readonly InternalsUBOName: string;
         static UniformSizes: {
             [type: string]: number;
         };
@@ -64955,6 +65154,7 @@ declare module BABYLON {
         protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: Nullable<GPUTextureViewDimension>, format: Nullable<GPUTextureFormat>, isVertex: boolean): void;
         protected _addSamplerBindingDescription(name: string, samplerInfo: WebGPUSamplerDescription, isVertex: boolean): void;
         protected _addBufferBindingDescription(name: string, uniformBufferInfo: WebGPUBufferDescription, bufferType: GPUBufferBindingType, isVertex: boolean): void;
+        protected _injectStartingAndEndingCode(code: string, mainFuncDecl: string, startingCode?: string, endingCode?: string): string;
     }
 }
 declare module BABYLON {
@@ -65202,6 +65402,7 @@ declare module BABYLON {
             [key: string]: string;
         }): [string, string, number];
         initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void;
+        preProcessShaderCode(code: string, isFragment: boolean): string;
         varyingProcessor(varying: string, isFragment: boolean, preProcessors: {
             [key: string]: string;
         }, processingContext: Nullable<ShaderProcessingContext>): string;
@@ -65350,7 +65551,7 @@ declare module BABYLON {
             [key: string]: string;
         }): [string, string, number];
         initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void;
-        preProcessShaderCode(code: string): string;
+        preProcessShaderCode(code: string, isFragment: boolean): string;
         varyingProcessor(varying: string, isFragment: boolean, preProcessors: {
             [key: string]: string;
         }, processingContext: Nullable<ShaderProcessingContext>): string;
@@ -65369,7 +65570,6 @@ declare module BABYLON {
             fragmentCode: string;
         };
         protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string;
-        private _injectStartingAndEndingCode;
         private _processSamplers;
         private _processCustomBuffers;
     }
@@ -65390,7 +65590,7 @@ declare module BABYLON {
         private static _IsGPUBuffer;
         constructor(device: GPUDevice);
         createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation?: boolean): GPUBuffer;
-        createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer;
+        createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): WebGPUDataBuffer;
         setRawData(buffer: GPUBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset: number, byteLength: number): void;
         setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset?: number, byteLength?: number): void;
         private _GetHalfFloatAsFloatRGBAArrayBuffer;
@@ -65508,6 +65708,7 @@ declare module BABYLON {
         get msaaTexture(): Nullable<GPUTexture>;
         set msaaTexture(texture: Nullable<GPUTexture>);
         view: Nullable<GPUTextureView>;
+        viewForWriting: Nullable<GPUTextureView>;
         format: GPUTextureFormat;
         textureUsages: number;
         textureAdditionalUsages: number;
@@ -65515,7 +65716,7 @@ declare module BABYLON {
         set(hardwareTexture: GPUTexture): void;
         setMSAATexture(hardwareTexture: GPUTexture): void;
         setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
-        createView(descriptor?: GPUTextureViewDescriptor): void;
+        createView(descriptor?: GPUTextureViewDescriptor, createViewForWriting?: boolean): void;
         reset(): void;
         release(): void;
     }
@@ -66154,17 +66355,6 @@ declare module BABYLON {
          * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
          */
         premultipliedAlpha?: boolean;
-        /**
-         * Defines if the final framebuffer Y inversion should always be done by a texture copy (default: false).
-         * If false (and if not using an offscreen canvas), the inversion will be done by the browser during compositing
-         */
-        forceCopyForInvertYFinalFramebuffer?: boolean;
-        /**
-         * Defines if the final copy pass doing the Y inversion should be disabled (default: false). This setting takes precedence over forceCopyForInvertYFinalFramebuffer.
-         * If true and if using an offscreen canvas, you should set something like canvas.style.transform = "scaleY(-1)" on the canvas from which you get the offscreen canvas, else the rendering will be Y inverted!
-         * Setting it to true allows to use the browser compositing to perform the Y inversion even when using an offscreen canvas, which leads to better performances
-         */
-        disableCopyForInvertYFinalFramebuffer?: boolean;
     }
     /**
      * The web GPU engine class provides support for WebGPU version of babylon.js.
@@ -66238,13 +66428,16 @@ declare module BABYLON {
          * Max number of uncaptured error messages to log
          */
         numMaxUncapturedErrors: number;
-        private _invertYFinalFramebuffer;
         private _mainTexture;
         private _mainTextureLastCopy;
         private _depthTexture;
         private _mainTextureExtends;
         private _depthTextureFormat;
         private _colorFormat;
+        /** @hidden */
+        _ubInvertY: WebGPUDataBuffer;
+        /** @hidden */
+        _ubDontInvertY: WebGPUDataBuffer;
         /** @hidden */
         _uploadEncoder: GPUCommandEncoder;
         /** @hidden */
@@ -66256,7 +66449,6 @@ declare module BABYLON {
         _currentRenderPass: Nullable<GPURenderPassEncoder>;
         /** @hidden */
         _mainRenderPassWrapper: WebGPURenderPassWrapper;
-        private _mainRenderPassCopyWrapper;
         /** @hidden */
         _rttRenderPassWrapper: WebGPURenderPassWrapper;
         /** @hidden */
@@ -90325,6 +90517,81 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Wraps xr composition layers.
+     * @hidden
+     */
+    export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
+        getWidth: () => number;
+        getHeight: () => number;
+        readonly layer: XRCompositionLayer;
+        readonly layerType: WebXRLayerType;
+        createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider;
+        constructor(getWidth: () => number, getHeight: () => number, layer: XRCompositionLayer, layerType: WebXRLayerType, createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider);
+    }
+    /**
+     * Wraps xr projection layers.
+     * @hidden
+     */
+    export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
+        readonly layer: XRProjectionLayer;
+        constructor(layer: XRProjectionLayer, xrGLBinding: XRWebGLBinding);
+    }
+    /**
+     * Exposes the WebXR Layers API.
+     */
+    export class WebXRLayers extends WebXRAbstractFeature {
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        private _glContext;
+        private _xrWebGLBinding;
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Attach this feature.
+         * Will usually be called by the features manager.
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * Creates a new XRWebGLLayer.
+         * @param params an object providing configuration options for the new XRWebGLLayer
+         * @returns the XRWebGLLayer
+         */
+        createXRWebGLLayer(params?: XRWebGLLayerInit): WebXRWebGLLayerWrapper;
+        /**
+         * Creates a new XRProjectionLayer.
+         * @param params an object providing configuration options for the new XRProjectionLayer
+         * @returns the projection layer
+         */
+        createProjectionLayer(params?: XRProjectionLayerInit): WebXRProjectionLayerWrapper;
+        /**
+         * Sets the layers to be used by the XR session.
+         * Note that you must call this function with any layers you wish to render to
+         * since it adds them to the XR session's render state
+         * (replacing any layers that were added in a previous call to setXRSessionLayers or updateRenderState).
+         * This method also sets up the session manager's render target texture provider
+         * as the first layer in the array, which feeds the WebXR camera(s) attached to the session.
+         * @param wrappedLayers An array of WebXRLayerWrapper, usually returned from the WebXRLayers createLayer functions.
+         */
+        setXRSessionLayers(wrappedLayers: Array<WebXRLayerWrapper>): void;
+        isCompatible(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached.
+         */
+        dispose(): void;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+    }
+}
+declare module BABYLON {
+    /**
      * A generic hand controller class that supports select and a secondary grasp
      */
     export class WebXRGenericHandController extends WebXRAbstractMotionController {
@@ -92334,9 +92601,14 @@ interface XRWebGLLayerInit {
 declare class XRWebGLBinding {
     constructor(xrSession: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext);
     getReflectionCubeMap: (lightProbe: XRLightProbe) => WebGLTexture;
+
+    // https://immersive-web.github.io/layers/#XRWebGLBindingtype
+    createProjectionLayer(init: XRProjectionLayerInit): XRProjectionLayer;
+    getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye: XREye): XRWebGLSubImage;
+    getViewSubImage(layer: XRProjectionLayer, view: XRView): XRWebGLSubImage;
 }
 
-declare class XRWebGLLayer {
+declare class XRWebGLLayer implements XRLayer {
     static getNativeFramebufferScaleFactor(session: XRSession): number;
     constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, layerInit?: XRWebGLLayerInit);
     readonly antialias: boolean;
@@ -92346,6 +92618,56 @@ declare class XRWebGLLayer {
     readonly ignoreDepthValues: boolean;
     fixedFoveation?: number | null;
     getViewport: (view: XRView) => XRViewport;
+
+    // Methods for EventTarget required through XRLayer
+    addEventListener(): void;
+    dispatchEvent(): boolean;
+    removeEventListener(): void;
+}
+
+type XRLayerLayout = "default" | "mono" | "stereo" | "stereo-left-right" | "stereo-top-bottom";
+
+// https://immersive-web.github.io/layers/#xrcompositionlayertype
+interface XRCompositionLayer extends XRLayer {
+    layout: XRLayerLayout;
+
+    blendTextureSourceAlpha: boolean;
+    chromaticAberrationCorrection: boolean;
+    mipLevels: number;
+
+    needsRedraw: boolean;
+
+    destroy(): void;
+}
+
+type XRTextureType = "texture" | "texture-array";
+
+interface XRProjectionLayerInit {
+    textureType: XRTextureType; //  Default  "texture";
+    colorFormat: GLenum;        //  Default 0x1908, RGBA
+    depthFormat: GLenum;        //  Default 0x1902, DEPTH_COMPONENT
+    scaleFactor: number;        //  Default 1.0;
+}
+
+interface XRProjectionLayer extends XRCompositionLayer {
+    textureWidth: number;
+    textureHeight: number;
+    textureArrayLength: number;
+
+    ignoreDepthValues: boolean;
+    fixedFoveation?: number;
+}
+
+interface XRSubImage {
+    viewport: XRViewport;
+}
+
+interface XRWebGLSubImage extends XRSubImage {
+    colorTexture: WebGLTexture;
+    depthStencilTexture?: WebGLTexture;
+    imageIndex?: number;
+    textureWidth: number;
+    textureHeight: number;
 }
 
 // tslint:disable-next-line no-empty-interface
@@ -92356,10 +92678,12 @@ interface XRRenderState {
     readonly depthFar: number;
     readonly depthNear: number;
     readonly inlineVerticalFieldOfView?: number;
+    readonly layers?: XRLayer[];
 }
 
-interface XRRenderStateInit extends XRRenderState {
-    baseLayer: XRWebGLLayer;
+// https://immersive-web.github.io/webxr/#dictdef-xrrenderstateinit
+interface XRRenderStateInit {
+    baseLayer?: XRWebGLLayer;
     depthFar: number;
     depthNear: number;
     inlineVerticalFieldOfView?: number;
@@ -92498,7 +92822,7 @@ interface XRSession {
      */
     requestLightProbe(options?: XRLightProbeInit): Promise<XRLightProbe>;
 
-    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
+    updateRenderState(state: XRRenderStateInit): void;
 
     onend: XREventHandler;
     oneyetrackingstart: XREventHandler;

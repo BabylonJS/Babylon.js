@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -16728,12 +16728,19 @@ var Button3D = /** @class */ (function (_super) {
         for (var i = 0; i < 6; i++) {
             faceUV[i] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 0, 0);
         }
-        faceUV[1] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 1, 1);
+        if (scene.useRightHandedSystem) {
+            // Flip the u on the texture
+            faceUV[0].copyFromFloats(1, 0, 0, 1);
+        }
+        else {
+            faceUV[1].copyFromFloats(0, 0, 1, 1);
+        }
         var mesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])(this.name + "_rootMesh", {
             width: 1.0,
             height: 1.0,
             depth: 0.08,
             faceUV: faceUV,
+            wrap: true,
         }, scene);
         return mesh;
     };
@@ -17742,13 +17749,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return HolographicButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _button3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./button3D */ "./3D/controls/button3D.ts");
-/* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/standardMaterial */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/fluent/fluentMaterial */ "./3D/materials/fluent/fluentMaterial.ts");
 /* harmony import */ var _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../2D/controls/stackPanel */ "./2D/controls/stackPanel.ts");
 /* harmony import */ var _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../2D/controls/image */ "./2D/controls/image.ts");
 /* harmony import */ var _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../2D/controls/textBlock */ "./2D/controls/textBlock.ts");
 /* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
+
 
 
 
@@ -17841,18 +17849,18 @@ var HolographicButton = /** @class */ (function (_super) {
                 return;
             }
             if (!this._tooltipFade) {
+                var rightHandedScene = this._backPlate._scene.useRightHandedSystem;
                 // Create tooltip with mesh and text
-                this._tooltipMesh = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
-                var tooltipBackground = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
-                var mat = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("", this._backPlate._scene);
-                mat.diffuseColor = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString("#212121");
+                this._tooltipMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
+                var tooltipBackground = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
+                var mat = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("", this._backPlate._scene);
+                mat.diffuseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString("#212121");
                 tooltipBackground.material = mat;
                 tooltipBackground.isPickable = false;
                 this._tooltipMesh.addChild(tooltipBackground);
-                tooltipBackground.position.z = 0.05;
+                tooltipBackground.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Forward(rightHandedScene).scale(0.05);
                 this._tooltipMesh.scaling.y = 1 / 3;
-                this._tooltipMesh.position.y = 0.7;
-                this._tooltipMesh.position.z = -0.15;
+                this._tooltipMesh.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Up().scale(0.7).add(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Forward(rightHandedScene).scale(-0.15));
                 this._tooltipMesh.isPickable = false;
                 this._tooltipMesh.parent = this._backPlate;
                 // Create text texture for the tooltip
@@ -17863,7 +17871,7 @@ var HolographicButton = /** @class */ (function (_super) {
                 this._tooltipTextBlock.fontSize = 130;
                 this._tooltipTexture.addControl(this._tooltipTextBlock);
                 // Add hover action to tooltip
-                this._tooltipFade = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["FadeInOutBehavior"]();
+                this._tooltipFade = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["FadeInOutBehavior"]();
                 this._tooltipFade.delay = 500;
                 this._tooltipMesh.addBehavior(this._tooltipFade);
                 this._tooltipHoverObserver = this.onPointerEnterObservable.add(function () {
@@ -17965,7 +17973,7 @@ var HolographicButton = /** @class */ (function (_super) {
         this._disposeFacadeTexture();
         var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__["StackPanel"]();
         panel.isVertical = true;
-        if (babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
+        if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
                 image.source = this._imageUrl;
@@ -17990,23 +17998,23 @@ var HolographicButton = /** @class */ (function (_super) {
     };
     // Mesh association
     HolographicButton.prototype._createNode = function (scene) {
-        this._backPlate = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "BackMesh", {
+        this._backPlate = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "BackMesh", {
             width: 1.0,
             height: 1.0,
-            depth: 0.08
+            depth: 0.08,
         }, scene);
-        this._frontPlate = Object(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "FrontMesh", {
+        this._frontPlate = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["CreateBox"])(this.name + "FrontMesh", {
             width: 1.0,
             height: 1.0,
-            depth: 0.08
+            depth: 0.08,
         }, scene);
         this._frontPlate.parent = this._backPlate;
-        this._frontPlate.position.z = -0.08;
+        this._frontPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Forward(scene.useRightHandedSystem).scale(-0.08);
         this._frontPlate.isPickable = false;
         this._frontPlate.setEnabled(false);
         this._textPlate = _super.prototype._createNode.call(this, scene);
         this._textPlate.parent = this._backPlate;
-        this._textPlate.position.z = -0.08;
+        this._textPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Forward(scene.useRightHandedSystem).scale(-0.08);
         this._textPlate.isPickable = false;
         return this._backPlate;
     };
@@ -18035,8 +18043,8 @@ var HolographicButton = /** @class */ (function (_super) {
         this._frontMaterial.renderBorders = true;
     };
     HolographicButton.prototype._createPlateMaterial = function (mesh) {
-        this._plateMaterial = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"](this.name + "Plate Material", mesh.getScene());
-        this._plateMaterial.specularColor = babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black();
+        this._plateMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"](this.name + "Plate Material", mesh.getScene());
+        this._plateMaterial.specularColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].Black();
     };
     HolographicButton.prototype._affectMaterial = function (mesh) {
         // Back
@@ -18110,6 +18118,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../gizmos/slateGizmo */ "./3D/gizmos/slateGizmo.ts");
 /* harmony import */ var _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../behaviors/defaultBehavior */ "./3D/behaviors/defaultBehavior.ts");
 /* harmony import */ var _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../materials/fluentBackplate/fluentBackplateMaterial */ "./3D/materials/fluentBackplate/fluentBackplateMaterial.ts");
+
 
 
 
@@ -18313,7 +18322,11 @@ var HolographicSlate = /** @class */ (function (_super) {
         var _this = this;
         var node = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Mesh"]("slate" + this.name, scene);
         this._backPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("backPlate" + this.name, { size: 1 }, scene);
-        this._contentPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("contentPlate" + this.name, { size: 1 }, scene);
+        var faceUV = new Array(6).fill(new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 1, 1));
+        if (scene.useRightHandedSystem) {
+            faceUV[0].copyFromFloats(0, 1, 1, 0);
+        }
+        this._contentPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("contentPlate" + this.name, { size: 1, faceUV: faceUV }, scene);
         this._backPlate.parent = node;
         this._backPlate.isNearGrabbable = true;
         this._contentPlate.parent = node;
@@ -19675,15 +19688,15 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         _this.pointerDownAnimation = function () {
             if (_this._frontPlate && !_this._isNearPressed) {
                 _this._frontPlate.scaling.z = _this._frontPlateDepth * 0.2;
-                _this._frontPlate.position.z = (_this._frontPlateDepth - (0.2 * _this._frontPlateDepth)) / 2;
-                _this._textPlate.position.z = -(_this._backPlateDepth + (0.2 * _this._frontPlateDepth)) / 2;
+                _this._frontPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._frontPlate._scene.useRightHandedSystem).scale((_this._frontPlateDepth - (0.2 * _this._frontPlateDepth)) / 2);
+                _this._textPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._textPlate._scene.useRightHandedSystem).scale(-(_this._backPlateDepth + (0.2 * _this._frontPlateDepth)) / 2);
             }
         };
         _this.pointerUpAnimation = function () {
             if (_this._frontPlate) {
                 _this._frontPlate.scaling.z = _this._frontPlateDepth;
-                _this._frontPlate.position.z = (_this._frontPlateDepth - _this._frontPlateDepth) / 2;
-                _this._textPlate.position.z = -(_this._backPlateDepth + _this._frontPlateDepth) / 2;
+                _this._frontPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._frontPlate._scene.useRightHandedSystem).scale((_this._frontPlateDepth - _this._frontPlateDepth) / 2);
+                _this._textPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._textPlate._scene.useRightHandedSystem).scale(-(_this._backPlateDepth + _this._frontPlateDepth) / 2);
             }
         };
         _this.onPointerMoveObservable.add(function (position) {
@@ -19693,8 +19706,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
                     var interactionHeight = _this._getInteractionHeight(position, _this._backPlate.position) / scale.z;
                     interactionHeight = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(interactionHeight - (_this._backPlateDepth / 2), 0.2 * _this._frontPlateDepth, _this._frontPlateDepth);
                     _this._frontPlate.scaling.z = interactionHeight;
-                    _this._frontPlate.position.z = (_this._frontPlateDepth - interactionHeight) / 2;
-                    _this._textPlate.position.z = -(_this._backPlateDepth + interactionHeight) / 2;
+                    _this._frontPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._frontPlate._scene.useRightHandedSystem).scale((_this._frontPlateDepth - interactionHeight) / 2);
+                    _this._textPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._textPlate._scene.useRightHandedSystem).scale(-(_this._backPlateDepth + interactionHeight) / 2);
                 }
             }
         });
@@ -19752,6 +19765,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
                 return;
             }
             if (!this._tooltipFade) {
+                var rightHandedScene = this._backPlate._scene.useRightHandedSystem;
                 // Create tooltip with mesh and text
                 this._tooltipMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("", { size: 1 }, this._backPlate._scene);
                 var tooltipBackground = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreatePlane"])("", { size: 1, sideOrientation: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"].DOUBLESIDE }, this._backPlate._scene);
@@ -19760,10 +19774,9 @@ var TouchHolographicButton = /** @class */ (function (_super) {
                 tooltipBackground.material = mat;
                 tooltipBackground.isPickable = false;
                 this._tooltipMesh.addChild(tooltipBackground);
-                tooltipBackground.position.z = 0.05;
+                tooltipBackground.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(rightHandedScene).scale(0.05);
                 this._tooltipMesh.scaling.y = 1 / 3;
-                this._tooltipMesh.position.y = 0.7;
-                this._tooltipMesh.position.z = -0.15;
+                this._tooltipMesh.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Up().scale(0.7).add(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(rightHandedScene).scale(-0.15));
                 this._tooltipMesh.isPickable = false;
                 this._tooltipMesh.parent = this._backPlate;
                 // Create text texture for the tooltip
@@ -19928,7 +19941,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.position.z = -this._frontPlateDepth / 2;
+        collisionMesh.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene)
             .then(function (result) {
             var importedFrontPlate = result.meshes[1];
@@ -19946,12 +19959,12 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             height: 1.0,
             depth: this._backPlateDepth,
         }, scene);
-        this._backPlate.position.z = this._backPlateDepth / 2;
+        this._backPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(scene.useRightHandedSystem).scale(-this._backPlateDepth / 2);
         this._backPlate.isPickable = false;
         this._textPlate = _super.prototype._createNode.call(this, scene);
         this._textPlate.name = this.name + "_textPlate";
         this._textPlate.isPickable = false;
-        this._textPlate.position.z = -this._frontPlateDepth / 2;
+        this._textPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);
         this.collisionMesh = collisionMesh;

@@ -95,7 +95,7 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see https://doc.babylonjs.com/how_to/shader_material
+ * @see https://doc.babylonjs.com/advanced_topics/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
     private _shaderPath: any;

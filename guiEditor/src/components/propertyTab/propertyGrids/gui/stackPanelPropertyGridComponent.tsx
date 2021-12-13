@@ -53,6 +53,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                     iconLabel="spacing"
                     target={stackPanel}
                     propertyName="spacing"
+                    defaultValue={0}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     onChange={() => stackPanel._markAsDirty()}
                 />

@@ -2464,6 +2464,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/floatLineComponen
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -5161,6 +5162,7 @@ declare module NODEEDITOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
