@@ -70,24 +70,24 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         if (window) {
             window.close();
         }
-        if (isLoadedFromCsv) {
-            setIsLoadedFromCsv(false);
-            // If we load or unload a window from CSV data, we should clear the performanceCollector
-            // so that it can properly capture realtime performance
-            if (performanceCollector) {
-                performanceCollector.clear();
-                addStrategies(performanceCollector);
-            }
-        }
+        // if (isLoadedFromCsv) {
+        setIsLoadedFromCsv(false);
+        // }
         setIsOpen(false);
     };
 
+    useEffect(() => {
+        if (!isLoadedFromCsv) {
+            if (performanceCollector) {
+                performanceCollector.stop();
+                performanceCollector.clear(false, false);
+                addStrategies(performanceCollector);
+            }
+        }
+    }, [isLoadedFromCsv]);
+
     const startPerformanceViewerPopup = () => {
         if (performanceCollector) {
-            if (!performanceCollector.isStarted) {
-                performanceCollector.start(true);
-            }
-
             Inspector._CreatePersistentPopup({
                 props: {
                     id: "performance-viewer",
@@ -103,6 +103,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
     const onPerformanceButtonClick = () => {
         setIsOpen(true);
+        performanceCollector?.start(true);
         startPerformanceViewerPopup();
     };
 
@@ -110,12 +111,13 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         Tools.ReadFile(file, (data: string) => {
             // reopen window and load data!
             setIsOpen(false);
-            setIsOpen(true);
             setIsLoadedFromCsv(true);
-            const isValid = performanceCollector?.loadFromFileData(data);
+            performanceCollector?.stop();
+            const isValid = performanceCollector?.loadFromFileData(data, true);
             if (!isValid) {
                 // if our data isnt valid we close the window.
                 setIsOpen(false);
+                performanceCollector?.start(true);
             } else {
                 startPerformanceViewerPopup();
             }
@@ -159,8 +161,8 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         <>
             {isEnabled && (
                 <LineContainerComponent title="Performance Viewer">
-                    <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />
-                    <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />
+                    {!isOpen && <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />}
+                    {!isOpen && <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />}
                     <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
                     {!isOpen && <ButtonLineComponent label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
                 </LineContainerComponent>
