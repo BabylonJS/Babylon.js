@@ -21,7 +21,7 @@ export class WebGPUClearQuad {
     private _engine: WebGPUEngine;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _effect: Effect;
-    private _bindGroups: { [id: number]: GPUBindGroup[] } = {};
+    private _bindGroups: { [id: string]: GPUBindGroup[] } = {};
     private _depthTextureFormat: GPUTextureFormat | undefined;
     private _bundleCache: { [key: number]: GPURenderBundle } = {};
 
@@ -54,6 +54,8 @@ export class WebGPUClearQuad {
         let bundle: Nullable<GPURenderBundle> = null;
         let bundleKey = 0;
 
+        const isRTTPass = !!this._engine._currentRenderTarget;
+
         if (renderPass) {
             renderPass2 = renderPass;
         } else {
@@ -61,7 +63,8 @@ export class WebGPUClearQuad {
                 (clearDepth ? 2 ** 32 : 0) +
                 (clearStencil ? 2 ** 33 : 0) +
                 (this._engine.useReverseDepthBuffer ? 2 ** 34 : 0) +
-                sampleCount * (2 ** 35);
+                (isRTTPass ? 2 ** 35 : 0) +
+                sampleCount * (2 ** 36);
 
             bundle = this._bundleCache[bundleKey];
 
@@ -93,14 +96,18 @@ export class WebGPUClearQuad {
 
         this._effect.setFloat("depthValue", this._engine.useReverseDepthBuffer ? this._engine._clearReverseDepthValue : this._engine._clearDepthValue);
 
-        webgpuPipelineContext.uniformBuffer?.update();
+        webgpuPipelineContext.uniformBuffer!.update();
 
-        const buffer = webgpuPipelineContext.uniformBuffer?.getBuffer() as WebGPUDataBuffer;
-        let bindGroups = this._bindGroups[buffer.uniqueId];
+        const bufferInternals = isRTTPass ? this._engine._ubInvertY : this._engine._ubDontInvertY;
+        const bufferLeftOver = webgpuPipelineContext.uniformBuffer!.getBuffer() as WebGPUDataBuffer;
+
+        const key = bufferLeftOver.uniqueId + "-" + bufferInternals.uniqueId;
+
+        let bindGroups = this._bindGroups[key];
 
         if (!bindGroups) {
             const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
-            bindGroups = this._bindGroups[buffer.uniqueId] = [];
+            bindGroups = this._bindGroups[key] = [];
             bindGroups.push(
                 this._device.createBindGroup({
                     layout: bindGroupLayouts[0],
@@ -121,8 +128,14 @@ export class WebGPUClearQuad {
                     entries: [{
                         binding: 0,
                         resource: {
-                            buffer: buffer.underlyingResource,
-                            size: buffer.capacity
+                            buffer: bufferInternals.underlyingResource,
+                            size: bufferInternals.capacity
+                        },
+                    }, {
+                        binding: 1,
+                        resource: {
+                            buffer: bufferLeftOver.underlyingResource,
+                            size: bufferLeftOver.capacity
                         },
                     }],
                 })

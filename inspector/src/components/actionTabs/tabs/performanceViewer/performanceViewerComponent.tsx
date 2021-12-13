@@ -12,6 +12,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { Inspector } from "../../../../inspector";
 import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
+import { ComputePressureObserverWrapper } from "babylonjs/Misc/computePressure";
 
 require("./scss/performanceViewer.scss");
 
@@ -32,10 +33,28 @@ export enum IPerfMetadataCategory {
 
 // list of strategies to add to perf graph automatically.
 const defaultStrategies = [
-    {strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps},
     {strategyCallback: PerfCollectionStrategy.FpsStrategy()},
+    {strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.ActiveIndicesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.ActiveBonesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.ActiveParticlesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
     {strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: IPerfMetadataCategory.Count},
-    {strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count},
+    {strategyCallback: PerfCollectionStrategy.TotalLightsStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.TotalVerticesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.TotalMaterialsStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.TotalTexturesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.AbsoluteFpsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.MeshesSelectionStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.RenderTargetsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.ParticlesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.SpritesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.AnimationsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.PhysicsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.RenderStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.FrameTotalStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.InterFrameStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    {strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
 ];
 
 enum RecordingState {
@@ -120,6 +139,11 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     useEffect(() => {
         const perfCollector = scene.getPerfCollector();
         perfCollector.addCollectionStrategies(...defaultStrategies);
+        if (ComputePressureObserverWrapper.IsAvailable) {
+            perfCollector.addCollectionStrategies({
+                strategyCallback: PerfCollectionStrategy.CpuStrategy(), category: IPerfMetadataCategory.FrameSteps
+            });
+        }
         setPerformanceCollector(perfCollector);
     }, []);
 

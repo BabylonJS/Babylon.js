@@ -99,10 +99,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //gets the higher parent of a given control.
-    private _getMaxParent(control: Control) {
+    private _getMaxParent(control: Control, maxParent: Control) {
         let parent = control;
         this._selectionDepth = 0;
-        while (parent.parent && parent.parent !== this.globalState.guiTexture._rootContainer) {
+        while (parent.parent && parent.parent !== maxParent) {
             parent = parent.parent;
             ++this._selectionDepth;
         }
@@ -135,7 +135,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.changeSelectionHighlight(false);
 
                         this._selectedGuiNodes = [selection];
-                        if (!this._lockMainSelection) { //incase the selection did not come from the canvas and mouse
+                        if (!this._lockMainSelection && selection != this.props.globalState.guiTexture._rootContainer) {
+                            //incase the selection did not come from the canvas and mouse
                             this._mainSelection = selection;
                         }
                         this._lockMainSelection = false;
@@ -227,9 +228,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 selection = this._getParentWithDepth(selection);
 
             } else { // get the start of our tree by getting our max parent and storing our main selected control
+                if (this._isMainSelectionParent(selection) && this._mainSelection) {
+                    selection = this._getMaxParent(selection, this._mainSelection);
+                    selection = this._getParentWithDepth(selection);
+                }
+                else {
+                    selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
+                }
                 this._mainSelection = selection;
-                selection = this._getMaxParent(selection);
-
             }
         }
         this._lockMainSelection = true;
@@ -308,6 +314,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public copyToClipboard() {
+        this._clipboard = [];
         if (this._selectAll) {
             let index = 0;
             this.nodes.forEach((node) => {
@@ -506,6 +513,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     }, Scene.DoubleClickDelay);
                 }
                 else { //function will either select our new main control or contrue down the tree.
+
                     this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }

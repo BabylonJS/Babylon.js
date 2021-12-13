@@ -592,7 +592,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
-     * @see https://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
+     * @see https://doc.babylonjs.com/divingDeeper/cameras/layerMasksAndMultiCam
      */
     public get layerMask(): number {
         return this._internalAbstractMeshDataInfo._layerMask;

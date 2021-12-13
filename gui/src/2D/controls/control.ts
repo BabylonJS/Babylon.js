@@ -140,6 +140,9 @@ export class Control {
         this._isReadOnly = value;
     }
 
+    /**
+     * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+     */
     public get transformedMeasure(): Measure {
         return this._evaluatedMeasure;
     }
@@ -806,19 +809,19 @@ export class Control {
      * Gets or sets a value indicating the padding should work like in CSS.
      * Basically, it will add the padding amount on each side of the parent control for its children.
      */
-     @serialize()
-     public get descendantsOnlyPadding(): boolean {
+    @serialize()
+    public get descendantsOnlyPadding(): boolean {
         return this._descendantsOnlyPadding;
-     }
+    }
 
-     public set descendantsOnlyPadding(value: boolean) {
+    public set descendantsOnlyPadding(value: boolean) {
         if (this._descendantsOnlyPadding === value) {
-             return;
+            return;
         }
 
         this._descendantsOnlyPadding = value;
         this._markAsDirty();
-     }
+    }
 
     /**
      * Gets or sets a value indicating the padding to use on the left of the control
@@ -1676,18 +1679,18 @@ export class Control {
 
         this._measure();
         this._computeAlignment(this._tempPaddingMeasure, context);
-        
+
         // Convert to int values
         this._currentMeasure.left = this._currentMeasure.left | 0;
         this._currentMeasure.top = this._currentMeasure.top | 0;
         this._currentMeasure.width = this._currentMeasure.width | 0;
         this._currentMeasure.height = this._currentMeasure.height | 0;
-        
+
         // Let children add more features
         this._additionalProcessing(this._tempPaddingMeasure, context);
-        
+
         this._cachedParentMeasure.copyFrom(this._tempPaddingMeasure);
-        
+
         this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
