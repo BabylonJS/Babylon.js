@@ -209,6 +209,7 @@ export class HighlightLayer extends EffectLayer {
      */
     public set blurHorizontalSize(value: number) {
         this._horizontalBlurPostprocess.kernel = value;
+        this._options.blurHorizontalSize = value;
     }
 
     /**
@@ -216,6 +217,7 @@ export class HighlightLayer extends EffectLayer {
      */
     public set blurVerticalSize(value: number) {
         this._verticalBlurPostprocess.kernel = value;
+        this._options.blurVerticalSize = value;
     }
 
     /**
