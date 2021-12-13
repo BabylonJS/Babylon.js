@@ -252,16 +252,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         return projected;
     }
 
-    // private _canvasSpaceToRTTSpace(node: Control, projected: Vector3) {
-    //     const camera = this.props.globalState.workbench._camera;
-    //     const scene = this.props.globalState.workbench._scene;
-    //     const engine = scene.getEngine();
-    //     const viewport = camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-    //     const unproject = Vector3.Unproject(projected, viewport.width, viewport.height, Matrix.Identity(), camera.getViewMatrix(), scene.getProjectionMatrix());
-    //     unproject.z *= -1;
-    //     return new Vector2(Math.round(unproject.x * this._roundFactor) / this._roundFactor, Math.round(unproject.z * this._roundFactor) / this._roundFactor);
-    // }
-
     private _plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
     private _mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
         const camera = this.props.globalState.workbench._camera;
@@ -466,6 +456,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         }
         else if(node.typeName === "TextBlock") {
             (node as TextBlock).resizeToFit = false;
+        }
+
+        if (this._responsive) {
+            this.props.globalState.workbench.convertToPercentage(node, true);
         }
 
     }
