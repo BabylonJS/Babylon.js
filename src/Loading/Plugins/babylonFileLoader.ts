@@ -761,6 +761,7 @@ SceneLoader.RegisterPlugin({
             if (parsedData.gravity !== undefined && parsedData.gravity !== null) {
                 scene.gravity = Vector3.FromArray(parsedData.gravity);
             }
+            scene.useRightHandedSystem = !!parsedData.useRightHandedSystem;
 
             // Fog
             if (parsedData.fogMode && parsedData.fogMode !== 0) {
