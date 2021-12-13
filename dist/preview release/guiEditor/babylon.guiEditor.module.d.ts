@@ -987,6 +987,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -1965,6 +1966,7 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
         private _rightWidth;
         private _toolBarIconSize;
         private _popUpWindow;
+        private _draggedItem;
         componentDidMount(): void;
         constructor(props: IGraphEditorProps);
         showWaitScreen(): void;
@@ -3806,6 +3808,7 @@ declare module GUIEDITOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -4609,6 +4612,7 @@ declare module GUIEDITOR {
         private _rightWidth;
         private _toolBarIconSize;
         private _popUpWindow;
+        private _draggedItem;
         componentDidMount(): void;
         constructor(props: IGraphEditorProps);
         showWaitScreen(): void;

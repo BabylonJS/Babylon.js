@@ -24,6 +24,7 @@ interface IFloatLineComponentProps {
     onEnter?: (newValue: number) => void;
     icon?: string;
     iconLabel?: string;
+    defaultValue?: number
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -100,6 +101,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                     valueString = valueAsNumber.toString();
                 }
             }
+        } else if (this.props.defaultValue != null) {
+            valueAsNumber = this.props.defaultValue;
         }
 
         this._localChange = true;
@@ -139,7 +142,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         let className = this.props.smallUI ? "short" : "value";
 
         return (
-            <div>
+            <>
                 {!this.props.useEuler && (
                     <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
                         {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
@@ -184,7 +187,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         onChange={(value) => this.updateValue(Tools.ToRadians(value).toString())}
                     />
                 )}
-            </div>
+            </>
         );
     }
 }

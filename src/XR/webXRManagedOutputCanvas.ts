@@ -4,6 +4,8 @@ import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
+import { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
 
 /**
  * Configuration object for WebXR output canvas
@@ -59,10 +61,13 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * Rendering context of the canvas which can be used to display/mirror xr content
      */
     public canvasContext: WebGLRenderingContext;
+
     /**
      * xr layer for the canvas
      */
     public xrLayer: Nullable<XRWebGLLayer> = null;
+
+    private _xrLayerWrapper: Nullable<WebXRLayerWrapper> = null;
 
     /**
      * Observers registered here will be triggered when the xr layer was initialized
@@ -106,21 +111,21 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     }
 
     /**
-     * Initializes the xr layer for the session
+     * Initializes a XRWebGLLayer to be used as the session's baseLayer.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    public initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
+    public async initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
         const createLayer = () => {
-            const layer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
-            this.onXRLayerInitObservable.notifyObservers(layer);
-            return layer;
+            this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+            this._xrLayerWrapper = new WebXRWebGLLayerWrapper(this.xrLayer);
+            this.onXRLayerInitObservable.notifyObservers(this.xrLayer);
+            return this.xrLayer;
         };
 
         // support canvases without makeXRCompatible
         if (!(this.canvasContext as any).makeXRCompatible) {
-            this.xrLayer = createLayer();
-            return Promise.resolve(this.xrLayer);
+            return Promise.resolve(createLayer());
         }
 
         return (this.canvasContext as any)
@@ -134,8 +139,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 }
             )
             .then(() => {
-                this.xrLayer = createLayer();
-                return this.xrLayer;
+                return createLayer();
             });
     }
 
@@ -146,8 +150,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         if (this.xrLayer) {
             this._setCanvasSize(true);
         } else {
-            this.onXRLayerInitObservable.addOnce((layer) => {
-                this._setCanvasSize(true, layer);
+            this.onXRLayerInitObservable.addOnce(() => {
+                this._setCanvasSize(true);
             });
         }
     }
@@ -159,17 +163,17 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         this._setCanvasSize(false);
     }
 
-    private _setCanvasSize(init: boolean = true, xrLayer = this.xrLayer) {
+    private _setCanvasSize(init: boolean = true, xrLayer = this._xrLayerWrapper) {
         if (!this._canvas || !this._engine) {
             return;
         }
         if (init) {
             if (xrLayer) {
                 if (this._canvas !== this._engine.getRenderingCanvas()) {
-                    this._canvas.style.width = xrLayer.framebufferWidth + "px";
-                    this._canvas.style.height = xrLayer.framebufferHeight + "px";
+                    this._canvas.style.width = xrLayer.getWidth() + "px";
+                    this._canvas.style.height = xrLayer.getHeight() + "px";
                 } else {
-                    this._engine.setSize(xrLayer.framebufferWidth, xrLayer.framebufferHeight);
+                    this._engine.setSize(xrLayer.getWidth(), xrLayer.getHeight());
                 }
             }
         } else {

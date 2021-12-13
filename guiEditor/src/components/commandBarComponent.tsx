@@ -107,9 +107,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 label: "Copy Selected",
                                 onClick: () => {
                                     this.props.globalState.workbench.copyToClipboard();
-                                    this.props.globalState.workbench.pasteFromClipboard();
 
                                 },
+                            },
+                            {
+                                label: "Paste",
+                                onClick: () => {
+                                    this.props.globalState.workbench.pasteFromClipboard();
+                                }
                             },
                             {
                                 label: "Delete Selected",

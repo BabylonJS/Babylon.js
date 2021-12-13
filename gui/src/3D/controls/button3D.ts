@@ -73,7 +73,12 @@ export class Button3D extends AbstractButton3D {
         for (var i = 0; i < 6; i++) {
             faceUV[i] = new Vector4(0, 0, 0, 0);
         }
-        faceUV[1] = new Vector4(0, 0, 1, 1);
+        if (scene.useRightHandedSystem) {
+            // Flip the u on the texture
+            faceUV[0].copyFromFloats(1, 0, 0, 1);
+        } else {
+            faceUV[1].copyFromFloats(0, 0, 1, 1);
+        }
 
         let mesh = CreateBox(
             this.name + "_rootMesh",
@@ -82,6 +87,7 @@ export class Button3D extends AbstractButton3D {
                 height: 1.0,
                 depth: 0.08,
                 faceUV: faceUV,
+                wrap: true,
             },
             scene
         );
