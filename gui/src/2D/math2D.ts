@@ -137,7 +137,7 @@ export class Matrix2D {
     }
 
     public static IdentityToRef(result: Matrix2D): void {
-        result.m[0] = 1; 
+        result.m[0] = 1;
         result.m[1] = 0;
         result.m[2] = 0;
         result.m[3] = 1;
