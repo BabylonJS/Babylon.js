@@ -73,7 +73,7 @@ export class MaterialPluginManager {
             throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
         }
 
-        this._material._callbackPluginEvent = this._handlePluginEvent.bind(this);
+        this._material._callbackPluginEventGeneric = this._handlePluginEvent.bind(this);
 
         this._plugins.push(plugin);
         this._plugins.sort((a, b) => a.priority - b.priority);

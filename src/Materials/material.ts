@@ -749,7 +749,7 @@ export class Material implements IAnimatable {
     = { } as any; // will be initialized before each event notification
 
     /** @hidden */
-    public _callbackPluginEvent: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void(0);
+    public _callbackPluginEventGeneric: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void(0);
     /** @hidden */
     public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void(0);
     /** @hidden */
@@ -1050,7 +1050,7 @@ export class Material implements IAnimatable {
         const ubo = this._uniformBuffer;
 
         this._eventInfo.ubo = ubo;
-        this._callbackPluginEvent(MaterialPluginEvent.PrepareUniformBuffer, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareUniformBuffer, this._eventInfo);
 
         ubo.create();
 
@@ -1190,7 +1190,7 @@ export class Material implements IAnimatable {
      */
     public getAnimatables(): IAnimatable[] {
         this._eventInfo.animatables = [];
-        this._callbackPluginEvent(MaterialPluginEvent.GetAnimatables, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetAnimatables, this._eventInfo);
         return this._eventInfo.animatables;
     }
 
@@ -1200,7 +1200,7 @@ export class Material implements IAnimatable {
      */
     public getActiveTextures(): BaseTexture[] {
         this._eventInfo.activeTextures = [];
-        this._callbackPluginEvent(MaterialPluginEvent.GetActiveTextures, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetActiveTextures, this._eventInfo);
         return this._eventInfo.activeTextures;
     }
 
@@ -1212,7 +1212,7 @@ export class Material implements IAnimatable {
     public hasTexture(texture: BaseTexture): boolean {
         this._eventInfo.hasTexture = false;
         this._eventInfo.texture = texture;
-        this._callbackPluginEvent(MaterialPluginEvent.HasTexture, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.HasTexture, this._eventInfo);
         return this._eventInfo.hasTexture;
     }
 
@@ -1566,7 +1566,7 @@ export class Material implements IAnimatable {
         scene.removeMaterial(this);
 
         this._eventInfo.forceDisposeTextures = forceDisposeTextures;
-        this._callbackPluginEvent(MaterialPluginEvent.Disposed, this._eventInfo);
+        this._callbackPluginEventGeneric(MaterialPluginEvent.Disposed, this._eventInfo);
 
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);
