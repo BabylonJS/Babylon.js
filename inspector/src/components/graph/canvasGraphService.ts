@@ -86,6 +86,12 @@ const tooltipDebounceTime = 32;
 // time in ms to wait between draws
 const drawThrottleTime = 15;
 
+// What distance percentage in the x axis between two points makes us break the line and draw a "no data" box instead
+const maxXDistancePercBetweenLinePoints = 0.10;  
+
+// Color used to draw the rectangle that indicates no collection of data
+const noDataRectangleColor = "#aaaaaa";
+
 /**
  * This function will debounce calls to functions.
  *
@@ -357,8 +363,15 @@ export class CanvasGraphService {
                     prevPoint = [drawableTime, drawableValue];
                 }
 
-                ctx.moveTo(prevPoint[0], prevPoint[1]);
-                ctx.lineTo(drawableTime, drawableValue);
+                const xDifference = drawableTime - prevPoint[0];
+                const skipLine = xDifference > maxXDistancePercBetweenLinePoints*(right-left);
+                if (skipLine) {
+                    ctx.fillStyle = noDataRectangleColor;
+                    ctx.fillRect(prevPoint[0], top, xDifference, bottom-top);
+                } else {
+                    ctx.moveTo(prevPoint[0], prevPoint[1]);
+                    ctx.lineTo(drawableTime, drawableValue);
+                }
                 prevPoint[0] = drawableTime;
                 prevPoint[1] = drawableValue;
             }
