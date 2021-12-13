@@ -136,6 +136,10 @@ export class Matrix2D {
         return new Matrix2D(1, 0, 0, 1, 0, 0);
     }
 
+    /**
+     * Creates an identity matrix and stores it in a target matrix
+     * @param result defines the target matrix
+     */
     public static IdentityToRef(result: Matrix2D): void {
         result.m[0] = 1;
         result.m[1] = 0;
