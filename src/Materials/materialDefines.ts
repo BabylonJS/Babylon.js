@@ -35,7 +35,17 @@ export class MaterialDefines {
     /** @hidden */
     public _needUVs = false;
 
+    protected _externalProperties?: { [name: string]: { type: string, default: any } };
+
     [id: string]: any;
+
+    /**
+     * Creates a new instance
+     * @param externalProperties list of external properties to inject into the object
+     */
+    constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
+        this._externalProperties = externalProperties;
+    }
 
     /**
      * Specifies if the material needs to be re-calculated
@@ -150,6 +160,12 @@ export class MaterialDefines {
 
             this._keys.push(key);
         }
+
+        if (this._externalProperties) {
+            for (const name in this._externalProperties) {
+                this._keys.push(name);
+            }
+        }
     }
 
     /**
@@ -195,17 +211,18 @@ export class MaterialDefines {
     public reset(): void {
         for (var index = 0; index < this._keys.length; index++) {
             var prop = this._keys[index];
-            var type = typeof (<any>this)[prop];
+            var type = this._externalProperties?.[prop]?.type ?? typeof (<any>this)[prop];
+            var defValue = this._externalProperties?.[prop]?.default;
 
             switch (type) {
                 case "number":
-                    (<any>this)[prop] = 0;
+                    (<any>this)[prop] = defValue ?? 0;
                     break;
                 case "string":
-                    (<any>this)[prop] = "";
+                    (<any>this)[prop] = defValue ?? "";
                     break;
                 default:
-                    (<any>this)[prop] = false;
+                    (<any>this)[prop] = defValue ?? false;
                     break;
             }
         }

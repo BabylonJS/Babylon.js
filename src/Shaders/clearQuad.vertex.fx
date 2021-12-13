@@ -8,5 +8,10 @@ const vec2 pos[4] = {
 };
 
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
     gl_Position = vec4(pos[gl_VertexID], depthValue, 1.0);
+
+#define CUSTOM_VERTEX_MAIN_END
 }

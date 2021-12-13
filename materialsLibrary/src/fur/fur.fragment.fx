@@ -51,6 +51,9 @@ float Rand(vec3 rv) {
 }
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
 	#include<clipPlaneFragment>
 	
@@ -133,4 +136,5 @@ void main(void) {
 
 #include<imageProcessingCompatibility>
 
+#define CUSTOM_FRAGMENT_MAIN_END
 }

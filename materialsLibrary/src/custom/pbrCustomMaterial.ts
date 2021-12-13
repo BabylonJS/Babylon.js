@@ -15,6 +15,7 @@ export class ShaderAlebdoParts {
     public Fragment_Begin: string;
     public Fragment_Definitions: string;
     public Fragment_MainBegin: string;
+    public Fragment_MainEnd: string;
 
     // albedoColor
     public Fragment_Custom_Albedo: string;
@@ -174,7 +175,8 @@ export class PBRCustomMaterial extends PBRMaterial {
             .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION', (this.CustomParts.Fragment_Before_FinalColorComposition ? this.CustomParts.Fragment_Before_FinalColorComposition : ""))
-            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""))
+            .replace('#define CUSTOM_FRAGMENT_MAIN_END', (this.CustomParts.Fragment_MainEnd ? this.CustomParts.Fragment_MainEnd : ""));
 
         if (this.CustomParts.Fragment_Before_Fog) {
             Effect.ShadersStore[name + "PixelShader"] = Effect.ShadersStore[name + "PixelShader"].replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', this.CustomParts.Fragment_Before_Fog);
@@ -282,6 +284,11 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
+        return this;
+    }
+
+    public Fragment_MainEnd(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Fragment_MainEnd = shaderPart;
         return this;
     }
 

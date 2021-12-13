@@ -88,6 +88,9 @@ vec3 computeCustomDiffuseLighting(lightingInfo info, vec3 diffuseBase, float sha
 
 void main(void)
 {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
@@ -148,4 +151,6 @@ void main(void)
 	gl_FragColor = color;
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

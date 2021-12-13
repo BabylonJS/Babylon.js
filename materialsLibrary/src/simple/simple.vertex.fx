@@ -52,6 +52,8 @@ varying vec4 vColor;
 
 void main(void) {
 
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
@@ -101,4 +103,6 @@ void main(void) {
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }
