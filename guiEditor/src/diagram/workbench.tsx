@@ -229,11 +229,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
             } else { // get the start of our tree by getting our max parent and storing our main selected control
                 if (this._isMainSelectionParent(selection) && this._mainSelection) {
-                    selection = this._getMaxParent(selection, this._mainSelection);
-                    selection = this._getParentWithDepth(selection);
+                   selection = this._getParentWithDepth(selection);
                 }
                 else {
-                    selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
+                  selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
                 }
                 this._mainSelection = selection;
             }
