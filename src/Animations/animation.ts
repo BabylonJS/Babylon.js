@@ -1270,7 +1270,7 @@ export class Animation {
                             outTangent = _outTangent;
                         }
                     }
-                    if (key.value.length >= 13) {
+                    if (key.values.length >= 13) {
                         interpolation = key.values[12];
                     }
                     break;
