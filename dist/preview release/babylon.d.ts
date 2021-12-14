@@ -49208,6 +49208,7 @@ declare module BABYLON {
         private _strategies;
         private _startingTimestamp;
         private _hasLoadedData;
+        private _isStarted;
         private readonly _customEventObservable;
         private readonly _eventRestoreSet;
         /**
@@ -49300,9 +49301,10 @@ declare module BABYLON {
          * Given a string containing file data, this function parses the file data into the datasets object.
          * It returns a boolean to indicate if this object was successfully loaded with the data.
          * @param data string content representing the file data.
+         * @param keepDatasetMeta if it should use reuse the existing dataset metadata
          * @returns true if the data was successfully loaded, false otherwise.
          */
-        loadFromFileData(data: string): boolean;
+        loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean;
         /**
          * Exports the datasets inside of the collector to a csv.
          */
@@ -49316,6 +49318,10 @@ declare module BABYLON {
          * Stops the collection of data.
          */
         stop(): void;
+        /**
+         * Returns if the perf collector has been started or not.
+         */
+        get isStarted(): boolean;
         /**
          * Disposes of the object
          */
