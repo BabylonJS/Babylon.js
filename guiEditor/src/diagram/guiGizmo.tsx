@@ -8,6 +8,7 @@ import { GlobalState } from "../globalState";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
 
 require("./workbenchCanvas.scss");
 const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
@@ -204,8 +205,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
     private _nodeToRTTWorldMatrix(node: Control, useStoredValuesIfPossible?: boolean): Matrix2D {
         const listOfNodes = [node];
         let p = node.parent;
+        let c = node;
         while (p) {
+            if (p.typeName === "Grid") {
+                const cellInfo = (p as Grid).getChildCellInfo(c);
+                const cell = (p as Grid).cells[cellInfo];
+                listOfNodes.push(cell);
+            }
             listOfNodes.push(p);
+            c = p;
             p = p.parent;
         }
         this._resetMatrixArray();
