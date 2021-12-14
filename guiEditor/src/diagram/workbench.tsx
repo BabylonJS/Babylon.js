@@ -229,7 +229,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
             } else { // get the start of our tree by getting our max parent and storing our main selected control
                 if (this._isMainSelectionParent(selection) && this._mainSelection) {
-                    selection = this._getMaxParent(selection, this._mainSelection);
                     selection = this._getParentWithDepth(selection);
                 }
                 else {
@@ -808,7 +807,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Create our first scene.
         this._scene = new Scene(this._engine);
-        
+
         const clearColor = 204 / 255.0;
         this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 1.0);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
