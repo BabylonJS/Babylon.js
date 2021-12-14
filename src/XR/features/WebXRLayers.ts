@@ -8,6 +8,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { WebXRLayerType, WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { Viewport } from "../../Maths/math.viewport";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
+import { Layer } from "../../Layers/layer";
 
 /**
  * Wraps xr composition layers.
@@ -118,6 +119,7 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
  * @hidden
  */
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
+    public babylonLayer: Nullable<Layer>;
     constructor(
         public readonly layer: XRProjectionLayer,
         xrGLBinding: XRWebGLBinding) {
@@ -195,6 +197,10 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
+    /**
+     * Already-created layers
+     */
+    private _existingLayers: WebXRLayerWrapper[] = [];
 
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
@@ -217,8 +223,17 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
         this._glContext = this._xrSessionManager.scene.getEngine()._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
-        this.setXRSessionLayers([this.createProjectionLayer()]);
+        this._existingLayers = [];
+        this.addXRSessionLayer(this.createProjectionLayer());
 
+        return true;
+    }
+
+    public detach(): boolean {
+        if (!super.detach()) {
+            return false;
+        }
+        this._existingLayers.length = 0;
         return true;
     }
 
@@ -240,6 +255,15 @@ export class WebXRLayers extends WebXRAbstractFeature {
     public createProjectionLayer(params = defaultXRProjectionLayerInit): WebXRProjectionLayerWrapper {
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
         return new WebXRProjectionLayerWrapper(projLayer, this._xrWebGLBinding);
+    }
+
+    /**
+     * Add a new layer to the already-existing list of layers
+     * @param wrappedLayer the new layer to add to the existing ones
+     */
+    public addXRSessionLayer(wrappedLayer: WebXRLayerWrapper) {
+        this._existingLayers.push(wrappedLayer);
+        this.setXRSessionLayers(this._existingLayers);
     }
 
     /**
