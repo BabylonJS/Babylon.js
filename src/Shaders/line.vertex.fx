@@ -13,6 +13,9 @@ uniform float width;
 uniform float aspectRatio;
 
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
     #include<instancesVertex>
 
     mat4 worldViewProjection = viewProjection * finalWorld;
@@ -39,4 +42,7 @@ void main(void) {
     vec4 worldPos = finalWorld * vec4(position, 1.0);
     #include<clipPlaneVertex>
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
+
 }

@@ -27,6 +27,9 @@ varying vec4 vColor;
 #include<fogVertexDeclaration>
 
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 	gl_Position = viewProjection * world * vec4(position, 1.0);
 	
 	vec4 worldPos = world * vec4(position, 1.0);
@@ -47,4 +50,6 @@ void main(void) {
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

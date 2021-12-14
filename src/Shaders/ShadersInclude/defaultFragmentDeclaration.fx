@@ -104,3 +104,5 @@ uniform vec2 vReflectionInfos;
 #ifdef DETAIL
 uniform vec4 vDetailInfos;
 #endif
+
+#define ADDITIONAL_FRAGMENT_DECLARATION

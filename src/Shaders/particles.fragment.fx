@@ -18,6 +18,9 @@ uniform sampler2D rampSampler;
 #endif
 
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	#include<clipPlaneFragment>
 
 	vec4 textureColor = texture2D(diffuseSampler, vUV);
@@ -52,4 +55,7 @@ void main(void) {
 #endif
 
 	gl_FragColor = baseColor;
+
+#define CUSTOM_FRAGMENT_MAIN_END
+
 }

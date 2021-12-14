@@ -8,6 +8,7 @@ import { faSquare, faCheckSquare } from "@fortawesome/free-solid-svg-icons";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { Observable } from "babylonjs/Misc/observable";
 import { IPerfMinMax, IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
+import { Engine } from "babylonjs/Engines/engine";
 
 interface IPerformanceViewerSidebarComponentProps {
     collector: PerformanceViewerCollector;
@@ -97,9 +98,9 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                             <span className="category">{category}</span>
                             <CheckBoxLineComponent isSelected={() => metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onSelect={onCheckAllChange(category)} faIcons={{enabled: faCheckSquare, disabled: faSquare}} />
                           </div>
-                        : <div className="version-header header sidebar-item" key={"header-version"}>
+                        : <div className="version-header sidebar-item" key={"header-version"}>
                             <span className="category">Version:</span>
-                            <span className="value">100</span>
+                            <span className="value">{Engine.Version}</span>
                         </div>}
                     {metadataCategoryId?.get(category)?.map((id) => {
                         const metadata = metadataMap?.get(id);

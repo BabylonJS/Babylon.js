@@ -837,7 +837,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
-        private _descendentsOnlyPadding;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -898,6 +898,10 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -1144,8 +1148,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          * Gets or sets a value indicating the padding should work like in CSS.
          * Basically, it will add the padding amount on each side of the parent control for its children.
          */
-        get descendentsOnlyPadding(): boolean;
-        set descendentsOnlyPadding(value: boolean);
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -7939,7 +7943,7 @@ declare module BABYLON.GUI {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
-        private _descendentsOnlyPadding;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -8000,6 +8004,10 @@ declare module BABYLON.GUI {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -8246,8 +8254,8 @@ declare module BABYLON.GUI {
          * Gets or sets a value indicating the padding should work like in CSS.
          * Basically, it will add the padding amount on each side of the parent control for its children.
          */
-        get descendentsOnlyPadding(): boolean;
-        set descendentsOnlyPadding(value: boolean);
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
