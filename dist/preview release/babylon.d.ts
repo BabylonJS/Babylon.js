@@ -86023,6 +86023,8 @@ declare module BABYLON {
         private _layoutCacheFormat;
         private _layoutCache;
         private _renderPassIds;
+        private _candidateSubMeshes;
+        private _excludedSubMeshes;
         private static _DEPTH_CLEAR_VALUE;
         private static _MIN_DEPTH;
         private static _MAX_DEPTH;
@@ -86068,8 +86070,9 @@ declare module BABYLON {
         /**
          * Renders transparent submeshes with depth peeling
          * @param transparentSubMeshes List of transparent meshes to render
+         * @returns The array of submeshes that could not be handled by this renderer
          */
-        render(transparentSubMeshes: SmartArray<SubMesh>): void;
+        render(transparentSubMeshes: SmartArray<SubMesh>): SmartArray<SubMesh>;
         /**
          * Disposes the depth peeling renderer and associated ressources
          */
