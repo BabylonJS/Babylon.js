@@ -84,6 +84,9 @@ float perlinNoise(vec3 p)
 }
 
 // Main
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     vec2 uv = gl_FragCoord.xy + translationSpeed;

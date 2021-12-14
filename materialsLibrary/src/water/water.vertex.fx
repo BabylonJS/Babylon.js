@@ -71,6 +71,9 @@ varying vec3 vReflectionMapTexCoord;
 
 
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

@@ -36,6 +36,9 @@ float calculate_curvature(ivec2 texel, float ridge, float valley)
     return 2.0 * curvature_soft_clamp(normal_diff, ridge);
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) 
 {
     ivec2 texel = ivec2(gl_FragCoord.xy);

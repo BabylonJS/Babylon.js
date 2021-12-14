@@ -12,6 +12,9 @@ uniform mat4 viewProjection;
 uniform float width;
 uniform float aspectRatio;
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

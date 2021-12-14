@@ -10,6 +10,9 @@ varying vec2 sampleCenter;
 
 const vec2 madd = vec2(0.5, 0.5);
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

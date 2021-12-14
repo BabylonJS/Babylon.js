@@ -51,6 +51,9 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

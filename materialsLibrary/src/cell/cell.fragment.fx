@@ -86,6 +86,9 @@ vec3 computeCustomDiffuseLighting(lightingInfo info, vec3 diffuseBase, float sha
 	return max(diffuseBase, vec3(0.2));
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 

@@ -8,6 +8,9 @@ uniform vec4 color;
 // Helper functions
 #include<helperFunctions>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN

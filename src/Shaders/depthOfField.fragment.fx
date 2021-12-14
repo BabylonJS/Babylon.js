@@ -149,6 +149,9 @@ vec4 getBlurColor(float size) {
 	return col;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 
