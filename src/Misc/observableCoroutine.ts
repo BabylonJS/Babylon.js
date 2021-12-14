@@ -1,19 +1,50 @@
-import { Nullable } from "../types";
 import { Observable } from "./observable";
+import { AsyncCoroutine, CoroutineStep, CoroutineScheduler, runCoroutineAsync, inlineScheduler } from "./coroutine";
+
+function createObservableScheduler<T>(observable: Observable<any>): { scheduler: CoroutineScheduler<T>, dispose: () => void } {
+    const coroutines = new Array<AsyncCoroutine<T>>();
+    const onSteps = new Array<(stepResult: CoroutineStep<T>) => void>();
+    const onErrors = new Array<(stepError: any) => void>();
+
+    const observer = observable.add(() => {
+        const count = coroutines.length;
+        for (let i = 0; i < count; i++) {
+            inlineScheduler(coroutines.shift()!, onSteps.shift()!, onErrors.shift()!);
+        }
+    });
+
+    const scheduler = (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
+        coroutines.push(coroutine);
+        onSteps.push(onStep);
+        onErrors.push(onError);
+    };
+
+    return {
+        scheduler: scheduler,
+        dispose: () => {
+            observable.remove(observer);
+        }
+    };
+}
 
 declare module "./observable" {
     export interface Observable<T> {
         /**
-         * Internal list of iterators and promise resolvers associated with coroutines.
+         * Internal observable-based coroutine scheduler instance.
          */
-        coroutineIterators: Nullable<Array<{ iterator: Iterator<void | Promise<void>, void, void>, resolver: () => void, rejecter: () => void, paused: boolean }>>;
+        _coroutineScheduler?: CoroutineScheduler<void>;
+
+        /**
+         * Internal disposal method for observable-bsaed coroutine scheduler instance.
+         */
+        _coroutineSchedulerDispose?: () => void;
 
         /**
          * Runs a coroutine asynchronously on this observable
-         * @param coroutineIterator the iterator resulting from having started the coroutine
+         * @param coroutine the iterator resulting from having started the coroutine
          * @returns a promise which will be resolved when the coroutine finishes or rejected if the coroutine is cancelled
          */
-        runCoroutineAsync(coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void>;
+        runCoroutineAsync(coroutine: AsyncCoroutine<void>): Promise<void>;
 
         /**
          * Cancels all coroutines currently running on this observable
@@ -22,47 +53,20 @@ declare module "./observable" {
     }
 }
 
-Observable.prototype.runCoroutineAsync = function (coroutineIterator: Iterator<void | Promise<void>, void, void>): Promise<void> {
-    if (!this.coroutineIterators) {
-        this.coroutineIterators = [];
-
-        this.add(() => {
-            for (let idx = this.coroutineIterators!.length - 1; idx >= 0; --idx) {
-                if (this.coroutineIterators![idx].paused) {
-                    continue;
-                }
-
-                const next = this.coroutineIterators![idx].iterator.next();
-
-                if (next.value) {
-                    const coroutine = this.coroutineIterators![idx];
-                    coroutine.paused = true;
-                    next.value.then(() => {
-                        coroutine.paused = false;
-                    });
-                }
-
-                if (next.done) {
-                    this.coroutineIterators![idx].resolver();
-                    this.coroutineIterators!.splice(idx, 1);
-                }
-            }
-        });
+Observable.prototype.runCoroutineAsync = function(coroutine: AsyncCoroutine<void>) {
+    if (!this._coroutineScheduler) {
+        const schedulerAndDispose = createObservableScheduler<void>(this);
+        this._coroutineScheduler = schedulerAndDispose.scheduler;
+        this._coroutineSchedulerDispose = schedulerAndDispose.dispose;
     }
 
-    return new Promise((resolver, rejecter) => {
-        this.coroutineIterators?.push({
-            iterator: coroutineIterator,
-            resolver: resolver,
-            rejecter: rejecter,
-            paused: false
-        });
-    });
+    return runCoroutineAsync(coroutine, this._coroutineScheduler);
 };
 
-Observable.prototype.cancelAllCoroutines = function (): void {
-    this.coroutineIterators!.forEach((coroutine) => {
-        coroutine.rejecter();
-    });
-    this.coroutineIterators = [];
+Observable.prototype.cancelAllCoroutines = function() {
+    if (this._coroutineSchedulerDispose) {
+        this._coroutineSchedulerDispose();
+    }
+    this._coroutineScheduler = undefined;
+    this._coroutineSchedulerDispose = undefined;
 };

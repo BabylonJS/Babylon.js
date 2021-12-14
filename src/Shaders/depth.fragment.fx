@@ -9,6 +9,9 @@ varying float vDepthMetric;
 	#include<packingFunctions>
 #endif
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 #ifdef ALPHATEST

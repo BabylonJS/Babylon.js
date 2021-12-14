@@ -1,6 +1,7 @@
 precision highp float;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -58,6 +59,9 @@ varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;
@@ -78,6 +82,7 @@ void main(void)
 	#endif
 
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	#ifdef BUMP

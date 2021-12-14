@@ -60,6 +60,12 @@ export interface EngineFeatures {
     /** Indicates that the inliner should be run over every shader code */
     needShaderCodeInlining: boolean;
 
+    /** Indicates that even if we don't have to update the properties of a uniform buffer (because of some optimzations in the material) we still need to bind the uniform buffer themselves */
+    needToAlwaysBindUniformBuffers: boolean;
+
+    /**  Indicates that the engine supports render passes */
+    supportRenderPasses: boolean;
+
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }

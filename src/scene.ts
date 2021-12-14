@@ -696,6 +696,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
 
+    /**
+     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
+     */
+    public skipPointerMovePicking = false;
+
     /** Callback called when a pointer move is detected */
     public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
@@ -1746,11 +1751,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _createUbo(): void {
-        this._sceneUbo = new UniformBuffer(this._engine, undefined, false, "scene");
-        this._sceneUbo.addUniform("viewProjection", 16);
-        this._sceneUbo.addUniform("view", 16);
-        this._sceneUbo.addUniform("projection", 16);
-        this._sceneUbo.addUniform("vEyePosition", 4);
+        this.setSceneUniformBuffer(this.createSceneUniformBuffer());
     }
 
     /**
@@ -1817,9 +1818,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
      * Delay loaded resources are not taking in account
+     * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
      * @return true if all required resources are ready
      */
-    public isReady(): boolean {
+    public isReady(checkRenderTargets = true): boolean {
         if (this._isDisposed) {
             return false;
         }
@@ -1838,6 +1840,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Meshes
+        if (checkRenderTargets) {
+            this._processedMaterials.reset();
+            this._renderTargets.reset();
+        }
         for (index = 0; index < this.meshes.length; index++) {
             var mesh = this.meshes[index];
 
@@ -1857,6 +1863,44 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Is Ready For Mesh
             for (let step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+
+            if (!checkRenderTargets) {
+                continue;
+            }
+
+            const mat = mesh.material || this.defaultMaterial;
+            if (mat) {
+                if (mat._storeEffectOnSubMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
+                        const material = subMesh.getMaterial();
+                        if (material && material.hasRenderTargetTextures && material.getRenderTargetTextures != null) {
+                            if (this._processedMaterials.indexOf(material) === -1) {
+                                this._processedMaterials.push(material);
+
+                                this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
+                            }
+                        }
+                    }
+                } else {
+                    if (mat.hasRenderTargetTextures && mat.getRenderTargetTextures != null) {
+                        if (this._processedMaterials.indexOf(mat) === -1) {
+                            this._processedMaterials.push(mat);
+
+                            this._renderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures!());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Render targets
+        if (checkRenderTargets) {
+            for (index = 0; index < this._renderTargets.length; ++index) {
+                const rtt = this._renderTargets.data[index];
+                if (!rtt.isReadyForRendering()) {
                     return false;
                 }
             }
@@ -1997,8 +2041,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Registers a function to be executed when the scene is ready
      * @param {Function} func - the function to be executed
+     * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
-    public executeWhenReady(func: () => void): void {
+    public executeWhenReady(func: () => void, checkRenderTargets = false): void {
         this.onReadyObservable.add(func);
 
         if (this._executeWhenReadyTimeoutId !== -1) {
@@ -2006,27 +2051,28 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
-            this._checkIsReady();
+            this._checkIsReady(checkRenderTargets);
         }, 150);
     }
 
     /**
      * Returns a promise that resolves when the scene is ready
+     * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      * @returns A promise that resolves when the scene is ready
      */
-    public whenReadyAsync(): Promise<void> {
+    public whenReadyAsync(checkRenderTargets = false): Promise<void> {
         return new Promise((resolve) => {
             this.executeWhenReady(() => {
                 resolve();
-            });
+            }, checkRenderTargets);
         });
     }
 
     /** @hidden */
-    public _checkIsReady() {
+    public _checkIsReady(checkRenderTargets = false) {
         this._registerTransientComponents();
 
-        if (this.isReady()) {
+        if (this.isReady(checkRenderTargets)) {
             this.onReadyObservable.notifyObservers(this);
 
             this.onReadyObservable.clear();
@@ -2041,7 +2087,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
-            this._checkIsReady();
+            this._checkIsReady(checkRenderTargets);
         }, 150);
     }
 
@@ -2127,6 +2173,31 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getSceneUniformBuffer(): UniformBuffer {
         return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
+    }
+
+    /**
+     * Creates a scene UBO
+     * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @returns a new ubo
+     */
+    public createSceneUniformBuffer(name?: string): UniformBuffer {
+        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene");
+        sceneUbo.addUniform("viewProjection", 16);
+        sceneUbo.addUniform("view", 16);
+        sceneUbo.addUniform("projection", 16);
+        sceneUbo.addUniform("vEyePosition", 4);
+
+        return sceneUbo;
+    }
+
+    /**
+     * Sets the scene ubo
+     * @param ubo the ubo to set for the scene
+     */
+    public setSceneUniformBuffer(ubo: UniformBuffer): void {
+        this._sceneUbo = ubo;
+        this._viewUpdateFlag = -1;
+        this._projectionUpdateFlag = -1;
     }
 
     /**
@@ -2749,6 +2820,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture> {
         for (var index = 0; index < this.textures.length; index++) {
             if (this.textures[index].uniqueId === uniqueId) {
+                return this.textures[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a texture using its name
+     * @param name defines the texture's name
+     * @return the texture or null if none found.
+     */
+     public getTextureByName(name: string): Nullable<BaseTexture> {
+        for (var index = 0; index < this.textures.length; index++) {
+            if (this.textures[index].name === name) {
                 return this.textures[index];
             }
         }
@@ -3904,6 +3990,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._intermediateRendering = false;
         }
 
+        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
+
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
@@ -4111,6 +4199,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
+     * Resets the draw wrappers cache of all meshes
+     */
+    public resetDrawCache(): void {
+        if (!this.meshes) {
+             return;
+        }
+
+        for (const mesh of this.meshes) {
+            mesh.resetDrawCache();
+        }
+    }
+
+    /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
@@ -4218,6 +4319,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._intermediateRendering = false;
             this._renderId++;
         }
+
+        this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
@@ -4550,14 +4653,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             var geometry = (<Mesh>mesh).geometry;
 
             if (geometry) {
-                geometry._indices = [];
-
-                for (var vbName in geometry._vertexBuffers) {
-                    if (!geometry._vertexBuffers.hasOwnProperty(vbName)) {
-                        continue;
-                    }
-                    geometry._vertexBuffers[vbName]._buffer._data = null;
-                }
+                geometry.clearCachedData();
             }
         }
     }

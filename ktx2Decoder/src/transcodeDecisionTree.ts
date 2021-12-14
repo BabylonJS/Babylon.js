@@ -2,7 +2,7 @@ import { sourceTextureFormat, transcodeTarget } from './transcoder';
 
 const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
 const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
-const COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F1;
+const COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
 const COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
 const COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
 const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
@@ -54,6 +54,7 @@ const DecisionTree: IDecisionTree = {
             },
             no: {
                 cap: "etc1",
+                alpha: false,
                 yes: {
                     transcodeFormat: transcodeTarget.ETC1_RGB,
                     engineFormat: COMPRESSED_RGB_ETC1_WEBGL,
@@ -240,10 +241,10 @@ export class TranscodeDecisionTree {
                 condition = condition && this._options[node.option];
             }
             if (node.alpha !== undefined) {
-                condition = condition && this._hasAlpha;
+                condition = condition && this._hasAlpha === node.alpha;
             }
             if (node.needsPowerOfTwo !== undefined) {
-                condition = condition && this._isPowerOfTwo;
+                condition = condition && this._isPowerOfTwo === node.needsPowerOfTwo;
             }
 
             this._parseNode(condition ? node.yes! : node.no!);

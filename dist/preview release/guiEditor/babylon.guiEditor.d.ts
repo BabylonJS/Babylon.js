@@ -27,11 +27,644 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export const GUIEditorNodeMaterial: {
+        tags: null;
+        ignoreAlpha: boolean;
+        maxSimultaneousLights: number;
+        mode: number;
+        id: string;
+        name: string;
+        checkReadyOnEveryCall: boolean;
+        checkReadyOnlyOnce: boolean;
+        state: string;
+        alpha: number;
+        backFaceCulling: boolean;
+        cullBackFaces: boolean;
+        sideOrientation: number;
+        alphaMode: number;
+        _needDepthPrePass: boolean;
+        disableDepthWrite: boolean;
+        disableColorWrite: boolean;
+        forceDepthWrite: boolean;
+        depthFunction: number;
+        separateCullingPass: boolean;
+        fogEnabled: boolean;
+        pointSize: number;
+        zOffset: number;
+        zOffsetUnits: number;
+        pointsCloud: boolean;
+        fillMode: number;
+        editorData: {
+            locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[];
+            frames: {
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+                color: number[];
+                name: string;
+                isCollapsed: boolean;
+                blocks: number[];
+            }[];
+            x: number;
+            y: number;
+            zoom: number;
+        };
+        customType: string;
+        outputNodes: number[];
+        blocks: ({
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            }[];
+            outputs: {
+                name: string;
+            }[];
+            complementZ: number;
+            complementW: number;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            systemValue: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: never[];
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                displayName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            rSwizzle: string;
+            gSwizzle: string;
+            bSwizzle: string;
+            aSwizzle: string;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            }[];
+            outputs: {
+                name: string;
+            }[];
+            operation: number;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            } | {
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            })[];
+            outputs: {
+                name: string;
+            }[];
+            xSwizzle: string;
+            ySwizzle: string;
+            zSwizzle: string;
+            wSwizzle: string;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+            } | {
+                name: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            })[];
+            outputs: {
+                name: string;
+            }[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            convertToGammaSpace?: undefined;
+            convertToLinearSpace?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            valueType: string;
+            value: number[];
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: never[];
+            outputs: {
+                name: string;
+            }[];
+            type: number;
+            mode: number;
+            animationType: number;
+            min: number;
+            max: number;
+            isBoolean: boolean;
+            matrixMode: number;
+            isConstant: boolean;
+            groupInInspector: string;
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            valueType: string;
+            value: number;
+            complementZ?: undefined;
+            complementW?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            fragmentOnly?: undefined;
+            disableLevelMultiplication?: undefined;
+        } | {
+            customType: string;
+            id: number;
+            name: string;
+            comments: string;
+            visibleInInspector: boolean;
+            visibleOnFrame: boolean;
+            target: number;
+            inputs: ({
+                name: string;
+                displayName: string;
+                inputName: string;
+                targetBlockId: number;
+                targetConnectionName: string;
+                isExposedOnFrame: boolean;
+                exposedPortPosition: number;
+            } | {
+                name: string;
+                displayName: string;
+                inputName?: undefined;
+                targetBlockId?: undefined;
+                targetConnectionName?: undefined;
+                isExposedOnFrame?: undefined;
+                exposedPortPosition?: undefined;
+            })[];
+            outputs: {
+                name: string;
+                displayName: string;
+            }[];
+            convertToGammaSpace: boolean;
+            convertToLinearSpace: boolean;
+            fragmentOnly: boolean;
+            disableLevelMultiplication: boolean;
+            complementZ?: undefined;
+            complementW?: undefined;
+            type?: undefined;
+            mode?: undefined;
+            animationType?: undefined;
+            min?: undefined;
+            max?: undefined;
+            isBoolean?: undefined;
+            matrixMode?: undefined;
+            isConstant?: undefined;
+            groupInInspector?: undefined;
+            systemValue?: undefined;
+            rSwizzle?: undefined;
+            gSwizzle?: undefined;
+            bSwizzle?: undefined;
+            aSwizzle?: undefined;
+            operation?: undefined;
+            xSwizzle?: undefined;
+            ySwizzle?: undefined;
+            zSwizzle?: undefined;
+            wSwizzle?: undefined;
+            valueType?: undefined;
+            value?: undefined;
+        })[];
+    };
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
-    export type FramePortData = {};
-    export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export enum ConstraintDirection {
         NONE = 0,
         X = 2,
@@ -43,7 +676,7 @@ declare module GUIEDITOR {
         private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _textureMesh;
+        _textureMesh: BABYLON.Mesh;
         _scene: BABYLON.Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
@@ -51,7 +684,6 @@ declare module GUIEDITOR {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
-        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -60,33 +692,42 @@ declare module GUIEDITOR {
         private _isOverGUINode;
         private _clipboard;
         private _selectAll;
-        private _camera;
+        _camera: BABYLON.ArcRotateCamera;
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
         private _engine;
+        private _liveRenderObserver;
+        private _guiRenderObserver;
+        private _mainSelection;
+        private _selectionDepth;
+        private _doubleClick;
+        private _lockMainSelection;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
+        private _getParentWithDepth;
+        private _getMaxParent;
         constructor(props: IWorkbenchComponentProps);
+        determineMouseSelection(selection: BABYLON.Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
         private updateHitTest;
         private updateHitTestForSelection;
         private setCameraRadius;
-        private copyToClipboard;
-        private pasteFromClipboard;
+        copyToClipboard(): void;
+        pasteFromClipboard(): void;
         CopyGUIControl(original: Control): void;
         private selectAllGUI;
         blurEvent: () => void;
         componentWillUnmount(): void;
         loadFromJson(serializationObject: any): void;
-        loadFromSnippet(snippedId: string): Promise<void>;
+        loadFromSnippet(snippetId: string): Promise<void>;
         loadToEditor(): void;
         changeSelectionHighlight(value: boolean): void;
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
-        isContainer(guiControl: Control): boolean;
+        private _isMainSelectionParent;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
         private _convertToPixels;
@@ -96,15 +737,16 @@ declare module GUIEDITOR {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
-        componentDidMount(): void;
+        convertToPercentage(guiControl: Control, includeScale: boolean): void;
         onMove(evt: React.PointerEvent): void;
         getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
         isUp: boolean;
         onUp(evt: React.PointerEvent): void;
         createGUICanvas(): void;
+        synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
-        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
+        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, x?: number, y?: number): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
         zoomWheel(p: BABYLON.PointerInfo, e: BABYLON.EventState, camera: BABYLON.ArcRotateCamera): number;
         zooming(delta: number, scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, ref: BABYLON.Vector3): void;
@@ -133,6 +775,78 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export interface IGuiGizmoProps {
+        globalState: GlobalState;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
+        scalePoints: HTMLDivElement[];
+        private _scalePointIndex;
+        private _pointerData;
+        private _htmlPoints;
+        private _matrixCache;
+        private _responsive;
+        constructor(props: IGuiGizmoProps);
+        componentDidMount(): void;
+        /**
+         * Update the gizmo's corners positions
+         * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+         */
+        updateGizmo(force?: boolean): void;
+        private _resetMatrixArray;
+        /**
+         * This function calculates a local matrix for a node, including it's full transformation and pivot point
+         *
+         * @param node the node to calculate the matrix for
+         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+         * @returns a new matrix for the control
+         */
+        private _getNodeMatrix;
+        /**
+         * Using the node's tree, calculate its world matrix and return it
+         * @param node the node to calculate the matrix for
+         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+         * @returns the world matrix for this node
+         */
+        private _nodeToRTTWorldMatrix;
+        private _nodeToRTTSpace;
+        private _rttToLocalNodeSpace;
+        private _rttToCanvasSpace;
+        private _plane;
+        private _mousePointerToRTTSpace;
+        /**
+         * Get the scaling of a specific GUI control
+         * @param node the node for which we are getting the scaling
+         * @param relative should we return only the relative scaling (relative to the parent)
+         * @returns an X,Y vector of the scaling
+         */
+        getScale(node: Control, relative?: boolean): BABYLON.Vector2;
+        getRotation(node: Control, relative?: boolean): number;
+        createBaseGizmo(): void;
+        onUp(evt?: React.PointerEvent): void;
+        private _onUp;
+        onMove(evt: React.PointerEvent): void;
+        private _initH;
+        private _initW;
+        private _initX;
+        private _initY;
+        private _onMove;
+        /**
+         * Calculate the 4 corners in node space
+         * @param node The node to use
+         */
+        private _nodeToCorners;
+        /**
+         * Computer the node's width, height, top and left, using the 4 corners
+         * @param node the node we use
+         */
+        private _updateNodeFromCorners;
+        private _rotate;
+        private _setNodeCorner;
+        private _setMousePosition;
+        render(): null;
+    }
+}
+declare module GUIEDITOR {
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -141,6 +855,7 @@ declare module GUIEDITOR {
     }
     export class GlobalState {
         [x: string]: any;
+        liveGuiTexture: BABYLON.Nullable<AdvancedDynamicTexture>;
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
@@ -156,11 +871,13 @@ declare module GUIEDITOR {
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
         onNewSceneObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Scene>>;
         onGuiNodeRemovalObservable: BABYLON.Observable<Control>;
+        onPopupClosedObservable: BABYLON.Observable<void>;
         backgroundColor: BABYLON.Color4;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
         selectionLock: boolean;
         workbench: WorkbenchComponent;
+        guiGizmo: GuiGizmoComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onFitToWindowObservable: BABYLON.Observable<void>;
@@ -178,6 +895,7 @@ declare module GUIEDITOR {
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
         onWindowResizeObservable: BABYLON.Observable<void>;
+        onGizmoUpdateRequireObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -225,7 +943,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export interface ICheckBoxLineComponentProps {
-        label: string;
+        label?: string;
         target?: any;
         propertyName?: string;
         isSelected?: () => boolean;
@@ -235,6 +953,8 @@ declare module GUIEDITOR {
         disabled?: boolean;
         icon?: string;
         iconLabel?: string;
+        faIcons?: {
+        };
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -303,6 +1023,7 @@ declare module GUIEDITOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -367,6 +1088,7 @@ declare module GUIEDITOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -390,111 +1112,11 @@ declare module GUIEDITOR {
         iconLabel?: string;
         isActive: boolean;
         onClick: () => void;
+        altStyle?: boolean;
+        disabled?: boolean;
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ICommonControlPropertyGridComponentProps {
-        control: Control;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-        private _width;
-        private _height;
-        private _responsive;
-        constructor(props: ICommonControlPropertyGridComponentProps);
-        private _updateAlignment;
-        private _checkAndUpdateValues;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ISliderPropertyGridComponentProps {
-        slider: Slider;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
-        constructor(props: ISliderPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ILinePropertyGridComponentProps {
-        line: Line;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
-        constructor(props: ILinePropertyGridComponentProps);
-        onDashChange(value: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IRadioButtonPropertyGridComponentProps {
-        radioButton: RadioButton;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
-        constructor(props: IRadioButtonPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    export const Null_Value: number;
-    export interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        options: BABYLON.IInspectableOptions[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number) => void;
-        extractValue?: () => number;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        allowNullValue?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number;
-    }> {
-        private _localChange;
-        private remapValueIn;
-        private remapValueOut;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface ITextBlockPropertyGridComponentProps {
-        textBlock: TextBlock;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
-        constructor(props: ITextBlockPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module GUIEDITOR {
-    interface IInputTextPropertyGridComponentProps {
-        inputText: InputText;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
-        constructor(props: IInputTextPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -630,26 +1252,145 @@ declare module GUIEDITOR {
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: BABYLON.Color3): void;
+        setPropertyValue(newColor: BABYLON.Color3 | BABYLON.Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ICommonControlPropertyGridComponentProps {
+        control: Control;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _width;
+        private _height;
+        constructor(props: ICommonControlPropertyGridComponentProps);
+        private _updateAlignment;
+        private _checkAndUpdateValues;
+        private _markChildrenAsDirty;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderPropertyGridComponentProps {
+        slider: Slider | ImageBasedSlider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
+        constructor(props: ISliderPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ISliderGenericPropertyGridComponentProps {
+        slider: Slider;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SliderGenericPropertyGridComponent extends React.Component<ISliderGenericPropertyGridComponentProps> {
+        constructor(props: ISliderGenericPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ILinePropertyGridComponentProps {
+        line: Line;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
+        constructor(props: ILinePropertyGridComponentProps);
+        onDashChange(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IRadioButtonPropertyGridComponentProps {
+        radioButton: RadioButton;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
+        constructor(props: IRadioButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export const Null_Value: number;
+    export interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        options: BABYLON.IInspectableOptions[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number) => void;
+        extractValue?: () => number;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
+        icon?: string;
+        iconLabel?: string;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number;
+    }> {
+        private _localChange;
+        private remapValueIn;
+        private remapValueOut;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface ITextBlockPropertyGridComponentProps {
+        textBlock: TextBlock;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
+        constructor(props: ITextBlockPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    interface IInputTextPropertyGridComponentProps {
+        inputText: InputText;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
+        constructor(props: IInputTextPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
@@ -725,6 +1466,8 @@ declare module GUIEDITOR {
         private _columnDefinitions;
         private _editedRow;
         private _editedColumn;
+        private _rowChild;
+        private _columnChild;
         renderRows(): JSX.Element[];
         setRowValues(): void;
         setColumnValues(): void;
@@ -733,6 +1476,7 @@ declare module GUIEDITOR {
         resizeColumn(): void;
         checkValue(value: string, percent: boolean): string;
         checkPercentage(value: string): boolean;
+        resetValues(): void;
         render(): JSX.Element;
     }
 }
@@ -808,6 +1552,24 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IButtonPropertyGridComponentProps {
+        rectangle: Rectangle;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onAddComponent: (newComponent: string) => void;
+    }
+    export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
+        constructor(props: IButtonPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export class GUINodeTools {
+        static ImageControlDefaultUrl: string;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+    }
+}
+declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -839,11 +1601,6 @@ declare module GUIEDITOR {
     }
     export class Portal extends React.Component<IPortalProps> {
         render(): React.ReactPortal;
-    }
-}
-declare module GUIEDITOR {
-    export class GUINodeTools {
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | RadioButton | InputText | ColorPicker | ImageBasedSlider | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -1050,7 +1807,6 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
-        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -1065,16 +1821,14 @@ declare module GUIEDITOR {
         showPreviewPopUp: boolean;
     }
     export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private _workbenchCanvas;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
         private _rightWidth;
         private _toolBarIconSize;
-        private _onWidgetKeyUpPointer;
         private _popUpWindow;
+        private _draggedItem;
         componentDidMount(): void;
-        componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         showWaitScreen(): void;
         hideWaitScreen(): void;
@@ -1082,7 +1836,6 @@ declare module GUIEDITOR {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
@@ -1115,6 +1868,7 @@ declare module GUIEDITOR {
      * Interface used to specify creation options for the gui editor
      */
     export interface IGUIEditorOptions {
+        liveGuiTexture?: AdvancedDynamicTexture;
         customLoad: {
             label: string;
             action: (data: string) => Promise<string>;
@@ -1136,7 +1890,7 @@ declare module GUIEDITOR {
          * Show the gui editor
          * @param options defines the options to use to configure the gui editor
          */
-        static Show(options: IGUIEditorOptions): void;
+        static Show(options: IGUIEditorOptions): Promise<void>;
     }
 }
 declare module GUIEDITOR {

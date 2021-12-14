@@ -38,7 +38,7 @@ declare module "./mesh" {
          * @param scene defines the hosting scene
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-         * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
+         * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#ribbon)
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
@@ -178,7 +178,7 @@ declare module "./mesh" {
          * @param points is an array successive Vector3
          * @param scene defines the hosting scene
          * @param updatable defines if the mesh must be flagged as updatable
-         * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
+         * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#lines-and-dashedlines).
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
@@ -193,7 +193,7 @@ declare module "./mesh" {
          * @param dashNb is the intended total number of dashes (positive integer, default 200)
          * @param scene defines the hosting scene
          * @param updatable defines if the mesh must be flagged as updatable
-         * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
+         * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#lines-and-dashedlines)
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
@@ -267,7 +267,7 @@ declare module "./mesh" {
          * @param scene defines the hosting scene
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-         * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
+         * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#extruded-shape)
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
@@ -301,7 +301,7 @@ declare module "./mesh" {
          * @param scene defines the hosting scene
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-         * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
+         * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#extruded-shape)
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
@@ -432,7 +432,7 @@ declare module "./mesh" {
          * @param scene defines the hosting scene
          * @param updatable defines if the mesh must be flagged as updatable
          * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-         * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
+         * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/divingDeeper/mesh/dynamicMeshMorph#tube)
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
@@ -495,7 +495,7 @@ declare module "./mesh" {
          * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/icosphere
          * @param name defines the name of the mesh
          * @param options defines the options used to create the mesh
          * @param scene defines the hosting scene
@@ -528,7 +528,7 @@ declare module "./mesh" {
          * @param options the constructors options used to shape the mesh.
          * @param scene defines the scene the mesh is scoped to.
          * @returns the capsule mesh
-         * @see https://doc.babylonjs.com/how_to/capsule_shape
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/capsule
          * @deprecated Please use MeshBuilder instead
          */
         function CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;

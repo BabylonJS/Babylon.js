@@ -207,3 +207,5 @@ uniform mat4 view;
         uniform vec3 vSphericalZX;
     #endif
 #endif
+
+#define ADDITIONAL_FRAGMENT_DECLARATION

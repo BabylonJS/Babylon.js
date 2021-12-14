@@ -10,25 +10,21 @@ interface IRangeFrameBarComponentProps {
     context: Context;
 }
 
-interface IRangeFrameBarComponentState {
-}
+interface IRangeFrameBarComponentState {}
 
-export class RangeFrameBarComponent extends React.Component<
-IRangeFrameBarComponentProps,
-IRangeFrameBarComponentState
-> {        
+export class RangeFrameBarComponent extends React.Component<IRangeFrameBarComponentProps, IRangeFrameBarComponentState> {
     private _svgHost: React.RefObject<SVGSVGElement>;
     private _viewWidth = 748;
     private _offsetX = 10;
     private _isMounted = false;
-    
+
     private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IRangeFrameBarComponentProps) {
         super(props);
 
-        this.state = { };
-        
+        this.state = {};
+
         this._svgHost = React.createRef();
 
         this.props.context.onHostWindowResized.add(() => {
@@ -58,7 +54,7 @@ IRangeFrameBarComponentState
             }
 
             this.forceUpdate();
-        })
+        });
     }
 
     componentDidMount() {
@@ -87,27 +83,25 @@ IRangeFrameBarComponentState
         const to = this.props.context.toKey;
         let range = to - from;
         let convertRatio = range / this._viewWidth;
-        
+
         const keys = animation.getKeys();
 
-        return (
-            keys.map((k, i) => {
-                let x = (k.frame - from) / convertRatio;
-                return (
-                    <line
-                        key={"frame-line" + k.frame + i}
-                        x1={x}
-                        y1="0px"
-                        x2={x}
-                        y2="40px"
-                        style={{
-                            stroke: "#ffc017",
-                            strokeWidth: 0.5,
-                        }}>
-                    </line>
-                )
-            })
-        )
+        return keys.map((k, i) => {
+            let x = (k.frame - from) / convertRatio;
+            return (
+                <line
+                    key={"frame-line" + k.frame + i}
+                    x1={x}
+                    y1="0px"
+                    x2={x}
+                    y2="40px"
+                    style={{
+                        stroke: "#ffc017",
+                        strokeWidth: 0.5,
+                    }}
+                ></line>
+            );
+        });
     }
 
     private _buildFrames() {
@@ -134,65 +128,54 @@ IRangeFrameBarComponentState
 
         if (steps[steps.length - 1] < end - offset / 2) {
             steps.push(end);
-        }        
+        }
 
-        return (
-            steps.map((s, i) => {
-                let x = (s - from) / convertRatio;
-                return (
-                    <g key={"axis" + s + i}>
-                        <line
-                            key={"line" + s + i}
-                            x1={x}
-                            y1="22px"
-                            x2={x}
-                            y2="40px"
-                            style={{
-                                stroke: "#333333",
-                                strokeWidth: 0.5,
-                            }}>
-                        </line>
-                        <text
-                            key={"label" + s + i}
-                            x={x}
-                            y={0}
-                            dx="6px"
-                            textAnchor="middle"
-                            dy="14px"
-                            style={{
-                                fontFamily:"acumin-pro-condensed",                                
-                                fontSize: `12px`,
-                                fill: "#555555",
-                                textAlign: "center",
-                            }}
-                        >
-                            {s.toFixed(0)}
-                        </text>
-                    </g>
-                )
-            })
-        )
+        return steps.map((s, i) => {
+            let x = (s - from) / convertRatio;
+            return (
+                <g key={"axis" + s + i}>
+                    <line
+                        key={"line" + s + i}
+                        x1={x}
+                        y1="22px"
+                        x2={x}
+                        y2="40px"
+                        style={{
+                            stroke: "#333333",
+                            strokeWidth: 0.5,
+                        }}
+                    ></line>
+                    <text
+                        key={"label" + s + i}
+                        x={x}
+                        y={0}
+                        dx="6px"
+                        textAnchor="middle"
+                        dy="14px"
+                        style={{
+                            fontFamily: "acumin-pro-condensed",
+                            fontSize: `12px`,
+                            fill: "#555555",
+                            textAlign: "center",
+                        }}
+                    >
+                        {s.toFixed(0)}
+                    </text>
+                </g>
+            );
+        });
     }
 
     public render() {
-
         const viewBox = `${-this._offsetX} 0 ${this._viewWidth + this._offsetX * 4} 40`;
 
         return (
             <div id="range-frame-bar">
-                <svg
-                    id="svg-range-frames"
-                    viewBox={viewBox}
-                    ref={this._svgHost}
-                    >
-                    {
-                        this._buildFrames()
-                    }
-                    {
-                        this.props.context.activeAnimations.map(a => {
-                            return this._dropKeyFrames(a);
-                        })                        
-                    }
+                <svg id="svg-range-frames" viewBox={viewBox} ref={this._svgHost}>
+                    {this._buildFrames()}
+                    {this.props.context.activeAnimations.map((a) => {
+                        return this._dropKeyFrames(a);
+                    })}
                 </svg>
             </div>
         );

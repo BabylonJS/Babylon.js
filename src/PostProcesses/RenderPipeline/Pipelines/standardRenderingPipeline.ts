@@ -1001,6 +1001,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var resolution = new Vector2(0, 0);
 
         // Lens flare
+        this.lensFlarePostProcess.externalTextureSamplerBinding = true;
         this.lensFlarePostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", this._bloomEnabled ? this.blurHPostProcesses[0] : this.originalPostProcess);
             effect.setTexture("lensColorSampler", this.lensColorTexture);

@@ -1,24 +1,26 @@
-import { SerializationHelper, serialize, expandToProperty } from "../../Misc/decorators";
-import { Scene } from '../../scene';
+import { Constants } from "../../Engines/constants";
+import { serialize, expandToProperty } from "../../Misc/decorators";
+import { Scene } from "../../scene";
+import { MaterialDefines } from "../materialDefines";
+import { MaterialPluginBase } from "../materialPluginBase";
+import { PBRBaseMaterial } from "./pbrBaseMaterial";
+
+declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * @hidden
  */
-export interface IMaterialBRDFDefines {
-    BRDF_V_HEIGHT_CORRELATED: boolean;
-    MS_BRDF_ENERGY_CONSERVATION: boolean;
-    SPHERICAL_HARMONICS: boolean;
-    SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
-
-    /** @hidden */
-    _areMiscDirty: boolean;
+export class MaterialBRDFDefines extends MaterialDefines {
+    BRDF_V_HEIGHT_CORRELATED = false;
+    MS_BRDF_ENERGY_CONSERVATION = false;
+    SPHERICAL_HARMONICS = false;
+    SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = false;
 }
 
 /**
- * Define the code related to the BRDF parameters of the pbr material.
+ * Plugin that implements the BRDF component of the PBR material
  */
-export class PBRBRDFConfiguration {
-
+export class PBRBRDFConfiguration extends MaterialPluginBase {
     /**
      * Default value used for the energy conservation.
      * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
@@ -97,56 +99,21 @@ export class PBRBRDFConfiguration {
         this._internalMarkAllSubMeshesAsMiscDirty();
     }
 
-    /**
-     * Instantiate a new instance of clear coat configuration.
-     * @param markAllSubMeshesAsMiscDirty Callback to flag the material to dirty
-     */
-    constructor(markAllSubMeshesAsMiscDirty: () => void) {
-        this._internalMarkAllSubMeshesAsMiscDirty = markAllSubMeshesAsMiscDirty;
+    constructor(material: PBRBaseMaterial, addToPluginList = true) {
+        super(material, "PBRBRDF", 90, new MaterialBRDFDefines(), addToPluginList);
+
+        this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
+        this._enable(true);
     }
 
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param defines the list of "defines" to update.
-     */
-    public prepareDefines(defines: IMaterialBRDFDefines): void {
+    public prepareDefines(defines: MaterialBRDFDefines, scene: Scene, mesh: AbstractMesh): void {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
         defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
     }
 
-    /**
-    * Get the current class name of the texture useful for serialization or dynamic coding.
-    * @returns "PBRClearCoatConfiguration"
-    */
     public getClassName(): string {
         return "PBRBRDFConfiguration";
-    }
-
-    /**
-     * Makes a duplicate of the current configuration into another one.
-     * @param brdfConfiguration define the config where to copy the info
-     */
-    public copyTo(brdfConfiguration: PBRBRDFConfiguration): void {
-        SerializationHelper.Clone(() => brdfConfiguration, this);
-    }
-
-    /**
-     * Serializes this BRDF configuration.
-     * @returns - An object with the serialized config.
-     */
-    public serialize(): any {
-        return SerializationHelper.Serialize(this);
-    }
-
-    /**
-     * Parses a anisotropy Configuration from a serialized object.
-     * @param source - Serialized object.
-     * @param scene Defines the scene we are parsing for
-     * @param rootUrl Defines the rootUrl to load from
-     */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
-        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

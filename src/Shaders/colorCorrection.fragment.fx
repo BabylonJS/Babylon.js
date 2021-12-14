@@ -25,6 +25,9 @@ vec4 sampleAs3DTexture(sampler2D textureSampler, vec3 uv, float width) {
 	return result;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec4 screen_color = texture2D(textureSampler, vUV);

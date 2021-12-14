@@ -15,10 +15,9 @@ import { Color3, Color4 } from "babylonjs/Maths/math";
 require("./scss/main.scss");
 var fullScreenLogo = require("./img/logo-fullscreen.svg");
 
-interface ISandboxProps {
-}
+interface ISandboxProps {}
 
-export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: boolean, errorMessage: string }> {
+export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: boolean; errorMessage: string }> {
     private _globalState: GlobalState;
     private _assetUrl?: string;
     private _autoRotate?: boolean;
@@ -48,10 +47,14 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
             this.setState({ errorMessage: "" });
 
             this._globalState.currentScene = info.scene;
-            if (this._globalState.currentScene.meshes.length === 0 && this._globalState.currentScene.clearColor.r === 1 && this._globalState.currentScene.clearColor.g === 0 && this._globalState.currentScene.clearColor.b === 0) {
+            if (
+                this._globalState.currentScene.meshes.length === 0 &&
+                this._globalState.currentScene.clearColor.r === 1 &&
+                this._globalState.currentScene.clearColor.g === 0 &&
+                this._globalState.currentScene.clearColor.b === 0
+            ) {
                 this._logoRef.current!.className = "";
-            }
-            else {
+            } else {
                 this._logoRef.current!.className = "hidden";
                 this._dropTextRef.current!.className = "hidden";
             }
@@ -99,7 +102,23 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     checkUrl() {
-        // Check URL
+        const set3DCommerceMode = () => {
+            document.title = "Babylon.js Sandbox for 3D Commerce";
+            this._globalState.commerceMode = true;
+        };
+
+        const setReflectorMode = () => {
+            document.title = "Babylon.js Reflector";
+            this._globalState.reflector = { hostname: "localhost", port: 1234 };
+        };
+
+        const host = location.host.toLowerCase();
+        if (host.indexOf("3dcommerce") === 0) {
+            set3DCommerceMode();
+        } else if (host.toLowerCase().indexOf("reflector") === 0) {
+            setReflectorMode();
+        }
+
         const indexOf = location.href.indexOf("?");
         if (indexOf !== -1) {
             const params = location.href.substr(indexOf + 1).split("&");
@@ -113,11 +132,15 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         break;
                     }
                     case "autoRotate": {
-                        this._autoRotate = (value === "true" ? true : false);
+                        this._autoRotate = value === "true" ? true : false;
                         break;
                     }
                     case "cameraPosition": {
-                        this._cameraPosition = Vector3.FromArray(value.split(",").map(function (component) { return +component; }));
+                        this._cameraPosition = Vector3.FromArray(
+                            value.split(",").map(function (component) {
+                                return +component;
+                            })
+                        );
                         break;
                     }
                     case "kiosk": {
@@ -125,8 +148,11 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         break;
                     }
                     case "reflector": {
-                        document.title = "Babylon.js Reflector";
-                        this._globalState.reflector = { hostname: "localhost", port: 1234 };
+                        setReflectorMode();
+                        break;
+                    }
+                    case "3dcommerce": {
+                        set3DCommerceMode();
                         break;
                     }
                     case "hostname": {
@@ -146,7 +172,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                         break;
                     }
                     case "skybox": {
-                        this._globalState.skybox = (value === "true" ? true : false);
+                        this._globalState.skybox = value === "true" ? true : false;
                         break;
                     }
                     case "clearColor": {
@@ -171,37 +197,41 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
         return (
             <div id="root">
                 <span>
-                    <p id="droptext" ref={this._dropTextRef}>{this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj or babylon files to view them"}</p>
-                    {
-                        this._globalState.reflector
-                            ? <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
-                            : <RenderingZone globalState={this._globalState} assetUrl={this._assetUrl} autoRotate={this._autoRotate} cameraPosition={this._cameraPosition} expanded={!this.state.isFooterVisible} />
-                    }
+                    <p id="droptext" ref={this._dropTextRef}>
+                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj or babylon files to view them"}
+                    </p>
+                    {this._globalState.reflector ? (
+                        <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
+                    ) : (
+                        <RenderingZone
+                            globalState={this._globalState}
+                            assetUrl={this._assetUrl}
+                            autoRotate={this._autoRotate}
+                            cameraPosition={this._cameraPosition}
+                            expanded={!this.state.isFooterVisible}
+                        />
+                    )}
                 </span>
-                <div ref={this._clickInterceptorRef}
+                <div
+                    ref={this._clickInterceptorRef}
                     onClick={() => {
                         this._globalState.onClickInterceptorClicked.notifyObservers();
                         this._clickInterceptorRef.current!.classList.add("hidden");
                     }}
-                    className="clickInterceptor hidden"></div>
-                {
-                    this.state.isFooterVisible &&
-                    <Footer globalState={this._globalState} />
-                }
+                    className="clickInterceptor hidden"
+                ></div>
+                {this.state.isFooterVisible && <Footer globalState={this._globalState} />}
                 <div id="logoContainer">
                     <img id="logo" src={fullScreenLogo} ref={this._logoRef} />
                 </div>
-                {
-                    this.state.errorMessage &&
+                {this.state.errorMessage && (
                     <div id="errorZone">
-                        <div className="message">
-                            {this.state.errorMessage}
-                        </div>
-                        <button type="button" className="close"
-                            onClick={() => this.setState({ errorMessage: "" })}
-                            data-dismiss="alert">&times;</button>
+                        <div className="message">{this.state.errorMessage}</div>
+                        <button type="button" className="close" onClick={() => this.setState({ errorMessage: "" })} data-dismiss="alert">
+                            &times;
+                        </button>
                     </div>
-                }
+                )}
             </div>
         );
     }

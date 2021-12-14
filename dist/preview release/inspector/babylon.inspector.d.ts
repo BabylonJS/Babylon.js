@@ -62,6 +62,8 @@ declare module INSPECTOR {
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;
         enableCameraGizmo(camera: BABYLON.Camera, enable?: boolean): void;
+        onSceneExplorerClosedObservable: BABYLON.Observable<void>;
+        onActionTabsClosedObservable: BABYLON.Observable<void>;
     }
 }
 declare module INSPECTOR {
@@ -196,11 +198,12 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     /**
-     * Defines a structure to hold max and min.
+     * Defines a structure to hold max, min and a optional current.
      */
     export interface IPerfMinMax {
         min: number;
         max: number;
+        current?: number;
     }
     /**
      * Defines structure of the object which contains information related to panning.
@@ -250,11 +253,15 @@ declare module INSPECTOR {
         id: string;
         text: string;
     }
+    export interface IVisibleRangeChangedObservableProps {
+        valueMap: Map<string, IPerfMinMax>;
+    }
     /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
         datasets: BABYLON.IPerfDatasets;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     /**
      * Defines the structure representing the preprocessable tooltip information.
@@ -280,6 +287,155 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
+        debugMode?: boolean;
+        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: BABYLON.Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class BABYLON.GUI.ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
+        onColorChanged: (newOne: string) => void;
+        icon?: string;
+        iconLabel?: string;
+        shouldPopRight?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module INSPECTOR {
+    export interface ICheckBoxLineComponentProps {
+        label?: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+        icon?: string;
+        iconLabel?: string;
+        faIcons?: {
+        };
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerSidebarComponentProps {
+        collector: BABYLON.PerformanceViewerCollector;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module INSPECTOR {
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: BABYLON.Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
+}
+declare module INSPECTOR {
     export class CanvasGraphService {
         private _ctx;
         private _width;
@@ -299,6 +455,7 @@ declare module INSPECTOR {
         private _tickerItems;
         private _preprocessedTooltipInfo;
         private _numberOfTickers;
+        private _onVisibleRangeChangedObservable?;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
@@ -513,149 +670,26 @@ declare module INSPECTOR {
         collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: BABYLON.Observable<void>;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
 declare module INSPECTOR {
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-        onKeyDown?: (evt: KeyboardEvent) => void;
+    interface IPerformanceViewerPopupComponentProps {
+        scene: BABYLON.Scene;
+        layoutObservable: BABYLON.Observable<IPerfLayoutSize>;
+        returnToLiveObservable: BABYLON.Observable<void>;
+        performanceCollector: BABYLON.PerformanceViewerCollector;
     }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
-    }
-}
-declare module INSPECTOR {
-    export interface IColorComponentEntryProps {
-        value: number;
-        label: string;
-        max?: number;
-        min?: number;
-        onChange: (value: number) => void;
-    }
-    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
-        constructor(props: IColorComponentEntryProps);
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IHexColorProps {
-        value: string;
-        expectedLength: number;
-        onChange: (value: string) => void;
-    }
-    export class HexColor extends React.Component<IHexColorProps, {
-        hex: string;
-    }> {
-        constructor(props: IHexColorProps);
-        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
-            hex: string;
-        }): boolean;
-        updateHexValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerProps {
-        color: BABYLON.Color3 | BABYLON.Color4;
-        linearhint?: boolean;
-        debugMode?: boolean;
-        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
-    }
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerState {
-        color: BABYLON.Color3;
-        alpha: number;
-    }
-    /**
-     * Class used to create a color picker
-     */
-    export class BABYLON.GUI.ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
-        private _saturationRef;
-        private _hueRef;
-        private _isSaturationPointerDown;
-        private _isHuePointerDown;
-        constructor(props: IColorPickerProps);
-        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
-        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        private _evaluateSaturation;
-        private _evaluateHue;
-        componentDidUpdate(): void;
-        raiseOnColorChanged(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IColorPickerComponentProps {
-        value: BABYLON.Color4 | BABYLON.Color3;
-        linearHint?: boolean;
-        onColorChanged: (newOne: string) => void;
-        icon?: string;
-        iconLabel?: string;
-        shouldPopRight?: boolean;
-    }
-    interface IColorPickerComponentState {
-        pickerEnabled: boolean;
-        color: BABYLON.Color3 | BABYLON.Color4;
-        hex: string;
-    }
-    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
-        private _floatRef;
-        private _floatHostRef;
-        constructor(props: IColorPickerComponentProps);
-        syncPositions(): void;
-        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
-        componentDidUpdate(): void;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IPerformanceViewerSidebarComponentProps {
-        collector: BABYLON.PerformanceViewerCollector;
-    }
-    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
-}
-declare module INSPECTOR {
-    interface IPerformancePlayheadButtonProps {
-        returnToPlayhead: BABYLON.Observable<void>;
-    }
-    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
+    export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps>;
 }
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
         scene: BABYLON.Scene;
+    }
+    export enum IPerfMetadataCategory {
+        Count = "Count",
+        FrameSteps = "Frame Steps Duration"
     }
     export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
@@ -667,44 +701,6 @@ declare module INSPECTOR {
         constructor(props: IPaneComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
-    }
-}
-declare module INSPECTOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module INSPECTOR {
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
@@ -760,6 +756,7 @@ declare module INSPECTOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -880,6 +877,7 @@ declare module INSPECTOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -905,25 +903,31 @@ declare module INSPECTOR {
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: BABYLON.Color3): void;
+        setPropertyValue(newColor: BABYLON.Color3 | BABYLON.Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
         render(): JSX.Element;
     }
@@ -1015,12 +1019,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: (window: Window) => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
     export interface KeyEntry {
         frame: number;
         value: number;
         inTangent?: number;
         outTangent?: number;
         lockedTangent: boolean;
+        interpolation?: BABYLON.AnimationKeyInterpolation;
     }
     export class Curve {
         static readonly SampleRate: number;
@@ -1034,11 +1068,14 @@ declare module INSPECTOR {
         setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
-        gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
+        getPathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         updateLockedTangentMode(keyIndex: number, enabled: boolean): void;
-        getInControlPoint(keyIndex: number): number;
-        getOutControlPoint(keyIndex: number): number;
+        updateInterpolationMode(keyIndex: number, interpolationMode: BABYLON.AnimationKeyInterpolation): void;
+        getInControlPoint(keyIndex: number): number | undefined;
+        getOutControlPoint(keyIndex: number): number | undefined;
+        hasDefinedOutTangent(keyIndex: number): boolean;
         evaluateOutTangent(keyIndex: number): number;
+        hasDefinedInTangent(keyIndex: number): boolean;
         evaluateInTangent(keyIndex: number): number;
         storeDefaultInTangent(keyIndex: number): void;
         storeDefaultOutTangent(keyIndex: number): void;
@@ -1090,6 +1127,7 @@ declare module INSPECTOR {
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onStepTangentRequiredObserver;
         private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
@@ -1114,6 +1152,7 @@ declare module INSPECTOR {
         private _unifyTangent;
         private _flattenTangent;
         private _linearTangent;
+        private _stepTangent;
         private _select;
         private _onPointerDown;
         private _extractSlope;
@@ -1143,8 +1182,10 @@ declare module INSPECTOR {
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        clipLength: number;
         referenceMinFrame: number;
         referenceMaxFrame: number;
+        focusedInput: boolean;
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
@@ -1157,11 +1198,12 @@ declare module INSPECTOR {
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
-        onNewKeyPointRequired: BABYLON.Observable<void>;
+        onCreateOrUpdateKeyPointRequired: BABYLON.Observable<void>;
         onFlattenTangentRequired: BABYLON.Observable<void>;
         onLinearTangentRequired: BABYLON.Observable<void>;
         onBreakTangentRequired: BABYLON.Observable<void>;
         onUnifyTangentRequired: BABYLON.Observable<void>;
+        onStepTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -1173,6 +1215,12 @@ declare module INSPECTOR {
         onAnimationsLoaded: BABYLON.Observable<void>;
         onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
         onEditAnimationUIClosed: BABYLON.Observable<void>;
+        onClipLengthIncreased: BABYLON.Observable<number>;
+        onClipLengthDecreased: BABYLON.Observable<number>;
+        onInterpolationModeSet: BABYLON.Observable<{
+            keyId: number;
+            value: BABYLON.AnimationKeyInterpolation;
+        }>;
         onSelectToActivated: BABYLON.Observable<{
             from: number;
             to: number;
@@ -1189,6 +1237,44 @@ declare module INSPECTOR {
         getActiveChannel(animation: BABYLON.Animation): string;
         resetAllActiveChannels(): void;
         getAnimationSortIndex(animation: BABYLON.Animation): number;
+        getPrevKey(): BABYLON.Nullable<number>;
+        getNextKey(): BABYLON.Nullable<number>;
+        /**
+         * If any current active animation has a key at the received frameNumber,
+         * return the index of the animation in the active animation array, and
+         * the index of the frame on the animation.
+         */
+        getKeyAtAnyFrameIndex(frameNumber: number): {
+            animationIndex: number;
+            keyIndex: number;
+        } | null;
+    }
+}
+declare module INSPECTOR {
+    interface ITextInputComponentProps {
+        globalState: GlobalState;
+        context: Context;
+        id?: string;
+        className?: string;
+        tooltip?: string;
+        value: string;
+        isNumber?: boolean;
+        complement?: string;
+        onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
+    }
+    interface ITextInputComponentState {
+        value: string;
+        isFocused: boolean;
+    }
+    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
+        private _lastKnownGoodValue;
+        constructor(props: ITextInputComponentProps);
+        private _onChange;
+        private _onBlur;
+        private _onFocus;
+        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
+        private _onKeyPress;
+        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
@@ -1225,6 +1311,8 @@ declare module INSPECTOR {
         private _onPrevKey;
         private _onRewind;
         private _onForward;
+        private _onPrevFrame;
+        private _onNextFrame;
         private _onNextKey;
         private _onEndKey;
         private _onStop;
@@ -1265,12 +1353,15 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IBottomBarComponentState {
+        clipLength: string;
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         private _onAnimationsLoadedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onClipLengthIncreasedObserver;
+        private _onClipLengthDecreasedObserver;
         constructor(props: IBottomBarComponentProps);
-        private _renderMaxFrame;
+        private _changeClipLength;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -1290,32 +1381,6 @@ declare module INSPECTOR {
     }
     export class ActionButtonComponent extends React.Component<IActionButtonComponentProps, IActionButtonComponentState> {
         constructor(props: IActionButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ITextInputComponentProps {
-        globalState: GlobalState;
-        context: Context;
-        id?: string;
-        className?: string;
-        tooltip?: string;
-        value: string;
-        isNumber?: boolean;
-        complement?: string;
-        onValueAsNumberChanged?: (value: number) => void;
-    }
-    interface ITextInputComponentState {
-        value: string;
-        isFocused: boolean;
-    }
-    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
-        private _lastKnownGoodValue;
-        constructor(props: ITextInputComponentProps);
-        private _onChange;
-        private _onBlur;
-        private _onFocus;
-        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
         render(): JSX.Element;
     }
 }
@@ -1373,6 +1438,7 @@ declare module INSPECTOR {
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onInterpolationModeSetObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
         componentDidUpdate(): boolean;
@@ -1492,7 +1558,9 @@ declare module INSPECTOR {
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1551,6 +1619,7 @@ declare module INSPECTOR {
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         private _onEditAnimationRequiredObserver;
         private _onEditAnimationUIClosedObserver;
+        private _onDeleteAnimationObserver;
         constructor(props: IAnimationListComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
@@ -1707,6 +1776,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        componentDidUpdate(prevProps: IAnimationGridComponentProps): void;
         render(): JSX.Element;
     }
 }
@@ -1895,7 +1965,7 @@ declare module INSPECTOR {
         visible: boolean;
         editable: boolean;
         name: string;
-        id: 'R' | 'G' | 'B' | 'A';
+        id: "R" | "G" | "B" | "A";
         icon: any;
     }
     interface IChannelsBarProps {
@@ -1955,8 +2025,7 @@ declare module INSPECTOR {
         private _originalTexture;
         /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
-        /** The internal texture representation of the original texture */
-        private _originalInternalTexture;
+        private _originalTextureProperties;
         /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;
@@ -2214,6 +2283,18 @@ declare module INSPECTOR {
         uploadTexture(file: File): void;
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: BABYLON.GUI.AdvancedDynamicTexture): Promise<void>;
 }
 declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
@@ -4017,17 +4098,26 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IPersistentPopupConfiguration {
+        props: IPopupComponentProps;
+        children: React.ReactNode;
+        closeWhenSceneExplorerCloses?: boolean;
+        closeWhenActionTabsCloses?: boolean;
+    }
     export class Inspector {
         private static _SceneExplorerHost;
         private static _ActionTabsHost;
         private static _EmbedHost;
         private static _NewCanvasContainer;
+        private static _PersistentPopupHost;
         private static _SceneExplorerWindow;
         private static _ActionTabsWindow;
         private static _EmbedHostWindow;
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
+        private static _OnSceneExplorerClosedObserver;
+        private static _OnActionTabsClosedObserver;
         static OnSelectionChangeObservable: BABYLON.Observable<any>;
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
@@ -4047,6 +4137,8 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+        static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement): void;
+        static _ClosePersistentPopup(): void;
     }
 }
 declare module INSPECTOR {

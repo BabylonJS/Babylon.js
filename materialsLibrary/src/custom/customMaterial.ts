@@ -21,6 +21,7 @@ export class ShaderSpecialParts {
     public Fragment_Begin: string;
     public Fragment_Definitions: string;
     public Fragment_MainBegin: string;
+    public Fragment_MainEnd: string;
 
     // diffuseColor
     public Fragment_Custom_Diffuse: string;
@@ -64,7 +65,7 @@ export class CustomMaterial extends StandardMaterial {
     public FragmentShader: string;
     public VertexShader: string;
 
-    public AttachAfterBind(mesh: Mesh, effect: Effect) {
+    public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
             for (let el in this._newUniformInstances) {
                 const ea = el.toString().split('-');
@@ -159,7 +160,8 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
-            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""))
+            .replace('#define CUSTOM_FRAGMENT_MAIN_END', (this.CustomParts.Fragment_MainEnd ? this.CustomParts.Fragment_MainEnd : ""));
 
         if (this.CustomParts.Fragment_Before_Fog) {
             Effect.ShadersStore[name + "PixelShader"] = Effect.ShadersStore[name + "PixelShader"].replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', this.CustomParts.Fragment_Before_Fog);
@@ -223,6 +225,11 @@ export class CustomMaterial extends StandardMaterial {
 
     public Fragment_MainBegin(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_MainBegin = shaderPart;
+        return this;
+    }
+
+    public Fragment_MainEnd(shaderPart: string): CustomMaterial {
+        this.CustomParts.Fragment_MainEnd = shaderPart;
         return this;
     }
 

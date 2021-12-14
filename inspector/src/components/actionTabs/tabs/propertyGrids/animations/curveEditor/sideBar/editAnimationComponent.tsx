@@ -7,18 +7,15 @@ import { Observer } from "babylonjs/Misc/observable";
 
 interface IEditAnimationComponentProps {
     globalState: GlobalState;
-    context: Context; 
+    context: Context;
 }
 
 interface IEditAnimationComponentState {
     isVisible: boolean;
-    animation: Nullable<Animation>
+    animation: Nullable<Animation>;
 }
 
-export class EditAnimationComponent extends React.Component<
-IEditAnimationComponentProps,
-IEditAnimationComponentState
-> {
+export class EditAnimationComponent extends React.Component<IEditAnimationComponentProps, IEditAnimationComponentState> {
     private _root: React.RefObject<HTMLDivElement>;
     private _displayName: React.RefObject<HTMLInputElement>;
     private _property: React.RefObject<HTMLInputElement>;
@@ -28,7 +25,7 @@ IEditAnimationComponentState
     constructor(props: IEditAnimationComponentProps) {
         super(props);
 
-        this.state = {isVisible: false, animation: null};
+        this.state = { isVisible: false, animation: null };
 
         this._root = React.createRef();
         this._displayName = React.createRef();
@@ -38,8 +35,8 @@ IEditAnimationComponentState
         this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add((animation) => {
             this.setState({
                 isVisible: true,
-                animation: animation
-            })
+                animation: animation,
+            });
         });
     }
 
@@ -50,11 +47,11 @@ IEditAnimationComponentState
     }
 
     public close() {
-        this.setState({isVisible: false});
+        this.setState({ isVisible: false });
         this.props.context.onEditAnimationUIClosed.notifyObservers();
     }
 
-    public validate() {        
+    public validate() {
         const context = this.props.context;
         const document = this._displayName.current!.ownerDocument;
         const displayName = this._displayName.current!.value;
@@ -70,7 +67,7 @@ IEditAnimationComponentState
             document.defaultView!.alert("Please define a property");
             return;
         }
-        
+
         const animation = this.state.animation!;
 
         animation.name = displayName;
@@ -108,17 +105,11 @@ IEditAnimationComponentState
 
         return (
             <div id="edit-animation-pane" ref={this._root}>
-                <div id="edit-animation-display-name-label">
-                    Display Name
-                </div>
-                <div id="edit-animation-property-label">
-                    Property
-                </div>   
-                <div id="edit-animation-loop-mode-label">
-                    Loop Mode
-                </div>
-                <input type="text" id="edit-animation-name" ref={this._displayName} className="input-text" defaultValue={this.state.animation!.name || ""}/>
-                <input type="text" id="edit-animation-property" ref={this._property} className="input-text" defaultValue={this.state.animation!.targetProperty}/>
+                <div id="edit-animation-display-name-label">Display Name</div>
+                <div id="edit-animation-property-label">Property</div>
+                <div id="edit-animation-loop-mode-label">Loop Mode</div>
+                <input type="text" id="edit-animation-name" ref={this._displayName} className="input-text" defaultValue={this.state.animation!.name || ""} />
+                <input type="text" id="edit-animation-property" ref={this._property} className="input-text" defaultValue={this.state.animation!.targetProperty} />
                 <select id="edit-animation-loop-mode" className="option" ref={this._loopModeElement} defaultValue={loopModes[this.state.animation!.loopMode ?? 1]}>
                     {loopModes.map((loopMode, i) => {
                         return (
@@ -131,10 +122,10 @@ IEditAnimationComponentState
                 <div id="edit-animation">
                     <button className="simple-button" id="edit-animation-ok" type="button" onClick={() => this.validate()}>
                         OK
-                    </button>       
+                    </button>
                     <button className="simple-button" id="edit-animation-cancel" type="button" onClick={() => this.close()}>
                         Cancel
-                    </button>          
+                    </button>
                 </div>
             </div>
         );

@@ -1,6 +1,6 @@
 import * as React from "react";
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface ILinkButtonComponentProps {
     label: string;
@@ -18,7 +18,7 @@ export class LinkButtonComponent extends React.Component<ILinkButtonComponentPro
 
     onLink() {
         if (this.props.url) {
-            window.open(this.props.url, '_blank');
+            window.open(this.props.url, "_blank");
         }
     }
 
@@ -30,17 +30,19 @@ export class LinkButtonComponent extends React.Component<ILinkButtonComponentPro
                 </div>
                 <div className="link-button">
                     <button onClick={() => this.props.onClick()}>{this.props.buttonLabel}</button>
-                </div> 
-                {
-                    this.props.icon &&
-                    <div className="link-icon hoverIcon" onClick={() => {
-                        if (this.props.onIconClick) {
-                            this.props.onIconClick();
-                        }
-                    }}>
+                </div>
+                {this.props.icon && (
+                    <div
+                        className="link-icon hoverIcon"
+                        onClick={() => {
+                            if (this.props.onIconClick) {
+                                this.props.onIconClick();
+                            }
+                        }}
+                    >
                         <FontAwesomeIcon icon={this.props.icon} />
-                    </div> 
-                }
+                    </div>
+                )}
             </div>
         );
     }

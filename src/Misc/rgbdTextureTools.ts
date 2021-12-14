@@ -53,6 +53,7 @@ export class RGBDTextureTools {
             if (expandTexture) {
                 // Simply run through the decode PP.
                 const rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, internalTexture.type, undefined, null, false);
+                rgbdPostProcess.externalTextureSamplerBinding = true;
 
                 // Hold the output of the decoding.
                 const expandedTexture = engine.createRenderTargetTexture(internalTexture.width, {

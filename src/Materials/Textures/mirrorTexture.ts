@@ -9,6 +9,7 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Plane } from '../../Maths/math.plane';
+import { UniformBuffer } from "../uniformBuffer";
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
  * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -129,6 +130,8 @@ export class MirrorTexture extends RenderTargetTexture {
     private _blurKernelX = 0;
     private _blurKernelY = 0;
     private _blurRatio = 1.0;
+    private _sceneUBO: UniformBuffer;
+    private _currentSceneUBO: UniformBuffer;
 
     /**
      * Instantiates a Mirror Texture.
@@ -157,6 +160,10 @@ export class MirrorTexture extends RenderTargetTexture {
 
         const engine = this.getScene()!.getEngine();
 
+        if (engine.supportsUniformBuffers) {
+            this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`);
+        }
+
         this.onBeforeBindObservable.add(() => {
             engine._debugPushGroup?.(`mirror generation for ${name}`, 1);
         });
@@ -168,6 +175,12 @@ export class MirrorTexture extends RenderTargetTexture {
         let saveClipPlane: Nullable<Plane>;
 
         this.onBeforeRenderObservable.add(() => {
+            if (this._sceneUBO) {
+                this._currentSceneUBO = scene.getSceneUniformBuffer();
+                scene.setSceneUniformBuffer(this._sceneUBO);
+                scene.getSceneUniformBuffer().unbindEffect();
+            }
+
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
             this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
 
@@ -182,6 +195,9 @@ export class MirrorTexture extends RenderTargetTexture {
         });
 
         this.onAfterRenderObservable.add(() => {
+            if (this._sceneUBO) {
+                scene.setSceneUniformBuffer(this._currentSceneUBO);
+            }
             scene.updateTransformMatrix();
             scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
@@ -285,6 +301,7 @@ export class MirrorTexture extends RenderTargetTexture {
     public dispose() {
         super.dispose();
         this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
+        this._sceneUBO?.dispose();
     }
 }
 

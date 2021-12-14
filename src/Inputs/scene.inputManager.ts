@@ -11,7 +11,7 @@ import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/key
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
-import { IDeviceEvent, IDeviceInputSystem } from "../DeviceInput/Interfaces/inputInterfaces";
+import { IDeviceEvent } from "../DeviceInput/Interfaces/inputInterfaces";
 
 declare type Scene = import("../scene").Scene;
 
@@ -113,7 +113,7 @@ export class InputManager {
     private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
-    private _deviceInputSystem: IDeviceInputSystem;
+    private _deviceInputSystem: DeviceInputSystem;
 
     /**
      * Creates a new InputManager
@@ -481,24 +481,21 @@ export class InputManager {
      * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
      */
     public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
-        let scene = this._scene;
+        const scene = this._scene;
+        const engine = scene.getEngine();
 
         if (!elementToAttachTo) {
-            elementToAttachTo = scene.getEngine().getInputElement();
-        }
-
-        if (!elementToAttachTo) {
-            return;
+            elementToAttachTo = engine.getInputElement();
         }
 
         if (this._alreadyAttached) {
             this.detachControl();
         }
-        this._alreadyAttachedTo = elementToAttachTo;
-        let engine = scene.getEngine();
+
+        if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
 
         if (!this._deviceInputSystem) {
-            this._deviceInputSystem = DeviceInputSystem.Create(engine);
+            this._deviceInputSystem = DeviceInputSystem._Create(engine);
         }
         else {
             this._deviceInputSystem.configureEvents();
@@ -667,6 +664,11 @@ export class InputManager {
                 return;
             }
 
+            if (scene.skipPointerMovePicking) {
+                this._processPointerMove(new PickingInfo(), evt as IPointerEvent);
+                return;
+            }
+
             if (!scene.pointerMovePredicate) {
                 scene.pointerMovePredicate = (mesh: AbstractMesh): boolean =>
                     mesh.isPickable &&
@@ -778,7 +780,7 @@ export class InputManager {
                     }
                 }
 
-                if (!this._pointerCaptures[evt.pointerId]) {
+                if (!this._pointerCaptures[evt.pointerId] && evt.buttons > 0) {
                     return;
                 }
 
@@ -881,8 +883,7 @@ export class InputManager {
                         eventData.inputIndex === PointerInput.Horizontal ||
                         eventData.inputIndex === PointerInput.Vertical ||
                         eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical ||
-                        eventData.inputIndex === PointerInput.FakeMove
+                        eventData.inputIndex === PointerInput.DeltaVertical
                     ) {
                         this._onPointerMove(evt as IPointerEvent);
                     } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
@@ -899,18 +900,17 @@ export class InputManager {
      * Detaches all event handlers
      */
     public detachControl() {
-        if (!this._alreadyAttachedTo || !this._alreadyAttached) {
-            return;
+        if (this._alreadyAttached) {
+
+            this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
+
+            // Cursor
+            if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {
+                this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
+            }
+
+            this._alreadyAttached = false;
         }
-
-        this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
-
-        // Cursor
-        if (!this._scene.doNotHandleCursors) {
-            this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
-        }
-
-        this._alreadyAttached = false;
     }
 
     /**

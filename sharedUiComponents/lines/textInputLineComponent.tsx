@@ -14,7 +14,8 @@ interface ITextInputLineComponentProps {
     icon?: string;
     iconLabel?: string;
     noUnderline?: boolean;
-    numbersOnly?: boolean
+    numbersOnly?: boolean;
+    delayInput?: boolean
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
@@ -23,7 +24,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" }
+        this.state = { value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" };
     }
 
     componentWillUnmount() {
@@ -58,7 +59,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             object: this.props.target,
             property: this.props.propertyName!,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -71,8 +72,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 value = "0";
             }
 
-            //Removing starting zero if there is a number of a minus after it. 
-            if(value.search(/0+[0-9\-]/g) === 0){
+            //Removing starting zero if there is a number of a minus after it.
+            if (value.search(/0+[0-9\-]/g) === 0) {
                 value = value.substr(1);
             }
         }
@@ -81,7 +82,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
         this.setState({ value: value });
 
-        if (this.props.propertyName) {
+        if (this.props.propertyName && !this.props.delayInput) {
             this.props.target[this.props.propertyName] = value;
         }
 
@@ -92,13 +93,21 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return (
             <div className="textInputLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
-                {(!this.props.icon || (this.props.icon && this.props.label != "")) &&
+                {(!this.props.icon || (this.props.icon && this.props.label != "")) && (
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
-                }
+                )}
                 <div className={"value" + (this.props.noUnderline === true ? " noUnderline" : "")}>
-                    <input value={this.state.value} onBlur={() => this.props.lockObject.lock = false} onFocus={() => this.props.lockObject.lock = true} onChange={evt => this.updateValue(evt.target.value)} />
+                    <input
+                        value={this.state.value}
+                        onBlur={() => {
+                            this.props.lockObject.lock = false;
+                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" );
+                        }}
+                        onFocus={() => (this.props.lockObject.lock = true)}
+                        onChange={(evt) => this.updateValue(evt.target.value)}
+                    />
                 </div>
             </div>
         );

@@ -56,7 +56,7 @@ export interface WebXRRenderTarget extends IDisposable {
     xrLayer: Nullable<XRWebGLLayer>;
 
     /**
-     * Initializes the xr layer for the session
+     * Initializes a XRWebGLLayer to be used as the session's baseLayer.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */

@@ -13,14 +13,13 @@ interface IVector4LineComponentProps {
     propertyName: string;
     step?: number;
     onChange?: (newvalue: Vector4) => void;
-    useEuler?: boolean,
+    useEuler?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     icon?: string;
-    iconLabel? : string;
+    iconLabel?: string;
 }
 
-export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, { isExpanded: boolean, value: Vector4 }> {
-
+export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, { isExpanded: boolean; value: Vector4 }> {
     static defaultProps = {
         step: 0.001, // cm
     };
@@ -30,14 +29,14 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
     constructor(props: IVector4LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.getCurrentValue().clone() }
+        this.state = { isExpanded: false, value: this.getCurrentValue().clone() };
     }
 
     getCurrentValue() {
         return this.props.target[this.props.propertyName];
     }
 
-    shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean, value: Vector4 }) {
+    shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean; value: Vector4 }) {
         const nextPropsValue = this.getCurrentValue();
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -65,7 +64,7 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -107,19 +106,17 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
     }
 
     render() {
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
             <div className="vector3Line">
                 <div className="firstLine">
-                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon" />}
+                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                     <div className="vector">
-                        {
-                            `X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}, W: ${this.state.value.w.toFixed(2)}`
-                        }
+                        {`X: ${this.state.value.x.toFixed(2)}, Y: ${this.state.value.y.toFixed(2)}, Z: ${this.state.value.z.toFixed(2)}, W: ${this.state.value.w.toFixed(2)}`}
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
@@ -127,10 +124,10 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
                 </div>
                 {
                     <div className="secondLine">
-                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" step={this.props.step} value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
-                        <NumericInputComponent label="w" step={this.props.step} value={this.state.value.w} onChange={value => this.updateStateW(value)} />
+                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={(value) => this.updateStateX(value)} />
+                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={(value) => this.updateStateY(value)} />
+                        <NumericInputComponent label="z" step={this.props.step} value={this.state.value.z} onChange={(value) => this.updateStateZ(value)} />
+                        <NumericInputComponent label="w" step={this.props.step} value={this.state.value.w} onChange={(value) => this.updateStateW(value)} />
                     </div>
                 }
             </div>

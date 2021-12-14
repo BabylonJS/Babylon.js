@@ -420,6 +420,8 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (needUpdate) {
             this._uniformBuffer.update();
+        } else {
+            this._uniformBuffer.bindUniformBuffer();
         }
     }
 
@@ -586,6 +588,9 @@ export abstract class Light extends Node implements ISortableLight {
             return null;
         }
         let clonedLight = SerializationHelper.Clone(constructor, this);
+        if (name) {
+            clonedLight.name = name;
+        }
         if (newParent) {
             clonedLight.parent = newParent;
         }
@@ -602,13 +607,14 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getTypeID();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         // Inclusion / exclusions
@@ -629,6 +635,8 @@ export abstract class Light extends Node implements ISortableLight {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
+
+        serializationObject.isEnabled = this.isEnabled();
 
         return serializationObject;
     }
@@ -705,6 +713,11 @@ export abstract class Light extends Node implements ISortableLight {
 
         if (parsedLight.autoAnimate) {
             scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedLight.isEnabled !== undefined) {
+            light.setEnabled(parsedLight.isEnabled);
         }
 
         return light;

@@ -556,11 +556,15 @@
         .adtextureTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 20px auto 5px;
+            grid-template-columns: 1fr 20px 20px auto 5px;
             align-items: center;
+
+            .edit {
+                grid-column: 2;
+            }
             
             .pickingMode {
-                grid-column: 2;
+                grid-column: 3;
                 opacity: 0.6;
 
                 &.selected {

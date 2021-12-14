@@ -9,7 +9,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import { IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -123,6 +123,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
     public MULTIVIEW = false;
 
@@ -675,12 +676,12 @@ export class BackgroundMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new BackgroundMaterialDefines();
         }
 
         var scene = this.getScene();
-        var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
+        var defines = <BackgroundMaterialDefines>subMesh.materialDefines;
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -911,14 +912,6 @@ export class BackgroundMaterial extends PushMaterial {
                 maxSimultaneousLights: this._maxSimultaneousLights
             });
 
-            var onCompiled = (effect: Effect) => {
-                if (this.onCompiled) {
-                    this.onCompiled(effect);
-                }
-
-                MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
-            };
-
             var join = defines.toString();
             const effect = scene.getEngine().createEffect("background", <IEffectCreationOptions>{
                 attributes: attribs,
@@ -927,7 +920,7 @@ export class BackgroundMaterial extends PushMaterial {
                 samplers: samplers,
                 defines: join,
                 fallbacks: fallbacks,
-                onCompiled: onCompiled,
+                onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
             }, engine);
@@ -1039,7 +1032,7 @@ export class BackgroundMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
+        var defines = <BackgroundMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -1134,6 +1127,9 @@ export class BackgroundMaterial extends PushMaterial {
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             scene.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            this._uniformBuffer.bindToEffect(effect, "Material");
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {

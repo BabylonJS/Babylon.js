@@ -4,8 +4,8 @@ import { Color4 } from "babylonjs/Maths/math.color";
 import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from '../propertyChangedEvent';
-import { ColorPickerLineComponent } from './colorPickerComponent';
+import { PropertyChangedEvent } from "../propertyChangedEvent";
+import { ColorPickerLineComponent } from "./colorPickerComponent";
 
 const copyIcon: string = require("./copy.svg");
 
@@ -16,11 +16,11 @@ export interface IColor4LineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onChange?: () => void;
     isLinear?: boolean;
-    icon? : string;
-    iconLabel? : string;
+    icon?: string;
+    iconLabel?: string;
 }
 
-export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean, color: Color4 }> {
+export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean; color: Color4 }> {
     private _localChange = false;
     constructor(props: IColor4LineComponentProps) {
         super(props);
@@ -145,7 +145,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     copyToClipboard() {
-        var element = document.createElement('div');
+        var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
 
@@ -156,42 +156,43 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
             window.getSelection()!.addRange(range);
         }
 
-        document.execCommand('copy');
+        document.execCommand("copy");
         element.remove();
     }
 
     render() {
-
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
             <div className="color3Line">
                 <div className="firstLine">
-                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel}  className="icon"/>}
+                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <ColorPickerLineComponent value={this.state.color} onColorChanged={color => {
-                            this.onChange(color);
-                        }} />                        
+                        <ColorPickerLineComponent
+                            value={this.state.color}
+                            onColorChanged={(color) => {
+                                this.onChange(color);
+                            }}
+                        />
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <img src={copyIcon} alt=""/>
+                        <img src={copyIcon} alt="" />
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
-                {
-                    this.state.isExpanded &&
+                {this.state.isExpanded && (
                     <div className="secondLine">
                         <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
                         <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
                         <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
                         <NumericInputComponent label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
                     </div>
-                }
+                )}
             </div>
         );
     }

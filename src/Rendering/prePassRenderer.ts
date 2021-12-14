@@ -151,6 +151,7 @@ export class PrePassRenderer {
         } else {
             this._currentTarget = this.defaultRT;
         }
+        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**
@@ -226,7 +227,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
-        this._setRenderTarget(null);
+        this._currentTarget = this.defaultRT;
     }
 
     /**
@@ -264,17 +265,18 @@ export class PrePassRenderer {
      * @param subMesh Submesh on which the effect is applied
      */
     public bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh) {
+        const material = subMesh.getMaterial();
+        const isPrePassCapable = material && material.isPrePassCapable;
+        const excluded = material && this.excludedMaterials.indexOf(material) !== -1;
+
         if (this.enabled && this._currentTarget.enabled) {
-            if (effect._multiTarget) {
+            if (effect._multiTarget && isPrePassCapable && !excluded) {
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
                 this._engine.bindAttachments(this._defaultAttachments);
 
-                if (this._geometryBuffer && this.currentRTisSceneRT) {
-                    const material = subMesh.getMaterial();
-                    if (material && !material.isPrePassCapable && this.excludedMaterials.indexOf(material) === -1) {
-                        this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
-                    }
+                if (this._geometryBuffer && this.currentRTisSceneRT && !excluded) {
+                    this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
                 }
             }
         }
@@ -692,8 +694,8 @@ export class PrePassRenderer {
         let enablePrePass = false;
         this._scene.imageProcessingConfiguration.applyByPostProcess = false;
 
-        if (this._scene.depthPeelingRenderer) {
-            this._scene.depthPeelingRenderer.setPrePassRenderer(this);
+        if (this._scene._depthPeelingRenderer && this._scene.useOrderIndependentTransparency) {
+            this._scene._depthPeelingRenderer.setPrePassRenderer(this);
             enablePrePass = true;
         }
 

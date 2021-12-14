@@ -25,6 +25,9 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
+import { MaterialPluginEvent,
+    MaterialPluginDisposed, MaterialPluginIsReadyForSubMesh, MaterialPluginGetDefineNames, MaterialPluginBindForSubMesh, MaterialPluginGetActiveTextures, MaterialPluginHasTexture, MaterialPluginGetAnimatables, MaterialPluginPrepareDefines, MaterialPluginPrepareEffect, MaterialPluginPrepareUniformBuffer, MaterialPluginCreated, MaterialPluginFillRenderTargetTextures, MaterialPluginHasRenderTargetTextures, MaterialPluginHardBindForSubMesh } from "./materialPluginEvent";
+import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -55,7 +58,7 @@ export interface ICustomShaderNameResolveOptions {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    processFinalCode?: Nullable<ShaderCustomProcessingFunction>;
 }
 
 /**
@@ -176,6 +179,11 @@ export class Material implements IAnimatable {
      * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
      */
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
+
+    /**
+     * Event observable which raises global events common to all materials (like MaterialPluginEvent.Created)
+     */
+    public static OnEventObservable = new Observable<Material>();
 
     /**
      * Custom callback helping to override the default shader used in the material.
@@ -353,7 +361,9 @@ export class Material implements IAnimatable {
      * Gets a boolean indicating that current material needs to register RTT
      */
     public get hasRenderTargetTextures(): boolean {
-        return false;
+        this._eventInfo.hasRenderTargetTextures = false;
+        this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
+        return this._eventInfo.hasRenderTargetTextures;
     }
 
     /**
@@ -664,6 +674,10 @@ export class Material implements IAnimatable {
     public _getDrawWrapper(): DrawWrapper {
         return this._drawWrapper;
     }
+    /** @hidden */
+    public _setDrawWrapper(drawWrapper: DrawWrapper) {
+        this._drawWrapper = drawWrapper;
+    }
 
     /**
      * Specifies if uniform buffers should be used
@@ -674,7 +688,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
-    private _needToBindSceneUbo: boolean;
+    protected _needToBindSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
@@ -698,8 +712,9 @@ export class Material implements IAnimatable {
 
     /**
      * Stores the uniform buffer
+     * @hidden
      */
-    protected _uniformBuffer: UniformBuffer;
+    public _uniformBuffer: UniformBuffer;
 
     /** @hidden */
     public _indexInSceneMaterialArray = -1;
@@ -710,6 +725,44 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _parentContainer: Nullable<AbstractScene> = null;
 
+    /** @hidden */
+    public _dirtyCallbacks: { [code: number]: () => void };
+
+    /** @hidden */
+    public _uniformBufferLayoutBuilt = false;
+
+    protected _eventInfo:
+            MaterialPluginCreated &
+            MaterialPluginDisposed &
+            MaterialPluginHasTexture &
+            MaterialPluginIsReadyForSubMesh &
+            MaterialPluginGetDefineNames &
+            MaterialPluginPrepareEffect &
+            MaterialPluginPrepareDefines &
+            MaterialPluginPrepareUniformBuffer &
+            MaterialPluginBindForSubMesh &
+            MaterialPluginGetAnimatables &
+            MaterialPluginGetActiveTextures &
+            MaterialPluginFillRenderTargetTextures &
+            MaterialPluginHasRenderTargetTextures &
+            MaterialPluginHardBindForSubMesh
+    = { } as any; // will be initialized before each event notification
+
+    /** @hidden */
+    public _callbackPluginEventGeneric: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void(0);
+
     /**
      * Creates a material instance
      * @param name defines the name of the material
@@ -719,6 +772,15 @@ export class Material implements IAnimatable {
     constructor(name: string, scene: Scene, doNotAdd?: boolean) {
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
+        this._dirtyCallbacks = {};
+
+        this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_LightDirtyFlag] = this._markAllSubMeshesAsLightsDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_FresnelDirtyFlag] = this._markAllSubMeshesAsFresnelDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_AttributesDirtyFlag] = this._markAllSubMeshesAsAttributesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag] = this._markAllSubMeshesAsMiscDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag] = this._markAllSubMeshesAsPrePassDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
@@ -742,6 +804,8 @@ export class Material implements IAnimatable {
         if (this._scene.useMaterialMeshMap) {
             this.meshMap = {};
         }
+
+        Material.OnEventObservable.notifyObservers(this, MaterialPluginEvent.Created);
     }
 
     /**
@@ -805,7 +869,16 @@ export class Material implements IAnimatable {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return false;
+        const defines = subMesh.materialDefines;
+        if (!defines) {
+            return false;
+        }
+
+        this._eventInfo.isReadyForSubMesh = true;
+        this._eventInfo.defines = defines;
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
+
+        return this._eventInfo.isReadyForSubMesh;
     }
 
     /**
@@ -971,12 +1044,33 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Initializes the uniform buffer layout for the shader.
+     */
+    public buildUniformLayout(): void {
+        const ubo = this._uniformBuffer;
+
+        this._eventInfo.ubo = ubo;
+        this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareUniformBuffer, this._eventInfo);
+
+        ubo.create();
+
+        this._uniformBufferLayoutBuilt = true;
+    }
+
+    /**
      * Binds the submesh to the material
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        const effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventBindForSubMesh(this._eventInfo);
     }
 
     /**
@@ -1033,8 +1127,8 @@ export class Material implements IAnimatable {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                this._scene.finalizeSceneUbo();
                 MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                this._scene.finalizeSceneUbo();
             }
         }
         if (mesh) {
@@ -1091,11 +1185,23 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Returns the animatable textures.
+     * @returns - Array of animatable textures.
+     */
+    public getAnimatables(): IAnimatable[] {
+        this._eventInfo.animatables = [];
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetAnimatables, this._eventInfo);
+        return this._eventInfo.animatables;
+    }
+
+    /**
      * Gets the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
-        return [];
+        this._eventInfo.activeTextures = [];
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetActiveTextures, this._eventInfo);
+        return this._eventInfo.activeTextures;
     }
 
     /**
@@ -1104,7 +1210,10 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if the material uses the texture
      */
     public hasTexture(texture: BaseTexture): boolean {
-        return false;
+        this._eventInfo.hasTexture = false;
+        this._eventInfo.texture = texture;
+        this._callbackPluginEventGeneric(MaterialPluginEvent.HasTexture, this._eventInfo);
+        return this._eventInfo.hasTexture;
     }
 
     /**
@@ -1170,8 +1279,8 @@ export class Material implements IAnimatable {
                 var allDone = true, lastError = null;
                 if (mesh.subMeshes) {
                     let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
-                    if (tempSubMesh._materialDefines) {
-                        tempSubMesh._materialDefines._renderId = -1;
+                    if (tempSubMesh.materialDefines) {
+                        tempSubMesh.materialDefines._renderId = -1;
                     }
                     if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
                         if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
@@ -1298,6 +1407,25 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Resets the draw wrappers cache for all submeshes that are using this material
+     */
+    public resetDrawCache(): void {
+        const meshes = this.getScene().meshes;
+        for (const mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+            for (const subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
+                    continue;
+                }
+
+                subMesh.resetDrawCache();
+            }
+        }
+    }
+
+    /**
      * Marks all submeshes of a material to indicate that their material defines need to be re-calculated
      * @param func defines a function which checks material defines against the submeshes
      */
@@ -1307,20 +1435,23 @@ export class Material implements IAnimatable {
         }
 
         const meshes = this.getScene().meshes;
-        for (var mesh of meshes) {
+        for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
             }
-            for (var subMesh of mesh.subMeshes) {
+            for (const subMesh of mesh.subMeshes) {
                 if (subMesh.getMaterial() !== this) {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
-                    continue;
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
+                        continue;
+                    }
+                    if (this._materialContext === drawWrapper.materialContext) {
+                        func(drawWrapper.defines as MaterialDefines);
+                    }
                 }
-
-                func(subMesh._materialDefines);
             }
         }
     }
@@ -1434,6 +1565,9 @@ export class Material implements IAnimatable {
         // Remove from scene
         scene.removeMaterial(this);
 
+        this._eventInfo.forceDisposeTextures = forceDisposeTextures;
+        this._callbackPluginEventGeneric(MaterialPluginEvent.Disposed, this._eventInfo);
+
         if (this._parentContainer) {
             const index = this._parentContainer.materials.indexOf(this);
             if (index > -1) {
@@ -1500,9 +1634,9 @@ export class Material implements IAnimatable {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                    if (forceDisposeEffect && subMesh._materialEffect) {
-                        subMesh._materialEffect.dispose();
+                    geometry._releaseVertexArrayObject(subMesh.effect);
+                    if (forceDisposeEffect && subMesh.effect) {
+                        subMesh.effect.dispose();
                     }
                 }
             } else {

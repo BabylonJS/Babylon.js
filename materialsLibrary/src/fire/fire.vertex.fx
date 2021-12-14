@@ -13,6 +13,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -49,10 +50,16 @@ varying vec2 vDistortionCoords2;
 varying vec2 vDistortionCoords3;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 
@@ -95,4 +102,6 @@ void main(void) {
 	vDistortionCoords3.x = uv.x;
 	vDistortionCoords3.y = uv.y + layerSpeed.z * time / 1000.0;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

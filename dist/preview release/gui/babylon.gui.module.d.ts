@@ -35,16 +35,16 @@ declare module "babylonjs-gui/2D/controls/focusableControl" {
     }
 }
 declare module "babylonjs-gui/2D/valueAndUnit" {
+    import { Observable } from "babylonjs/Misc/observable";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
-        /** defines the unit to store */
-        unit: number;
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed: boolean;
         private _value;
+        private _unit;
         private _originalUnit;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
@@ -52,9 +52,13 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
          */
         ignoreAdaptiveScaling: boolean;
         /**
+         * Observable event triggered each time the value or unit changes
+         */
+        onChangedObservable: Observable<void>;
+        /**
          * Creates a new ValueAndUnit
          * @param value defines the value to store
-         * @param unit defines the unit to store
+         * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
          * @param negativeValueAllowed defines a boolean indicating if the value can be negative
          */
         constructor(value: number, 
@@ -66,8 +70,19 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
         get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
         get isPixel(): boolean;
-        /** Gets direct internal value */
+        /**
+         * Gets value (without units)
+         * @deprecated use value property instead
+         */
         get internalValue(): number;
+        /** Gets value (without units) */
+        get value(): number;
+        /** Sets value (without units) */
+        set value(value: number);
+        /** Gets units (without value) */
+        get unit(): number;
+        /** Sets units (without value) */
+        set unit(value: number);
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -76,7 +91,7 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
          */
         getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         /**
-         * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+         * Update the current value and unit.
          * @param value defines the value to store
          * @param unit defines the unit to store
          * @returns the current ValueAndUnit
@@ -98,7 +113,7 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
         /**
          * Store a value parsed from a string
          * @param source defines the source string
-         * @returns true if the value was successfully parsed
+         * @returns true if the value was successfully parsed and updated
          */
         fromString(source: string | number): boolean;
         private static _Regex;
@@ -233,6 +248,11 @@ declare module "babylonjs-gui/2D/math2D" {
          */
         static Identity(): Matrix2D;
         /**
+         * Creates an identity matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix2D): void;
+        /**
          * Creates a translation matrix and stores it in a target matrix
          * @param x defines the x coordinate of the translation
          * @param y defines the y coordinate of the translation
@@ -364,14 +384,16 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { IFocusableControl } from "babylonjs-gui/2D/controls/focusableControl";
     import { Style } from "babylonjs-gui/2D/style";
-    import { Viewport } from 'babylonjs/Maths/math.viewport';
+    import { Viewport } from "babylonjs/Maths/math.viewport";
     /**
-    * Class used to create texture to support 2D GUI elements
-    * @see https://doc.babylonjs.com/how_to/gui
-    */
+     * Class used to create texture to support 2D GUI elements
+     * @see https://doc.babylonjs.com/how_to/gui
+     */
     export class AdvancedDynamicTexture extends DynamicTexture {
         /** Define the Uurl to load snippets */
         static SnippetUrl: string;
+        /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+        static AllowGPUOptimizations: boolean;
         /** Snippet ID if the content was created from the snippet server */
         snippetId: string;
         private _isDirty;
@@ -426,146 +448,152 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         /** Gets the number of render calls made the last time the ADT has been rendered */
         get numRenderCalls(): number;
         /**
-        * Define type to string to ensure compatibility across browsers
-        * Safari doesn't support DataTransfer constructor
-        */
+         * Define type to string to ensure compatibility across browsers
+         * Safari doesn't support DataTransfer constructor
+         */
         private _clipboardData;
         /**
-        * Observable event triggered each time an clipboard event is received from the rendering canvas
-        */
+         * Observable event triggered each time an clipboard event is received from the rendering canvas
+         */
         onClipboardObservable: Observable<ClipboardInfo>;
         /**
-        * Observable event triggered each time a pointer down is intercepted by a control
-        */
+         * Observable event triggered each time a pointer down is intercepted by a control
+         */
         onControlPickedObservable: Observable<Control>;
         /**
-        * Observable event triggered before layout is evaluated
-        */
+         * Observable event triggered before layout is evaluated
+         */
         onBeginLayoutObservable: Observable<AdvancedDynamicTexture>;
         /**
-        * Observable event triggered after the layout was evaluated
-        */
+         * Observable event triggered after the layout was evaluated
+         */
         onEndLayoutObservable: Observable<AdvancedDynamicTexture>;
         /**
-        * Observable event triggered before the texture is rendered
-        */
+         * Observable event triggered before the texture is rendered
+         */
         onBeginRenderObservable: Observable<AdvancedDynamicTexture>;
         /**
-        * Observable event triggered after the texture was rendered
-        */
+         * Observable event triggered after the texture was rendered
+         */
         onEndRenderObservable: Observable<AdvancedDynamicTexture>;
         /**
-        * Gets or sets a boolean defining if alpha is stored as premultiplied
-        */
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
         premulAlpha: boolean;
         /**
          * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
          */
         applyYInversionOnUpdate: boolean;
         /**
-        * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
-        * Useful when you want more antialiasing
-        */
+         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+         * Useful when you want more antialiasing
+         */
         get renderScale(): number;
         set renderScale(value: number);
         /** Gets or sets the background color */
         get background(): string;
         set background(value: string);
         /**
-        * Gets or sets the ideal width used to design controls.
-        * The GUI will then rescale everything accordingly
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets the ideal width used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get idealWidth(): number;
         set idealWidth(value: number);
         /**
-        * Gets or sets the ideal height used to design controls.
-        * The GUI will then rescale everything accordingly
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets the ideal height used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get idealHeight(): number;
         set idealHeight(value: number);
         /**
-        * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get useSmallestIdeal(): boolean;
         set useSmallestIdeal(value: boolean);
         /**
-        * Gets or sets a boolean indicating if adaptive scaling must be used
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets a boolean indicating if adaptive scaling must be used
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
         /**
          * Gets the ratio used when in "ideal mode"
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
          * */
         get idealRatio(): number;
         /**
-        * Gets the underlying layer used to render the texture when in fullscreen mode
-        */
+         * Gets the underlying layer used to render the texture when in fullscreen mode
+         */
         get layer(): Nullable<Layer>;
         /**
-        * Gets the root container control
-        */
+         * Gets the root container control
+         */
         get rootContainer(): Container;
         /**
-        * Returns an array containing the root container.
-        * This is mostly used to let the Inspector introspects the ADT
-        * @returns an array containing the rootContainer
-        */
+         * Returns an array containing the root container.
+         * This is mostly used to let the Inspector introspects the ADT
+         * @returns an array containing the rootContainer
+         */
         getChildren(): Array<Container>;
         /**
-        * Will return all controls that are inside this texture
-        * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-        * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-        * @return all child controls
-        */
+         * Will return all controls that are inside this texture
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @return all child controls
+         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
-        * Will return the first control with the given name
-        * @param name defines the name to search for
-        * @return the first control found or null
-        */
+         * Will return all controls with the given type name
+         * @param typeName defines the type name to search for
+         * @returns an array of all controls found
+         */
+        getControlsByType(typeName: string): Control[];
+        /**
+         * Will return the first control with the given name
+         * @param name defines the name to search for
+         * @return the first control found or null
+         */
         getControlByName(name: string): Nullable<Control>;
         private _getControlByKey;
         /**
-        * Gets or sets the current focused control
-        */
+         * Gets or sets the current focused control
+         */
         get focusedControl(): Nullable<IFocusableControl>;
         set focusedControl(control: Nullable<IFocusableControl>);
         /**
-        * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
-        */
+         * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+         */
         get isForeground(): boolean;
         set isForeground(value: boolean);
         /**
-        * Gets or set information about clipboardData
-        */
+         * Gets or set information about clipboardData
+         */
         get clipboardData(): string;
         set clipboardData(value: string);
         /**
-       * Creates a new AdvancedDynamicTexture
-       * @param name defines the name of the texture
-       * @param width defines the width of the texture
-       * @param height defines the height of the texture
-       * @param scene defines the hosting scene
-       * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-       * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-       * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
-       */
+         * Creates a new AdvancedDynamicTexture
+         * @param name defines the name of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+         * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         */
         constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
-        * Get the current class name of the texture useful for serialization or dynamic coding.
-        * @returns "AdvancedDynamicTexture"
-        */
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "AdvancedDynamicTexture"
+         */
         getClassName(): string;
         /**
-        * Function used to execute a function on all controls
-        * @param func defines the function to execute
-        * @param container defines the container where controls belong. If null the root container will be used
-        */
+         * Function used to execute a function on all controls
+         * @param func defines the function to execute
+         * @param container defines the container where controls belong. If null the root container will be used
+         */
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         private _useInvalidateRectOptimization;
         /**
@@ -583,47 +611,55 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         invalidateRect(invalidMinX: number, invalidMinY: number, invalidMaxX: number, invalidMaxY: number): void;
         /**
-        * Marks the texture as dirty forcing a complete update
-        */
+         * Marks the texture as dirty forcing a complete update
+         */
         markAsDirty(): void;
         /**
-        * Helper function used to create a new style
-        * @returns a new style
-        * @see https://doc.babylonjs.com/how_to/gui#styles
-        */
+         * Helper function used to create a new style
+         * @returns a new style
+         * @see https://doc.babylonjs.com/how_to/gui#styles
+         */
         createStyle(): Style;
         /**
-        * Adds a new control to the root container
-        * @param control defines the control to add
-        * @returns the current texture
-        */
+         * Adds a new control to the root container
+         * @param control defines the control to add
+         * @returns the current texture
+         */
         addControl(control: Control): AdvancedDynamicTexture;
         /**
-        * Removes a control from the root container
-        * @param control defines the control to remove
-        * @returns the current texture
-        */
+         * Removes a control from the root container
+         * @param control defines the control to remove
+         * @returns the current texture
+         */
         removeControl(control: Control): AdvancedDynamicTexture;
         /**
-        * Release all resources
-        */
+         * Moves overlapped controls towards a position where it is not overlapping anymore.
+         * Please note that this method alters linkOffsetXInPixels and linkOffsetYInPixels.
+         * @param overlapGroup the overlap group which will be processed or undefined to process all overlap groups
+         * @param deltaStep the step size (speed) to reach the target non overlapping position (default 0.1)
+         * @param repelFactor how much is the control repelled by other controls
+         */
+        moveToNonOverlappedPosition(overlapGroup?: number | Control[], deltaStep?: number, repelFactor?: number): void;
+        /**
+         * Release all resources
+         */
         dispose(): void;
         private _onResize;
         /** @hidden */
         _getGlobalViewport(): Viewport;
         /**
-        * Get screen coordinates for a vector3
-        * @param position defines the position to project
-        * @param worldMatrix defines the world matrix to use
-        * @returns the projected position
-        */
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position
+         */
         getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2;
         /**
-        * Get screen coordinates for a vector3
-        * @param position defines the position to project
-        * @param worldMatrix defines the world matrix to use
-        * @returns the projected position with Z
-        */
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position with Z
+         */
         getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3;
         private _checkUpdate;
         private _clearMeasure;
@@ -648,23 +684,23 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         /** @hidden */
         private onClipboardPaste;
         /**
-        * Register the clipboard Events onto the canvas
-        */
+         * Register the clipboard Events onto the canvas
+         */
         registerClipboardEvents(): void;
         /**
          * Unregister the clipboard Events from the canvas
          */
         unRegisterClipboardEvents(): void;
         /**
-        * Connect the texture to a hosting mesh to enable interactions
-        * @param mesh defines the mesh to attach to
-        * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
-        */
+         * Connect the texture to a hosting mesh to enable interactions
+         * @param mesh defines the mesh to attach to
+         * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+         */
         attachToMesh(mesh: AbstractMesh, supportPointerMove?: boolean): void;
         /**
-        * Move the focus to a specific control
-        * @param control defines the control which will receive the focus
-        */
+         * Move the focus to a specific control
+         * @param control defines the control which will receive the focus
+         */
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
         private _attachToOnPointerOut;
@@ -688,12 +724,19 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
         /**
-        * Recreate the content of the ADT from a url json
-        * @param url defines the url to load
-        * @param scaleToSize defines whether to scale to texture to the saved size
-        * @returns a promise that will resolve on success
-        */
+         * Recreate the content of the ADT from a url json
+         * @param url defines the url to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
+         * @returns a promise that will resolve on success
+         */
         parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
+        /**
+         * Compares two rectangle based controls for pixel overlap
+         * @param control1 The first control to compare
+         * @param control2 The second control to compare
+         * @returns true if overlaps, otherwise false
+         */
+        private static _Overlaps;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -716,25 +759,26 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         static CreateForMeshTexture(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
-        * Creates a new AdvancedDynamicTexture in fullscreen mode.
-        * In this mode the texture will rely on a layer for its rendering.
-        * This allows it to be treated like any other layer.
-        * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
-        * LayerMask is set through advancedTexture.layer.layerMask
-        * @param name defines name for the texture
-        * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-        * @param scene defines the hosting scene
-        * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
-        * @returns a new AdvancedDynamicTexture
-        */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
+         * Creates a new AdvancedDynamicTexture in fullscreen mode.
+         * In this mode the texture will rely on a layer for its rendering.
+         * This allows it to be treated like any other layer.
+         * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
+         * LayerMask is set through advancedTexture.layer.layerMask
+         * @param name defines name for the texture
+         * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
+         * @param scene defines the hosting scene
+         * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
@@ -743,7 +787,7 @@ declare module "babylonjs-gui/2D/controls/control" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Style } from "babylonjs-gui/2D/style";
     import { Matrix2D, Vector2WithInfo } from "babylonjs-gui/2D/math2D";
-    import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+    import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
     /**
      * Root class used for all 2D controls
      * @see https://doc.babylonjs.com/how_to/gui#controls
@@ -764,6 +808,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         parent: Nullable<Container>;
         /** @hidden */
         _currentMeasure: Measure;
+        /** @hidden */
+        _tempPaddingMeasure: Measure;
         private _fontFamily;
         private _fontStyle;
         private _fontWeight;
@@ -796,6 +842,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -830,6 +877,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -854,6 +903,10 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -910,36 +963,36 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         getClassName(): string;
         /**
-        * An event triggered when pointer wheel is scrolled
-        */
+         * An event triggered when pointer wheel is scrolled
+         */
         onWheelObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer moves over the control.
-        */
+         * An event triggered when the pointer moves over the control.
+         */
         onPointerMoveObservable: Observable<Vector2>;
         /**
-        * An event triggered when the pointer moves out of the control.
-        */
+         * An event triggered when the pointer moves out of the control.
+         */
         onPointerOutObservable: Observable<Control>;
         /**
-        * An event triggered when the pointer taps the control
-        */
+         * An event triggered when the pointer taps the control
+         */
         onPointerDownObservable: Observable<Vector2WithInfo>;
         /**
-        * An event triggered when pointer up
-        */
+         * An event triggered when pointer up
+         */
         onPointerUpObservable: Observable<Vector2WithInfo>;
         /**
-        * An event triggered when a control is clicked on
-        */
+         * An event triggered when a control is clicked on
+         */
         onPointerClickObservable: Observable<Vector2WithInfo>;
         /**
-        * An event triggered when pointer enters the control
-        */
+         * An event triggered when pointer enters the control
+         */
         onPointerEnterObservable: Observable<Control>;
         /**
-        * An event triggered when the control is marked as dirty
-        */
+         * An event triggered when the control is marked as dirty
+         */
         onDirtyObservable: Observable<Control>;
         /**
          * An event triggered before drawing the control
@@ -950,8 +1003,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         onAfterDrawObservable: Observable<Control>;
         /**
-        * An event triggered when the control has been disposed
-        */
+         * An event triggered when the control has been disposed
+         */
         onDisposeObservable: Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
@@ -988,27 +1041,27 @@ declare module "babylonjs-gui/2D/controls/control" {
         set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get scaleX(): number;
         set scaleX(value: number);
         /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get scaleY(): number;
         set scaleY(value: number);
         /** Gets or sets the rotation angle (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get rotation(): number;
         set rotation(value: number);
         /** Gets or sets the transformation center on Y axis (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get transformCenterY(): number;
         set transformCenterY(value: number);
         /** Gets or sets the transformation center on X axis (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get transformCenterX(): number;
         set transformCenterX(value: number);
         /**
@@ -1097,6 +1150,12 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get linkedMesh(): Nullable<TransformNode>;
         /**
+         * Gets or sets a value indicating the padding should work like in CSS.
+         * Basically, it will add the padding amount on each side of the parent control for its children.
+         */
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
+        /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -1108,6 +1167,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingLeftInPixels(): number;
         set paddingLeftInPixels(value: number);
+        /** @hidden */
+        get _paddingLeftInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1120,6 +1181,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingRightInPixels(): number;
         set paddingRightInPixels(value: number);
+        /** @hidden */
+        get _paddingRightInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1132,6 +1195,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingTopInPixels(): number;
         set paddingTopInPixels(value: number);
+        /** @hidden */
+        get _paddingTopInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1144,6 +1209,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get paddingBottomInPixels(): number;
         set paddingBottomInPixels(value: number);
+        /** @hidden */
+        get _paddingBottomInPixels(): number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1205,6 +1272,17 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
+        /**
+         * Gets/sets the overlap group of the control.
+         * Controls with overlapGroup set to a number can be deoverlapped.
+         * Controls with overlapGroup set to undefined are not deoverlapped.
+         * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+         */
+        overlapGroup?: number;
+        /**
+         * Gets/sets the deoverlap movement multiplier
+         */
+        overlapDeltaMultiplier?: number;
         /**
          * Creates a new control
          * @param name defines the name of the control
@@ -1274,13 +1352,13 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         linkWithMesh(mesh: Nullable<TransformNode>): void;
         /**
-        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
-        * @param { string | number} paddingTop - The value of the top padding.
-        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
-        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
-        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
-        */
+         * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+         * @param { string | number} paddingTop - The value of the top padding.
+         * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+         * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+         * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
         setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
         /**
          * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
@@ -2066,13 +2144,19 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        private _spacing;
         /**
-         * Gets or sets a boolean indicating that layou warnings should be ignored
+         * Gets or sets a boolean indicating that layout warnings should be ignored
          */
         ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         get isVertical(): boolean;
         set isVertical(value: boolean);
+        /**
+         * Gets or sets the spacing (in pixels) between each child.
+         */
+        get spacing(): number;
+        set spacing(value: number);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
@@ -2466,7 +2550,9 @@ declare module "babylonjs-gui/2D/controls/grid" {
     export class Grid extends Container {
         name?: string | undefined;
         private _rowDefinitions;
+        private _rowDefinitionObservers;
         private _columnDefinitions;
+        private _columnDefinitionObservers;
         private _cells;
         private _childControls;
         /**
@@ -2579,9 +2665,9 @@ declare module "babylonjs-gui/2D/controls/grid" {
         /** Releases associated resources */
         dispose(): void;
         /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
         serialize(serializationObject: any): void;
         /** @hidden */
         _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
@@ -4118,6 +4204,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -4128,6 +4215,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * Observable raised when the point picked by the pointer events changed
          */
@@ -4148,6 +4236,14 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         get scene(): Scene;
         /** Gets associated utility layer */
         get utilityLayer(): Nullable<UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -4302,6 +4398,8 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): Vector3;
         set position(value: Vector3);
@@ -7087,11 +7185,10 @@ declare module BABYLON.GUI {
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
-        /** defines the unit to store */
-        unit: number;
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed: boolean;
         private _value;
+        private _unit;
         private _originalUnit;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
@@ -7099,9 +7196,13 @@ declare module BABYLON.GUI {
          */
         ignoreAdaptiveScaling: boolean;
         /**
+         * BABYLON.Observable event triggered each time the value or unit changes
+         */
+        onChangedObservable: BABYLON.Observable<void>;
+        /**
          * Creates a new ValueAndUnit
          * @param value defines the value to store
-         * @param unit defines the unit to store
+         * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
          * @param negativeValueAllowed defines a boolean indicating if the value can be negative
          */
         constructor(value: number, 
@@ -7113,8 +7214,19 @@ declare module BABYLON.GUI {
         get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
         get isPixel(): boolean;
-        /** Gets direct internal value */
+        /**
+         * Gets value (without units)
+         * @deprecated use value property instead
+         */
         get internalValue(): number;
+        /** Gets value (without units) */
+        get value(): number;
+        /** Sets value (without units) */
+        set value(value: number);
+        /** Gets units (without value) */
+        get unit(): number;
+        /** Sets units (without value) */
+        set unit(value: number);
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -7123,7 +7235,7 @@ declare module BABYLON.GUI {
          */
         getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         /**
-         * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+         * Update the current value and unit.
          * @param value defines the value to store
          * @param unit defines the unit to store
          * @returns the current ValueAndUnit
@@ -7145,7 +7257,7 @@ declare module BABYLON.GUI {
         /**
          * Store a value parsed from a string
          * @param source defines the source string
-         * @returns true if the value was successfully parsed
+         * @returns true if the value was successfully parsed and updated
          */
         fromString(source: string | number): boolean;
         private static _Regex;
@@ -7274,6 +7386,11 @@ declare module BABYLON.GUI {
          */
         static Identity(): Matrix2D;
         /**
+         * Creates an identity matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix2D): void;
+        /**
          * Creates a translation matrix and stores it in a target matrix
          * @param x defines the x coordinate of the translation
          * @param y defines the y coordinate of the translation
@@ -7393,12 +7510,14 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
-    * Class used to create texture to support 2D GUI elements
-    * @see https://doc.babylonjs.com/how_to/gui
-    */
+     * Class used to create texture to support 2D GUI elements
+     * @see https://doc.babylonjs.com/how_to/gui
+     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
         /** Define the Uurl to load snippets */
         static SnippetUrl: string;
+        /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+        static AllowGPUOptimizations: boolean;
         /** Snippet ID if the content was created from the snippet server */
         snippetId: string;
         private _isDirty;
@@ -7453,146 +7572,152 @@ declare module BABYLON.GUI {
         /** Gets the number of render calls made the last time the ADT has been rendered */
         get numRenderCalls(): number;
         /**
-        * Define type to string to ensure compatibility across browsers
-        * Safari doesn't support DataTransfer constructor
-        */
+         * Define type to string to ensure compatibility across browsers
+         * Safari doesn't support DataTransfer constructor
+         */
         private _clipboardData;
         /**
-        * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
-        */
+         * BABYLON.Observable event triggered each time an clipboard event is received from the rendering canvas
+         */
         onClipboardObservable: BABYLON.Observable<BABYLON.ClipboardInfo>;
         /**
-        * BABYLON.Observable event triggered each time a pointer down is intercepted by a control
-        */
+         * BABYLON.Observable event triggered each time a pointer down is intercepted by a control
+         */
         onControlPickedObservable: BABYLON.Observable<Control>;
         /**
-        * BABYLON.Observable event triggered before layout is evaluated
-        */
+         * BABYLON.Observable event triggered before layout is evaluated
+         */
         onBeginLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * BABYLON.Observable event triggered after the layout was evaluated
-        */
+         * BABYLON.Observable event triggered after the layout was evaluated
+         */
         onEndLayoutObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * BABYLON.Observable event triggered before the texture is rendered
-        */
+         * BABYLON.Observable event triggered before the texture is rendered
+         */
         onBeginRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * BABYLON.Observable event triggered after the texture was rendered
-        */
+         * BABYLON.Observable event triggered after the texture was rendered
+         */
         onEndRenderObservable: BABYLON.Observable<AdvancedDynamicTexture>;
         /**
-        * Gets or sets a boolean defining if alpha is stored as premultiplied
-        */
+         * Gets or sets a boolean defining if alpha is stored as premultiplied
+         */
         premulAlpha: boolean;
         /**
          * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
          */
         applyYInversionOnUpdate: boolean;
         /**
-        * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
-        * Useful when you want more antialiasing
-        */
+         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+         * Useful when you want more antialiasing
+         */
         get renderScale(): number;
         set renderScale(value: number);
         /** Gets or sets the background color */
         get background(): string;
         set background(value: string);
         /**
-        * Gets or sets the ideal width used to design controls.
-        * The GUI will then rescale everything accordingly
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets the ideal width used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get idealWidth(): number;
         set idealWidth(value: number);
         /**
-        * Gets or sets the ideal height used to design controls.
-        * The GUI will then rescale everything accordingly
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets the ideal height used to design controls.
+         * The GUI will then rescale everything accordingly
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get idealHeight(): number;
         set idealHeight(value: number);
         /**
-        * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get useSmallestIdeal(): boolean;
         set useSmallestIdeal(value: boolean);
         /**
-        * Gets or sets a boolean indicating if adaptive scaling must be used
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
-        */
+         * Gets or sets a boolean indicating if adaptive scaling must be used
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
         /**
          * Gets the ratio used when in "ideal mode"
-        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
          * */
         get idealRatio(): number;
         /**
-        * Gets the underlying layer used to render the texture when in fullscreen mode
-        */
+         * Gets the underlying layer used to render the texture when in fullscreen mode
+         */
         get layer(): BABYLON.Nullable<BABYLON.Layer>;
         /**
-        * Gets the root container control
-        */
+         * Gets the root container control
+         */
         get rootContainer(): Container;
         /**
-        * Returns an array containing the root container.
-        * This is mostly used to let the Inspector introspects the ADT
-        * @returns an array containing the rootContainer
-        */
+         * Returns an array containing the root container.
+         * This is mostly used to let the Inspector introspects the ADT
+         * @returns an array containing the rootContainer
+         */
         getChildren(): Array<Container>;
         /**
-        * Will return all controls that are inside this texture
-        * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-        * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-        * @return all child controls
-        */
+         * Will return all controls that are inside this texture
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @return all child controls
+         */
         getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[];
         /**
-        * Will return the first control with the given name
-        * @param name defines the name to search for
-        * @return the first control found or null
-        */
+         * Will return all controls with the given type name
+         * @param typeName defines the type name to search for
+         * @returns an array of all controls found
+         */
+        getControlsByType(typeName: string): Control[];
+        /**
+         * Will return the first control with the given name
+         * @param name defines the name to search for
+         * @return the first control found or null
+         */
         getControlByName(name: string): BABYLON.Nullable<Control>;
         private _getControlByKey;
         /**
-        * Gets or sets the current focused control
-        */
+         * Gets or sets the current focused control
+         */
         get focusedControl(): BABYLON.Nullable<IFocusableControl>;
         set focusedControl(control: BABYLON.Nullable<IFocusableControl>);
         /**
-        * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
-        */
+         * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+         */
         get isForeground(): boolean;
         set isForeground(value: boolean);
         /**
-        * Gets or set information about clipboardData
-        */
+         * Gets or set information about clipboardData
+         */
         get clipboardData(): string;
         set clipboardData(value: string);
         /**
-       * Creates a new AdvancedDynamicTexture
-       * @param name defines the name of the texture
-       * @param width defines the width of the texture
-       * @param height defines the height of the texture
-       * @param scene defines the hosting scene
-       * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-       * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-       * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
-       */
+         * Creates a new AdvancedDynamicTexture
+         * @param name defines the name of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+         * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         */
         constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
-        * Get the current class name of the texture useful for serialization or dynamic coding.
-        * @returns "AdvancedDynamicTexture"
-        */
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "AdvancedDynamicTexture"
+         */
         getClassName(): string;
         /**
-        * Function used to execute a function on all controls
-        * @param func defines the function to execute
-        * @param container defines the container where controls belong. If null the root container will be used
-        */
+         * Function used to execute a function on all controls
+         * @param func defines the function to execute
+         * @param container defines the container where controls belong. If null the root container will be used
+         */
         executeOnAllControls(func: (control: Control) => void, container?: Container): void;
         private _useInvalidateRectOptimization;
         /**
@@ -7610,47 +7735,55 @@ declare module BABYLON.GUI {
          */
         invalidateRect(invalidMinX: number, invalidMinY: number, invalidMaxX: number, invalidMaxY: number): void;
         /**
-        * Marks the texture as dirty forcing a complete update
-        */
+         * Marks the texture as dirty forcing a complete update
+         */
         markAsDirty(): void;
         /**
-        * Helper function used to create a new style
-        * @returns a new style
-        * @see https://doc.babylonjs.com/how_to/gui#styles
-        */
+         * Helper function used to create a new style
+         * @returns a new style
+         * @see https://doc.babylonjs.com/how_to/gui#styles
+         */
         createStyle(): Style;
         /**
-        * Adds a new control to the root container
-        * @param control defines the control to add
-        * @returns the current texture
-        */
+         * Adds a new control to the root container
+         * @param control defines the control to add
+         * @returns the current texture
+         */
         addControl(control: Control): AdvancedDynamicTexture;
         /**
-        * Removes a control from the root container
-        * @param control defines the control to remove
-        * @returns the current texture
-        */
+         * Removes a control from the root container
+         * @param control defines the control to remove
+         * @returns the current texture
+         */
         removeControl(control: Control): AdvancedDynamicTexture;
         /**
-        * Release all resources
-        */
+         * Moves overlapped controls towards a position where it is not overlapping anymore.
+         * Please note that this method alters linkOffsetXInPixels and linkOffsetYInPixels.
+         * @param overlapGroup the overlap group which will be processed or undefined to process all overlap groups
+         * @param deltaStep the step size (speed) to reach the target non overlapping position (default 0.1)
+         * @param repelFactor how much is the control repelled by other controls
+         */
+        moveToNonOverlappedPosition(overlapGroup?: number | Control[], deltaStep?: number, repelFactor?: number): void;
+        /**
+         * Release all resources
+         */
         dispose(): void;
         private _onResize;
         /** @hidden */
         _getGlobalViewport(): BABYLON.Viewport;
         /**
-        * Get screen coordinates for a vector3
-        * @param position defines the position to project
-        * @param worldMatrix defines the world matrix to use
-        * @returns the projected position
-        */
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position
+         */
         getProjectedPosition(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector2;
         /**
-        * Get screen coordinates for a vector3
-        * @param position defines the position to project
-        * @param worldMatrix defines the world matrix to use
-        * @returns the projected position with Z
-        */
+         * Get screen coordinates for a vector3
+         * @param position defines the position to project
+         * @param worldMatrix defines the world matrix to use
+         * @returns the projected position with Z
+         */
         getProjectedPositionWithZ(position: BABYLON.Vector3, worldMatrix: BABYLON.Matrix): BABYLON.Vector3;
         private _checkUpdate;
         private _clearMeasure;
@@ -7675,23 +7808,23 @@ declare module BABYLON.GUI {
         /** @hidden */
         private onClipboardPaste;
         /**
-        * Register the clipboard Events onto the canvas
-        */
+         * Register the clipboard Events onto the canvas
+         */
         registerClipboardEvents(): void;
         /**
          * Unregister the clipboard Events from the canvas
          */
         unRegisterClipboardEvents(): void;
         /**
-        * Connect the texture to a hosting mesh to enable interactions
-        * @param mesh defines the mesh to attach to
-        * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
-        */
+         * Connect the texture to a hosting mesh to enable interactions
+         * @param mesh defines the mesh to attach to
+         * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+         */
         attachToMesh(mesh: BABYLON.AbstractMesh, supportPointerMove?: boolean): void;
         /**
-        * Move the focus to a specific control
-        * @param control defines the control which will receive the focus
-        */
+         * Move the focus to a specific control
+         * @param control defines the control which will receive the focus
+         */
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
         private _attachToOnPointerOut;
@@ -7715,12 +7848,19 @@ declare module BABYLON.GUI {
          */
         parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void>;
         /**
-        * Recreate the content of the ADT from a url json
-        * @param url defines the url to load
-        * @param scaleToSize defines whether to scale to texture to the saved size
-        * @returns a promise that will resolve on success
-        */
+         * Recreate the content of the ADT from a url json
+         * @param url defines the url to load
+         * @param scaleToSize defines whether to scale to texture to the saved size
+         * @returns a promise that will resolve on success
+         */
         parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void>;
+        /**
+         * Compares two rectangle based controls for pixel overlap
+         * @param control1 The first control to compare
+         * @param control2 The second control to compare
+         * @returns true if overlaps, otherwise false
+         */
+        private static _Overlaps;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -7743,18 +7883,19 @@ declare module BABYLON.GUI {
          */
         static CreateForMeshTexture(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
-        * Creates a new AdvancedDynamicTexture in fullscreen mode.
-        * In this mode the texture will rely on a layer for its rendering.
-        * This allows it to be treated like any other layer.
-        * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
-        * LayerMask is set through advancedTexture.layer.layerMask
-        * @param name defines name for the texture
-        * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-        * @param scene defines the hosting scene
-        * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
-        * @returns a new AdvancedDynamicTexture
-        */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+         * Creates a new AdvancedDynamicTexture in fullscreen mode.
+         * In this mode the texture will rely on a layer for its rendering.
+         * This allows it to be treated like any other layer.
+         * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
+         * LayerMask is set through advancedTexture.layer.layerMask
+         * @param name defines name for the texture
+         * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
+         * @param scene defines the hosting scene
+         * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
+         * @returns a new AdvancedDynamicTexture
+         */
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module BABYLON.GUI {
@@ -7778,6 +7919,8 @@ declare module BABYLON.GUI {
         parent: BABYLON.Nullable<Container>;
         /** @hidden */
         _currentMeasure: Measure;
+        /** @hidden */
+        _tempPaddingMeasure: Measure;
         private _fontFamily;
         private _fontStyle;
         private _fontWeight;
@@ -7810,6 +7953,7 @@ declare module BABYLON.GUI {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -7844,6 +7988,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _doNotRender;
         private _downPointerIds;
+        private _evaluatedMeasure;
+        private _evaluatedParentMeasure;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
         protected _disabledColorItem: string;
@@ -7868,6 +8014,10 @@ declare module BABYLON.GUI {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -7924,36 +8074,36 @@ declare module BABYLON.GUI {
          */
         getClassName(): string;
         /**
-        * An event triggered when pointer wheel is scrolled
-        */
+         * An event triggered when pointer wheel is scrolled
+         */
         onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer moves over the control.
-        */
+         * An event triggered when the pointer moves over the control.
+         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
-        * An event triggered when the pointer moves out of the control.
-        */
+         * An event triggered when the pointer moves out of the control.
+         */
         onPointerOutObservable: BABYLON.Observable<Control>;
         /**
-        * An event triggered when the pointer taps the control
-        */
+         * An event triggered when the pointer taps the control
+         */
         onPointerDownObservable: BABYLON.Observable<Vector2WithInfo>;
         /**
-        * An event triggered when pointer up
-        */
+         * An event triggered when pointer up
+         */
         onPointerUpObservable: BABYLON.Observable<Vector2WithInfo>;
         /**
-        * An event triggered when a control is clicked on
-        */
+         * An event triggered when a control is clicked on
+         */
         onPointerClickObservable: BABYLON.Observable<Vector2WithInfo>;
         /**
-        * An event triggered when pointer enters the control
-        */
+         * An event triggered when pointer enters the control
+         */
         onPointerEnterObservable: BABYLON.Observable<Control>;
         /**
-        * An event triggered when the control is marked as dirty
-        */
+         * An event triggered when the control is marked as dirty
+         */
         onDirtyObservable: BABYLON.Observable<Control>;
         /**
          * An event triggered before drawing the control
@@ -7964,8 +8114,8 @@ declare module BABYLON.GUI {
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
         /**
-        * An event triggered when the control has been disposed
-        */
+         * An event triggered when the control has been disposed
+         */
         onDisposeObservable: BABYLON.Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
@@ -8002,27 +8152,27 @@ declare module BABYLON.GUI {
         set highlightColor(value: string);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get scaleX(): number;
         set scaleX(value: number);
         /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get scaleY(): number;
         set scaleY(value: number);
         /** Gets or sets the rotation angle (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get rotation(): number;
         set rotation(value: number);
         /** Gets or sets the transformation center on Y axis (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get transformCenterY(): number;
         set transformCenterY(value: number);
         /** Gets or sets the transformation center on X axis (0 by default)
          * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-        */
+         */
         get transformCenterX(): number;
         set transformCenterX(value: number);
         /**
@@ -8111,6 +8261,12 @@ declare module BABYLON.GUI {
          */
         get linkedMesh(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
+         * Gets or sets a value indicating the padding should work like in CSS.
+         * Basically, it will add the padding amount on each side of the parent control for its children.
+         */
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
+        /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -8122,6 +8278,8 @@ declare module BABYLON.GUI {
          */
         get paddingLeftInPixels(): number;
         set paddingLeftInPixels(value: number);
+        /** @hidden */
+        get _paddingLeftInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8134,6 +8292,8 @@ declare module BABYLON.GUI {
          */
         get paddingRightInPixels(): number;
         set paddingRightInPixels(value: number);
+        /** @hidden */
+        get _paddingRightInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8146,6 +8306,8 @@ declare module BABYLON.GUI {
          */
         get paddingTopInPixels(): number;
         set paddingTopInPixels(value: number);
+        /** @hidden */
+        get _paddingTopInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8158,6 +8320,8 @@ declare module BABYLON.GUI {
          */
         get paddingBottomInPixels(): number;
         set paddingBottomInPixels(value: number);
+        /** @hidden */
+        get _paddingBottomInPixels(): number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8219,6 +8383,17 @@ declare module BABYLON.GUI {
         /** Gets or sets front color of control if it's disabled */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
+        /**
+         * Gets/sets the overlap group of the control.
+         * Controls with overlapGroup set to a number can be deoverlapped.
+         * Controls with overlapGroup set to undefined are not deoverlapped.
+         * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+         */
+        overlapGroup?: number;
+        /**
+         * Gets/sets the deoverlap movement multiplier
+         */
+        overlapDeltaMultiplier?: number;
         /**
          * Creates a new control
          * @param name defines the name of the control
@@ -8288,13 +8463,13 @@ declare module BABYLON.GUI {
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
         /**
-        * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
-        * @param { string | number} paddingTop - The value of the top padding.
-        * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
-        * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
-        * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-        * @see https://doc.babylonjs.com/how_to/gui#position-and-size
-        */
+         * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+         * @param { string | number} paddingTop - The value of the top padding.
+         * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+         * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+         * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+         */
         setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number): void;
         /**
          * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
@@ -9049,13 +9224,19 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        private _spacing;
         /**
-         * Gets or sets a boolean indicating that layou warnings should be ignored
+         * Gets or sets a boolean indicating that layout warnings should be ignored
          */
         ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         get isVertical(): boolean;
         set isVertical(value: boolean);
+        /**
+         * Gets or sets the spacing (in pixels) between each child.
+         */
+        get spacing(): number;
+        set spacing(value: number);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
@@ -9419,7 +9600,9 @@ declare module BABYLON.GUI {
     export class Grid extends Container {
         name?: string | undefined;
         private _rowDefinitions;
+        private _rowDefinitionObservers;
         private _columnDefinitions;
+        private _columnDefinitionObservers;
         private _cells;
         private _childControls;
         /**
@@ -9532,9 +9715,9 @@ declare module BABYLON.GUI {
         /** Releases associated resources */
         dispose(): void;
         /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
         serialize(serializationObject: any): void;
         /** @hidden */
         _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
@@ -10918,6 +11101,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -10928,6 +11112,7 @@ declare module BABYLON.GUI {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * BABYLON.Observable raised when the point picked by the pointer events changed
          */
@@ -10948,6 +11133,14 @@ declare module BABYLON.GUI {
         get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
         get utilityLayer(): BABYLON.Nullable<BABYLON.UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -11080,6 +11273,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): BABYLON.Vector3;
         set position(value: BABYLON.Vector3);

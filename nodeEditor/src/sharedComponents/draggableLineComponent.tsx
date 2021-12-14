@@ -12,12 +12,14 @@ export class DraggableLineComponent extends React.Component<IButtonLineComponent
 
     render() {
         return (
-            <div className="draggableLine"
+            <div
+                className="draggableLine"
                 title={this.props.tooltip}
                 draggable={true}
-                onDragStart={event => {
+                onDragStart={(event) => {
                     event.dataTransfer.setData("babylonjs-material-node", this.props.data);
-                }}>
+                }}
+            >
                 {this.props.data.replace("Block", "")}
             </div>
         );

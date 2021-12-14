@@ -81,6 +81,16 @@ export interface IGlowLayerOptions {
      * The rendering group to draw the layer in.
      */
     renderingGroupId: number;
+
+    /**
+     * Forces the merge step to be done in ldr (clamp values > 1)
+     */
+    ldrMerge?: boolean;
+
+    /**
+     * Defines the blend mode used by the merge
+     */
+     alphaBlendingMode?: number;
 }
 
 /**
@@ -183,12 +193,14 @@ export class GlowLayer extends EffectLayer {
             camera: null,
             mainTextureSamples: 1,
             renderingGroupId: -1,
+            ldrMerge: false,
+            alphaBlendingMode: Constants.ALPHA_ADD,
             ...options,
         };
 
         // Initialize the layer
         this._init({
-            alphaBlendingMode: Constants.ALPHA_ADD,
+            alphaBlendingMode: this._options.alphaBlendingMode,
             camera: this._options.camera,
             mainTextureFixedSize: this._options.mainTextureFixedSize,
             mainTextureRatio: this._options.mainTextureRatio,
@@ -209,13 +221,17 @@ export class GlowLayer extends EffectLayer {
      * to the main canvas at the end of the scene rendering.
      */
     protected _createMergeEffect(): Effect {
+        let defines = "#define EMISSIVE \n";
+        if (this._options.ldrMerge) {
+            defines += "#define LDR \n";
+        }
+
         // Effect
         return this._engine.createEffect("glowMapMerge",
             [VertexBuffer.PositionKind],
             ["offset"],
             ["textureSampler", "textureSampler2"],
-            "#define EMISSIVE \n");
-
+            defines);
     }
 
     /**
@@ -277,6 +293,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess1.width = blurTextureWidth;
         this._horizontalBlurPostprocess1.height = blurTextureHeight;
+        this._horizontalBlurPostprocess1.externalTextureSamplerBinding = true;
         this._horizontalBlurPostprocess1.onApplyObservable.add((effect) => {
             effect.setTexture("textureSampler", this._mainTexture);
         });
@@ -294,6 +311,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess2.width = blurTextureWidth2;
         this._horizontalBlurPostprocess2.height = blurTextureHeight2;
+        this._horizontalBlurPostprocess2.externalTextureSamplerBinding = true;
         this._horizontalBlurPostprocess2.onApplyObservable.add((effect) => {
             effect.setTexture("textureSampler", this._blurTexture1);
         });

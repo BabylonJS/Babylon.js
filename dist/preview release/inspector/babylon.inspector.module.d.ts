@@ -74,6 +74,8 @@ declare module "babylonjs-inspector/components/globalState" {
         enableLightGizmo(light: Light, enable?: boolean): void;
         cameraGizmos: Array<CameraGizmo>;
         enableCameraGizmo(camera: Camera, enable?: boolean): void;
+        onSceneExplorerClosedObservable: Observable<void>;
+        onActionTabsClosedObservable: Observable<void>;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/paneComponent" {
@@ -222,12 +224,14 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/fileButtonLineCompo
 }
 declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
     import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer";
+    import { Observable } from "babylonjs/Misc/observable";
     /**
-     * Defines a structure to hold max and min.
+     * Defines a structure to hold max, min and a optional current.
      */
     export interface IPerfMinMax {
         min: number;
         max: number;
+        current?: number;
     }
     /**
      * Defines structure of the object which contains information related to panning.
@@ -277,11 +281,15 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         id: string;
         text: string;
     }
+    export interface IVisibleRangeChangedObservableProps {
+        valueMap: Map<string, IPerfMinMax>;
+    }
     /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
         datasets: IPerfDatasets;
+        onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
     }
     /**
      * Defines the structure representing the preprocessable tooltip information.
@@ -306,6 +314,169 @@ declare module "babylonjs-inspector/components/graph/graphSupportingTypes" {
         Hours = 3
     }
 }
+declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorComponentEntry" {
+    import * as React from "react";
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/colorPicker/hexColor" {
+    import * as React from "react";
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorPicker" {
+    import * as React from "react";
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: Color3 | Color4;
+        linearhint?: boolean;
+        debugMode?: boolean;
+        onColorChanged?: (color: Color3 | Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/lines/colorPickerComponent" {
+    import * as React from "react";
+    import { Color4, Color3 } from "babylonjs/Maths/math.color";
+    export interface IColorPickerComponentProps {
+        value: Color4 | Color3;
+        linearHint?: boolean;
+        onColorChanged: (newOne: string) => void;
+        icon?: string;
+        iconLabel?: string;
+        shouldPopRight?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: Color3 | Color4;
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/propertyChangedEvent" {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module "babylonjs-inspector/sharedUiComponents/lines/checkBoxLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
+    export interface ICheckBoxLineComponentProps {
+        label?: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+        icon?: string;
+        iconLabel?: string;
+        faIcons?: {
+        };
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent" {
+    import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { IVisibleRangeChangedObservableProps } from "babylonjs-inspector/components/graph/graphSupportingTypes";
+    interface IPerformanceViewerSidebarComponentProps {
+        collector: PerformanceViewerCollector;
+        onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent" {
+    import { Observable } from "babylonjs/Misc/observable";
+    import * as React from "react";
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
+}
 declare module "babylonjs-inspector/components/graph/canvasGraphService" {
     import { ICanvasGraphServiceSettings, IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
     import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
@@ -328,6 +499,7 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
         private _tickerItems;
         private _preprocessedTooltipInfo;
         private _numberOfTickers;
+        private _onVisibleRangeChangedObservable?;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: IPerfDatasets;
@@ -536,173 +708,45 @@ declare module "babylonjs-inspector/components/graph/canvasGraphService" {
     }
 }
 declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
-    import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
-    import { Observable } from 'babylonjs/Misc/observable';
-    import * as React from 'react';
-    import { IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
-    import { Scene } from 'babylonjs/scene';
+    import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+    import { Observable } from "babylonjs/Misc/observable";
+    import * as React from "react";
+    import { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "babylonjs-inspector/components/graph/graphSupportingTypes";
+    import { Scene } from "babylonjs/scene";
     interface ICanvasGraphComponentProps {
         id: string;
         scene: Scene;
         collector: PerformanceViewerCollector;
         layoutObservable?: Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: Observable<void>;
+        onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
-declare module "babylonjs-inspector/components/popupComponent" {
+declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerPopupComponent" {
     import * as React from "react";
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-        onKeyDown?: (evt: KeyboardEvent) => void;
+    import { Scene } from "babylonjs/scene";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+    import { IPerfLayoutSize } from "babylonjs-inspector/components/graph/graphSupportingTypes";
+    interface IPerformanceViewerPopupComponentProps {
+        scene: Scene;
+        layoutObservable: Observable<IPerfLayoutSize>;
+        returnToLiveObservable: Observable<void>;
+        performanceCollector: PerformanceViewerCollector;
     }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorComponentEntry" {
-    import * as React from "react";
-    export interface IColorComponentEntryProps {
-        value: number;
-        label: string;
-        max?: number;
-        min?: number;
-        onChange: (value: number) => void;
-    }
-    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
-        constructor(props: IColorComponentEntryProps);
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/colorPicker/hexColor" {
-    import * as React from "react";
-    export interface IHexColorProps {
-        value: string;
-        expectedLength: number;
-        onChange: (value: string) => void;
-    }
-    export class HexColor extends React.Component<IHexColorProps, {
-        hex: string;
-    }> {
-        constructor(props: IHexColorProps);
-        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
-            hex: string;
-        }): boolean;
-        updateHexValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/colorPicker/colorPicker" {
-    import * as React from "react";
-    import { Color3, Color4 } from "babylonjs/Maths/math.color";
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerProps {
-        color: Color3 | Color4;
-        linearhint?: boolean;
-        debugMode?: boolean;
-        onColorChanged?: (color: Color3 | Color4) => void;
-    }
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerState {
-        color: Color3;
-        alpha: number;
-    }
-    /**
-     * Class used to create a color picker
-     */
-    export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
-        private _saturationRef;
-        private _hueRef;
-        private _isSaturationPointerDown;
-        private _isHuePointerDown;
-        constructor(props: IColorPickerProps);
-        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
-        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        private _evaluateSaturation;
-        private _evaluateHue;
-        componentDidUpdate(): void;
-        raiseOnColorChanged(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/lines/colorPickerComponent" {
-    import * as React from "react";
-    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
-    export interface IColorPickerComponentProps {
-        value: Color4 | Color3;
-        linearHint?: boolean;
-        onColorChanged: (newOne: string) => void;
-        icon?: string;
-        iconLabel?: string;
-        shouldPopRight?: boolean;
-    }
-    interface IColorPickerComponentState {
-        pickerEnabled: boolean;
-        color: Color3 | Color4;
-        hex: string;
-    }
-    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
-        private _floatRef;
-        private _floatHostRef;
-        constructor(props: IColorPickerComponentProps);
-        syncPositions(): void;
-        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
-        componentDidUpdate(): void;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent" {
-    import { PerformanceViewerCollector } from 'babylonjs/Misc/PerformanceViewer/performanceViewerCollector';
-    interface IPerformanceViewerSidebarComponentProps {
-        collector: PerformanceViewerCollector;
-    }
-    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
-}
-declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performancePlayheadButtonComponent" {
-    import { Observable } from 'babylonjs/Misc/observable';
-    import * as React from 'react';
-    interface IPerformancePlayheadButtonProps {
-        returnToPlayhead: Observable<void>;
-    }
-    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
+    export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps>;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent" {
     import { Scene } from "babylonjs/scene";
     import * as React from "react";
-    import 'babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension';
+    import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
     interface IPerformanceViewerComponentProps {
         scene: Scene;
+    }
+    export enum IPerfMetadataCategory {
+        Count = "Count",
+        FrameSteps = "Frame Steps Duration"
     }
     export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
@@ -715,47 +759,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/statisticsTabComp
         constructor(props: IPaneComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/propertyChangedEvent" {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module "babylonjs-inspector/sharedUiComponents/lines/checkBoxLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/renderGridPropertyGridComponent" {
@@ -819,6 +822,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/floatLineComponent"
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -952,6 +956,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -971,7 +976,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/color3LineComponent
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
-    import { Color3 } from 'babylonjs/Maths/math.color';
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     export interface IColor3LineComponentProps {
         label: string;
@@ -982,25 +987,31 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/color3LineComponent
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: Color3;
+        color: Color3 | Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: Color3;
+            color: Color3 | Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: Color3): void;
+        setPropertyValue(newColor: Color3 | Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Color3): void;
+        raiseOnPropertyChanged(previousValue: Color3 | Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
         render(): JSX.Element;
     }
@@ -1089,7 +1100,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cus
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IInspectable } from 'babylonjs/Misc/iInspectable';
+    import { IInspectable } from "babylonjs/Misc/iInspectable";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ICustomPropertyGridComponentProps {
         globalState: GlobalState;
@@ -1105,8 +1116,39 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cus
         render(): JSX.Element | null;
     }
 }
+declare module "babylonjs-inspector/components/popupComponent" {
+    import * as React from "react";
+    export interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: (window: Window) => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curve" {
     import { Animation } from "babylonjs/Animations/animation";
+    import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
     import { Observable } from "babylonjs/Misc/observable";
     export interface KeyEntry {
         frame: number;
@@ -1114,6 +1156,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         inTangent?: number;
         outTangent?: number;
         lockedTangent: boolean;
+        interpolation?: AnimationKeyInterpolation;
     }
     export class Curve {
         static readonly SampleRate: number;
@@ -1127,11 +1170,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
         constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
-        gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
+        getPathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         updateLockedTangentMode(keyIndex: number, enabled: boolean): void;
-        getInControlPoint(keyIndex: number): number;
-        getOutControlPoint(keyIndex: number): number;
+        updateInterpolationMode(keyIndex: number, interpolationMode: AnimationKeyInterpolation): void;
+        getInControlPoint(keyIndex: number): number | undefined;
+        getOutControlPoint(keyIndex: number): number | undefined;
+        hasDefinedOutTangent(keyIndex: number): boolean;
         evaluateOutTangent(keyIndex: number): number;
+        hasDefinedInTangent(keyIndex: number): boolean;
         evaluateInTangent(keyIndex: number): number;
         storeDefaultInTangent(keyIndex: number): void;
         storeDefaultOutTangent(keyIndex: number): void;
@@ -1187,6 +1233,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onStepTangentRequiredObserver;
         private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
@@ -1211,6 +1258,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _unifyTangent;
         private _flattenTangent;
         private _linearTangent;
+        private _stepTangent;
         private _select;
         private _onPointerDown;
         private _extractSlope;
@@ -1228,6 +1276,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { Scene } from "babylonjs/scene";
     import { IAnimatable } from "babylonjs/Animations/animatable.interface";
     import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
+    import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
     export class Context {
         title: string;
         animations: Nullable<Animation[] | TargetedAnimation[]>;
@@ -1247,8 +1296,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        clipLength: number;
         referenceMinFrame: number;
         referenceMaxFrame: number;
+        focusedInput: boolean;
         onActiveAnimationChanged: Observable<void>;
         onActiveKeyPointChanged: Observable<void>;
         onHostWindowResized: Observable<void>;
@@ -1261,11 +1312,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onValueSet: Observable<number>;
         onValueManuallyEntered: Observable<number>;
         onFrameRequired: Observable<void>;
-        onNewKeyPointRequired: Observable<void>;
+        onCreateOrUpdateKeyPointRequired: Observable<void>;
         onFlattenTangentRequired: Observable<void>;
         onLinearTangentRequired: Observable<void>;
         onBreakTangentRequired: Observable<void>;
         onUnifyTangentRequired: Observable<void>;
+        onStepTangentRequired: Observable<void>;
         onDeleteAnimation: Observable<Animation>;
         onGraphMoved: Observable<number>;
         onGraphScaled: Observable<number>;
@@ -1277,6 +1329,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onAnimationsLoaded: Observable<void>;
         onEditAnimationRequired: Observable<Animation>;
         onEditAnimationUIClosed: Observable<void>;
+        onClipLengthIncreased: Observable<number>;
+        onClipLengthDecreased: Observable<number>;
+        onInterpolationModeSet: Observable<{
+            keyId: number;
+            value: AnimationKeyInterpolation;
+        }>;
         onSelectToActivated: Observable<{
             from: number;
             to: number;
@@ -1293,6 +1351,47 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         getActiveChannel(animation: Animation): string;
         resetAllActiveChannels(): void;
         getAnimationSortIndex(animation: Animation): number;
+        getPrevKey(): Nullable<number>;
+        getNextKey(): Nullable<number>;
+        /**
+         * If any current active animation has a key at the received frameNumber,
+         * return the index of the animation in the active animation array, and
+         * the index of the frame on the animation.
+         */
+        getKeyAtAnyFrameIndex(frameNumber: number): {
+            animationIndex: number;
+            keyIndex: number;
+        } | null;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Context } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context";
+    interface ITextInputComponentProps {
+        globalState: GlobalState;
+        context: Context;
+        id?: string;
+        className?: string;
+        tooltip?: string;
+        value: string;
+        isNumber?: boolean;
+        complement?: string;
+        onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
+    }
+    interface ITextInputComponentState {
+        value: string;
+        isFocused: boolean;
+    }
+    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
+        private _lastKnownGoodValue;
+        constructor(props: ITextInputComponentProps);
+        private _onChange;
+        private _onBlur;
+        private _onFocus;
+        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
+        private _onKeyPress;
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/controlButtonComponent" {
@@ -1335,6 +1434,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onPrevKey;
         private _onRewind;
         private _onForward;
+        private _onPrevFrame;
+        private _onNextFrame;
         private _onNextKey;
         private _onEndKey;
         private _onStop;
@@ -1381,12 +1482,15 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         context: Context;
     }
     interface IBottomBarComponentState {
+        clipLength: string;
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         private _onAnimationsLoadedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onClipLengthIncreasedObserver;
+        private _onClipLengthDecreasedObserver;
         constructor(props: IBottomBarComponentProps);
-        private _renderMaxFrame;
+        private _changeClipLength;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -1409,35 +1513,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     export class ActionButtonComponent extends React.Component<IActionButtonComponentProps, IActionButtonComponentState> {
         constructor(props: IActionButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Context } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context";
-    interface ITextInputComponentProps {
-        globalState: GlobalState;
-        context: Context;
-        id?: string;
-        className?: string;
-        tooltip?: string;
-        value: string;
-        isNumber?: boolean;
-        complement?: string;
-        onValueAsNumberChanged?: (value: number) => void;
-    }
-    interface ITextInputComponentState {
-        value: string;
-        isFocused: boolean;
-    }
-    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
-        private _lastKnownGoodValue;
-        constructor(props: ITextInputComponentProps);
-        private _onChange;
-        private _onBlur;
-        private _onFocus;
-        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
         render(): JSX.Element;
     }
 }
@@ -1504,6 +1579,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onInterpolationModeSetObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
         componentDidUpdate(): boolean;
@@ -1635,7 +1711,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1705,6 +1783,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         private _onEditAnimationRequiredObserver;
         private _onEditAnimationUIClosedObserver;
+        private _onDeleteAnimationObserver;
         constructor(props: IAnimationListComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
@@ -1888,6 +1967,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        componentDidUpdate(prevProps: IAnimationGridComponentProps): void;
         render(): JSX.Element;
     }
 }
@@ -2080,9 +2160,9 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar" {
-    import * as React from 'react';
+    import * as React from "react";
     import { IToolData, IToolType, IMetadata } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
-    import { Color4 } from 'babylonjs/Maths/math.color';
+    import { Color4 } from "babylonjs/Maths/math.color";
     export interface ITool extends IToolData {
         instance: IToolType;
     }
@@ -2110,12 +2190,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar" {
-    import * as React from 'react';
+    import * as React from "react";
     export interface IChannel {
         visible: boolean;
         editable: boolean;
         name: string;
-        id: 'R' | 'G' | 'B' | 'A';
+        id: "R" | "G" | "B" | "A";
         icon: any;
     }
     interface IChannelsBarProps {
@@ -2184,8 +2264,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _originalTexture;
         /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
-        /** The internal texture representation of the original texture */
-        private _originalInternalTexture;
+        private _originalTextureProperties;
         /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;
@@ -2253,10 +2332,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/propertiesBar" {
-    import * as React from 'react';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import * as React from "react";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { IPixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
-    import { ISize } from 'babylonjs/Maths/math.size';
+    import { ISize } from "babylonjs/Maths/math.size";
     interface IPropertiesBarProps {
         texture: BaseTexture;
         size: ISize;
@@ -2291,8 +2370,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar" {
-    import * as React from 'react';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import * as React from "react";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     interface IBottomBarProps {
         texture: BaseTexture;
         mipLevel: number;
@@ -2302,8 +2381,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasComponent" {
-    import * as React from 'react';
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import * as React from "react";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     interface ITextureCanvasComponentProps {
         canvasUI: React.RefObject<HTMLCanvasElement>;
         canvas2D: React.RefObject<HTMLCanvasElement>;
@@ -2335,7 +2414,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export default _default;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolSettings" {
-    import * as React from 'react';
+    import * as React from "react";
     import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
     interface IToolSettingsProps {
         tool: ITool | undefined;
@@ -2345,15 +2424,15 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { IPixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
     import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
     import { IChannel } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar";
-    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-    import { Scene } from 'babylonjs/scene';
-    import { ISize } from 'babylonjs/Maths/math.size';
-    import { Vector2 } from 'babylonjs/Maths/math.vector';
-    import { PointerInfo } from 'babylonjs/Events/pointerEvents';
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { Scene } from "babylonjs/scene";
+    import { ISize } from "babylonjs/Maths/math.size";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { PointerInfo } from "babylonjs/Events/pointerEvents";
     import { PopupComponent } from "babylonjs-inspector/components/popupComponent";
     interface ITextureEditorComponentProps {
         texture: BaseTexture;
@@ -2467,6 +2546,19 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         uploadTexture(file: File): void;
         render(): JSX.Element;
     }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/guiTools" {
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture): Promise<void>;
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent" {
     import * as React from "react";
@@ -3258,7 +3350,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+    import { PostProcess } from "babylonjs/PostProcesses/postProcess";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ICommonPostProcessPropertyGridComponentProps {
         globalState: GlobalState;
@@ -3295,7 +3387,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
+    import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ICommonRenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
@@ -3349,7 +3441,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
+    import { SSAORenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ISSAORenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
@@ -3367,7 +3459,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+    import { SSAO2RenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ISSAO2RenderingPipelinePropertyGridComponentProps {
         globalState: GlobalState;
@@ -3386,7 +3478,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Skeleton } from 'babylonjs/Bones/skeleton';
+    import { Skeleton } from "babylonjs/Bones/skeleton";
     interface ISkeletonPropertyGridComponentProps {
         globalState: GlobalState;
         skeleton: Skeleton;
@@ -3413,7 +3505,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Bone } from 'babylonjs/Bones/bone';
+    import { Bone } from "babylonjs/Bones/bone";
     interface IBonePropertyGridComponentProps {
         globalState: GlobalState;
         bone: Bone;
@@ -3522,9 +3614,9 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/vector4LineComponen
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/gradientStepComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
     interface IGradientStepComponentProps {
         globalState: GlobalState;
         step: GradientBlockColorStep;
@@ -3554,7 +3646,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyComponent
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/gradientNodePropertyComponent" {
     import * as React from "react";
-    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
     import { IPropertyComponentProps } from "babylonjs-inspector/components/actionTabs/tabs/propertyComponentProps";
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         private _gradientBlock;
@@ -3610,7 +3702,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: NodeMaterial;
@@ -3634,8 +3726,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Material } from 'babylonjs/Materials/material';
-    import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+    import { Material } from "babylonjs/Materials/material";
+    import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
     interface IMultiMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: MultiMaterial;
@@ -3655,7 +3747,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { Observable } from "babylonjs/Misc/observable";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { BoxParticleEmitter } from 'babylonjs/Particles/EmitterTypes/boxParticleEmitter';
+    import { BoxParticleEmitter } from "babylonjs/Particles/EmitterTypes/boxParticleEmitter";
     interface IBoxEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: BoxParticleEmitter;
@@ -3671,7 +3763,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { Observable } from "babylonjs/Misc/observable";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { ConeParticleEmitter } from 'babylonjs/Particles/EmitterTypes/coneParticleEmitter';
+    import { ConeParticleEmitter } from "babylonjs/Particles/EmitterTypes/coneParticleEmitter";
     interface IConeEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: ConeParticleEmitter;
@@ -3688,7 +3780,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { Observable } from "babylonjs/Misc/observable";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { CylinderParticleEmitter } from 'babylonjs/Particles/EmitterTypes/cylinderParticleEmitter';
+    import { CylinderParticleEmitter } from "babylonjs/Particles/EmitterTypes/cylinderParticleEmitter";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ICylinderEmitterGridComponentProps {
         globalState: GlobalState;
@@ -3707,7 +3799,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { HemisphericParticleEmitter } from 'babylonjs/Particles/EmitterTypes/hemisphericParticleEmitter';
+    import { HemisphericParticleEmitter } from "babylonjs/Particles/EmitterTypes/hemisphericParticleEmitter";
     interface IHemisphericEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: HemisphericParticleEmitter;
@@ -3725,7 +3817,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { PointParticleEmitter } from 'babylonjs/Particles/EmitterTypes/pointParticleEmitter';
+    import { PointParticleEmitter } from "babylonjs/Particles/EmitterTypes/pointParticleEmitter";
     interface IPointEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: PointParticleEmitter;
@@ -3743,7 +3835,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { SphereParticleEmitter } from 'babylonjs/Particles/EmitterTypes/sphereParticleEmitter';
+    import { SphereParticleEmitter } from "babylonjs/Particles/EmitterTypes/sphereParticleEmitter";
     interface ISphereEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: SphereParticleEmitter;
@@ -3758,9 +3850,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
 declare module "babylonjs-inspector/components/actionTabs/lines/meshPickerComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Observable } from 'babylonjs/Misc/observable';
+    import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { Scene } from 'babylonjs/scene';
+    import { Scene } from "babylonjs/scene";
     interface IMeshPickerComponentProps {
         globalState: GlobalState;
         target: any;
@@ -3780,8 +3872,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { MeshParticleEmitter } from 'babylonjs/Particles/EmitterTypes/meshParticleEmitter';
-    import { Scene } from 'babylonjs/scene';
+    import { MeshParticleEmitter } from "babylonjs/Particles/EmitterTypes/meshParticleEmitter";
+    import { Scene } from "babylonjs/scene";
     interface IMeshEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: MeshParticleEmitter;
@@ -3796,11 +3888,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { FactorGradient } from 'babylonjs/Misc/gradients';
+    import { FactorGradient } from "babylonjs/Misc/gradients";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IFactorGradientStepGridComponent {
         globalState: GlobalState;
         gradient: FactorGradient;
@@ -3833,11 +3925,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
+    import { ColorGradient, Color3Gradient } from "babylonjs/Misc/gradients";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IColorGradientStepGridComponent {
         globalState: GlobalState;
         gradient: ColorGradient | Color3Gradient;
@@ -3881,10 +3973,10 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/linkButtonComponent
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IValueGradient } from 'babylonjs/Misc/gradients';
+    import { IValueGradient } from "babylonjs/Misc/gradients";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
-    import { Nullable } from 'babylonjs/types';
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { Nullable } from "babylonjs/types";
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     export enum GradientGridMode {
         Factor = 0,
         Color3 = 1,
@@ -3916,7 +4008,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IParticleSystemPropertyGridComponentProps {
         globalState: GlobalState;
         system: IParticleSystem;
@@ -3943,7 +4035,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+    import { SpriteManager } from "babylonjs/Sprites/spriteManager";
     interface ISpriteManagerPropertyGridComponentProps {
         globalState: GlobalState;
         spriteManager: SpriteManager;
@@ -3969,7 +4061,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Sprite } from 'babylonjs/Sprites/sprite';
+    import { Sprite } from "babylonjs/Sprites/sprite";
     interface ISpritePropertyGridComponentProps {
         globalState: GlobalState;
         sprite: Sprite;
@@ -4023,7 +4115,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { FollowCamera } from 'babylonjs/Cameras/followCamera';
+    import { FollowCamera } from "babylonjs/Cameras/followCamera";
     interface IFollowCameraPropertyGridComponentProps {
         globalState: GlobalState;
         camera: FollowCamera;
@@ -4041,8 +4133,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sou
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { Sound } from 'babylonjs/Audio/sound';
-    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { Sound } from "babylonjs/Audio/sound";
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     interface ISoundPropertyGridComponentProps {
         globalState: GlobalState;
         sound: Sound;
@@ -4061,7 +4153,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lay
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { EffectLayer } from "babylonjs/Layers/effectLayer";
     interface ILayerPropertyGridComponentProps {
         globalState: GlobalState;
@@ -4340,8 +4432,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/lightTreeI
 declare module "babylonjs-inspector/components/sceneExplorer/entities/materialTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Material } from "babylonjs/Materials/material";
-    import * as React from 'react';
-    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+    import * as React from "react";
+    import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
     interface IMaterialTreeItemComponentProps {
         material: Material | NodeMaterial;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4355,7 +4447,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/materialTr
 declare module "babylonjs-inspector/components/sceneExplorer/entities/textureTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Texture } from "babylonjs/Materials/Textures/texture";
-    import * as React from 'react';
+    import * as React from "react";
     interface ITextureTreeItemComponentProps {
         texture: Texture;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4383,7 +4475,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/transformN
 declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/controlTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import * as React from 'react';
+    import * as React from "react";
     interface IControlTreeItemComponentProps {
         control: Control;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4402,8 +4494,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/contro
 declare module "babylonjs-inspector/components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent" {
     import { Observable } from "babylonjs/Misc/observable";
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
-    import * as React from 'react';
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import * as React from "react";
     interface IAdvancedDynamicTextureTreeItemComponentProps {
         texture: AdvancedDynamicTexture;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4436,8 +4528,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/animationG
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/postProcessTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
-    import * as React from 'react';
+    import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+    import * as React from "react";
     interface IPostProcessItemComponentProps {
         postProcess: PostProcess;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4450,8 +4542,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/postProces
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/renderingPipelineTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import { PostProcessRenderPipeline } from 'babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline';
-    import * as React from 'react';
+    import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+    import * as React from "react";
     interface IRenderPipelineItemComponenttProps {
         renderPipeline: PostProcessRenderPipeline;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4465,7 +4557,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/renderingP
 declare module "babylonjs-inspector/components/sceneExplorer/entities/skeletonTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { Skeleton } from 'babylonjs/Bones/skeleton';
+    import { Skeleton } from "babylonjs/Bones/skeleton";
     interface ISkeletonTreeItemComponentProps {
         skeleton: Skeleton;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4479,7 +4571,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/skeletonTr
 declare module "babylonjs-inspector/components/sceneExplorer/entities/boneTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { Bone } from 'babylonjs/Bones/bone';
+    import { Bone } from "babylonjs/Bones/bone";
     interface IBoneTreeItemComponenttProps {
         bone: Bone;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4492,8 +4584,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/boneTreeIt
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/particleSystemTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    import * as React from "react";
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     interface IParticleSystemTreeItemComponentProps {
         system: IParticleSystem;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4506,8 +4598,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/particleSy
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteManagerTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
-    import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+    import * as React from "react";
+    import { SpriteManager } from "babylonjs/Sprites/spriteManager";
     interface ISpriteManagerTreeItemComponentProps {
         spriteManager: SpriteManager;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4520,8 +4612,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteMana
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
-    import { Sprite } from 'babylonjs/Sprites/sprite';
+    import * as React from "react";
+    import { Sprite } from "babylonjs/Sprites/sprite";
     interface ISpriteTreeItemComponentProps {
         sprite: Sprite;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4549,7 +4641,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/targetedAn
 declare module "babylonjs-inspector/components/sceneExplorer/entities/soundTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
-    import { Sound } from 'babylonjs/Audio/sound';
+    import { Sound } from "babylonjs/Audio/sound";
     interface ISoundTreeItemComponentProps {
         sound: Sound;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4562,7 +4654,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/soundTreeI
 }
 declare module "babylonjs-inspector/components/sceneExplorer/entities/effectLayerPipelineTreeItemComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-    import * as React from 'react';
+    import * as React from "react";
     import { EffectLayer } from "babylonjs/Layers/effectLayer";
     interface IEffectLayerItemComponenttProps {
         layer: EffectLayer;
@@ -4764,7 +4856,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
+    import { IExplorerExtensibilityGroup, DebugLayerTab } from "babylonjs/Debug/debugLayer";
     interface IEmbedHostComponentProps {
         scene: Scene;
         globalState: GlobalState;
@@ -4788,21 +4880,32 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     }
 }
 declare module "babylonjs-inspector/inspector" {
+    import * as React from "react";
     import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
     import { Observable } from "babylonjs/Misc/observable";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { IPopupComponentProps } from "babylonjs-inspector/components/popupComponent";
+    export interface IPersistentPopupConfiguration {
+        props: IPopupComponentProps;
+        children: React.ReactNode;
+        closeWhenSceneExplorerCloses?: boolean;
+        closeWhenActionTabsCloses?: boolean;
+    }
     export class Inspector {
         private static _SceneExplorerHost;
         private static _ActionTabsHost;
         private static _EmbedHost;
         private static _NewCanvasContainer;
+        private static _PersistentPopupHost;
         private static _SceneExplorerWindow;
         private static _ActionTabsWindow;
         private static _EmbedHostWindow;
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
+        private static _OnSceneExplorerClosedObserver;
+        private static _OnActionTabsClosedObserver;
         static OnSelectionChangeObservable: Observable<any>;
         static OnPropertyChangedObservable: Observable<PropertyChangedEvent>;
         private static _GlobalState;
@@ -4822,6 +4925,8 @@ declare module "babylonjs-inspector/inspector" {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+        static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement): void;
+        static _ClosePersistentPopup(): void;
     }
 }
 declare module "babylonjs-inspector/index" {
@@ -4868,7 +4973,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/draggableLineCompon
     }
 }
 declare module "babylonjs-inspector/sharedUiComponents/lines/iconButtonLineComponent" {
-    import * as React from 'react';
+    import * as React from "react";
     export interface IIconButtonLineComponentProps {
         icon: string;
         onClick: () => void;
@@ -4953,6 +5058,8 @@ declare module INSPECTOR {
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;
         enableCameraGizmo(camera: BABYLON.Camera, enable?: boolean): void;
+        onSceneExplorerClosedObservable: BABYLON.Observable<void>;
+        onActionTabsClosedObservable: BABYLON.Observable<void>;
     }
 }
 declare module INSPECTOR {
@@ -5087,11 +5194,12 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     /**
-     * Defines a structure to hold max and min.
+     * Defines a structure to hold max, min and a optional current.
      */
     export interface IPerfMinMax {
         min: number;
         max: number;
+        current?: number;
     }
     /**
      * Defines structure of the object which contains information related to panning.
@@ -5141,11 +5249,15 @@ declare module INSPECTOR {
         id: string;
         text: string;
     }
+    export interface IVisibleRangeChangedObservableProps {
+        valueMap: Map<string, IPerfMinMax>;
+    }
     /**
      * Defines what settings our canvas graphing service accepts
      */
     export interface ICanvasGraphServiceSettings {
         datasets: BABYLON.IPerfDatasets;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     /**
      * Defines the structure representing the preprocessable tooltip information.
@@ -5171,6 +5283,155 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IColorComponentEntryProps {
+        value: number;
+        label: string;
+        max?: number;
+        min?: number;
+        onChange: (value: number) => void;
+    }
+    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+        constructor(props: IColorComponentEntryProps);
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IHexColorProps {
+        value: string;
+        expectedLength: number;
+        onChange: (value: string) => void;
+    }
+    export class HexColor extends React.Component<IHexColorProps, {
+        hex: string;
+    }> {
+        constructor(props: IHexColorProps);
+        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
+            hex: string;
+        }): boolean;
+        updateHexValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerProps {
+        color: BABYLON.Color3 | BABYLON.Color4;
+        linearhint?: boolean;
+        debugMode?: boolean;
+        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
+    }
+    /**
+     * Interface used to specify creation options for color picker
+     */
+    export interface IColorPickerState {
+        color: BABYLON.Color3;
+        alpha: number;
+    }
+    /**
+     * Class used to create a color picker
+     */
+    export class BABYLON.GUI.ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+        private _saturationRef;
+        private _hueRef;
+        private _isSaturationPointerDown;
+        private _isHuePointerDown;
+        constructor(props: IColorPickerProps);
+        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
+        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
+        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
+        private _evaluateSaturation;
+        private _evaluateHue;
+        componentDidUpdate(): void;
+        raiseOnColorChanged(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        linearHint?: boolean;
+        onColorChanged: (newOne: string) => void;
+        icon?: string;
+        iconLabel?: string;
+        shouldPopRight?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module INSPECTOR {
+    export interface ICheckBoxLineComponentProps {
+        label?: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+        icon?: string;
+        iconLabel?: string;
+        faIcons?: {
+        };
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+    }> {
+        private static _UniqueIdSeed;
+        private _uniqueId;
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+        }): boolean;
+        onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPerformanceViewerSidebarComponentProps {
+        collector: BABYLON.PerformanceViewerCollector;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
+    }
+    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
+}
+declare module INSPECTOR {
+    interface IPerformancePlayheadButtonProps {
+        returnToPlayhead: BABYLON.Observable<void>;
+    }
+    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
+}
+declare module INSPECTOR {
     export class CanvasGraphService {
         private _ctx;
         private _width;
@@ -5190,6 +5451,7 @@ declare module INSPECTOR {
         private _tickerItems;
         private _preprocessedTooltipInfo;
         private _numberOfTickers;
+        private _onVisibleRangeChangedObservable?;
         private readonly _addonFontLineHeight;
         private readonly _defaultLineHeight;
         readonly datasets: BABYLON.IPerfDatasets;
@@ -5404,149 +5666,26 @@ declare module INSPECTOR {
         collector: BABYLON.PerformanceViewerCollector;
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: BABYLON.Observable<void>;
+        onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
 declare module INSPECTOR {
-    interface IPopupComponentProps {
-        id: string;
-        title: string;
-        size: {
-            width: number;
-            height: number;
-        };
-        onOpen?: (window: Window) => void;
-        onClose: (window: Window) => void;
-        onResize?: () => void;
-        onKeyUp?: (evt: KeyboardEvent) => void;
-        onKeyDown?: (evt: KeyboardEvent) => void;
+    interface IPerformanceViewerPopupComponentProps {
+        scene: BABYLON.Scene;
+        layoutObservable: BABYLON.Observable<IPerfLayoutSize>;
+        returnToLiveObservable: BABYLON.Observable<void>;
+        performanceCollector: BABYLON.PerformanceViewerCollector;
     }
-    export class PopupComponent extends React.Component<IPopupComponentProps, {
-        isComponentMounted: boolean;
-        blockedByBrowser: boolean;
-    }> {
-        private _container;
-        private _window;
-        private _host;
-        constructor(props: IPopupComponentProps);
-        componentDidMount(): void;
-        openPopup(): void;
-        componentWillUnmount(): void;
-        getWindow(): Window | null;
-        render(): React.ReactPortal | null;
-    }
-}
-declare module INSPECTOR {
-    export interface IColorComponentEntryProps {
-        value: number;
-        label: string;
-        max?: number;
-        min?: number;
-        onChange: (value: number) => void;
-    }
-    export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
-        constructor(props: IColorComponentEntryProps);
-        updateValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IHexColorProps {
-        value: string;
-        expectedLength: number;
-        onChange: (value: string) => void;
-    }
-    export class HexColor extends React.Component<IHexColorProps, {
-        hex: string;
-    }> {
-        constructor(props: IHexColorProps);
-        shouldComponentUpdate(nextProps: IHexColorProps, nextState: {
-            hex: string;
-        }): boolean;
-        updateHexValue(valueString: string): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerProps {
-        color: BABYLON.Color3 | BABYLON.Color4;
-        linearhint?: boolean;
-        debugMode?: boolean;
-        onColorChanged?: (color: BABYLON.Color3 | BABYLON.Color4) => void;
-    }
-    /**
-     * Interface used to specify creation options for color picker
-     */
-    export interface IColorPickerState {
-        color: BABYLON.Color3;
-        alpha: number;
-    }
-    /**
-     * Class used to create a color picker
-     */
-    export class BABYLON.GUI.ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
-        private _saturationRef;
-        private _hueRef;
-        private _isSaturationPointerDown;
-        private _isHuePointerDown;
-        constructor(props: IColorPickerProps);
-        shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState): boolean;
-        onSaturationPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onSaturationPointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
-        onHuePointerMove(evt: React.PointerEvent<HTMLDivElement>): void;
-        private _evaluateSaturation;
-        private _evaluateHue;
-        componentDidUpdate(): void;
-        raiseOnColorChanged(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IColorPickerComponentProps {
-        value: BABYLON.Color4 | BABYLON.Color3;
-        linearHint?: boolean;
-        onColorChanged: (newOne: string) => void;
-        icon?: string;
-        iconLabel?: string;
-        shouldPopRight?: boolean;
-    }
-    interface IColorPickerComponentState {
-        pickerEnabled: boolean;
-        color: BABYLON.Color3 | BABYLON.Color4;
-        hex: string;
-    }
-    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
-        private _floatRef;
-        private _floatHostRef;
-        constructor(props: IColorPickerComponentProps);
-        syncPositions(): void;
-        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
-        componentDidUpdate(): void;
-        componentDidMount(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IPerformanceViewerSidebarComponentProps {
-        collector: BABYLON.PerformanceViewerCollector;
-    }
-    export const PerformanceViewerSidebarComponent: (props: IPerformanceViewerSidebarComponentProps) => JSX.Element;
-}
-declare module INSPECTOR {
-    interface IPerformancePlayheadButtonProps {
-        returnToPlayhead: BABYLON.Observable<void>;
-    }
-    export const PerformancePlayheadButtonComponent: React.FC<IPerformancePlayheadButtonProps>;
+    export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps>;
 }
 declare module INSPECTOR {
     interface IPerformanceViewerComponentProps {
         scene: BABYLON.Scene;
+    }
+    export enum IPerfMetadataCategory {
+        Count = "Count",
+        FrameSteps = "Frame Steps Duration"
     }
     export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps>;
 }
@@ -5558,44 +5697,6 @@ declare module INSPECTOR {
         constructor(props: IPaneComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
-    }
-}
-declare module INSPECTOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module INSPECTOR {
-    export interface ICheckBoxLineComponentProps {
-        label: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-        icon?: string;
-        iconLabel?: string;
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-    }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
@@ -5651,6 +5752,7 @@ declare module INSPECTOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -5771,6 +5873,7 @@ declare module INSPECTOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5796,25 +5899,31 @@ declare module INSPECTOR {
         icon?: string;
         lockObject?: LockObject;
         iconLabel?: string;
+        onValueChange?: (value: string) => void;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color3;
+        color: BABYLON.Color3 | BABYLON.Color4;
+        colorText: string;
     }> {
         private _localChange;
         constructor(props: IColor3LineComponentProps);
+        private convertToColor3;
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3;
+            color: BABYLON.Color3 | BABYLON.Color4;
+            colorText: string;
         }): boolean;
-        setPropertyValue(newColor: BABYLON.Color3): void;
+        setPropertyValue(newColor: BABYLON.Color3 | BABYLON.Color4, newColorText: string): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         copyToClipboard(): void;
         convert(colorString: string): void;
+        private _colorStringSaved;
+        private _colorPickerOpen;
         private _colorString;
         render(): JSX.Element;
     }
@@ -5906,12 +6015,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen?: (window: Window) => void;
+        onClose: (window: Window) => void;
+        onResize?: (window: Window) => void;
+        onKeyUp?: (evt: KeyboardEvent) => void;
+        onKeyDown?: (evt: KeyboardEvent) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        private _host;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        getWindow(): Window | null;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
     export interface KeyEntry {
         frame: number;
         value: number;
         inTangent?: number;
         outTangent?: number;
         lockedTangent: boolean;
+        interpolation?: BABYLON.AnimationKeyInterpolation;
     }
     export class Curve {
         static readonly SampleRate: number;
@@ -5925,11 +6064,14 @@ declare module INSPECTOR {
         setDefaultOutTangent?: (keyId: number) => any;
         static readonly TangentLength: number;
         constructor(color: string, animation: BABYLON.Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any);
-        gePathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
+        getPathData(convertX: (x: number) => number, convertY: (y: number) => number): string;
         updateLockedTangentMode(keyIndex: number, enabled: boolean): void;
-        getInControlPoint(keyIndex: number): number;
-        getOutControlPoint(keyIndex: number): number;
+        updateInterpolationMode(keyIndex: number, interpolationMode: BABYLON.AnimationKeyInterpolation): void;
+        getInControlPoint(keyIndex: number): number | undefined;
+        getOutControlPoint(keyIndex: number): number | undefined;
+        hasDefinedOutTangent(keyIndex: number): boolean;
         evaluateOutTangent(keyIndex: number): number;
+        hasDefinedInTangent(keyIndex: number): boolean;
         evaluateInTangent(keyIndex: number): number;
         storeDefaultInTangent(keyIndex: number): void;
         storeDefaultOutTangent(keyIndex: number): void;
@@ -5981,6 +6123,7 @@ declare module INSPECTOR {
         private _onLinearTangentRequiredObserver;
         private _onBreakTangentRequiredObserver;
         private _onUnifyTangentRequiredObserver;
+        private _onStepTangentRequiredObserver;
         private _onSelectAllKeysObserver;
         private _pointerIsDown;
         private _sourcePointerX;
@@ -6005,6 +6148,7 @@ declare module INSPECTOR {
         private _unifyTangent;
         private _flattenTangent;
         private _linearTangent;
+        private _stepTangent;
         private _select;
         private _onPointerDown;
         private _extractSlope;
@@ -6034,8 +6178,10 @@ declare module INSPECTOR {
         toKey: number;
         forwardAnimation: boolean;
         isPlaying: boolean;
+        clipLength: number;
         referenceMinFrame: number;
         referenceMaxFrame: number;
+        focusedInput: boolean;
         onActiveAnimationChanged: BABYLON.Observable<void>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
@@ -6048,11 +6194,12 @@ declare module INSPECTOR {
         onValueSet: BABYLON.Observable<number>;
         onValueManuallyEntered: BABYLON.Observable<number>;
         onFrameRequired: BABYLON.Observable<void>;
-        onNewKeyPointRequired: BABYLON.Observable<void>;
+        onCreateOrUpdateKeyPointRequired: BABYLON.Observable<void>;
         onFlattenTangentRequired: BABYLON.Observable<void>;
         onLinearTangentRequired: BABYLON.Observable<void>;
         onBreakTangentRequired: BABYLON.Observable<void>;
         onUnifyTangentRequired: BABYLON.Observable<void>;
+        onStepTangentRequired: BABYLON.Observable<void>;
         onDeleteAnimation: BABYLON.Observable<BABYLON.Animation>;
         onGraphMoved: BABYLON.Observable<number>;
         onGraphScaled: BABYLON.Observable<number>;
@@ -6064,6 +6211,12 @@ declare module INSPECTOR {
         onAnimationsLoaded: BABYLON.Observable<void>;
         onEditAnimationRequired: BABYLON.Observable<BABYLON.Animation>;
         onEditAnimationUIClosed: BABYLON.Observable<void>;
+        onClipLengthIncreased: BABYLON.Observable<number>;
+        onClipLengthDecreased: BABYLON.Observable<number>;
+        onInterpolationModeSet: BABYLON.Observable<{
+            keyId: number;
+            value: BABYLON.AnimationKeyInterpolation;
+        }>;
         onSelectToActivated: BABYLON.Observable<{
             from: number;
             to: number;
@@ -6080,6 +6233,44 @@ declare module INSPECTOR {
         getActiveChannel(animation: BABYLON.Animation): string;
         resetAllActiveChannels(): void;
         getAnimationSortIndex(animation: BABYLON.Animation): number;
+        getPrevKey(): BABYLON.Nullable<number>;
+        getNextKey(): BABYLON.Nullable<number>;
+        /**
+         * If any current active animation has a key at the received frameNumber,
+         * return the index of the animation in the active animation array, and
+         * the index of the frame on the animation.
+         */
+        getKeyAtAnyFrameIndex(frameNumber: number): {
+            animationIndex: number;
+            keyIndex: number;
+        } | null;
+    }
+}
+declare module INSPECTOR {
+    interface ITextInputComponentProps {
+        globalState: GlobalState;
+        context: Context;
+        id?: string;
+        className?: string;
+        tooltip?: string;
+        value: string;
+        isNumber?: boolean;
+        complement?: string;
+        onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
+    }
+    interface ITextInputComponentState {
+        value: string;
+        isFocused: boolean;
+    }
+    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
+        private _lastKnownGoodValue;
+        constructor(props: ITextInputComponentProps);
+        private _onChange;
+        private _onBlur;
+        private _onFocus;
+        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
+        private _onKeyPress;
+        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
@@ -6116,6 +6307,8 @@ declare module INSPECTOR {
         private _onPrevKey;
         private _onRewind;
         private _onForward;
+        private _onPrevFrame;
+        private _onNextFrame;
         private _onNextKey;
         private _onEndKey;
         private _onStop;
@@ -6156,12 +6349,15 @@ declare module INSPECTOR {
         context: Context;
     }
     interface IBottomBarComponentState {
+        clipLength: string;
     }
     export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
         private _onAnimationsLoadedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onClipLengthIncreasedObserver;
+        private _onClipLengthDecreasedObserver;
         constructor(props: IBottomBarComponentProps);
-        private _renderMaxFrame;
+        private _changeClipLength;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -6181,32 +6377,6 @@ declare module INSPECTOR {
     }
     export class ActionButtonComponent extends React.Component<IActionButtonComponentProps, IActionButtonComponentState> {
         constructor(props: IActionButtonComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ITextInputComponentProps {
-        globalState: GlobalState;
-        context: Context;
-        id?: string;
-        className?: string;
-        tooltip?: string;
-        value: string;
-        isNumber?: boolean;
-        complement?: string;
-        onValueAsNumberChanged?: (value: number) => void;
-    }
-    interface ITextInputComponentState {
-        value: string;
-        isFocused: boolean;
-    }
-    export class TextInputComponent extends React.Component<ITextInputComponentProps, ITextInputComponentState> {
-        private _lastKnownGoodValue;
-        constructor(props: ITextInputComponentProps);
-        private _onChange;
-        private _onBlur;
-        private _onFocus;
-        shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState): boolean;
         render(): JSX.Element;
     }
 }
@@ -6264,6 +6434,7 @@ declare module INSPECTOR {
     export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
         private _onDataUpdatedObserver;
         private _onActiveAnimationChangedObserver;
+        private _onInterpolationModeSetObserver;
         constructor(props: ICurveComponentProps);
         componentWillUnmount(): void;
         componentDidUpdate(): boolean;
@@ -6383,7 +6554,9 @@ declare module INSPECTOR {
     interface ICanvasComponentState {
     }
     export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
+        private _onActiveAnimationChangedObserver;
         constructor(props: ICanvasComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -6442,6 +6615,7 @@ declare module INSPECTOR {
     export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
         private _onEditAnimationRequiredObserver;
         private _onEditAnimationUIClosedObserver;
+        private _onDeleteAnimationObserver;
         constructor(props: IAnimationListComponentProps);
         componentWillUnmount(): void;
         render(): JSX.Element | null;
@@ -6598,6 +6772,7 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        componentDidUpdate(prevProps: IAnimationGridComponentProps): void;
         render(): JSX.Element;
     }
 }
@@ -6786,7 +6961,7 @@ declare module INSPECTOR {
         visible: boolean;
         editable: boolean;
         name: string;
-        id: 'R' | 'G' | 'B' | 'A';
+        id: "R" | "G" | "B" | "A";
         icon: any;
     }
     interface IChannelsBarProps {
@@ -6846,8 +7021,7 @@ declare module INSPECTOR {
         private _originalTexture;
         /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
-        /** The internal texture representation of the original texture */
-        private _originalInternalTexture;
+        private _originalTextureProperties;
         /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;
@@ -7105,6 +7279,18 @@ declare module INSPECTOR {
         uploadTexture(file: File): void;
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    /** Used to pass in the gui-editor package. */
+    export function InjectGUIEditor(guiEditorPackage: any): void;
+    /** Change the URL that the GUI editor loads from */
+    export function SetGUIEditorURL(guiEditorURL: string): void;
+    /**
+     * Opens an ADT in the GUI editor
+     * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
+     * If you are in a UMD environment, it will load the package from a URL
+    */
+    export function EditAdvancedDynamicTexture(adt: BABYLON.GUI.AdvancedDynamicTexture): Promise<void>;
 }
 declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
@@ -8908,17 +9094,26 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IPersistentPopupConfiguration {
+        props: IPopupComponentProps;
+        children: React.ReactNode;
+        closeWhenSceneExplorerCloses?: boolean;
+        closeWhenActionTabsCloses?: boolean;
+    }
     export class Inspector {
         private static _SceneExplorerHost;
         private static _ActionTabsHost;
         private static _EmbedHost;
         private static _NewCanvasContainer;
+        private static _PersistentPopupHost;
         private static _SceneExplorerWindow;
         private static _ActionTabsWindow;
         private static _EmbedHostWindow;
         private static _Scene;
         private static _OpenedPane;
         private static _OnBeforeRenderObserver;
+        private static _OnSceneExplorerClosedObserver;
+        private static _OnActionTabsClosedObserver;
         static OnSelectionChangeObservable: BABYLON.Observable<any>;
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
@@ -8938,6 +9133,8 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+        static _CreatePersistentPopup(config: IPersistentPopupConfiguration, hostElement: HTMLElement): void;
+        static _ClosePersistentPopup(): void;
     }
 }
 declare module INSPECTOR {

@@ -53,24 +53,28 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
     async initEngine() {
         let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+        const antialias = this.props.globalState.commerceMode ? false : undefined;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {
             this._engine = new WebGPUEngine(this._canvas, {
                 deviceDescriptor: {
                     requiredFeatures: [
-                        "texture-compression-bc",
-                        "timestamp-query",
-                        "pipeline-statistics-query",
-                        "depth-clamping",
+                        "depth-clip-control",
                         "depth24unorm-stencil8",
                         "depth32float-stencil8",
+                        "texture-compression-bc",
+                        "texture-compression-etc2",
+                        "texture-compression-astc",
+                        "timestamp-query",
+                        "indirect-first-instance",
                     ],
                 },
+                antialiasing: antialias,
             });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
-            this._engine = new Engine(this._canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            this._engine = new Engine(this._canvas, antialias, { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: antialias });
         }
 
         this._engine.loadingUIBackgroundColor = "#2A2342";
@@ -369,7 +373,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._currentPluginName = plugin.name;
             if (this._currentPluginName === "gltf") {
                 let loader = plugin as GLTFFileLoader;
-
+                loader.transparencyAsCoverage = this.props.globalState.commerceMode;
                 loader.validate = true;
 
                 loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {

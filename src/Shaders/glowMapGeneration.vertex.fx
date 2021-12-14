@@ -2,6 +2,7 @@
 attribute vec3 position;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -41,6 +42,9 @@ attribute vec2 uv2;
 	varying vec4 vColor;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
 	vec3 positionUpdated = position;
@@ -53,6 +57,7 @@ void main(void)
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 #ifdef CUBEMAP
 	vPosition = finalWorld * vec4(positionUpdated, 1.0);

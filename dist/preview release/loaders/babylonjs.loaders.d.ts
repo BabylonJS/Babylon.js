@@ -1390,7 +1390,7 @@ declare module BABYLON.GLTF2 {
         /**
          * The root Babylon mesh when loading the asset.
          */
-        get rootBabylonMesh(): Mesh;
+        get rootBabylonMesh(): Nullable<Mesh>;
         /** @hidden */
         constructor(parent: GLTFFileLoader);
         /** @hidden */
@@ -1880,6 +1880,33 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadClearCoatPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Experimental Spec](https://github.com/KhronosGroup/glTF/pull/1994)
+     */
+    export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadEmissiveProperties;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

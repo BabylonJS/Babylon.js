@@ -10,7 +10,7 @@ import { CreateDisc } from "./discBuilder";
  * @param scene defines the hosting scene
  * @returns the hemisphere mesh
  */
-export function CreateHemisphere(name: string, options: { segments?: number, diameter?: number, sideOrientation?: number }, scene: any): Mesh {
+export function CreateHemisphere(name: string, options: { segments?: number, diameter?: number, sideOrientation?: number } = {}, scene: any): Mesh {
     if (!options.diameter) {
         options.diameter = 1;
     }

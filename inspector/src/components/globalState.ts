@@ -38,6 +38,7 @@ export class GlobalState {
         KHR_mesh_quantization: { enabled: true },
         KHR_materials_pbrSpecularGlossiness: { enabled: true },
         KHR_materials_clearcoat: { enabled: true },
+        KHR_materials_emissive_strength: { enabled: true },
         KHR_materials_ior: { enabled: true },
         KHR_materials_sheen: { enabled: true },
         KHR_materials_specular: { enabled: true },
@@ -189,4 +190,7 @@ export class GlobalState {
             camera.reservedDataStore.cameraGizmo = null;
         }
     }
+
+    public onSceneExplorerClosedObservable = new Observable<void>();
+    public onActionTabsClosedObservable = new Observable<void>();
 }

@@ -52,6 +52,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         super(name, direction, kernel, options, camera, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Constants.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
 
         this.direction = direction;
+        this.externalTextureSamplerBinding = !!imageToBlur;
 
         this.onApplyObservable.add((effect: Effect) => {
             if (imageToBlur != null) {

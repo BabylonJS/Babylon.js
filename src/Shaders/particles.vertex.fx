@@ -75,7 +75,13 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 }
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 	vec2 cornerPos;
 
 	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size + translationPivot;
@@ -150,5 +156,7 @@ void main(void) {
     vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
 
 }

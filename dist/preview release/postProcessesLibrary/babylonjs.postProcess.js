@@ -859,6 +859,10 @@ var DigitalRainPostProcess = /** @class */ (function (_super) {
          * This number is defined between 0 and 1;
          */
         _this.mixToNormal = 0;
+        /**
+         * Speed of the effect
+         */
+        _this.speed = 0.003;
         // Default values.
         var font = "15px Monospace";
         var characterSet = "古池や蛙飛び込む水の音ふるいけやかわずとびこむみずのおと初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり江戸の雨何石呑んだ時鳥えどのあめなんごくのんだほととぎす";
@@ -883,7 +887,7 @@ var DigitalRainPostProcess = /** @class */ (function (_super) {
             effect.setFloat4("digitalRainFontInfos", _this._digitalRainFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
             effect.setFloat4("digitalRainOptions", _this.width, _this.height, _this.mixToNormal, _this.mixToTile);
             effect.setMatrix("matrixSpeed", matrix);
-            alpha += 0.003;
+            alpha += _this.speed;
             cosTimeZeroOne = alpha;
             effect.setFloat('cosTimeZeroOne', cosTimeZeroOne);
         };

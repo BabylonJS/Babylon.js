@@ -10,6 +10,7 @@ var currentTestName;
 var numTestsOk = 0;
 var failedTests = [];
 var forceUseReverseDepthBuffer;
+var forceUseNonCompatibilityMode;
 
 // Random replacement
 var seed = 1;
@@ -62,15 +63,17 @@ async function getRenderData(canvas, engine) {
             var renderData = await engine.readPixels(0, 0, width, height);
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
-            for (var i = 0; i < halfHeight; i++) {
-                for (var j = 0; j < numberOfChannelsByLine; j++) {
-                    var currentCell = j + i * numberOfChannelsByLine;
-                    var targetLine = height - i - 1;
-                    var targetCell = j + targetLine * numberOfChannelsByLine;
+            if (!engine.isWebGPU) {
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
 
-                    var temp = renderData[currentCell];
-                    renderData[currentCell] = renderData[targetCell];
-                    renderData[targetCell] = temp;
+                        var temp = renderData[currentCell];
+                        renderData[currentCell] = renderData[targetCell];
+                        renderData[targetCell] = temp;
+                    }
                 }
             }
             if (engine.isWebGPU) {
@@ -108,8 +111,8 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
 
     var dontReportTestOutcome = false;
     if (config.qs && config.qs.checkresourcecreation && engine.countersLastFrame) {
-        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0) {
-            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}`);
+        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0 || engine.countersLastFrame.numBundleCreationNonCompatMode > 0) {
+            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}, numBundleCreationNonCompatMode=${engine.countersLastFrame.numBundleCreationNonCompatMode}`);
             testRes = false;
         }
         dontReportTestOutcome = true;
@@ -152,6 +155,7 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     currentScene = null;
     engine.setHardwareScalingLevel(1);
     engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+    engine.compatibilityMode = !forceUseNonCompatibilityMode;
     if (forceUseReverseDepthBuffer) {
         engine.setDepthFunction(BABYLON.Constants.GEQUAL);
     } else {
@@ -163,6 +167,8 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     engine._deltaTime = 0;
     engine._fps = 60;
     engine._performanceMonitor = new BABYLON.PerformanceMonitor();
+
+    BABYLON.UnregisterAllMaterialPlugins();
 
     if (resultCanvas.parentElement) {
         resultCanvas.parentElement.setAttribute("result", testRes);
@@ -211,7 +217,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
             }
         });
 
-    });
+    }, true);
 }
 
 function runTest(index, done, listname) {
@@ -435,7 +441,7 @@ function GetAbsoluteUrl(url) {
     return a.href;
 }
 
-function init(_engineName, useReverseDepthBuffer) {
+function init(_engineName, useReverseDepthBuffer, useNonCompatibilityMode) {
     _engineName = _engineName ? _engineName.toLowerCase() : "webgl2";
     if (window.disableWebGL2Support) {
         _engineName = "webgl1";
@@ -483,6 +489,7 @@ function init(_engineName, useReverseDepthBuffer) {
     };
 
     forceUseReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
+    forceUseNonCompatibilityMode = useNonCompatibilityMode == 1 || useNonCompatibilityMode == "true";
 
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
@@ -501,12 +508,14 @@ function init(_engineName, useReverseDepthBuffer) {
         const options = {
             deviceDescriptor: {
                 requiredFeatures: [
-                    "texture-compression-bc",
-                    "timestamp-query",
-                    "pipeline-statistics-query",
-                    "depth-clamping",
+                    "depth-clip-control",
                     "depth24unorm-stencil8",
-                    "depth32float-stencil8"
+                    "depth32float-stencil8",
+                    "texture-compression-bc",
+                    "texture-compression-etc2",
+                    "texture-compression-astc",
+                    "timestamp-query",
+                    "indirect-first-instance",
                 ]
             },
             antialiasing: false,
@@ -515,7 +524,9 @@ function init(_engineName, useReverseDepthBuffer) {
         engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        engine.compatibilityMode = !forceUseNonCompatibilityMode;
         if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        if (forceUseNonCompatibilityMode) console.log("Forcing non compatibility mode");
         return new Promise((resolve) => {
             engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
         });
@@ -524,7 +535,9 @@ function init(_engineName, useReverseDepthBuffer) {
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
         engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        engine.compatibilityMode = !forceUseNonCompatibilityMode;
         if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        if (forceUseNonCompatibilityMode) console.log("Forcing non compatibility mode");
         return Promise.resolve();
     }
 }

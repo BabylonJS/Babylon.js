@@ -10,6 +10,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
+import { GuiGizmoComponent } from "./diagram/guiGizmo";
 
 export enum DragOverLocation {
     ABOVE = 0,
@@ -20,6 +21,7 @@ export enum DragOverLocation {
 
 export class GlobalState {
     [x: string]: any;
+    liveGuiTexture: Nullable<AdvancedDynamicTexture>;
     guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
@@ -35,11 +37,13 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onNewSceneObservable = new Observable<Nullable<Scene>>();
     onGuiNodeRemovalObservable = new Observable<Control>();
+    onPopupClosedObservable = new Observable<void>();
     backgroundColor: Color4;
     blockKeyboardEvents = false;
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
+    guiGizmo: GuiGizmoComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     onZoomObservable = new Observable<void>();
@@ -58,6 +62,7 @@ export class GlobalState {
     onDraggingEndObservable = new Observable<void>();
     onDraggingStartObservable = new Observable<void>();
     onWindowResizeObservable = new Observable<void>();
+    onGizmoUpdateRequireObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
     isSaving = false;

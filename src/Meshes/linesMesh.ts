@@ -9,7 +9,6 @@ import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
-import { MaterialHelper } from '../Materials/materialHelper';
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
@@ -93,7 +92,8 @@ export class LinesMesh extends Mesh {
             attributes: [VertexBuffer.PositionKind],
             uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
             needAlphaBlending: true,
-            defines: defines
+            defines: defines,
+            useClipPlane: null,
         };
 
         if (useVertexAlpha === false) {
@@ -112,50 +112,12 @@ export class LinesMesh extends Mesh {
         if (material) {
             this.material = material;
         } else {
-            this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options);
+            this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
         }
-    }
-
-    private _addClipPlaneDefine(label: string) {
-        if (!this._isShaderMaterial(this._lineMaterial)) {
-            return;
-        }
-
-        const define = "#define " + label;
-        const index = this._lineMaterial.options.defines.indexOf(define);
-        if (index !== -1) {
-            return;
-        }
-
-        this._lineMaterial.options.defines.push(define);
-    }
-
-    private _removeClipPlaneDefine(label: string) {
-        if (!this._isShaderMaterial(this._lineMaterial)) {
-            return;
-        }
-
-        const define = "#define " + label;
-        const index = this._lineMaterial.options.defines.indexOf(define);
-        if (index === -1) {
-            return;
-        }
-
-        this._lineMaterial.options.defines.splice(index, 1);
     }
 
     public isReady() {
-        const scene = this.getScene();
-
-        // Clip planes
-        scene.clipPlane ? this._addClipPlaneDefine("CLIPPLANE") : this._removeClipPlaneDefine("CLIPPLANE");
-        scene.clipPlane2 ? this._addClipPlaneDefine("CLIPPLANE2") : this._removeClipPlaneDefine("CLIPPLANE2");
-        scene.clipPlane3 ? this._addClipPlaneDefine("CLIPPLANE3") : this._removeClipPlaneDefine("CLIPPLANE3");
-        scene.clipPlane4 ? this._addClipPlaneDefine("CLIPPLANE4") : this._removeClipPlaneDefine("CLIPPLANE4");
-        scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
-        scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
-
-        if (!this._lineMaterial.isReady(this)) {
+        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage)) {
             return false;
         }
 
@@ -181,6 +143,7 @@ export class LinesMesh extends Mesh {
      */
     public set material(value: Material) {
         this._lineMaterial = value;
+        this._lineMaterial.fillMode = Material.LineListDrawMode;
     }
 
     /**
@@ -216,8 +179,6 @@ export class LinesMesh extends Mesh {
             this._lineMaterial.setColor4("color", this.color4);
         }
 
-        // Clip planes
-        MaterialHelper.BindClipPlane(colorEffect!, this.getScene());
         return this;
     }
 
@@ -258,7 +219,7 @@ export class LinesMesh extends Mesh {
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */

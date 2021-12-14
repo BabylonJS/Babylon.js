@@ -5,7 +5,8 @@ import { Nullable } from "babylonjs/types";
 import { Scene } from "babylonjs/scene";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { WebGPUEngine } from "babylonjs";
+import { WebGPUEngine } from "babylonjs/Engines/webgpuEngine";
+import { UnregisterAllMaterialPlugins } from "babylonjs/Materials/materialPluginManager";
 
 require("../scss/rendering.scss");
 
@@ -103,6 +104,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
+        UnregisterAllMaterialPlugins();
+
         const displayInspector = this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
@@ -110,7 +113,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
-        const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2");
+        const configuredEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
         switch (configuredEngine) {
             case "WebGPU":
@@ -146,12 +149,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     var engine = new WebGPUEngine(canvas, {
                         deviceDescriptor: {
                             requiredFeatures: [
-                                "texture-compression-bc",
-                                "timestamp-query",
-                                "pipeline-statistics-query",
-                                "depth-clamping",
+                                "depth-clip-control",
                                 "depth24unorm-stencil8",
                                 "depth32float-stencil8",
+                                "texture-compression-bc",
+                                "texture-compression-etc2",
+                                "texture-compression-astc",
+                                "timestamp-query",
+                                "indirect-first-instance",
                             ],
                         },
                     });
@@ -364,7 +369,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
-            console.error(err);
+            console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
     }

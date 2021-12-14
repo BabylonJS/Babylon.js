@@ -16,6 +16,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -70,10 +71,16 @@ varying vec3 vReflectionMapTexCoord;
 
 
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
     #include<instancesVertex>
     #include<bonesVertex>
+    #include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
@@ -153,4 +160,5 @@ void main(void) {
 
 #include<logDepthVertex>
 
+#define CUSTOM_VERTEX_MAIN_END
 }

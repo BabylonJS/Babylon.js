@@ -237,11 +237,11 @@ export class MRDLBackplateMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new MRDLBackplateMaterialDefines();
         }
 
-        const defines = <MRDLBackplateMaterialDefines>subMesh._materialDefines;
+        const defines = <MRDLBackplateMaterialDefines>subMesh.materialDefines;
         const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -343,7 +343,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const defines = <MRDLBackplateMaterialDefines>subMesh._materialDefines;
+        const defines = <MRDLBackplateMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

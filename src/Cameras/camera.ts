@@ -319,6 +319,11 @@ export class Camera extends Node {
      */
     public rigParent?: Camera;
 
+    /**
+     * Render pass id used by the camera to render into the main framebuffer
+     */
+    public renderPassId: number;
+
     /** @hidden */
     public _cameraRigParams: any;
     /** @hidden */
@@ -370,6 +375,7 @@ export class Camera extends Node {
         }
 
         this.position = position;
+        this.renderPassId = this.getScene().getEngine().createRenderPassId(`Camera ${name}`);
     }
 
     /**
@@ -822,7 +828,7 @@ export class Camera extends Node {
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number, reverseDepthBufferMode: boolean) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
@@ -836,7 +842,8 @@ export class Camera extends Node {
                 this._projectionMatrix,
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
-                this.projectionPlaneTilt);
+                this.projectionPlaneTilt,
+                engine.useReverseDepthBuffer);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
@@ -1020,6 +1027,8 @@ export class Camera extends Node {
 
         // Active Meshes
         this._activeMeshes.dispose();
+
+        this.getScene().getEngine().releaseRenderPassId(this.renderPassId);
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
@@ -1213,13 +1222,14 @@ export class Camera extends Node {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getClassName();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         if (this.inputs) {
@@ -1228,6 +1238,8 @@ export class Camera extends Node {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
+
+        serializationObject.isEnabled = this.isEnabled();
 
         return serializationObject;
     }
@@ -1368,6 +1380,11 @@ export class Camera extends Node {
 
         if (parsedCamera.autoAnimate) {
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedCamera.isEnabled !== undefined) {
+            camera.setEnabled(parsedCamera.isEnabled);
         }
 
         return camera;

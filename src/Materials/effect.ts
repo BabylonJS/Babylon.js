@@ -7,7 +7,7 @@ import { IDisposable } from '../scene';
 import { IPipelineContext } from '../Engines/IPipelineContext';
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
-import { ProcessingOptions, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
+import { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from '../Engines/Processors/shaderProcessingOptions';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
@@ -71,7 +71,11 @@ export interface IEffectCreationOptions {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    processFinalCode?: Nullable<ShaderCustomProcessingFunction>;
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
+     */
+    processCodeAfterIncludes?: Nullable<ShaderCustomProcessingFunction>;
     /**
      * Is this effect rendering to several color attachments ?
      */
@@ -226,7 +230,8 @@ export class Effect implements IDisposable {
         this.name = baseName;
         this._key = key;
 
-        let processFinalCode: Nullable<(shaderType: string, code: string) => string> = null;
+        let processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
+        let processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;
@@ -252,6 +257,7 @@ export class Effect implements IDisposable {
             }
 
             processFinalCode = options.processFinalCode ?? null;
+            processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
         } else {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
@@ -317,6 +323,7 @@ export class Effect implements IDisposable {
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+            processCodeAfterIncludes,
         };
 
         let shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];

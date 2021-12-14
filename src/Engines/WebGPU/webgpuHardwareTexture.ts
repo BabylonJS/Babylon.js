@@ -9,10 +9,35 @@ declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
-    /** @hidden */
+    /**
+     * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
+     * The index in this array is the current layer we are rendering into
+     * @hidden
+    */
     public _bundleLists: WebGPUBundleList[];
-    /** @hidden */
+    /**
+     * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
+     * @hidden
+     */
     public _currentLayer: number;
+
+    /**
+     * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
+     * @hidden
+     */
+    public _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
+    /** @hidden */
+    public _mipmapGenBindGroup: GPUBindGroup[][];
+
+    /**
+     * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
+     * @hidden
+     */
+    public _copyInvertYTempTexture?: GPUTexture;
+    /** @hidden */
+    public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
+    /** @hidden */
+    public _copyInvertYBindGroupd: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;
@@ -30,6 +55,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     }
 
     public view: Nullable<GPUTextureView>;
+    public viewForWriting: Nullable<GPUTextureView>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
     public textureUsages = 0;
     public textureAdditionalUsages = 0;
@@ -38,6 +64,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture = existingTexture;
         this._webgpuMSAATexture = null;
         this.view = null;
+        this.viewForWriting = null;
     }
 
     public set(hardwareTexture: GPUTexture): void {
@@ -62,19 +89,27 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         });
     }
 
-    public createView(descriptor?: GPUTextureViewDescriptor): void {
+    public createView(descriptor?: GPUTextureViewDescriptor, createViewForWriting = false): void {
         this.view = this._webgpuTexture!.createView(descriptor);
+        if (createViewForWriting && descriptor) {
+            const saveNumMipMaps = descriptor.mipLevelCount;
+            descriptor.mipLevelCount = 1;
+            this.viewForWriting = this._webgpuTexture!.createView(descriptor);
+            descriptor.mipLevelCount = saveNumMipMaps;
+        }
     }
 
     public reset(): void {
         this._webgpuTexture = null;
         this._webgpuMSAATexture = null;
         this.view = null;
+        this.viewForWriting = null;
     }
 
     public release(): void {
         this._webgpuTexture?.destroy();
         this._webgpuMSAATexture?.destroy();
+        this._copyInvertYTempTexture?.destroy();
         this.reset();
     }
 }

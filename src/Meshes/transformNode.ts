@@ -63,7 +63,6 @@ export class TransformNode extends Node {
 
     @serializeAsVector3("scaling")
     protected _scaling = Vector3.One();
-    protected _isDirty = false;
     private _transformToBoneReferal: Nullable<TransformNode> = null;
     private _currentParentWhenAttachingToBone: Nullable<Node>;
     private _isAbsoluteSynced = false;
@@ -204,9 +203,9 @@ export class TransformNode extends Node {
      * return true if a pivot has been set
      * @returns true if a pivot matrix is used
      */
-     public isUsingPivotMatrix(): boolean {
-         return this._usePivotMatrix;
-     }
+    public isUsingPivotMatrix(): boolean {
+        return this._usePivotMatrix;
+    }
 
     /**
       * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
@@ -345,17 +344,6 @@ export class TransformNode extends Node {
         cache.localMatrixUpdated = false;
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
-    }
-
-    /**
-    * Flag the transform node as dirty (Forcing it to update everything)
-    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-    * @returns this transform node
-    */
-    public markAsDirty(property: string): TransformNode {
-        this._currentRenderId = Number.MAX_VALUE;
-        this._isDirty = true;
-        return this;
     }
 
     /**
@@ -740,35 +728,60 @@ export class TransformNode extends Node {
     }
 
     /**
+    * Flag the transform node as dirty (Forcing it to update everything)
+    * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+    * @returns this  node
+    */
+    public markAsDirty(property?: string): Node {
+        // We need to explicitly update the children
+        // as the scene.evaluateActiveMeshes will not poll the transform nodes
+        if (this._children) {
+            for (let child of this._children) {
+                child.markAsDirty(property);
+            }
+        }
+        return super.markAsDirty(property);
+    }
+
+    /**
      * Defines the passed node as the parent of the current node.
      * The node will remain exactly where it is and its position / rotation will be updated accordingly
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
      * @returns this TransformNode.
      */
-    public setParent(node: Nullable<Node>): TransformNode {
+    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false): TransformNode {
         if (!node && !this.parent) {
             return this;
         }
 
-        var quatRotation = TmpVectors.Quaternion[0];
-        var position = TmpVectors.Vector3[0];
-        var scale = TmpVectors.Vector3[1];
+        const quatRotation = TmpVectors.Quaternion[0];
+        const position = TmpVectors.Vector3[0];
+        const scale = TmpVectors.Vector3[1];
+        const invParentMatrix = TmpVectors.Matrix[1];
+        Matrix.IdentityToRef(invParentMatrix);
+        const composedMatrix = TmpVectors.Matrix[0];
+        this.computeWorldMatrix(true);
 
-        if (!node) {
-            this.computeWorldMatrix(true);
-            this.getWorldMatrix().decompose(scale, quatRotation, position);
-        } else {
-            var diffMatrix = TmpVectors.Matrix[0];
-            var invParentMatrix = TmpVectors.Matrix[1];
-
-            this.computeWorldMatrix(true);
-            node.computeWorldMatrix(true);
-
-            node.getWorldMatrix().invertToRef(invParentMatrix);
-            this.getWorldMatrix().multiplyToRef(invParentMatrix, diffMatrix);
-            diffMatrix.decompose(scale, quatRotation, position);
+        let currentRotation = this.rotationQuaternion;
+        if (!currentRotation) {
+            currentRotation = TransformNode._TmpRotation;
+            Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, currentRotation);
         }
+
+        // current global transformation without pivot
+        Matrix.ComposeToRef(this.scaling, currentRotation, this.position, composedMatrix);
+        if (this.parent) {
+            composedMatrix.multiplyToRef(this.parent.computeWorldMatrix(true), composedMatrix);
+        }
+
+        // is a node was set, calculate the difference between this and the node
+        if (node) {
+            node.computeWorldMatrix(true).invertToRef(invParentMatrix);
+            composedMatrix.multiplyToRef(invParentMatrix, composedMatrix);
+        }
+        composedMatrix.decompose(scale, quatRotation, position, preserveScalingSign ? this : undefined);
 
         if (this.rotationQuaternion) {
             this.rotationQuaternion.copyFrom(quatRotation);
@@ -1029,7 +1042,7 @@ export class TransformNode extends Node {
         cache.infiniteDistance = this.infiniteDistance;
 
         this._currentRenderId = currentRenderId;
-        this._childUpdateId++;
+        this._childUpdateId += 1;
         this._isDirty = false;
         this._position._isDirty = false;
         this._rotation._isDirty = false;
@@ -1319,10 +1332,11 @@ export class TransformNode extends Node {
     public serialize(currentSerializationObject?: any): any {
         let serializationObject = SerializationHelper.Serialize(this, currentSerializationObject);
         serializationObject.type = this.getClassName();
+        serializationObject.uniqueId = this.uniqueId;
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
@@ -1331,7 +1345,7 @@ export class TransformNode extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         return serializationObject;

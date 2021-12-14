@@ -106,6 +106,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
@@ -660,6 +661,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared data
         this._sharedData = new NodeMaterialBuildStateSharedData();
+        this._sharedData.fragmentOutputNodes = this._fragmentOutputNodes;
         this._vertexCompilationState.sharedData = this._sharedData;
         this._fragmentCompilationState.sharedData = this._sharedData;
         this._sharedData.buildId = this._buildId;
@@ -736,11 +738,11 @@ export class NodeMaterial extends PushMaterial {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
+                if (!subMesh.materialDefines) {
                     continue;
                 }
 
-                let defines = subMesh._materialDefines;
+                let defines = subMesh.materialDefines;
                 defines.markAllAsDirty();
                 defines.reset();
             }
@@ -1159,11 +1161,11 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 
-        var defines = <NodeMaterialDefines>subMesh._materialDefines;
+        var defines = <NodeMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -1381,7 +1383,17 @@ export class NodeMaterial extends PushMaterial {
             block.dispose();
         }
 
+        this.attachedBlocks = [];
+        (this._sharedData as any) = null;
+        (this._vertexCompilationState as any) = null;
+        (this._fragmentCompilationState as any) = null;
+
         this.onBuildObservable.clear();
+
+        if (this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            this._imageProcessingObserver = null;
+        }
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }

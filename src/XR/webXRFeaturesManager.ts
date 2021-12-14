@@ -132,6 +132,10 @@ export class WebXRFeatureName {
      * The name of the walking locomotion feature
      */
     public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion";
+    /**
+     * The name of the composition layers feature
+     */
+    public static readonly LAYERS = "xr-layers";
 }
 
 /**
@@ -310,6 +314,7 @@ export class WebXRFeaturesManager implements IDisposable {
             feature.enabled = false;
             this.detachFeature(name);
             feature.featureImplementation.dispose();
+            delete this._features[name];
             return true;
         }
         return false;
@@ -321,7 +326,6 @@ export class WebXRFeaturesManager implements IDisposable {
     public dispose(): void {
         this.getEnabledFeatures().forEach((feature) => {
             this.disableFeature(feature);
-            this._features[feature].featureImplementation.dispose();
         });
     }
 

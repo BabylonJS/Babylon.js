@@ -31,7 +31,7 @@ export class WebGPUBufferManager {
         return this._device.createBuffer(verticesBufferDescriptor);
     }
 
-    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer {
+    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): WebGPUDataBuffer {
         const isView = (viewOrSize as ArrayBufferView).byteLength !== undefined;
         const buffer = this.createRawBuffer(viewOrSize, flags);
         const dataBuffer = new WebGPUDataBuffer(buffer);
@@ -43,6 +43,10 @@ export class WebGPUBufferManager {
         }
 
         return dataBuffer;
+    }
+
+    public setRawData(buffer: GPUBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset: number, byteLength: number): void {
+        this._device.queue.writeBuffer(buffer, dstByteOffset, src.buffer, srcByteOffset, byteLength);
     }
 
     public setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void {

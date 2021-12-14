@@ -144,7 +144,7 @@ export class Sound {
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
-    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" = "Unknown";
+    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
 
@@ -212,9 +212,13 @@ export class Sound {
                         this._urlType = "String";
                     } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
                         this._urlType = "ArrayBuffer";
-                    } else if (urlOrArrayBuffer instanceof MediaStream) {
+                    } else if (urlOrArrayBuffer instanceof HTMLMediaElement) {
+                        this._urlType = "MediaElement";
+                    }
+                    else if (urlOrArrayBuffer instanceof MediaStream) {
                         this._urlType = "MediaStream";
-                    } else if (Array.isArray(urlOrArrayBuffer)) {
+                    }
+                    else if (Array.isArray(urlOrArrayBuffer)) {
                         this._urlType = "Array";
                     }
 
@@ -222,6 +226,19 @@ export class Sound {
                     var codecSupportedFound = false;
 
                     switch (this._urlType) {
+                        case "MediaElement":
+                            this._streaming = true;
+                            this._isReadyToPlay = true;
+                            this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
+
+                            if (this.autoplay) {
+                                this.play(0, this._offset, this._length);
+                            }
+
+                            if (this._readyToPlayCallback) {
+                                this._readyToPlayCallback();
+                            }
+                            break;
                         case "MediaStream":
                             this._streaming = true;
                             this._isReadyToPlay = true;
@@ -628,7 +645,7 @@ export class Sound {
         if (newPosition.equals(this._position)) {
             return;
         }
-        this._position = newPosition;
+        this._position.copyFrom(newPosition);
 
         if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);

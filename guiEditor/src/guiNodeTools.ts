@@ -18,6 +18,8 @@ import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
 export class GUINodeTools {
+    public static ImageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
+
     public static CreateControlFromString(data: string) {
         let element;
         switch (data) {
@@ -48,7 +50,7 @@ export class GUINodeTools {
             case "Rectangle":
                 element = new Rectangle("Rectangle");
                 element.color = "#cccccc";
-                element.background = "Transparent"
+                element.background = "transparent"
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
@@ -72,7 +74,7 @@ export class GUINodeTools {
                 element.isPointerBlocker = true;
                 return element;
             case "ImageButton":
-                element = Button.CreateImageButton("Button", "Click Me", "https://playground.babylonjs.com/textures/grass.png");
+                element = Button.CreateImageButton("Button", "Click Me", GUINodeTools.ImageControlDefaultUrl);
                 element.background = "#333333";
                 element.color = "#ffffff";
                 element.isPointerBlocker = true;
@@ -84,11 +86,18 @@ export class GUINodeTools {
                 element.addKeysRow(["1", "2", "3", "\u2190"]);
                 return element;
             case "Image":
-                element = new Image("Image", "https://playground.babylonjs.com/textures/grass.png");
+                element = new Image("Image", GUINodeTools.ImageControlDefaultUrl);
                 element.width = "512px";
                 element.height = "512px";
                 element.autoScale = true;
-                element.color = "Transparent";
+                element.color = "transparent";
+                element.isPointerBlocker = true;
+                return element;
+            case "ButtonImage":
+                element = new Image("Image", GUINodeTools.ImageControlDefaultUrl);
+                element.width = "100%";
+                element.height = "100%";
+                element.color = "transparent";
                 element.isPointerBlocker = true;
                 return element;
             case "InputText":

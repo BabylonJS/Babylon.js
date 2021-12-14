@@ -21,11 +21,13 @@ class GridMaterialDefines extends MaterialDefines {
     public TRANSPARENT = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
+    public MAX_LINE = false;
     public UV1 = false;
     public UV2 = false;
     public INSTANCES = false;
     public THIN_INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -87,6 +89,12 @@ export class GridMaterial extends PushMaterial {
     @serialize()
     public preMultiplyAlpha = false;
 
+    /**
+     * Determines if the max line value will be used instead of the sum wherever grid lines intersect.
+     */
+    @serialize()
+    public useMaxLine = false;
+
     @serializeAsTexture("opacityTexture")
     private _opacityTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -121,11 +129,11 @@ export class GridMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new GridMaterialDefines();
         }
 
-        var defines = <GridMaterialDefines>subMesh._materialDefines;
+        var defines = <GridMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -139,6 +147,11 @@ export class GridMaterial extends PushMaterial {
 
         if (defines.PREMULTIPLYALPHA != this.preMultiplyAlpha) {
             defines.PREMULTIPLYALPHA = !defines.PREMULTIPLYALPHA;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.MAX_LINE !== this.useMaxLine) {
+            defines.MAX_LINE = !defines.MAX_LINE;
             defines.markAsUnprocessed();
         }
 
@@ -208,7 +221,7 @@ export class GridMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <GridMaterialDefines>subMesh._materialDefines;
+        var defines = <GridMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }

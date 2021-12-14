@@ -73,8 +73,13 @@ float normalImpactOnAxis(float x) {
     return normalImpact;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
-    
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
     vec3 gridPos = (vPosition + gridOffset.xyz) / gridRatio;
@@ -90,9 +95,14 @@ void main(void) {
     y *= normalImpactOnAxis(normal.y);
     z *= normalImpactOnAxis(normal.z);
     
-    // Create the grid value by combining axis.
+#ifdef MAX_LINE    
+    // Create the grid value from the max axis.
+    float grid = clamp(max(max(x, y), z), 0., 1.);
+#else
+    // Create the grid value by combining axes.
     float grid = clamp(x + y + z, 0., 1.);
-    
+#endif
+
     // Create the color.
     vec3 color = mix(mainColor, lineColor, grid);
 
@@ -120,4 +130,6 @@ void main(void) {
 #endif
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

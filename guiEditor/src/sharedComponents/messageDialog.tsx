@@ -1,19 +1,19 @@
 import * as React from "react";
 
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 interface IMessageDialogComponentProps {
-    globalState: GlobalState
+    globalState: GlobalState;
 }
 
-export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, { message: string, isError: boolean }> {
+export class MessageDialogComponent extends React.Component<IMessageDialogComponentProps, { message: string; isError: boolean }> {
     constructor(props: IMessageDialogComponentProps) {
         super(props);
 
-        this.state = {message: "", isError: false};
+        this.state = { message: "", isError: false };
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.add((message: string) => {
-            this.setState({message: message, isError: true});
+            this.setState({ message: message, isError: true });
         });
     }
 
@@ -25,13 +25,9 @@ export class MessageDialogComponent extends React.Component<IMessageDialogCompon
         return (
             <div className="dialog-container">
                 <div className="dialog">
-                    <div className="dialog-message">
-                        {
-                            this.state.message
-                        }
-                    </div>
+                    <div className="dialog-message">{this.state.message}</div>
                     <div className="dialog-buttons">
-                        <div className={"dialog-button-ok" + (this.state.isError ? " error" : "")} onClick={() => this.setState({message: ""})}>
+                        <div className={"dialog-button-ok" + (this.state.isError ? " error" : "")} onClick={() => this.setState({ message: "" })}>
                             OK
                         </div>
                     </div>
