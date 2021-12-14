@@ -331,7 +331,9 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      */
     private _handlePointerActions() {
         this._maxTouchPoints = navigator.maxTouchPoints || 0;
-        this._activeTouchIds = new Array<number>(this._maxTouchPoints);
+        if (!this._activeTouchIds) {
+            this._activeTouchIds = new Array<number>(this._maxTouchPoints);
+        }
 
         for (let i = 0; i < this._maxTouchPoints; i++) {
             this._activeTouchIds[i] = -1;
