@@ -18,6 +18,7 @@ import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Logger } from "../Misc/logger";
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { Material } from "../Materials/material";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
@@ -65,6 +66,8 @@ export class DepthPeelingRenderer {
     private _layoutCacheFormat = [[true], [true, true], [true, true, true]];
     private _layoutCache: number[][] = [];
     private _renderPassIds: number[];
+    private _candidateSubMeshes: SmartArray<SubMesh> = new SmartArray(10);
+    private _excludedSubMeshes: SmartArray<SubMesh> = new SmartArray(10);
 
     private static _DEPTH_CLEAR_VALUE = -99999.0;
     private static _MIN_DEPTH = 0;
@@ -73,7 +76,7 @@ export class DepthPeelingRenderer {
     private _colorCache = [
         new Color4(DepthPeelingRenderer._DEPTH_CLEAR_VALUE, DepthPeelingRenderer._DEPTH_CLEAR_VALUE, 0, 0),
         new Color4(-DepthPeelingRenderer._MIN_DEPTH, DepthPeelingRenderer._MAX_DEPTH, 0, 0),
-        new Color4(0, 0, 0, 0)
+        new Color4(0, 0, 0, 0),
     ];
 
     private _passCount: number;
@@ -163,7 +166,10 @@ export class DepthPeelingRenderer {
 
         // 2 for ping pong
         this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene)];
-        this._colorMrts = [new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene, { generateDepthBuffer: false }), new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene, { generateDepthBuffer: false })];
+        this._colorMrts = [
+            new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene, { generateDepthBuffer: false }),
+            new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene, { generateDepthBuffer: false }),
+        ];
         this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene, { generateDepthBuffer: false });
 
         // 0 is a depth texture
@@ -327,7 +333,8 @@ export class DepthPeelingRenderer {
 
             subMesh.render(false);
 
-            if (firstDraw) { // first time we draw this submesh: we replace the material context
+            if (firstDraw) {
+                // first time we draw this submesh: we replace the material context
                 drawWrapper = subMesh._getDrawWrapper()!; // we are sure it is now non empty as we just rendered the submesh
                 if (drawWrapper.materialContext) {
                     let newMaterialContext = mapMaterialContext![drawWrapper.materialContext.uniqueId];
@@ -360,15 +367,36 @@ export class DepthPeelingRenderer {
     /**
      * Renders transparent submeshes with depth peeling
      * @param transparentSubMeshes List of transparent meshes to render
+     * @returns The array of submeshes that could not be handled by this renderer
      */
-    public render(transparentSubMeshes: SmartArray<SubMesh>): void {
-        if (!this._blendBackEffectWrapper.effect.isReady() || !this._blendBackEffectWrapperPingPong.effect.isReady() || !this._finalEffectWrapper.effect.isReady() || !this._updateTextures()) {
-            return;
+    public render(transparentSubMeshes: SmartArray<SubMesh>): SmartArray<SubMesh> {
+        this._candidateSubMeshes.length = 0;
+        this._excludedSubMeshes.length = 0;
+        if (
+            !this._blendBackEffectWrapper.effect.isReady() ||
+            !this._blendBackEffectWrapperPingPong.effect.isReady() ||
+            !this._finalEffectWrapper.effect.isReady() ||
+            !this._updateTextures()
+        ) {
+            return this._excludedSubMeshes;
         }
 
-        if (!transparentSubMeshes.length) {
+        for (let i = 0; i < transparentSubMeshes.length; i++) {
+            const material = transparentSubMeshes.data[i].getMaterial();
+
+            if (
+                material &&
+                (material.fillMode === Material.TriangleFanDrawMode || material.fillMode === Material.TriangleFillMode || material.fillMode === Material.TriangleStripDrawMode)
+            ) {
+                this._candidateSubMeshes.push(transparentSubMeshes.data[i]);
+            } else {
+                this._excludedSubMeshes.push(transparentSubMeshes.data[i]);
+            }
+        }
+
+        if (!this._candidateSubMeshes.length) {
             this._finalCompose(1);
-            return;
+            return this._excludedSubMeshes;
         }
 
         const currentRenderPassId = this._engine.currentRenderPassId;
@@ -408,7 +436,7 @@ export class DepthPeelingRenderer {
 
         this._currentPingPongState = 1;
         // Render
-        this._renderSubMeshes(transparentSubMeshes);
+        this._renderSubMeshes(this._candidateSubMeshes);
 
         this._scene.resetCachedMaterial();
 
@@ -443,7 +471,7 @@ export class DepthPeelingRenderer {
             this._engine.applyStates();
 
             // Render
-            this._renderSubMeshes(transparentSubMeshes);
+            this._renderSubMeshes(this._candidateSubMeshes);
 
             this._scene.resetCachedMaterial();
 
@@ -468,6 +496,8 @@ export class DepthPeelingRenderer {
         (this._scene.prePassRenderer! as any)._enabled = true;
         this._engine.depthCullingState.depthMask = true;
         this._engine.depthCullingState.depthTest = true;
+
+        return this._excludedSubMeshes;
     }
 
     /**
