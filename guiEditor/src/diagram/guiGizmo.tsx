@@ -59,7 +59,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         });
     }
 
-    componentDidMount() {}
+    componentDidMount() { }
 
     /**
      * Update the gizmo's corners positions
@@ -451,10 +451,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         node.widthInPixels = round(Math.max(10, width));
         node.heightInPixels = round(Math.max(10, height));
 
-        if(node.typeName === "Image") {
+        if (node.typeName === "Image") {
             (node as Image).autoScale = false;
         }
-        else if(node.typeName === "TextBlock") {
+        else if (node.typeName === "TextBlock") {
             (node as TextBlock).resizeToFit = false;
         }
 
@@ -473,12 +473,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     private _setNodeCorner(node: Control, corner: Vector2, cornerIndex: number) {
         // are we in a fixed-axis situation
-        const fixedAxis = cornerIndex >=3;
+        const fixedAxis = cornerIndex > 3;
         // the actual corner to update. This relies on the fact that the corners are in a specific order
         const toUpdate = cornerIndex % 4;
-        if(fixedAxis) {
+        if (fixedAxis) {
             // check which axis is fixed
-            if(cornerIndex === 4 || cornerIndex === 6) {
+            if (cornerIndex === 4 || cornerIndex === 6) {
                 // set the corner's y axis correctly
                 corner.y = this._pointerData.corners[toUpdate].y;
             } else {
