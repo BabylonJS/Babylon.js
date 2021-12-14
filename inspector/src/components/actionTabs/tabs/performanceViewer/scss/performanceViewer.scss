@@ -6,6 +6,7 @@ $squareSize: 14px;
     height: 100%;
     width: 100%;
     grid-template-columns: 25% 75%;
+    font-family: 'acumin-pro-condensed';
     .performancePlayheadButton {
         grid-area: liveButton;
         height: $buttonHeight;
@@ -49,9 +50,10 @@ $squareSize: 14px;
         }
         
         .version-header {
-            background-color: darkslategray;
+            background-color: rgb(46, 63, 71);
             color: white;
             grid-template-columns: 10px 1fr 1fr 10px;
+            font-size: smaller;
     
             .category {
                 grid-column: 2;
@@ -66,7 +68,9 @@ $squareSize: 14px;
         
         // mid-dark color
         .category-header {
-            background-color: royalblue;
+            background-color: rgb(74, 89, 96);
+            text-transform: uppercase;
+            font-size: smaller;
         }
 
         .measure {
@@ -94,12 +98,12 @@ $squareSize: 14px;
 
         //darker color
         .measure:nth-child(odd) {
-            background-color: lightsteelblue;
+            background-color: rgb(220, 223, 225);
         }
         
         // lighter color
         .measure:nth-child(even) {
-            background-color: lightgrey;
+            background-color: rgb(235, 237, 238);
         }
     
         .checkBoxLine {
