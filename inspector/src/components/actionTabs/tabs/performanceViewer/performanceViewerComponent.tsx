@@ -78,7 +78,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         if (!isLoadedFromCsv) {
             if (performanceCollector) {
                 performanceCollector.stop();
-                performanceCollector.clear(false, false);
+                performanceCollector.clear(false);
                 addStrategies(performanceCollector);
             }
         }
