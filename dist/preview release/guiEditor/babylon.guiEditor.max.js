@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \****************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \****************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9577,9 +9577,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*************************************************************************************/
+/*!************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \************************************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9980,9 +9980,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/classnames/index.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/classnames/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10048,9 +10048,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!******************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \******************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \****************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10066,9 +10066,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10084,9 +10084,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10102,9 +10102,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss":
-/*!***********************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
-  \***********************************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
+  \*********************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10112,7 +10112,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#workbench-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro-condensed\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
+exports.push([module.i, "#workbench-canvas {\n  grid-column: 1;\n  grid-row: 1;\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro-condensed\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10120,9 +10120,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!****************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \****************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10130,7 +10130,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n  .diagram-container .ge-scalePoint {\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .diagram-container .ge-pivotPoint {\n    width: 30px;\n    height: 30px;\n    background: transparent; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10138,9 +10138,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss":
-/*!***************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
-  \***************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
+  \*************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10156,9 +10156,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/header.scss":
-/*!***********************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
-  \***********************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
+  \*********************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10174,9 +10174,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!******************************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \******************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10192,9 +10192,9 @@ module.exports = exports;
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10297,9 +10297,9 @@ function toComment(sourceMap) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/object-assign/index.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10399,9 +10399,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/process/browser.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/process/browser.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10594,9 +10594,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10708,9 +10708,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \********************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11311,9 +11311,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11337,9 +11337,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11361,9 +11361,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \********************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \*******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11587,9 +11587,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11904,9 +11904,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!**************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \**************************************************************************************/
+/*!*************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \*************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12104,9 +12104,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!****************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \****************************************************************************/
+/*!***************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \***************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12244,9 +12244,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \**************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12584,9 +12584,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \**************************************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12644,9 +12644,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12742,9 +12742,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!***************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \***************************************************************************************/
+/*!**************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \**************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12804,9 +12804,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \**************************************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12853,9 +12853,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \************************************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12891,9 +12891,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37915,9 +37915,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37960,9 +37960,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38153,9 +38153,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-is/index.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/index.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38170,9 +38170,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40094,9 +40094,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/index.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40111,9 +40111,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*****************************************************************************************/
+/*!****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40472,9 +40472,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41342,9 +41342,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41359,9 +41359,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41376,9 +41376,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41574,9 +41574,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \************************************************************************************************/
+/*!***********************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41854,9 +41854,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41929,9 +41929,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -42236,9 +42236,9 @@ module.exports = g;
 /***/ }),
 
 /***/ "../../sharedUiComponents/imgs/fillColorIcon.svg":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/sharedUiComponents/imgs/fillColorIcon.svg ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/sharedUiComponents/imgs/fillColorIcon.svg ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42419,6 +42419,17 @@ module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='30' viewBox='0 0 15 30'%3E%3Cpath d='M7.1,16.63,5.1,14a.5.5,0,0,1,.4-.8h4a.5.5,0,0,1,.4.8l-2,2.66A.5.5,0,0,1,7.1,16.63Z' style='fill:%238e8e8e'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/gizmoPivotIcon.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/gizmoPivotIcon.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ccircle class='cls-1' cx='15' cy='15' r='8.98'/%3E%3Cpath d='M15,6.9A8.1,8.1,0,1,0,23.1,15,8.1,8.1,0,0,0,15,6.9Zm6.86,7.49H15.63V8.14A6.89,6.89,0,0,1,21.86,14.39ZM14.41,8.14v6.25H8.14A6.89,6.89,0,0,1,14.41,8.14ZM8.14,15.61h6.27v6.25A6.89,6.89,0,0,1,8.14,15.61Zm7.49,6.25V15.61h6.23A6.89,6.89,0,0,1,15.63,21.86Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47749,16 +47760,512 @@ var GUIEditorNodeMaterial = {
 
 /***/ }),
 
-/***/ "./diagram/workbench.tsx":
-/*!*******************************!*\
-  !*** ./diagram/workbench.tsx ***!
-  \*******************************/
-/*! exports provided: isFramePortData, ConstraintDirection, WorkbenchComponent */
+/***/ "./diagram/guiGizmo.tsx":
+/*!******************************!*\
+  !*** ./diagram/guiGizmo.tsx ***!
+  \******************************/
+/*! exports provided: GuiGizmoComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFramePortData", function() { return isFramePortData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuiGizmoComponent", function() { return GuiGizmoComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.axis */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
+var gizmoPivotIcon = __webpack_require__(/*! ../../public/imgs/gizmoPivotIcon.svg */ "../public/imgs/gizmoPivotIcon.svg");
+var roundFactor = 100;
+var round = function (value) { return Math.round(value * roundFactor) / roundFactor; };
+var GuiGizmoComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuiGizmoComponent, _super);
+    function GuiGizmoComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.scalePoints = [];
+        _this._scalePointIndex = -1;
+        _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
+        _this._onUp = function (evt) {
+            // cleanup on pointer up
+            _this._pointerData.pointerDown = false;
+            document.querySelectorAll(".ge-scalePoint").forEach(function (scalePoint) {
+                scalePoint.style.pointerEvents = "auto";
+            });
+            _this._scalePointIndex = -1;
+        };
+        _this._initH = 0;
+        _this._initW = 0;
+        _this._initX = 0;
+        _this._initY = 0;
+        _this._onMove = function () {
+            if (_this._pointerData.pointerDown) {
+                var scene = _this.props.globalState.workbench._scene;
+                var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+                if (selectedGuiNodes.length > 0) {
+                    var node = selectedGuiNodes[0];
+                    // get the mouse position in node space
+                    var inRTT = _this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
+                    var inNodeSpace = _this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
+                    // set the corner
+                    _this._setNodeCorner(node, inNodeSpace, _this._scalePointIndex);
+                    //convert to percentage
+                    if (_this._responsive) {
+                        _this.props.globalState.workbench.convertToPercentage(node, false);
+                    }
+                    _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+                }
+            }
+        };
+        _this._setMousePosition = function (index) {
+            _this._pointerData.pointerDown = true;
+            _this._scalePointIndex = index;
+            document.querySelectorAll(".ge-scalePoint").forEach(function (scalePoint) {
+                scalePoint.style.pointerEvents = "none";
+            });
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            if (selectedGuiNodes.length > 0) {
+                var node = selectedGuiNodes[0];
+                _this._nodeToCorners(node);
+                _this._initW = node.widthInPixels;
+                _this._initH = node.heightInPixels;
+                _this._initY = node.topInPixels;
+                _this._initX = node.leftInPixels;
+            }
+        };
+        _this.props.globalState.guiGizmo = _this;
+        _this._responsive = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
+        _this._pointerData = { corners: [new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]()], pointerDown: false };
+        _this._htmlPoints = [new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]()];
+        _this._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity()];
+        // Set visibility
+        props.globalState.onSelectionChangedObservable.add(function (selection) {
+            if (selection) {
+                _this.scalePoints.forEach(function (scalePoint) {
+                    scalePoint.style.display = "flex";
+                });
+            }
+            else {
+                _this.scalePoints.forEach(function (scalePoint) {
+                    scalePoint.style.display = "none";
+                });
+            }
+            _this.updateGizmo(true);
+        });
+        _this.props.globalState.onResponsiveChangeObservable.add(function (value) {
+            _this._responsive = value;
+        });
+        _this.props.globalState.onGizmoUpdateRequireObservable.add(function () {
+            // TODO - no need to update on each frame.
+            _this.updateGizmo(true);
+        });
+        return _this;
+    }
+    GuiGizmoComponent.prototype.componentDidMount = function () { };
+    /**
+     * Update the gizmo's corners positions
+     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+     */
+    GuiGizmoComponent.prototype.updateGizmo = function (force) {
+        var _this = this;
+        var selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
+        if (selectedGuiNodes.length > 0 && (force || this._pointerData.pointerDown)) {
+            var node_1 = selectedGuiNodes[0];
+            // Calculating the offsets for each scale point.
+            var half = 1 / 2;
+            this._htmlPoints[0].x = -node_1.widthInPixels * half;
+            this._htmlPoints[0].y = node_1.heightInPixels * half;
+            this._htmlPoints[1].x = -node_1.widthInPixels * half;
+            this._htmlPoints[1].y = -node_1.heightInPixels * half;
+            this._htmlPoints[2].x = node_1.widthInPixels * half;
+            this._htmlPoints[2].y = -node_1.heightInPixels * half;
+            this._htmlPoints[3].x = node_1.widthInPixels * half;
+            this._htmlPoints[3].y = node_1.heightInPixels * half;
+            this._htmlPoints[4].x = -node_1.widthInPixels * half;
+            this._htmlPoints[5].y = -node_1.heightInPixels * half;
+            this._htmlPoints[6].x = node_1.widthInPixels * half;
+            this._htmlPoints[7].y = node_1.heightInPixels * half;
+            // Calculate the pivot point
+            var pivotX = (node_1.transformCenterX - 0.5) * 2;
+            var pivotY = (node_1.transformCenterY - 0.5) * 2;
+            this._htmlPoints[8].x = node_1.widthInPixels * half * pivotX;
+            this._htmlPoints[8].y = node_1.heightInPixels * half * pivotY;
+            this.scalePoints.forEach(function (scalePoint, index) {
+                // TODO optimize this - unify?
+                var result = _this._nodeToRTTSpace(node_1, _this._htmlPoints[index].x, _this._htmlPoints[index].y, undefined, false);
+                var finalResult = _this._rttToCanvasSpace(node_1, result.x, result.y);
+                var scene = _this.props.globalState.workbench._scene;
+                var engine = scene.getEngine();
+                // If the scale point is outside the viewport, do not render
+                scalePoint.style.display =
+                    finalResult.x < 0 || finalResult.x < 0 || finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
+                if (scalePoint.style.display === "flex") {
+                    scalePoint.style.left = finalResult.x + "px";
+                    scalePoint.style.top = finalResult.y + "px";
+                    var rotate = _this.getRotation(node_1) * (180 / Math.PI);
+                    scalePoint.style.transform = "translate(-50%, -50%) rotate(" + rotate + "deg)";
+                }
+            });
+        }
+    };
+    GuiGizmoComponent.prototype._resetMatrixArray = function () {
+        this._matrixCache.forEach(function (matrix) {
+            babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].IdentityToRef(matrix);
+        });
+    };
+    /**
+     * This function calculates a local matrix for a node, including it's full transformation and pivot point
+     *
+     * @param node the node to calculate the matrix for
+     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+     * @returns a new matrix for the control
+     */
+    GuiGizmoComponent.prototype._getNodeMatrix = function (node, useStoredValues) {
+        var size = this.props.globalState.guiTexture.getSize();
+        // parent should always be defined, but stay safe
+        var parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
+        var parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        var x = 0;
+        var y = 0;
+        var width = useStoredValues ? this._initW : node.widthInPixels;
+        var height = useStoredValues ? this._initH : node.heightInPixels;
+        var left = useStoredValues ? this._initX : node.leftInPixels;
+        var top = useStoredValues ? this._initY : node.topInPixels;
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                x = -(parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                x = (parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_CENTER:
+                x = 0;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
+                y = -(parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                y = (parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_CENTER:
+                y = 0;
+                break;
+        }
+        this._resetMatrixArray();
+        var m2d = this._matrixCache[0];
+        var translateTo = this._matrixCache[1];
+        // as this is used later it needs to persist
+        var resultMatrix = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity();
+        // the pivot point around which the object transforms
+        var offsetX = width * node.transformCenterX - width / 2;
+        var offsetY = height * node.transformCenterY - height / 2;
+        // pivot changes this point's position! but only in legacy pivot mode
+        if (!node.descendantsOnlyPadding) {
+            // TODO - padding needs to also take scaling into account?
+            offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * 1) / 2;
+            offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
+        }
+        // Set the translation
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].TranslationToRef(x + left, y + top, translateTo);
+        // without parents scaling and rotation, calculate world matrix for each
+        var rotation = this.getRotation(node, true);
+        var scaling = this.getScale(node, true);
+        // COmpose doesn't actually translate, but creates a form of pivot in a specific position
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
+        // actually compose the matrix
+        resultMatrix.multiplyToRef(m2d, resultMatrix);
+        resultMatrix.multiplyToRef(translateTo, resultMatrix);
+        return resultMatrix;
+    };
+    /**
+     * Using the node's tree, calculate its world matrix and return it
+     * @param node the node to calculate the matrix for
+     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+     * @returns the world matrix for this node
+     */
+    GuiGizmoComponent.prototype._nodeToRTTWorldMatrix = function (node, useStoredValuesIfPossible) {
+        var _this = this;
+        var listOfNodes = [node];
+        var p = node.parent;
+        while (p) {
+            listOfNodes.push(p);
+            p = p.parent;
+        }
+        this._resetMatrixArray();
+        var matrices = listOfNodes.map(function (node, index) { return _this._getNodeMatrix(node, index === 0 && _this._pointerData.pointerDown && useStoredValuesIfPossible); });
+        return matrices.reduce(function (acc, cur) {
+            acc.multiplyToRef(cur, acc);
+            return acc;
+        }, this._matrixCache[2]);
+    };
+    GuiGizmoComponent.prototype._nodeToRTTSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
+        worldMatrix.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    GuiGizmoComponent.prototype._rttToLocalNodeSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
+        var inv = this._matrixCache[3];
+        worldMatrix.invertToRef(inv);
+        inv.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    GuiGizmoComponent.prototype._rttToCanvasSpace = function (node, x, y, reference) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var tmpVec = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"](x, 0, -y);
+        // Get the final projection in view space
+        var camera = this.props.globalState.workbench._camera;
+        var scene = this.props.globalState.workbench._scene;
+        var engine = scene.getEngine();
+        // TODO - to ref
+        var projected = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Project(tmpVec, babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Matrix"].Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+        // round to 1 decimal points
+        projected.x = round(projected.x);
+        projected.y = round(projected.y);
+        return projected;
+    };
+    GuiGizmoComponent.prototype._mousePointerToRTTSpace = function (node, x, y) {
+        var camera = this.props.globalState.workbench._camera;
+        var scene = this.props.globalState.workbench._scene;
+        var newPosition = this.props.globalState.workbench.getPosition(scene, camera, this._plane, x !== null && x !== void 0 ? x : scene.pointerX, y || scene.pointerY);
+        newPosition.z *= -1;
+        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](round(newPosition.x), round(newPosition.z));
+    };
+    /**
+     * Get the scaling of a specific GUI control
+     * @param node the node for which we are getting the scaling
+     * @param relative should we return only the relative scaling (relative to the parent)
+     * @returns an X,Y vector of the scaling
+     */
+    GuiGizmoComponent.prototype.getScale = function (node, relative) {
+        var x = node.scaleX;
+        var y = node.scaleY;
+        if (relative) {
+            return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
+        }
+        var parent = node.parent;
+        while (parent) {
+            x *= parent.scaleX;
+            y *= parent.scaleY;
+            parent = parent.parent;
+        }
+        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
+    };
+    GuiGizmoComponent.prototype.getRotation = function (node, relative) {
+        // Gets rotate of a control account for all of it's parents rotations
+        var rotation = node.rotation;
+        if (relative) {
+            return rotation;
+        }
+        var parent = node.parent;
+        while (parent) {
+            rotation += parent.rotation;
+            parent = parent.parent;
+        }
+        return rotation;
+    };
+    GuiGizmoComponent.prototype.createBaseGizmo = function () {
+        var _this = this;
+        var _a, _b;
+        // Get the canvas element from the DOM.
+        var canvas = document.getElementById("workbench-canvas");
+        var _loop_1 = function (i) {
+            var scalePoint = canvas.ownerDocument.createElement("div");
+            scalePoint.className = "ge-scalePoint";
+            (_a = canvas.parentElement) === null || _a === void 0 ? void 0 : _a.appendChild(scalePoint);
+            scalePoint.style.position = "absolute";
+            scalePoint.style.display = "none";
+            scalePoint.style.left = i * 100 + "px";
+            scalePoint.style.top = i * 100 + "px";
+            scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.addEventListener("pointerdown", function () {
+                _this._setMousePosition(i);
+            });
+            scalePoint.ondragstart = function (evt) {
+                evt.preventDefault();
+            };
+            scalePoint.draggable = true;
+            scalePoint.addEventListener("pointerup", this_1._onUp);
+            this_1.scalePoints.push(scalePoint);
+        };
+        var this_1 = this;
+        for (var i = 0; i < 8; ++i) {
+            _loop_1(i);
+        }
+        // Create the pivot point which is special
+        var pivotPoint = canvas.ownerDocument.createElement("img");
+        pivotPoint.src = gizmoPivotIcon;
+        pivotPoint.className = "ge-pivotPoint";
+        (_b = canvas.parentElement) === null || _b === void 0 ? void 0 : _b.appendChild(pivotPoint);
+        pivotPoint.style.position = "absolute";
+        pivotPoint.style.display = "none";
+        this.scalePoints.push(pivotPoint);
+        pivotPoint.ondragstart = function (evt) {
+            evt.preventDefault();
+        };
+        pivotPoint.draggable = true;
+        this.updateGizmo();
+    };
+    GuiGizmoComponent.prototype.onUp = function (evt) {
+        this._onUp(evt);
+    };
+    GuiGizmoComponent.prototype.onMove = function (evt) {
+        this._onMove();
+    };
+    /**
+     * Calculate the 4 corners in node space
+     * @param node The node to use
+     */
+    GuiGizmoComponent.prototype._nodeToCorners = function (node) {
+        var half = 0.5;
+        this._pointerData.corners[0].x = -node.widthInPixels * half;
+        this._pointerData.corners[0].y = node.heightInPixels * half;
+        this._pointerData.corners[1].x = -node.widthInPixels * half;
+        this._pointerData.corners[1].y = -node.heightInPixels * half;
+        this._pointerData.corners[2].x = node.widthInPixels * half;
+        this._pointerData.corners[2].y = -node.heightInPixels * half;
+        this._pointerData.corners[3].x = node.widthInPixels * half;
+        this._pointerData.corners[3].y = node.heightInPixels * half;
+    };
+    /**
+     * Computer the node's width, height, top and left, using the 4 corners
+     * @param node the node we use
+     */
+    GuiGizmoComponent.prototype._updateNodeFromCorners = function (node) {
+        var upperLeft = this._pointerData.corners[1];
+        var lowerRight = this._pointerData.corners[3];
+        var width = lowerRight.x - upperLeft.x;
+        var height = lowerRight.y - upperLeft.y;
+        var left = this._scalePointIndex === 0 || this._scalePointIndex === 1;
+        var top = this._scalePointIndex === 1 || this._scalePointIndex === 2;
+        // calculate the center point
+        var localRotation = this.getRotation(node, true);
+        var localScaling = this.getScale(node, true);
+        var absoluteCenter = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](upperLeft.x + width * 0.5, upperLeft.y + height * 0.5);
+        var center = absoluteCenter.clone();
+        // move to pivot
+        center.multiplyInPlace(localScaling);
+        var cosRotation = Math.cos(localRotation);
+        var sinRotation = Math.sin(localRotation);
+        var cosRotation180 = Math.cos(localRotation + Math.PI);
+        var sinRotation180 = Math.sin(localRotation + Math.PI);
+        var widthDelta = (this._initW - width) * 0.5;
+        var heightDelta = (this._initH - height) * 0.5;
+        // alignment compensation
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
+                center.y += (left ? -widthDelta : absoluteCenter.x) * sinRotation;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                center.x += (left ? -widthDelta : absoluteCenter.x) * cosRotation;
+                center.y += (left ? widthDelta : -absoluteCenter.x) * sinRotation;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
+                center.y += (top ? -heightDelta : absoluteCenter.y) * cosRotation180;
+                center.x += (top ? -heightDelta : absoluteCenter.y) * sinRotation180;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                center.y += (top ? heightDelta : -absoluteCenter.y) * cosRotation180;
+                center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
+                break;
+        }
+        // rotate the center around 0,0
+        var rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
+        // round the values and set them
+        node.leftInPixels = round(this._initX + rotatedCenter.x);
+        node.topInPixels = round(this._initY + rotatedCenter.y);
+        node.widthInPixels = round(Math.max(10, width));
+        node.heightInPixels = round(Math.max(10, height));
+        if (node.typeName === "Image") {
+            node.autoScale = false;
+        }
+        else if (node.typeName === "TextBlock") {
+            node.resizeToFit = false;
+        }
+        if (this._responsive) {
+            this.props.globalState.workbench.convertToPercentage(node, true);
+        }
+    };
+    GuiGizmoComponent.prototype._rotate = function (x, y, centerX, centerY, angle) {
+        return {
+            x: (x - centerX) * Math.cos(angle) - (y - centerY) * Math.sin(angle) + centerX,
+            y: (x - centerX) * Math.sin(angle) + (y - centerY) * Math.cos(angle) + centerY,
+        };
+    };
+    GuiGizmoComponent.prototype._setNodeCorner = function (node, corner, cornerIndex) {
+        // are we in a fixed-axis situation
+        var fixedAxis = cornerIndex >= 3;
+        // the actual corner to update. This relies on the fact that the corners are in a specific order
+        var toUpdate = cornerIndex % 4;
+        if (fixedAxis) {
+            // check which axis is fixed
+            if (cornerIndex === 4 || cornerIndex === 6) {
+                // set the corner's y axis correctly
+                corner.y = this._pointerData.corners[toUpdate].y;
+            }
+            else {
+                // set the corner's x axis correctly
+                corner.x = this._pointerData.corners[toUpdate].x;
+            }
+        }
+        this._pointerData.corners[toUpdate].copyFrom(corner);
+        // also update the other corners
+        var next = (cornerIndex + 1) % 4;
+        var prev = (cornerIndex + 3) % 4;
+        // Update the next and the previous points
+        if (toUpdate % 2 === 0) {
+            this._pointerData.corners[next].x = this._pointerData.corners[toUpdate].x;
+            this._pointerData.corners[prev].y = this._pointerData.corners[toUpdate].y;
+        }
+        else {
+            this._pointerData.corners[next].y = this._pointerData.corners[toUpdate].y;
+            this._pointerData.corners[prev].x = this._pointerData.corners[toUpdate].x;
+        }
+        // update the transformation accordingly
+        this._updateNodeFromCorners(node);
+    };
+    GuiGizmoComponent.prototype.render = function () {
+        return null;
+    };
+    return GuiGizmoComponent;
+}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./diagram/workbench.tsx":
+/*!*******************************!*\
+  !*** ./diagram/workbench.tsx ***!
+  \*******************************/
+/*! exports provided: ConstraintDirection, WorkbenchComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConstraintDirection", function() { return ConstraintDirection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WorkbenchComponent", function() { return WorkbenchComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
@@ -47795,13 +48302,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
-var isFramePortData = function (variableToCheck) {
-    if (variableToCheck) {
-        return variableToCheck !== undefined;
-    }
-    else
-        return false;
-};
 var ConstraintDirection;
 (function (ConstraintDirection) {
     ConstraintDirection[ConstraintDirection["NONE"] = 0] = "NONE";
@@ -47884,6 +48384,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.blurEvent = function () {
             _this._ctrlKeyIsPressed = false;
             _this._constraintDirection = ConstraintDirection.NONE;
+            _this.props.globalState.guiGizmo.onUp();
         };
         _this.isUp = true;
         _this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
@@ -47978,6 +48479,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.hostDocument.addEventListener("keydown", _this.keyEvent, false);
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
         props.globalState.onWindowResizeObservable.add(function () {
+            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             _this._engine.resize();
         });
         _this.props.globalState.workbench = _this;
@@ -48214,11 +48716,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._selectedGuiNodes.forEach(function (node) {
             if (_this._outlines) {
                 node.isHighlighted = true;
-                node.highlightLineWidth = value ? 10 : 5;
+                node.highlightLineWidth = 5;
             }
             else {
-                node.isHighlighted = value;
-                node.highlightLineWidth = 10;
+                node.isHighlighted = value && node.typeName === "Grid";
+                node.highlightLineWidth = 5;
             }
         });
         this.updateHitTestForSelection(value);
@@ -48442,32 +48944,41 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         guiControl.topInPixels += newY;
         //convert to percentage
         if (this._responsive) {
-            var ratioX = this._textureMesh.scaling.x;
-            var ratioY = this._textureMesh.scaling.z;
-            if (guiControl.parent) {
-                if (guiControl.parent.typeName === "Grid") {
-                    var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
-                    var cell = guiControl.parent.cells[cellInfo];
-                    ratioX = cell.widthInPixels;
-                    ratioY = cell.heightInPixels;
-                }
-                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
-                    var thickness = guiControl.parent.thickness * 2;
-                    ratioX = guiControl.parent._currentMeasure.width - thickness;
-                    ratioY = guiControl.parent._currentMeasure.height - thickness;
-                }
-                else {
-                    ratioX = guiControl.parent._currentMeasure.width;
-                    ratioY = guiControl.parent._currentMeasure.height;
-                }
-            }
-            var left = (guiControl.leftInPixels * 100) / ratioX;
-            var top_1 = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.left = left.toFixed(2) + "%";
-            guiControl.top = top_1.toFixed(2) + "%";
+            this.convertToPercentage(guiControl, false);
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
+    };
+    WorkbenchComponent.prototype.convertToPercentage = function (guiControl, includeScale) {
+        var ratioX = this._textureMesh.scaling.x;
+        var ratioY = this._textureMesh.scaling.z;
+        if (guiControl.parent) {
+            if (guiControl.parent.typeName === "Grid") {
+                var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
+                var cell = guiControl.parent.cells[cellInfo];
+                ratioX = cell.widthInPixels;
+                ratioY = cell.heightInPixels;
+            }
+            else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                var thickness = guiControl.parent.thickness * 2;
+                ratioX = guiControl.parent._currentMeasure.width - thickness;
+                ratioY = guiControl.parent._currentMeasure.height - thickness;
+            }
+            else {
+                ratioX = guiControl.parent._currentMeasure.width;
+                ratioY = guiControl.parent._currentMeasure.height;
+            }
+        }
+        var left = (guiControl.leftInPixels * 100) / ratioX;
+        var top = (guiControl.topInPixels * 100) / ratioY;
+        guiControl.left = left.toFixed(2) + "%";
+        guiControl.top = top.toFixed(2) + "%";
+        if (includeScale) {
+            var width = (guiControl.widthInPixels * 100) / ratioX;
+            var height = (guiControl.heightInPixels * 100) / ratioY;
+            guiControl.width = width.toFixed(2) + "%";
+            guiControl.height = height.toFixed(2) + "%";
+        }
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
@@ -48623,6 +49134,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var panningFn = function () {
             var pos = _this.getPosition(scene, camera, plane);
             _this.panning(pos, initialPos, camera.inertia, inertialPanning);
+            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
         };
         var inertialPanningFn = function () {
             if (inertialPanning.x !== 0 || inertialPanning.y !== 0 || inertialPanning.z !== 0) {
@@ -48664,6 +49176,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         scene.onPointerObservable.add(function (p, e) {
             _this._panning = false;
             removeObservers();
+            _this.props.globalState.guiGizmo.onUp();
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
@@ -48694,6 +49207,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     break;
             }
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["KeyboardEventTypes"].KEYDOWN);
+        scene.onAfterRenderObservable.add(function () { _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
         scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
@@ -48705,8 +49219,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
     };
     //Get pos on plane
-    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane) {
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
+    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane, x, y) {
+        if (x === void 0) { x = scene.pointerX; }
+        if (y === void 0) { y = scene.pointerY; }
+        var ray = scene.createPickingRay(x, y, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
         var distance = ray.intersectsPlane(plane);
         //not using this ray again, so modifying its vectors here is fine
         return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
@@ -48761,6 +49277,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         offset.scaleInPlace(inertiaComp);
         ref.addInPlace(offset);
         camera.inertialRadiusOffset += delta;
+        //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
@@ -48776,7 +49293,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); }, ref: this._rootContainer }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) {
+                if (_this.props.globalState.guiTexture) {
+                    _this.onMove(evt);
+                }
+                if (_this.props.globalState.guiGizmo) {
+                    _this.props.globalState.guiGizmo.onMove(evt);
+                }
+            }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) {
+                _this.onUp(evt);
+                _this.props.globalState.guiGizmo.onUp(evt);
+            }, ref: this._rootContainer }));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48871,6 +49398,7 @@ var GlobalState = /** @class */ (function () {
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
@@ -48964,6 +49492,7 @@ var GUIEditor = /** @class */ (function () {
                         react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](graphEditor, hostElement);
                         if (!!globalState.guiTexture) return [3 /*break*/, 4];
                         globalState.workbench.createGUICanvas();
+                        globalState.guiGizmo.createBaseGizmo();
                         if (!options.currentSnippetToken) return [3 /*break*/, 4];
                         _a.label = 1;
                     case 1:
@@ -51655,6 +52184,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
 /* harmony import */ var _components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/sceneExplorer/sceneExplorerComponent */ "./components/sceneExplorer/sceneExplorerComponent.tsx");
 /* harmony import */ var _components_commandBarComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/commandBarComponent */ "./components/commandBarComponent.tsx");
+/* harmony import */ var _diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagram/guiGizmo */ "./diagram/guiGizmo.tsx");
+
 
 
 
@@ -51857,7 +52388,8 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__["GuiGizmoComponent"], { globalState: this.props.globalState })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["PropertyTabComponent"], { globalState: this.props.globalState })),
@@ -52001,6 +52533,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_6__["GUINodeTools"].CreateControlFromString(value);
         var newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.props.globalState.guiGizmo.onUp();
         this.forceUpdate();
     };
     WorkbenchEditor.prototype.createToolbar = function () {
