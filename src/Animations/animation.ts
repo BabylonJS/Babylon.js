@@ -1276,7 +1276,7 @@ export class Animation {
                     break;
                 case Animation.ANIMATIONTYPE_MATRIX:
                     data = Matrix.FromArray(key.values);
-                    if (key.value.length >= 17) {
+                    if (key.values.length >= 17) {
                         interpolation = key.values[16];
                     }
                     break;
