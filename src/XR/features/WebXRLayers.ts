@@ -8,7 +8,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { WebXRLayerType, WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { Viewport } from "../../Maths/math.viewport";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
-import { Layer } from "../../Layers/layer";
 
 /**
  * Wraps xr composition layers.
