@@ -204,17 +204,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
      */
     private _nodeToRTTWorldMatrix(node: Control, useStoredValuesIfPossible?: boolean): Matrix2D {
         const listOfNodes = [node];
-        let p = node.parent;
-        let c = node;
-        while (p) {
-            if (p.typeName === "Grid") {
-                const cellInfo = (p as Grid).getChildCellInfo(c);
-                const cell = (p as Grid).cells[cellInfo];
+        let parent = node.parent;
+        let child = node;
+        while (parent) {
+            if (parent.typeName === "Grid") {
+                const cellInfo = (parent as Grid).getChildCellInfo(child);
+                const cell = (parent as Grid).cells[cellInfo];
                 listOfNodes.push(cell);
             }
-            listOfNodes.push(p);
-            c = p;
-            p = p.parent;
+            listOfNodes.push(parent);
+            child = parent;
+            parent = parent.parent;
         }
         this._resetMatrixArray();
         const matrices = listOfNodes.map((node, index) => this._getNodeMatrix(node, index === 0 && this._pointerData.pointerDown && useStoredValuesIfPossible));
