@@ -237,6 +237,11 @@ declare module BABYLON.GUI {
          */
         static Identity(): Matrix2D;
         /**
+         * Creates an identity matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix2D): void;
+        /**
          * Creates a translation matrix and stores it in a target matrix
          * @param x defines the x coordinate of the translation
          * @param y defines the y coordinate of the translation
