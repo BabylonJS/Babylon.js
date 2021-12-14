@@ -119,7 +119,6 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
  * @hidden
  */
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
-    public babylonLayer: Nullable<Layer>;
     constructor(
         public readonly layer: XRProjectionLayer,
         xrGLBinding: XRWebGLBinding) {
