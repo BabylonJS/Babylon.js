@@ -70,9 +70,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         if (window) {
             window.close();
         }
-        // if (isLoadedFromCsv) {
         setIsLoadedFromCsv(false);
-        // }
         setIsOpen(false);
     };
 
