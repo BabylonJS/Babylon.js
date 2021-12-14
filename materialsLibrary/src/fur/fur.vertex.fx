@@ -70,6 +70,9 @@ float Rand(vec3 rv) {
 	return fract(sin(x) * 43758.5453);
 }
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 

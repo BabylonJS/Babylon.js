@@ -25,6 +25,9 @@ attribute vec2 uv2;
 
 varying float vDepthMetric;
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;
