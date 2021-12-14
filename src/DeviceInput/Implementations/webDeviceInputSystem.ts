@@ -60,8 +60,8 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     private _isUsingFirefox = navigator && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
-    private _activeTouchIds: Array<number> = [];
-    private _rollingTouchId: number = 0; // Rolling ID number to assign; emulates Chrome assignment
+    private _activeTouchIds: Array<number>;
+    private _maxTouchPoints: number = 0;
 
     private _pointerInputClearObserver: Nullable<Observer<Engine>> = null;
 
@@ -330,6 +330,13 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * Handle all actions that come from pointer interaction
      */
     private _handlePointerActions() {
+        this._maxTouchPoints = navigator.maxTouchPoints || 0;
+        this._activeTouchIds = new Array<number>(this._maxTouchPoints);
+
+        for (let i = 0; i < this._maxTouchPoints; i++) {
+            this._activeTouchIds[i] = -1;
+        }
+
         this._pointerMoveEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
             const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
@@ -406,8 +413,16 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
             let deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
 
             if (deviceType === DeviceType.Touch) {
-                deviceSlot = this._rollingTouchId++;
-                this._activeTouchIds[deviceSlot] = evt.pointerId;
+                let idx = this._activeTouchIds.indexOf(-1);
+
+                if (idx >= 0) {
+                    deviceSlot = idx;
+                    this._activeTouchIds[idx] = evt.pointerId;
+                }
+                else {
+                    // We can't find an open slot to store new pointer so just return (can only support max number of touches)
+                    return;
+                }
             }
 
             if (!this._inputs[deviceType]) {
@@ -488,6 +503,15 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
             const deviceType = this._getPointerType(evt);
             const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
+            if (deviceType === DeviceType.Touch) {
+                if (deviceSlot === -1) {
+                    return;
+                }
+                else {
+                    this._activeTouchIds[deviceSlot] = -1;
+                }
+            }
+
             const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer && pointer[evt.button + 2] !== 0) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
@@ -529,13 +553,6 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
                 }
 
                 this.onInputChanged(deviceEvent);
-
-                // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-                if (deviceType !== DeviceType.Mouse) {
-                    let idToRemove = this._activeTouchIds.indexOf(evt.pointerId);
-                    delete this._activeTouchIds[idToRemove];
-                    this._unregisterDevice(deviceType, deviceSlot);
-                }
             }
         });
 
@@ -605,7 +622,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
                         this._elementToAttachTo.releasePointerCapture(pointerId);
                     }
 
-                    if (pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
+                    if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
                         const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, pointerId, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
@@ -618,10 +635,10 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
                         this.onInputChanged(deviceEvent);
 
                         this._unregisterDevice(DeviceType.Touch, deviceSlot);
+
+                        this._activeTouchIds[deviceSlot] = -1;
                     }
                 }
-                // Clear all active touches
-                while (this._activeTouchIds.pop() !== undefined) { }
             }
         });
 
