@@ -355,6 +355,7 @@ export class PerformanceViewerCollector {
      * Given a string containing file data, this function parses the file data into the datasets object.
      * It returns a boolean to indicate if this object was successfully loaded with the data.
      * @param data string content representing the file data.
+     * @param keepDatasetMeta if it should use reuse the existing dataset metadata
      * @returns true if the data was successfully loaded, false otherwise.
      */
     public loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean {
