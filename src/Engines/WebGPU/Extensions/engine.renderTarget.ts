@@ -4,24 +4,31 @@ import { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
+import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
-WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
-    const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
+WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
+    const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
-WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
-    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as RenderTargetWrapper;
+WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): WebGPURenderTargetWrapper {
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
 
     const fullOptions: RenderTargetCreationOptions = {};
 
     if (options !== undefined && typeof options === "object") {
+        fullOptions.generateMipMaps = options.generateMipMaps;
         fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+        fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+        fullOptions.creationFlags = options.creationFlags ?? 0;
     } else {
+        fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
+        fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        fullOptions.creationFlags = 0;
     }
 
     const texture = this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
