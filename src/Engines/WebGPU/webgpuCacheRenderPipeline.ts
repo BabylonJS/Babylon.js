@@ -8,6 +8,7 @@ import { Nullable } from "../../types";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
+import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 enum StatePosition {
     //DepthBias = 0, // not used, so remove it to improve perf
@@ -27,57 +28,6 @@ enum StatePosition {
 
     NumStates = 12
 }
-
-// only renderable color/depth/stencil formats are listed here because we use textureFormatToIndex only to map renderable textures
-const textureFormatToIndex: { [name: string]: number } = {
-    "": 0,
-    "r8unorm": 1,
-    "r8uint": 2,
-    "r8sint": 3,
-
-    "r16uint": 4,
-    "r16sint": 5,
-    "r16float": 6,
-    "rg8unorm": 7,
-    "rg8uint": 8,
-    "rg8sint": 9,
-
-    "r32uint": 10,
-    "r32sint": 11,
-    "r32float": 12,
-    "rg16uint": 13,
-    "rg16sint": 14,
-    "rg16float": 15,
-    "rgba8unorm": 16,
-    "rgba8unorm-srgb": 17,
-    "rgba8uint": 18,
-    "rgba8sint": 19,
-    "bgra8unorm": 20,
-    "bgra8unorm-srgb": 21,
-
-    "rgb10a2unorm": 22,
-
-    "rg32uint": 23,
-    "rg32sint": 24,
-    "rg32float": 25,
-    "rgba16uint": 26,
-    "rgba16sint": 27,
-    "rgba16float": 28,
-
-    "rgba32uint": 29,
-    "rgba32sint": 30,
-    "rgba32float": 31,
-
-    "stencil8": 32,
-    "depth16unorm": 33,
-    "depth24plus": 34,
-    "depth24plus-stencil8": 35,
-    "depth32float": 36,
-
-    "depth24unorm-stencil8": 37,
-
-    "depth32float-stencil8": 38,
-};
 
 const alphaBlendFactorToIndex: { [name: number]: number } = {
     0: 1, // Zero
@@ -338,7 +288,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     public setColorFormat(format: GPUTextureFormat): void {
         this._webgpuColorFormat[0] = format;
-        this._colorFormat = textureFormatToIndex[format];
+        this._colorFormat = renderableTextureFormatToIndex[format];
     }
 
     public setMRTAttachments(attachments: number[]): void {
@@ -376,7 +326,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
             this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat[0];
 
-            bits[indexBits] += textureFormatToIndex[this._mrtFormats[numRT]] << mask;
+            bits[indexBits] += renderableTextureFormatToIndex[this._mrtFormats[numRT]] << mask;
             mask += 6;
             numRT++;
 
@@ -411,7 +361,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     public setDepthStencilFormat(format: GPUTextureFormat | undefined): void {
         this._webgpuDepthStencilFormat = format;
-        this._depthStencilFormat = format === undefined ? 0 : textureFormatToIndex[format];
+        this._depthStencilFormat = format === undefined ? 0 : renderableTextureFormatToIndex[format];
     }
 
     public setDepthTestEnabled(enabled: boolean): void {
@@ -1028,6 +978,8 @@ export abstract class WebGPUCacheRenderPipeline {
             stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
         }
 
+        const depthStencilFormatHasStencil = this._webgpuDepthStencilFormat ? WebGPUTextureHelper.HasStencilAspect(this._webgpuDepthStencilFormat) : false;
+
         return this._device.createRenderPipeline({
             layout: pipelineLayout,
             vertex: {
@@ -1056,10 +1008,10 @@ export abstract class WebGPUCacheRenderPipeline {
                 depthWriteEnabled: this._depthWriteEnabled,
                 depthCompare: this._depthTestEnabled ? WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare) : WebGPUConstants.CompareFunction.Always,
                 format: this._webgpuDepthStencilFormat,
-                stencilFront: stencilFrontBack,
-                stencilBack: stencilFrontBack,
-                stencilReadMask: this._stencilReadMask,
-                stencilWriteMask: this._stencilWriteMask,
+                stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
+                stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
+                stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil? this._stencilReadMask : undefined,
+                stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
                 depthBias: this._depthBias,
                 depthBiasClamp: this._depthBiasClamp,
                 depthBiasSlopeScale: this._depthBiasSlopeScale,

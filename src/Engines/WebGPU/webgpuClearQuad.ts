@@ -10,6 +10,7 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
+import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 import "../../Shaders/clearQuad.vertex";
 import "../../Shaders/clearQuad.fragment";
@@ -60,12 +61,19 @@ export class WebGPUClearQuad {
         if (renderPass) {
             renderPass2 = renderPass;
         } else {
+            // todo WEBGPU factor the other formats of this._cacheRenderPipeline.colorFormats in the bundleKey (MRT case).
+            // The problem is that we don't have enough bits with a single number to stuff all the data, we would need a second number (or use a string as the key type?)
+            const colorFormatIndex = renderableTextureFormatToIndex[this._cacheRenderPipeline.colorFormats[0]];
+            const depthStencilFormatIndex = renderableTextureFormatToIndex[this._depthTextureFormat ?? 0];
+
             bundleKey = (clearColor ? clearColor.r + clearColor.g * 256 + clearColor.b * 256 * 256 + clearColor.a * 256 * 256 * 256 : 0) +
                 (clearDepth ? 2 ** 32 : 0) +
                 (clearStencil ? 2 ** 33 : 0) +
                 (this._engine.useReverseDepthBuffer ? 2 ** 34 : 0) +
                 (isRTTPass ? 2 ** 35 : 0) +
-                sampleCount * (2 ** 36);
+                (sampleCount > 1 ? 2 ** 36 : 0) +
+                depthStencilFormatIndex * (2 ** 37) +
+                colorFormatIndex * (2 ** 43);
 
             bundle = this._bundleCache[bundleKey];
 
@@ -81,7 +89,7 @@ export class WebGPUClearQuad {
         }
 
         this._cacheRenderPipeline.setDepthWriteEnabled(!!clearDepth);
-        this._cacheRenderPipeline.setStencilEnabled(!!clearStencil);
+        this._cacheRenderPipeline.setStencilEnabled(!!clearStencil && !!this._depthTextureFormat && WebGPUTextureHelper.HasStencilAspect(this._depthTextureFormat));
         this._cacheRenderPipeline.setStencilWriteMask(clearStencil ? 0xFF : 0);
         this._cacheRenderPipeline.setStencilCompare(clearStencil ? Constants.ALWAYS : Constants.NEVER);
         this._cacheRenderPipeline.setStencilPassOp(clearStencil ? Constants.REPLACE : Constants.KEEP);

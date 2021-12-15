@@ -2457,6 +2457,10 @@ export class WebGPUEngine extends Engine {
         this._resetCurrentScissor(1);
         this._resetCurrentStencilRef(1);
         this._resetCurrentColorBlend(1);
+
+        if (!gpuDepthStencilWrapper || !WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format)) {
+            this._stencilStateComposer.enabled = false;
+        }
     }
 
     /** @hidden */
@@ -2548,6 +2552,10 @@ export class WebGPUEngine extends Engine {
         this._resetCurrentScissor(0);
         this._resetCurrentStencilRef(0);
         this._resetCurrentColorBlend(0);
+
+        if (!this._isStencilEnable) {
+            this._stencilStateComposer.enabled = false;
+        }
     }
 
     private _endMainRenderPass(): void {
