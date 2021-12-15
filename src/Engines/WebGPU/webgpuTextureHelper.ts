@@ -137,6 +137,59 @@ const shadersForPipelineType = [
     { vertex: clearVertexSource, fragment: clearFragmentSource },
 ];
 
+/**
+ * Map a (renderable) texture format (GPUTextureFormat) to an index for fast lookup (in caches for eg)
+ */
+export const renderableTextureFormatToIndex: { [name: string]: number } = {
+    "": 0,
+    "r8unorm": 1,
+    "r8uint": 2,
+    "r8sint": 3,
+
+    "r16uint": 4,
+    "r16sint": 5,
+    "r16float": 6,
+    "rg8unorm": 7,
+    "rg8uint": 8,
+    "rg8sint": 9,
+
+    "r32uint": 10,
+    "r32sint": 11,
+    "r32float": 12,
+    "rg16uint": 13,
+    "rg16sint": 14,
+    "rg16float": 15,
+    "rgba8unorm": 16,
+    "rgba8unorm-srgb": 17,
+    "rgba8uint": 18,
+    "rgba8sint": 19,
+    "bgra8unorm": 20,
+    "bgra8unorm-srgb": 21,
+
+    "rgb10a2unorm": 22,
+
+    "rg32uint": 23,
+    "rg32sint": 24,
+    "rg32float": 25,
+    "rgba16uint": 26,
+    "rgba16sint": 27,
+    "rgba16float": 28,
+
+    "rgba32uint": 29,
+    "rgba32sint": 30,
+    "rgba32float": 31,
+
+    "stencil8": 32,
+    "depth16unorm": 33,
+    "depth24plus": 34,
+    "depth24plus-stencil8": 35,
+    "depth32float": 36,
+
+    "depth24unorm-stencil8": 37,
+
+    "depth32float-stencil8": 38,
+};
+
 /** @hidden */
 export class WebGPUTextureHelper {
 
@@ -897,6 +950,18 @@ export class WebGPUTextureHelper {
         }
 
         throw `Unknown format ${format}!`;
+    }
+
+    public static HasStencilAspect(format: GPUTextureFormat): boolean {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.Stencil8:
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                return true;
+        }
+
+        return false;
     }
 
     public invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, faceIndex = 0, mipLevel = 0, layers = 1, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void {
