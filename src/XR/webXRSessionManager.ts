@@ -11,6 +11,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
+import { NativeXRPlugin } from "./native/nativeXRPlugin";
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -190,6 +191,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         if (!this._xrNavigator.xr) {
             return Promise.reject("WebXR not available");
         }
+
+        if (this.isNative) {
+            NativeXRPlugin.ExtendNativeObject();
+        }
+
         return Promise.resolve();
     }
 
