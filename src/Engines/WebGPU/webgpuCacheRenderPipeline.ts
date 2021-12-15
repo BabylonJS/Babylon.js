@@ -1010,7 +1010,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 format: this._webgpuDepthStencilFormat,
                 stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
                 stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
-                stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil? this._stencilReadMask : undefined,
+                stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
                 stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
                 depthBias: this._depthBias,
                 depthBiasClamp: this._depthBiasClamp,
