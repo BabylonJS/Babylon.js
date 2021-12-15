@@ -304,7 +304,7 @@ export class MaterialPluginManager {
             }
             for (const pointName in points) {
                 let injectedCode = "";
-                for (const plugin of this._plugins) {
+                for (const plugin of this._activePlugins) {
                     const customCode = plugin.getCustomCode(shaderType);
                     if (customCode?.[pointName]) {
                         injectedCode += customCode[pointName] + "\r\n";
