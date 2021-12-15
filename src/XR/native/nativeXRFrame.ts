@@ -73,7 +73,7 @@ export class NativeXRFrame implements XRFrame {
     public get worldInformation(): XRWorldInformation | undefined {
         return this._nativeImpl.worldInformation;
     }
-    
+
     public get detectedPlanes(): XRPlaneSet | undefined {
         return this._nativeImpl.detectedPlanes;
     }
