@@ -146,6 +146,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _mrtAttachments1: number;
     private _mrtAttachments2: number;
     private _mrtFormats: GPUTextureFormat[];
+    private _mrtEnabledMask: number;
     private _alphaBlendEnabled: boolean;
     private _alphaBlendFuncParams: Array<Nullable<number>>;
     private _alphaBlendEqParams: Array<Nullable<number>>;
@@ -195,7 +196,7 @@ export abstract class WebGPUCacheRenderPipeline {
         //this.setDepthBiasClamp(0);
         this._webgpuColorFormat = [WebGPUConstants.TextureFormat.BGRA8Unorm];
         this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
-        this.setMRTAttachments([], []);
+        this.setMRT([]);
         this.setAlphaBlendEnabled(false);
         this.setAlphaBlendFactors([null, null, null, null], [null, null]);
         this.setWriteMask(0xF);
@@ -217,6 +218,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     public readonly mrtAttachments: number[];
     public readonly mrtTextureArray: InternalTexture[];
+    public readonly mrtTextureCount: number = 0;
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
         if (this.disabled) {
@@ -339,24 +341,37 @@ export abstract class WebGPUCacheRenderPipeline {
         this._colorFormat = textureFormatToIndex[format];
     }
 
-    public setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void {
-        if (attachments.length > 10) {
-            // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty
+    public setMRTAttachments(attachments: number[]): void {
+        (this.mrtAttachments as any) = attachments;
+        let mask = 0;
+        for (let i = 0; i < attachments.length; ++i) {
+            if (attachments[i] !== 0) {
+                mask += 1 << i;
+            }
+        }
+        if (this._mrtEnabledMask !== mask) {
+            this._mrtEnabledMask = mask;
+            this._isDirty = true;
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments1);
+        }
+    }
+
+    public setMRT(textureArray: InternalTexture[], textureCount?: number): void {
+        textureCount = textureCount ?? textureArray.length;
+        if (textureCount > 10) {
+            // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty: note that WebGPU only supports 8 at the time (2021/12/13)!
             // As we need 39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
             // We are using 2x32 bit values to handle 10 textures
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
-        (this.mrtAttachments as any) = attachments;
         (this.mrtTextureArray as any) = textureArray;
+        (this.mrtTextureCount as any) = textureCount;
+
+        this._mrtEnabledMask = 0xFFFF; // all textures are enabled at start (meaning we can write to them). Calls to setMRTAttachments may disable some
 
         let bits: number[] = [0, 0], indexBits = 0, mask = 0, numRT = 0;
-        for (let i = 0; i < attachments.length; ++i) {
-            const index = attachments[i];
-            if (index === 0) {
-                continue;
-            }
-
-            const texture = textureArray[index - 1];
+        for (let i = 0; i < textureCount; ++i) {
+            const texture = textureArray[i];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
             this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat[0];
@@ -977,7 +992,7 @@ export abstract class WebGPUCacheRenderPipeline {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
                 const descr: GPUColorTargetState = {
                     format: this._mrtFormats[i],
-                    writeMask: this._writeMask,
+                    writeMask: (this._mrtEnabledMask & (1 << i)) !== 0 ? this._writeMask : 0,
                 };
                 if (alphaBlend && colorBlend) {
                     descr.blend = {
