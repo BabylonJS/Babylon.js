@@ -16,6 +16,9 @@ varying vec4 vColor;
 
 #include<fogVertexDeclaration>
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

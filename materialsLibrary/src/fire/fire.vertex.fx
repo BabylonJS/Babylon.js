@@ -50,6 +50,9 @@ varying vec2 vDistortionCoords2;
 varying vec2 vDistortionCoords3;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

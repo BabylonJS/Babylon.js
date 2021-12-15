@@ -26,6 +26,9 @@ vec4 highlightColor(vec4 color) {
 	return highlight;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec4 original = texture2D(textureSampler, vUV);

@@ -8,6 +8,7 @@ import { GlobalState } from "../globalState";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+import { Grid } from "babylonjs-gui/2D/controls/grid";
 
 require("./workbenchCanvas.scss");
 const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
@@ -59,7 +60,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         });
     }
 
-    componentDidMount() {}
+    componentDidMount() { }
 
     /**
      * Update the gizmo's corners positions
@@ -203,10 +204,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
      */
     private _nodeToRTTWorldMatrix(node: Control, useStoredValuesIfPossible?: boolean): Matrix2D {
         const listOfNodes = [node];
-        let p = node.parent;
-        while (p) {
-            listOfNodes.push(p);
-            p = p.parent;
+        let parent = node.parent;
+        let child = node;
+        while (parent) {
+            if (parent.typeName === "Grid") {
+                const cellInfo = (parent as Grid).getChildCellInfo(child);
+                const cell = (parent as Grid).cells[cellInfo];
+                listOfNodes.push(cell);
+            }
+            listOfNodes.push(parent);
+            child = parent;
+            parent = parent.parent;
         }
         this._resetMatrixArray();
         const matrices = listOfNodes.map((node, index) => this._getNodeMatrix(node, index === 0 && this._pointerData.pointerDown && useStoredValuesIfPossible));
@@ -451,10 +459,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         node.widthInPixels = round(Math.max(10, width));
         node.heightInPixels = round(Math.max(10, height));
 
-        if(node.typeName === "Image") {
+        if (node.typeName === "Image") {
             (node as Image).autoScale = false;
         }
-        else if(node.typeName === "TextBlock") {
+        else if (node.typeName === "TextBlock") {
             (node as TextBlock).resizeToFit = false;
         }
 
@@ -473,12 +481,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     private _setNodeCorner(node: Control, corner: Vector2, cornerIndex: number) {
         // are we in a fixed-axis situation
-        const fixedAxis = cornerIndex >=3;
+        const fixedAxis = cornerIndex > 3;
         // the actual corner to update. This relies on the fact that the corners are in a specific order
         const toUpdate = cornerIndex % 4;
-        if(fixedAxis) {
+        if (fixedAxis) {
             // check which axis is fixed
-            if(cornerIndex === 4 || cornerIndex === 6) {
+            if (cornerIndex === 4 || cornerIndex === 6) {
                 // set the corner's y axis correctly
                 corner.y = this._pointerData.corners[toUpdate].y;
             } else {

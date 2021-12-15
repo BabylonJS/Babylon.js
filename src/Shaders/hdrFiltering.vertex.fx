@@ -9,6 +9,9 @@ uniform vec3 up;
 uniform vec3 right;
 uniform vec3 front;
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

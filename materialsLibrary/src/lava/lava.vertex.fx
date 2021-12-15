@@ -163,6 +163,9 @@ float turbulence( vec3 p ) {
     return t;
 }
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

@@ -28,6 +28,9 @@ float fbm(vec2 n) {
 	return total;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
