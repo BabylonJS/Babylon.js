@@ -36,11 +36,11 @@ struct Particle {
         #endif
     #endif
 };
-[[block]] struct Particles {
+struct Particles {
     particles : array<Particle>;
 };
 
-[[block]] struct SimParams {
+struct SimParams {
     currentCount : f32;
     timeDelta : f32;
     stopFactor : f32;
