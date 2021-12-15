@@ -34,8 +34,9 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setColorFormat(format);
     }
 
-    public setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void {
-        this._cacheRenderPipeline.setMRTAttachments(attachments, textureArray);
+    public setMRTAttachments(attachments: number[], textureArray: InternalTexture[], textureCount: number): void {
+        this._cacheRenderPipeline.setMRT(textureArray, textureCount);
+        this._cacheRenderPipeline.setMRTAttachments(attachments);
     }
 
     constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer) {

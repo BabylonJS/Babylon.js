@@ -53,6 +53,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
+import { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -1277,7 +1278,7 @@ export class WebGPUEngine extends Engine {
 
         this._clearQuad.setColorFormat(this._colorFormat);
         this._clearQuad.setDepthStencilFormat(this._depthTextureFormat);
-        this._clearQuad.setMRTAttachments(this._cacheRenderPipeline.mrtAttachments ?? [], this._cacheRenderPipeline.mrtTextureArray ?? []);
+        this._clearQuad.setMRTAttachments(this._cacheRenderPipeline.mrtAttachments ?? [], this._cacheRenderPipeline.mrtTextureArray ?? [], this._cacheRenderPipeline.mrtTextureCount);
 
         if (!this.compatibilityMode) {
             bundleList.addItem(new WebGPURenderItemStencilRef(this._clearStencilValue));
@@ -2357,7 +2358,9 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(rtWrapper: RenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+    private _startRenderTargetRenderPass(rtWrapper_: RenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+        const rtWrapper = rtWrapper_ as WebGPURenderTargetWrapper;
+
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
@@ -2378,20 +2381,12 @@ export class WebGPUEngine extends Engine {
 
         if (rtWrapper._attachments && rtWrapper.isMulti) {
             // multi render targets
-            // We bind a texture only if this._mrtAttachments[i] !== 0
-            // It does work in the current state of Babylon (because we use _mrtAttachments only to include/exclude
-            // some textures from the clearing process) but it is not iso with WebGL!
-            // We should instead bind all textures but "disable" the textures for which this._mrtAttachments[i] == 0
-            // but it's not possible to do that in WebGPU (at least not as of 2021/03/03).
             if (!this._mrtAttachments || this._mrtAttachments.length === 0) {
-                this._mrtAttachments = rtWrapper._attachments;
+                this._mrtAttachments = rtWrapper._defaultAttachments;
             }
             for (let i = 0; i < this._mrtAttachments.length; ++i) {
-                const index = this._mrtAttachments[i];
-                if (index === 0) {
-                    continue;
-                }
-                const mrtTexture = rtWrapper.textures![index - 1];
+                const index = this._mrtAttachments[i]; // if index == 0 it means the texture should not be written to => at render pass creation time, it means we should not clear it
+                const mrtTexture = rtWrapper.textures![i];
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
@@ -2406,12 +2401,13 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        loadValue: colorClearValue,
+                        loadValue: index !== 0 ? colorClearValue : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
                 }
             }
-            this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, rtWrapper.textures!);
+            this._cacheRenderPipeline.setMRT(rtWrapper.textures!, this._mrtAttachments.length);
+            this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
         } else {
             // single render target
             const internalTexture = rtWrapper.texture!;
@@ -2705,7 +2701,8 @@ export class WebGPUEngine extends Engine {
         }
 
         this._mrtAttachments = [];
-        this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments, []);
+        this._cacheRenderPipeline.setMRT([]);
+        this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
         this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
