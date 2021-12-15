@@ -226,6 +226,9 @@ export class OutlineRenderer implements ISceneComponent {
             }
         }
 
+        // Clip plane
+        MaterialHelper.BindClipPlane(effect, scene);
+
         engine.setZOffset(-this.zOffset);
         engine.setZOffsetUnits(-this.zOffsetUnits);
 
@@ -252,6 +255,8 @@ export class OutlineRenderer implements ISceneComponent {
 
         var mesh = subMesh.getMesh();
         var material = subMesh.getMaterial();
+
+        const scene = mesh.getScene();
 
         if (material) {
             // Alpha test
@@ -312,6 +317,31 @@ export class OutlineRenderer implements ISceneComponent {
             }
         }
 
+        // Clip planes
+        if (scene.clipPlane) {
+            defines.push("#define CLIPPLANE");
+        }
+
+        if (scene.clipPlane2) {
+            defines.push("#define CLIPPLANE2");
+        }
+
+        if (scene.clipPlane3) {
+            defines.push("#define CLIPPLANE3");
+        }
+
+        if (scene.clipPlane4) {
+            defines.push("#define CLIPPLANE4");
+        }
+
+        if (scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+
+        if (scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
+        }
+
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(renderPassId, true)!;
         const cachedDefines = drawWrapper.defines;
@@ -321,7 +351,8 @@ export class OutlineRenderer implements ISceneComponent {
             drawWrapper.setEffect(this.scene.getEngine().createEffect("outline",
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
-                    "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
+                    "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"],
                 ["diffuseSampler", "morphTargets"], join,
                 undefined, undefined, undefined,
                 { maxSimultaneousMorphTargets: numMorphInfluencers }),
