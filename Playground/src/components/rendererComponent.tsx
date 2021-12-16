@@ -104,7 +104,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        UnregisterAllMaterialPlugins();
+        // Check to make sure this function exists before calling as this function doesn't exist with older versions.
+        if (UnregisterAllMaterialPlugins) {
+            UnregisterAllMaterialPlugins();
+        }
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
