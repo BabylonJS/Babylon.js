@@ -2,25 +2,19 @@ import { NativeXRPlugin } from "./nativeXRPlugin";
 
 /** @hidden */
 interface INativeXRFrame extends XRFrame {
-    // Native supported functions
-    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    fillPoses(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean;
-    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
-    fillJointRadii(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;
-
     // Native-only helper functions
     getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
 }
 
 /** @hidden */
 export class NativeXRFrame implements XRFrame {
-    private _xrTransform = new XRRigidTransform();
-    private _xrPose: XRPose = {
+    private readonly _xrTransform = new XRRigidTransform();
+    private readonly _xrPose: XRPose = {
         transform: this._xrTransform,
         emulatedPosition: false
     };
     // Enough space for position, orientation
-    private _xrPoseVectorData = new Float32Array(4 * (4 + 4));
+    private readonly _xrPoseVectorData = new Float32Array(4 * (4 + 4));
 
     public get session(): XRSession {
         return this._nativeImpl.session;
@@ -47,7 +41,7 @@ export class NativeXRFrame implements XRFrame {
     }
 
     public fillPoses(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean {
-        return this._nativeImpl.fillPoses(spaces, baseSpace, transforms);
+        return this._nativeImpl.fillPoses!(spaces, baseSpace, transforms);
     }
 
     public getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined {
@@ -67,7 +61,7 @@ export class NativeXRFrame implements XRFrame {
     }
 
     public createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor> {
-        return this._nativeImpl.createAnchor(pose, space);
+        return this._nativeImpl.createAnchor!(pose, space);
     }
 
     public get worldInformation(): XRWorldInformation | undefined {
@@ -79,11 +73,11 @@ export class NativeXRFrame implements XRFrame {
     }
 
     public getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose {
-        return this._nativeImpl.getJointPose(joint, baseSpace);
+        return this._nativeImpl.getJointPose!(joint, baseSpace);
     }
 
     public fillJointRadii(jointSpaces: XRJointSpace[], radii: Float32Array): boolean {
-        return this._nativeImpl.fillJointRadii(jointSpaces, radii);
+        return this._nativeImpl.fillJointRadii!(jointSpaces, radii);
     }
 
     public getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate {
