@@ -1,4 +1,4 @@
-import { NativeXRPlugin } from "./nativeXRPlugin";
+import { RegisterNativeTypeAsync } from "../../Engines/nativeEngine";
 
 /** @hidden */
 interface INativeXRFrame extends XRFrame {
@@ -89,4 +89,4 @@ export class NativeXRFrame implements XRFrame {
     }
 }
 
-NativeXRPlugin.RegisterType("NativeXRFrame", NativeXRFrame);
+RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);
