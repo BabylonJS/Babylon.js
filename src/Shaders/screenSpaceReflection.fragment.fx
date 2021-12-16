@@ -101,6 +101,9 @@ ReflectionInfo getReflectionInfo(vec3 dir, vec3 hitCoord)
         sampledDepth = (view * texture2D(positionSampler, projectedCoord.xy)).z;
  
         float depth = sampledDepth - hitCoord.z;
+        #ifdef RIGHT_HANDED_SCENE
+            depth *= -1.0;
+        #endif
 
         if(((depth - dir.z) < threshold) && depth <= 0.0)
         {
@@ -152,12 +155,15 @@ void main()
 
         vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - info.coords.xy));
         float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
-
+        
         // Fresnel
         vec3 F0 = vec3(0.04);
         F0      = mix(F0, albedo, spec);
         vec3 fresnel = fresnelSchlick(max(dot(normalize(normal), normalize(position)), 0.0), F0);
 
+        #ifdef RIGHT_HANDED_SCENE
+            reflected.z *= -1.0;
+        #endif
         // Apply
         float reflectionMultiplier = clamp(pow(spec * strength, reflectionSpecularFalloffExponent) * screenEdgefactor * reflected.z, 0.0, 0.9);
         float albedoMultiplier = 1.0 - reflectionMultiplier;
