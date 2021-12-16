@@ -252,6 +252,7 @@
 
 ## Bugs
 
+- Fix issue when `AssetContainer` is added to `Scene` multiple times ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `ParticleSystem` is disposed before `_subEmitters` is created ([BlakeOne](https://github.com/BlakeOne))
 - Fix incorrect GUI.TextBlock width when resizeToFit is true & fontStyle is italic ([Kalkut](https://github.com/Kalkut))
 - Fix CubeTexture extension detection when rootUrl has a query string ([civa86](https://github.com/civa86))
