@@ -67785,6 +67785,12 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Map a (renderable) texture format (GPUTextureFormat) to an index for fast lookup (in caches for eg)
+     */
+    export const renderableTextureFormatToIndex: {
+        [name: string]: number;
+    };
     /** @hidden */
     export class WebGPUTextureHelper {
         private _device;
@@ -67816,6 +67822,7 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number;
+        static HasStencilAspect(format: GPUTextureFormat): boolean;
         invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
@@ -67899,6 +67906,7 @@ declare module BABYLON {
         private _mrtAttachments1;
         private _mrtAttachments2;
         private _mrtFormats;
+        private _mrtEnabledMask;
         private _alphaBlendEnabled;
         private _alphaBlendFuncParams;
         private _alphaBlendEqParams;
@@ -67936,6 +67944,7 @@ declare module BABYLON {
         get colorFormats(): GPUTextureFormat[];
         readonly mrtAttachments: number[];
         readonly mrtTextureArray: InternalTexture[];
+        readonly mrtTextureCount: number;
         getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState?: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
@@ -67948,7 +67957,8 @@ declare module BABYLON {
         setDepthBias(depthBias: number): void;
         setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
         setColorFormat(format: GPUTextureFormat): void;
-        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setMRTAttachments(attachments: number[]): void;
+        setMRT(textureArray: InternalTexture[], textureCount?: number): void;
         setAlphaBlendEnabled(enabled: boolean): void;
         setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void;
         setWriteMask(mask: number): void;
@@ -68195,7 +68205,7 @@ declare module BABYLON {
         private _bundleCache;
         setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
         setColorFormat(format: GPUTextureFormat): void;
-        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[], textureCount: number): void;
         constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer);
         clear(renderPass: Nullable<GPURenderPassEncoder>, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): Nullable<GPURenderBundle>;
     }
@@ -68293,6 +68303,13 @@ declare module BABYLON {
         endRenderTargetPass(currentRenderPass: GPURenderPassEncoder, gpuWrapper: WebGPUHardwareTexture): boolean;
         endFrame(mainRenderPass: Nullable<GPURenderPassEncoder>): void;
         reset(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPURenderTargetWrapper extends RenderTargetWrapper {
+        /** @hidden */
+        _defaultAttachments: number[];
     }
 }
 declare module BABYLON {
