@@ -7,6 +7,7 @@ uniform vec4 color;
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
+#include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
 
 
@@ -15,6 +16,8 @@ uniform sampler2D diffuseSampler;
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
+
+#include<clipPlaneFragment>
 
 #ifdef ALPHATEST
 	if (texture2D(diffuseSampler, vUV).a < 0.4)

@@ -260,6 +260,10 @@ export class AssetContainer extends AbstractScene {
      * Adds all the assets from the container to the scene.
      */
     public addAllToScene() {
+        if (this._wasAddedToScene) {
+            return;
+        }
+
         this._wasAddedToScene = true;
 
         this.cameras.forEach((o) => {

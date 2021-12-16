@@ -263,6 +263,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
+        if (index === 0) {
+            this._texture = texture;
+        }
+
         this.renderTarget.setTexture(texture, index, disposePrevious);
 
         if (!this.textures[index]) {
