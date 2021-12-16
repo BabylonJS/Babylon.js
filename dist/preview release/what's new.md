@@ -357,6 +357,7 @@
 - Fix issue with setParent and meshes with a pivot ([RaananW](https://github.com/RaananW))
 - Fix Button3D, HolographicButton, TouchHolographicButton and HolographicSlate content when scene is right-handed ([carolhmj](https://github.com/carolhmj))
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
+- Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
