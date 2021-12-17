@@ -36,7 +36,7 @@ declare const _native: INative;
 const onNativeObjectInitialized = new Observable<INative>();
 if (typeof _native === 'undefined') {
     let __native: INative;
-    Object.defineProperty(globalThis, "_native", {
+    Object.defineProperty(self, "_native", {
         get: () => __native,
         set: (value: INative) => {
             __native = value;
