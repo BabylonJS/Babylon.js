@@ -9796,6 +9796,13 @@ declare module BABYLON {
          */
         unbindEffect(): void;
         /**
+         * Sets the current state of the class (_bufferIndex, _buffer) to point to the data buffer passed in parameter if this buffer is one of the buffers handled by the class (meaning if it can be found in the _buffers array)
+         * This method is meant to be able to update a buffer at any time: just call setDataBuffer to set the class in the right state, call some updateXXX methods and then call udpate() => that will update the GPU buffer on the graphic card
+         * @param dataBuffer buffer to look for
+         * @returns true if the buffer has been found and the class internal state points to it, else false
+         */
+        setDataBuffer(dataBuffer: DataBuffer): boolean;
+        /**
          * Disposes the uniform buffer.
          */
         dispose(): void;
@@ -66259,6 +66266,16 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Returns _native only after it has been defined by BabylonNative.
+     * @hidden
+     */
+    export function AcquireNativeObjectAsync(): Promise<INative>;
+    /**
+     * Registers a constructor on the _native object. See NativeXRFrame for an example.
+     * @hidden
+     */
+    export function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type): Promise<void>;
+    /**
      * Container for accessors for natively-stored mesh data buffers.
      */
     class NativeDataBuffer extends DataBuffer {
@@ -72125,6 +72142,10 @@ declare module BABYLON {
          * An event triggered when the effect layer changes its size.
          */
         onSizeChangedObservable: Observable<EffectLayer>;
+        /**
+         * Gets the main texture where the effect is rendered
+         */
+        get mainTexture(): RenderTargetTexture;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -90765,6 +90786,34 @@ declare module BABYLON {
         protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _setRootMesh(meshes: AbstractMesh[]): void;
         protected _updateModel(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    interface INativeXRFrame extends XRFrame {
+        getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
+    }
+    /** @hidden */
+    export class NativeXRFrame implements XRFrame {
+        private _nativeImpl;
+        private readonly _xrTransform;
+        private readonly _xrPose;
+        private readonly _xrPoseVectorData;
+        get session(): XRSession;
+        constructor(_nativeImpl: INativeXRFrame);
+        getPose(space: XRSpace, baseSpace: XRReferenceSpace): XRPose | undefined;
+        readonly fillPoses: any;
+        readonly getViewerPose: any;
+        readonly getHitTestResults: any;
+        readonly getHitTestResultsForTransientInput: () => never;
+        get trackedAnchors(): XRAnchorSet | undefined;
+        readonly createAnchor: any;
+        get worldInformation(): XRWorldInformation | undefined;
+        get detectedPlanes(): XRPlaneSet | undefined;
+        readonly getJointPose: any;
+        readonly fillJointRadii: any;
+        readonly getLightEstimate: () => never;
+        get featurePointCloud(): number[] | undefined;
     }
 }
 declare module BABYLON {
