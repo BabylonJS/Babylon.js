@@ -1391,6 +1391,12 @@
             "playgroundId": "#WGZLGJ#4040",
             "referenceImage": "bonesMorphsCompute.png",
             "errorRatio": 1
+        },
+        {
+            "title": "DepthRenderer rhs",
+            "playgroundId": "#1PHYB0#138",
+            "renderCount": 5,
+            "referenceImage": "depthRendererRHS.png"
         }
     ]
 }
