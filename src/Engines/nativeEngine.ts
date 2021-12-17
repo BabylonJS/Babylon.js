@@ -34,7 +34,7 @@ import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
-if (typeof _native === 'undefined' && typeof self !== 'undefined') {
+if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
     let __native: INative;
     Object.defineProperty(self, "_native", {
         get: () => __native,
