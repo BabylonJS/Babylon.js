@@ -140,7 +140,7 @@ export class DepthRenderer {
             // Culling
             const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
             let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
-            if (scene.useRightHandedSystem && !detNeg || !scene.useRightHandedSystem && detNeg) {
+            if (detNeg) {
                 sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
             }
             let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
