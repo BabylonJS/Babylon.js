@@ -34,7 +34,7 @@ import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
-if (typeof _native === 'undefined') {
+if (typeof _native === 'undefined' && typeof self !== 'undefined') {
     let __native: INative;
     Object.defineProperty(self, "_native", {
         get: () => __native,
@@ -53,10 +53,10 @@ if (typeof _native === 'undefined') {
  */
 export function AcquireNativeObjectAsync(): Promise<INative> {
     return new Promise((resolve) => {
-        if (_native) {
-            resolve(_native);
-        } else {
+        if (typeof _native === 'undefined') {
             onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
+        } else {
+            resolve(_native);
         }
     });
 }
