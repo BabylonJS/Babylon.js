@@ -190,7 +190,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         if (!this._xrNavigator.xr) {
             return Promise.reject("WebXR not available");
         }
-
         return Promise.resolve();
     }
 
