@@ -70,7 +70,7 @@ var isDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>)
             return true;
         }
     }
-    if (mesh.parentId && hierarchyIds.indexOf(mesh.parentId) !== -1) {
+    if (mesh.parentId !== undefined && hierarchyIds.indexOf(mesh.parentId) !== -1) {
         hierarchyIds.push(mesh.id);
         return true;
     }
@@ -385,7 +385,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Browsing all the graph to connect the dots
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             var camera = scene.cameras[index];
-            if (camera._waitingParentId) {
+            if (camera._waitingParentId !== null) {
                 camera.parent = findParent(camera._waitingParentId, scene);
                 camera._waitingParentId = null;
             }
@@ -393,7 +393,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
 
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             let light = scene.lights[index];
-            if (light && light._waitingParentId) {
+            if (light && light._waitingParentId !== null) {
                 light.parent = findParent(light._waitingParentId, scene);
                 light._waitingParentId = null;
             }
@@ -402,14 +402,14 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Connect parents & children and parse actions and lods
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
-            if (transformNode._waitingParentId) {
+            if (transformNode._waitingParentId !== null) {
                 transformNode.parent = findParent(transformNode._waitingParentId, scene);
                 transformNode._waitingParentId = null;
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
-            if (mesh._waitingParentId) {
+            if (mesh._waitingParentId !== null) {
                 mesh.parent = findParent(mesh._waitingParentId, scene);
                 mesh._waitingParentId = null;
             }
@@ -658,7 +658,7 @@ SceneLoader.RegisterPlugin({
                 var currentMesh: AbstractMesh;
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingParentId) {
+                    if (currentMesh._waitingParentId !== null) {
                         currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
                         currentMesh._waitingParentId = null;
                     }
