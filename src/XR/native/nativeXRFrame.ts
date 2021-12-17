@@ -14,7 +14,7 @@ export class NativeXRFrame implements XRFrame {
         emulatedPosition: false
     };
     // Enough space for position, orientation
-    private readonly _xrPoseVectorData = new Float32Array(4 * (4 + 4));
+    private readonly _xrPoseVectorData = new Float32Array(4 + 4);
 
     public get session(): XRSession {
         return this._nativeImpl.session;
@@ -40,29 +40,21 @@ export class NativeXRFrame implements XRFrame {
         return this._xrPose;
     }
 
-    public fillPoses(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean {
-        return this._nativeImpl.fillPoses!(spaces, baseSpace, transforms);
-    }
+    public readonly fillPoses = this._nativeImpl.fillPoses!.bind(this._nativeImpl);
 
-    public getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined {
-        return this._nativeImpl.getViewerPose(referenceSpace);
-    }
+    public readonly getViewerPose = this._nativeImpl.getViewerPose.bind(this._nativeImpl);
 
-    public getHitTestResults(hitTestSource: XRHitTestSource): XRHitTestResult[] {
-        return this._nativeImpl.getHitTestResults(hitTestSource);
-    }
+    public readonly getHitTestResults = this._nativeImpl.getHitTestResults.bind(this._nativeImpl);
 
-    public getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): XRTransientInputHitTestResult[] {
-        return this._nativeImpl.getHitTestResultsForTransientInput(hitTestSource);
+    public readonly getHitTestResultsForTransientInput = () => {
+        throw new Error("XRFrame.getHitTestResultsForTransientInput not supported on native.");
     }
 
     public get trackedAnchors(): XRAnchorSet | undefined {
         return this._nativeImpl.trackedAnchors;
     }
 
-    public createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor> {
-        return this._nativeImpl.createAnchor!(pose, space);
-    }
+    public readonly createAnchor = this._nativeImpl.createAnchor!.bind(this._nativeImpl);
 
     public get worldInformation(): XRWorldInformation | undefined {
         return this._nativeImpl.worldInformation;
@@ -72,16 +64,12 @@ export class NativeXRFrame implements XRFrame {
         return this._nativeImpl.detectedPlanes;
     }
 
-    public getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose {
-        return this._nativeImpl.getJointPose!(joint, baseSpace);
-    }
+    public readonly getJointPose = this._nativeImpl.getJointPose!.bind(this._nativeImpl);
 
-    public fillJointRadii(jointSpaces: XRJointSpace[], radii: Float32Array): boolean {
-        return this._nativeImpl.fillJointRadii!(jointSpaces, radii);
-    }
+    public readonly fillJointRadii = this._nativeImpl.fillJointRadii!.bind(this._nativeImpl);
 
-    public getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate {
-        return this._nativeImpl.getLightEstimate(xrLightProbe);
+    public readonly getLightEstimate = () => {
+        throw new Error("XRFrame.getLightEstimate not supported on native.");
     }
 
     public get featurePointCloud(): number[] | undefined {
