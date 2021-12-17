@@ -1011,6 +1011,31 @@ export class UniformBuffer {
     }
 
     /**
+     * Sets the current state of the class (_bufferIndex, _buffer) to point to the data buffer passed in parameter if this buffer is one of the buffers handled by the class (meaning if it can be found in the _buffers array)
+     * This method is meant to be able to update a buffer at any time: just call setDataBuffer to set the class in the right state, call some updateXXX methods and then call udpate() => that will update the GPU buffer on the graphic card
+     * @param dataBuffer buffer to look for
+     * @returns true if the buffer has been found and the class internal state points to it, else false
+     */
+    public setDataBuffer(dataBuffer: DataBuffer): boolean {
+        if (!this._buffers) {
+            return this._buffer === dataBuffer;
+        }
+
+        for (let b = 0; b < this._buffers.length; ++b) {
+            const buffer = this._buffers[b];
+            if (buffer[0] === dataBuffer) {
+                this._bufferIndex = b;
+                this._buffer = dataBuffer;
+                this._createBufferOnWrite = false;
+                this._currentEffect = undefined as any;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Disposes the uniform buffer.
      */
     public dispose(): void {

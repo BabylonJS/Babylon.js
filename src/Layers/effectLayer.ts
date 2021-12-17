@@ -164,6 +164,13 @@ export abstract class EffectLayer {
      */
     public onSizeChangedObservable = new Observable<EffectLayer>();
 
+    /**
+     * Gets the main texture where the effect is rendered
+     */
+    public get mainTexture() {
+        return this._mainTexture;
+    }
+
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("EffectLayerSceneComponent");
