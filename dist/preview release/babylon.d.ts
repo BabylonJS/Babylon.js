@@ -85156,6 +85156,7 @@ declare module BABYLON {
         private _enableSmoothReflections;
         private _reflectionSamples;
         private _smoothSteps;
+        private _isSceneRightHanded;
         /**
          * Gets a string identifying the name of the class
          * @returns "ScreenSpaceReflectionPostProcess" string
