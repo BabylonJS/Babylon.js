@@ -3788,7 +3788,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Parent
-        if (parsedMesh.parentId) {
+        if (parsedMesh.parentId !== undefined) {
             mesh._waitingParentId = parsedMesh.parentId;
         }
 
@@ -3950,7 +3950,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     instance.metadata = parsedInstance.metadata;
                 }
 
-                if (parsedInstance.parentId) {
+                if (parsedInstance.parentId !== undefined) {
                     instance._waitingParentId = parsedInstance.parentId;
                 }
 
