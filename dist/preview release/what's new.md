@@ -221,6 +221,7 @@
 - Allow customizing the selection and laser point meshes of the pointer selection feature ([#11487](https://github.com/BabylonJS/Babylon.js/issues/11487)) ([RaananW](https://github.com/RaananW))
 - Add the `WebXRLayers` feature to support rendering to an `XRProjectionLayer` ([#10588](https://github.com/BabylonJS/Babylon.js/issues/10588)) ([rgerd](https://github.com/rgerd))
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
+- Add `NativeXRPlugin` and `NativeXRFrame` to improve XR performance on BabylonNative ([rgerd](https://github.com/rgerd))
 
 ### Gizmos
 
@@ -358,6 +359,7 @@
 - Fix issue with setParent and meshes with a pivot ([RaananW](https://github.com/RaananW))
 - Fix Button3D, HolographicButton, TouchHolographicButton and HolographicSlate content when scene is right-handed ([carolhmj](https://github.com/carolhmj))
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
+- Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 

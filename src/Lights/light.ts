@@ -685,7 +685,7 @@ export abstract class Light extends Node implements ISortableLight {
         }
 
         // Parent
-        if (parsedLight.parentId) {
+        if (parsedLight.parentId !== undefined) {
             light._waitingParentId = parsedLight.parentId;
         }
 
