@@ -253,6 +253,7 @@
 
 ## Bugs
 
+- Fix for `AdvancedTimer` ignoring `timeout` option ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `AssetContainer` is added to `Scene` multiple times ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `ParticleSystem` is disposed before `_subEmitters` is created ([BlakeOne](https://github.com/BlakeOne))
 - Fix incorrect GUI.TextBlock width when resizeToFit is true & fontStyle is italic ([Kalkut](https://github.com/Kalkut))
