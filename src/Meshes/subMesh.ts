@@ -106,11 +106,17 @@ export class SubMesh implements ICullable {
 
     /**
      * Resets the draw wrappers cache
+     * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
      */
-    public resetDrawCache(): void {
+    public resetDrawCache(passId?: number): void {
         if (this._drawWrappers) {
-            for (const drawWrapper of this._drawWrappers) {
-                drawWrapper?.dispose();
+            if (passId !== undefined) {
+                this._removeDrawWrapper(passId);
+                return;
+            } else {
+                for (const drawWrapper of this._drawWrappers) {
+                    drawWrapper?.dispose();
+                }
             }
         }
         this._drawWrappers = [];
