@@ -83,12 +83,25 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     @serialize()
     public level = 1;
 
+    @serialize("coordinatesIndex")
+    protected _coordinatesIndex = 0;
+
     /**
      * Define the UV channel to use starting from 0 and defaulting to 0.
      * This is part of the texture as textures usually maps to one uv set.
      */
-    @serialize()
-    public coordinatesIndex = 0;
+    public set coordinatesIndex(value: number) {
+        if (this._coordinatesIndex === value) {
+            return;
+        }
+        this._coordinatesIndex = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
+    }
+    public get coordinatesIndex(): number {
+        return this._coordinatesIndex;
+    }
 
     @serialize("coordinatesMode")
     protected _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
