@@ -4200,14 +4200,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Resets the draw wrappers cache of all meshes
+     * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
      */
-    public resetDrawCache(): void {
+    public resetDrawCache(passId?: number): void {
         if (!this.meshes) {
              return;
         }
 
         for (const mesh of this.meshes) {
-            mesh.resetDrawCache();
+            mesh.resetDrawCache(passId);
         }
     }
 
