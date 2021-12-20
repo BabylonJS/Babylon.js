@@ -308,6 +308,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
         // Get the canvas element from the DOM.
         const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
 
+        const scalePointCursors = [
+            "nesw-resize",
+            "nwse-resize",
+            "nesw-resize",
+            "nwse-resize",
+            "ew-resize",
+            "ns-resize",
+            "ew-resize",
+            "ns-resize"
+        ];
+
         for (let i = 0; i < 8; ++i) {
             let scalePoint = canvas.ownerDocument!.createElement("div");
             scalePoint.className = "ge-scalePoint";
@@ -317,6 +328,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.left = i * 100 + "px";
             scalePoint.style.top = i * 100 + "px";
             scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.style.cursor = scalePointCursors[i];
             scalePoint.addEventListener("pointerdown", () => {
                 this._setMousePosition(i);
             });
