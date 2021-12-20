@@ -7,6 +7,7 @@ import { TextBlock } from "./textBlock";
 import { Image } from "./image";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to create 2D buttons
@@ -161,6 +162,34 @@ export class Button extends Rectangle {
         }
 
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick, pi);
+    }
+
+    /**
+    * Serializes the current button
+    * @param serializationObject defines the JSON serialized object
+    */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+
+        if (this._textBlock) {
+            serializationObject.textBlockName = this._textBlock.name;
+        }
+        if (this._image) {
+            serializationObject.imageName = this._image.name;
+        }
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+
+        if (serializedObject.textBlockName) {
+            this._textBlock = this.getChildByName(serializedObject.textBlockName) as Nullable<TextBlock>;
+        }
+
+        if (serializedObject.imageName) {
+            this._image = this.getChildByName(serializedObject.imageName) as Nullable<Image>;
+        }
     }
 
     // Statics
