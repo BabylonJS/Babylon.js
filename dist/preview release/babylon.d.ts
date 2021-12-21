@@ -20549,8 +20549,9 @@ declare module BABYLON {
         setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, materialContext?: IMaterialContext, resetContext?: boolean): void;
         /**
          * Resets the draw wrappers cache
+         * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
          */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -36433,8 +36434,9 @@ declare module BABYLON {
         markAsDirty(property?: string): AbstractMesh;
         /**
         * Resets the draw wrappers cache for all submeshes of this abstract mesh
+        * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
         */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /**
          * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
          */
@@ -51113,8 +51115,9 @@ declare module BABYLON {
         private checkCameraRenderTarget;
         /**
          * Resets the draw wrappers cache of all meshes
+         * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
          */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)

@@ -1925,6 +1925,29 @@ var Button = /** @class */ (function (_super) {
         }
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     };
+    /**
+    * Serializes the current button
+    * @param serializationObject defines the JSON serialized object
+    */
+    Button.prototype.serialize = function (serializationObject) {
+        _super.prototype.serialize.call(this, serializationObject);
+        if (this._textBlock) {
+            serializationObject.textBlockName = this._textBlock.name;
+        }
+        if (this._image) {
+            serializationObject.imageName = this._image.name;
+        }
+    };
+    /** @hidden */
+    Button.prototype._parseFromContent = function (serializedObject, host) {
+        _super.prototype._parseFromContent.call(this, serializedObject, host);
+        if (serializedObject.textBlockName) {
+            this._textBlock = this.getChildByName(serializedObject.textBlockName);
+        }
+        if (serializedObject.imageName) {
+            this._image = this.getChildByName(serializedObject.imageName);
+        }
+    };
     // Statics
     /**
      * Creates a new button made with an image and a text
