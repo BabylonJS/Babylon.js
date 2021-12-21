@@ -2034,6 +2034,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
+        /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
          * @param text defines the text of the button

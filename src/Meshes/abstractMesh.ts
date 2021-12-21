@@ -1013,14 +1013,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
      /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
+     * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
      */
-    public resetDrawCache(): void {
+    public resetDrawCache(passId?: number): void {
         if (!this.subMeshes) {
              return;
         }
 
         for (const subMesh of this.subMeshes) {
-            subMesh.resetDrawCache();
+            subMesh.resetDrawCache(passId);
         }
     }
 
