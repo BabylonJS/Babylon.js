@@ -48096,6 +48096,16 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         var _a, _b;
         // Get the canvas element from the DOM.
         var canvas = document.getElementById("workbench-canvas");
+        var scalePointCursors = [
+            "nesw-resize",
+            "nwse-resize",
+            "nesw-resize",
+            "nwse-resize",
+            "ew-resize",
+            "ns-resize",
+            "ew-resize",
+            "ns-resize"
+        ];
         var _loop_1 = function (i) {
             var scalePoint = canvas.ownerDocument.createElement("div");
             scalePoint.className = "ge-scalePoint";
@@ -48105,6 +48115,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             scalePoint.style.left = i * 100 + "px";
             scalePoint.style.top = i * 100 + "px";
             scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.style.cursor = scalePointCursors[i];
             scalePoint.addEventListener("pointerdown", function () {
                 _this._setMousePosition(i);
             });

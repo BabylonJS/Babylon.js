@@ -2047,6 +2047,7 @@ declare module "babylonjs-gui/2D/controls/button" {
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
     import { Image } from "babylonjs-gui/2D/controls/image";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to create 2D buttons
      */
@@ -2098,6 +2099,13 @@ declare module "babylonjs-gui/2D/controls/button" {
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /** @hidden */
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void;
+        /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -9182,6 +9190,13 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
+        /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
