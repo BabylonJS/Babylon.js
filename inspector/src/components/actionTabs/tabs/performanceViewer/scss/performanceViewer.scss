@@ -1,12 +1,13 @@
 $buttonHeight: 30px;
-$squareSize: 14px;
+$squareSize: 18px;
 
 #performance-viewer {
     display: grid;
     height: 100%;
     width: 100%;
-    grid-template-columns: 25% 75%;
-    font-family: 'acumin-pro-condensed';
+    grid-template-columns: 300px 1fr;
+    font-family: 'acumin-pro';
+
     .performancePlayheadButton {
         grid-area: liveButton;
         height: $buttonHeight;
@@ -32,8 +33,10 @@ $squareSize: 14px;
             display: grid;
             width: 100%;
             
-            align-items: center;
-            padding: 5px 0px;
+            // align-items: center;
+            height: 30px;
+            font-size: 14pt;
+            padding: 2.5px 0px;
         }
 
         .header {
@@ -50,11 +53,13 @@ $squareSize: 14px;
         }
         
         .version-header {
-            background-color: rgb(46, 63, 71);
+            background-color: #2e3f47;
             color: white;
             grid-template-columns: 10px 1fr 1fr 10px;
-            font-size: smaller;
-    
+            font-size: 16pt;
+            height: 40px; // with padding, we get 40px
+            // padding: 5px 0px;
+
             .category {
                 grid-column: 2;
             }
@@ -68,17 +73,26 @@ $squareSize: 14px;
         
         // mid-dark color
         .category-header {
-            background-color: rgb(74, 89, 96);
+            background-color: #4a5960;
             text-transform: uppercase;
-            font-size: smaller;
+            font-size: 16pt;
+            // height: 35px; // with padding, we get 35px
+            height: 30px; 
+            
+            .checkBoxLine {
+                color: #dcdfe1;
+            }
         }
 
         .measure {
             color: black;
-            grid-template-columns: 10px 6fr 1fr;
+            grid-template-columns: $squareSize 6fr 1fr;
+            font-family: 'acumin-pro-condensed';
+            // font-size: 14px;
+            
             .category {
                 display: grid;
-                grid-template-columns: $squareSize 4px $squareSize 6px 1fr;
+                grid-template-columns: $squareSize 7px $squareSize 10px 1fr;
                 grid-column: 2;
                 align-items: center;
 
@@ -98,12 +112,12 @@ $squareSize: 14px;
 
         //darker color
         .measure:nth-child(odd) {
-            background-color: rgb(220, 223, 225);
+            background-color: #dcdfe1;
         }
         
         // lighter color
         .measure:nth-child(even) {
-            background-color: rgb(235, 237, 238);
+            background-color: #ebedee;
         }
     
         .checkBoxLine {
