@@ -1,4 +1,4 @@
-import { INativeInput } from "../../DeviceInput/Interfaces/inputInterfaces";
+import { INativeInput } from "../../DeviceInput/InputDevices/inputInterfaces";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Nullable } from "../../types";
 import { ICanvas, IImage } from "../ICanvas";
