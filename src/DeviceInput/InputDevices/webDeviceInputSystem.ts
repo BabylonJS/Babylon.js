@@ -4,11 +4,11 @@ import { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType, PointerInput } from "../InputDevices/deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem } from "../Interfaces/inputInterfaces";
+import { DeviceType, PointerInput } from "./deviceEnums";
+import { IDeviceEvent, IDeviceInputSystem } from "./inputInterfaces";
 
 /** @hidden */
-export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
+export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
     public set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void) {
         this._onDeviceConnected = callback;
@@ -89,7 +89,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     /**
      * Configures events to work with an engine's active element
      */
-    public configureEvents() {
+    private configureEvents() {
         const inputElement = this._engine.getInputElement();
         if (inputElement && this._elementToAttachTo !== inputElement) {
             // If the engine's input element has changed, unregister events from previous element
@@ -141,7 +141,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param deviceType Type of device to check for
      * @returns bool with status of device's existence
      */
-    public isDeviceAvailable(deviceType: DeviceType) {
+    public isDeviceAvailable(deviceType: DeviceType): boolean {
         return (this._inputs[deviceType] !== undefined);
     }
 
@@ -209,7 +209,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      */
     private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number) {
         this._pointerActive = true;
-        this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystemImpl.MAX_POINTER_INPUTS);
+        this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystem.MAX_POINTER_INPUTS);
         const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
         pointer[0] = currentX;
         pointer[1] = currentY;
@@ -261,7 +261,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
         this._keyboardDownEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystemImpl.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystem.MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -282,7 +282,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
         this._keyboardUpEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystemImpl.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystem.MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -654,7 +654,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
 
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystemImpl.MAX_POINTER_INPUTS);
+                this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystem.MAX_POINTER_INPUTS);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];

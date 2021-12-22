@@ -1,10 +1,10 @@
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType } from "../InputDevices/deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "../Interfaces/inputInterfaces";
+import { DeviceType } from "./deviceEnums";
+import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 /** @hidden */
-export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
+export class NativeDeviceInputSystem implements IDeviceInputSystem {
     public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onInputChanged = (deviceEvent: IDeviceEvent) => { };
@@ -34,13 +34,6 @@ export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
 
             this.onInputChanged(deviceEvent);
         };
-    }
-
-    /**
-     * Configures events to work with an engine's active element
-     */
-    public configureEvents(): void {
-        // Do nothing
     }
 
     // Public functions
