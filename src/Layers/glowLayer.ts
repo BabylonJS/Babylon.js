@@ -549,6 +549,8 @@ export class GlowLayer extends EffectLayer {
      * @param mesh The mesh for which we need to use its material
      */
     public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
+        mesh.resetDrawCache(this._mainTexture.renderPassId);
+
         this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
 
         mesh.onDisposeObservable.add(() => {
@@ -566,6 +568,7 @@ export class GlowLayer extends EffectLayer {
             this._meshesUsingTheirOwnMaterials.splice(index, 1);
             index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
         }
+        mesh.resetDrawCache(this._mainTexture.renderPassId);
     }
 
     /**
