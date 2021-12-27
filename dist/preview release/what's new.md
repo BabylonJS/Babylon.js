@@ -171,6 +171,7 @@
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 - Added support for full screen UI and rig cameras ([#11544](https://github.com/BabylonJS/Babylon.js/issues/11544)) ([RaananW](https://github.com/RaananW))
 - Added ValueAndUnit change observable and Grid to listen for changes ([brianzinn](https://github.com/brianzinn))
+- Added `closeShape` and `closePath` as extra options parameters in `ExtrudeShape` and `ExtrudeShapeCustom` ([JohnK](https://github.com/BabylonJSGuide))
 
 ### Behaviors
 
@@ -253,6 +254,8 @@
 
 ## Bugs
 
+- Fix serialization and parsing of `textBlock` and `image` for `Button` class ([BlakeOne](https://github.com/BlakeOne))
+- Fix for `AdvancedTimer` ignoring `timeout` option ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `AssetContainer` is added to `Scene` multiple times ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `ParticleSystem` is disposed before `_subEmitters` is created ([BlakeOne](https://github.com/BlakeOne))
 - Fix incorrect GUI.TextBlock width when resizeToFit is true & fontStyle is italic ([Kalkut](https://github.com/Kalkut))

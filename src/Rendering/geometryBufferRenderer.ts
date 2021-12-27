@@ -176,7 +176,7 @@ export class GeometryBufferRenderer {
      * Useful when linking textures of the prepass renderer
      */
     public _linkInternalTexture(internalTexture: InternalTexture) {
-        this._multiRenderTarget._texture = internalTexture;
+        this._multiRenderTarget.setInternalTexture(internalTexture, 0, false);
     }
 
     /**

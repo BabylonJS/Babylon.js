@@ -337,6 +337,9 @@ export abstract class Light extends Node implements ISortableLight {
 
     /** @hidden */
     public _renderId: number;
+
+    private _lastUseSpecular: boolean;
+
     /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/babylon101/lights
@@ -390,8 +393,9 @@ export abstract class Light extends Node implements ISortableLight {
 
         this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
 
-        if (this._renderId !== scene.getRenderId() || !this._uniformBuffer.useUbo) {
+        if (this._renderId !== scene.getRenderId() || this._lastUseSpecular !== useSpecular || !this._uniformBuffer.useUbo) {
             this._renderId = scene.getRenderId();
+            this._lastUseSpecular = useSpecular;
 
             let scaledIntensity = this.getScaledIntensity();
 

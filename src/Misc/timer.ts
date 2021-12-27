@@ -164,6 +164,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
         this._contextObservable = options.contextObservable;
         this._observableParameters = options.observableParameters ?? {};
         this._breakCondition = options.breakCondition ?? (() => false);
+        this._timeToEnd = options.timeout;
         if (options.onEnded) {
             this.onTimerEndedObservable.add(options.onEnded);
         }

@@ -5903,11 +5903,13 @@ declare module BABYLON {
          * It is commonly used by materials to fine tune the intensity of the texture
          */
         level: number;
+        protected _coordinatesIndex: number;
         /**
          * Define the UV channel to use starting from 0 and defaulting to 0.
          * This is part of the texture as textures usually maps to one uv set.
          */
-        coordinatesIndex: number;
+        set coordinatesIndex(value: number);
+        get coordinatesIndex(): number;
         protected _coordinatesMode: number;
         /**
         * How a texture is mapped.
@@ -10141,6 +10143,7 @@ declare module BABYLON {
         _uniformBuffer: UniformBuffer;
         /** @hidden */
         _renderId: number;
+        private _lastUseSpecular;
         /**
          * Creates a Light object in the scene.
          * Documentation : https://doc.babylonjs.com/babylon101/lights
@@ -20546,8 +20549,9 @@ declare module BABYLON {
         setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, materialContext?: IMaterialContext, resetContext?: boolean): void;
         /**
          * Resets the draw wrappers cache
+         * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
          */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -36430,8 +36434,9 @@ declare module BABYLON {
         markAsDirty(property?: string): AbstractMesh;
         /**
         * Resets the draw wrappers cache for all submeshes of this abstract mesh
+        * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
         */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /**
          * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
          */
@@ -51110,8 +51115,9 @@ declare module BABYLON {
         private checkCameraRenderTarget;
         /**
          * Resets the draw wrappers cache of all meshes
+         * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
          */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -64704,6 +64710,8 @@ declare module BABYLON {
      * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
      * * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
      * * The parameter `scale` (float, default 1) is the value to scale the shape.
+     * * The parameter `closeShape` (boolean, default false) closes the shape when true.
+     * * The parameter `closePath` (boolean, default false) closes the path when true and no caps.
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
      * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
      * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
@@ -64723,6 +64731,8 @@ declare module BABYLON {
         path: Vector3[];
         scale?: number;
         rotation?: number;
+        closeShape?: boolean;
+        closePath?: boolean;
         cap?: number;
         updatable?: boolean;
         sideOrientation?: number;
@@ -64740,8 +64750,10 @@ declare module BABYLON {
      * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
      * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
      * * It must returns a float value that will be the scale value applied to the shape on each path point
-     * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`
-     * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`
+     * * The parameter `closeShape` (boolean, default false) forces the extrusion underlying ribbon to close all the shape paths in its `pathArray`
+     * * The parameter `closePath` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` when no caps
+     * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray` - depreciated in favor of closeShape
+     * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` - depreciated in favor of closePath
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
      * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
      * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape
@@ -64768,6 +64780,8 @@ declare module BABYLON {
         }>;
         ribbonCloseArray?: boolean;
         ribbonClosePath?: boolean;
+        closeShape?: boolean;
+        closePath?: boolean;
         cap?: number;
         updatable?: boolean;
         sideOrientation?: number;
@@ -68220,6 +68234,7 @@ declare module BABYLON {
         private _bindGroups;
         private _depthTextureFormat;
         private _bundleCache;
+        private _keyTemp;
         setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
         setColorFormat(format: GPUTextureFormat): void;
         setMRTAttachments(attachments: number[], textureArray: InternalTexture[], textureCount: number): void;
