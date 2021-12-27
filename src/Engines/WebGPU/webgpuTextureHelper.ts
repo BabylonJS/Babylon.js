@@ -668,6 +668,8 @@ export class WebGPUTextureHelper {
         switch (format) {
             case Constants.TEXTUREFORMAT_DEPTH16:
                 return WebGPUConstants.TextureFormat.Depth16Unorm;
+            case Constants.TEXTUREFORMAT_DEPTH24:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
             case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:

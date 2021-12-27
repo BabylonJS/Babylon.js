@@ -7,6 +7,7 @@ import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { Constants } from "../constants";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -127,6 +128,8 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalOptions.comparisonFunction === 0 ? false : internalOptions.bilinearFiltering,
         internalOptions.comparisonFunction
     );
+
+    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
 
     rtWrapper._depthStencilTexture = internalTexture;
     rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
