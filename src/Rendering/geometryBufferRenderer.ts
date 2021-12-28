@@ -737,6 +737,33 @@ export class GeometryBufferRenderer {
             }
         };
 
+        this._multiRenderTarget.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
+            if (!mesh.isReady(false)) {
+                return false;
+            }
+            if (refreshRate === 0 && mesh.subMeshes) {
+                // full check: check that the effects are ready
+                for (let i = 0; i < mesh.subMeshes.length; ++i) {
+                    const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    const renderingMesh = subMesh.getRenderingMesh();
+
+                    if (!material) {
+                        continue;
+                    }
+
+                    const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+                    const hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
+
+                    if (!this.isReady(subMesh, hardwareInstancedRendering)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        };
+
         this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
             var index;
 
