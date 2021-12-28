@@ -269,6 +269,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
+     * Gets the current value of the refreshId counter
+     */
+    public get currentRefreshId() {
+        return this._currentRefreshId;
+    }
+
+    /**
      * Sets a specific material to be used to render a mesh/a list of meshes in this render target texture
      * @param mesh mesh or array of meshes
      * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
