@@ -306,7 +306,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     createBaseGizmo() {
         // Get the canvas element from the DOM.
-        const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
+        const canvas = this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLCanvasElement;
 
         const scalePointCursors = [
             "nesw-resize",
@@ -392,6 +392,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 if (this._responsive) {
                     this.props.globalState.workbench.convertToPercentage(node, false);
                 }
+                this.props.globalState.workbench._liveGuiTextureRerender = false;
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
         }
