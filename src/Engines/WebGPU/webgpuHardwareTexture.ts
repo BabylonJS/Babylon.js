@@ -37,7 +37,9 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     /** @hidden */
     public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
     /** @hidden */
-    public _copyInvertYBindGroupd: GPUBindGroup;
+    public _copyInvertYBindGroup: GPUBindGroup;
+    /** @hidden */
+    public _copyInvertYBindGroupWithOfst: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;
