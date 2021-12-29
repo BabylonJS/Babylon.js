@@ -886,11 +886,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
     synchronizeLiveGUI() {
         if (this.globalState.liveGuiTexture) {
-            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(desc => {
                 this.globalState.liveGuiTexture?.removeControl(desc);
                 this.appendBlock(desc);
             })
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     }
 
