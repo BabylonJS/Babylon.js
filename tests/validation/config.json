@@ -1401,6 +1401,7 @@
         {
             "title": "Test updateTextureData",
             "playgroundId": "#EVX1DH#80",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "testUpdateTextureData.png"
         }
     ]
