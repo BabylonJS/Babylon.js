@@ -548,13 +548,9 @@ export class InputTextArea extends InputText {
                         }
                     }
                 }
-console.log(this._cursorIndex,this._lines[this._selectedLineIndex].text.length);
 
                 if (this._selectedLineIndex === this._oldlines.length-1 
                     && this._lines.length > this._oldlines.length) {
-                    // const breakWord = this._lines[this._selectedLineIndex].text.split(" ");
-                    // const oldBreakWord = this._oldlines[this._selectedLineIndex].split(" ");
-                    
                     this._cursorIndex -= this._lines[this._selectedLineIndex].text.length; 
 
                     this.lastClickedCoordinateY += this._fontOffset.height;
@@ -771,7 +767,6 @@ console.log(this._cursorIndex,this._lines[this._selectedLineIndex].text.length);
             //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
-        // let insertPosition = this._lines[this._selectedLineIndex].text.width - this._cursorOffset;
         // Delete selection if any
         this._deleteSelection();
         const innerPosition = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
