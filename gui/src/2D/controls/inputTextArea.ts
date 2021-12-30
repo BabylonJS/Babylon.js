@@ -496,6 +496,11 @@ export class InputTextArea extends InputText {
                 this.deadKey = true;
             }
         }
+
+        if (key === "Dead") {
+            key = undefined;
+        }
+
         // Printable characters
         if (key &&
             ((keyCode === -1) ||                     // Direct access
@@ -519,7 +524,7 @@ export class InputTextArea extends InputText {
 
                 this._lines = this._breakLines(this._currentMeasure.width, this._contextForBreakLines);
 
-                this._cursorIndex++;
+                this._cursorIndex += key.length;
                 
                 if (this._selectedLineIndex > 0) {
                     if (this._oldlines[this._selectedLineIndex -1].length !== this._lines[this._selectedLineIndex-1].text.length) {
@@ -755,7 +760,7 @@ console.log(this._cursorIndex,this._lines[this._selectedLineIndex].text.length);
         this._deleteSelection();
         this._textHasChanged();
     }
-    
+
     /** @hidden */
     protected _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
