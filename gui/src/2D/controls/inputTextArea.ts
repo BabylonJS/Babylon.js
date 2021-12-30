@@ -67,6 +67,8 @@ export class InputTextArea extends InputText {
 
     private _lastClickedLineIndex = -1;
 
+    private _availableWidth: number;
+
     /**
      * Gets or sets outlineWidth of the text to display
      */
@@ -187,7 +189,7 @@ export class InputTextArea extends InputText {
                 
                 this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
-                this._lines = this._breakLines(this._currentMeasure.width, this._contextForBreakLines);
+                this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
                 
                 if (this._selectedLineIndex > 0) {
                     const lengthDiff = this._oldlines[this._selectedLineIndex -1].length - this._lines[this._selectedLineIndex-1].text.length;
@@ -237,7 +239,7 @@ export class InputTextArea extends InputText {
                 
                 this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
-                this._lines = this._breakLines(this._currentMeasure.width, this._contextForBreakLines);
+                this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
                 
                 if (this._selectedLineIndex > 0) {
                     const lengthDiff = this._oldlines[this._selectedLineIndex -1].length - this._lines[this._selectedLineIndex-1].text.length;
@@ -368,7 +370,7 @@ export class InputTextArea extends InputText {
                     if (this._clicked) {
                         this.lastClickedCoordinateY -= this._fontOffset.height; // this is maybe dirty implementation because it is not rerendering here
                     }else {
-                        this.lastClickedCoordinateY = this._selectedLineIndex * this._fontOffset.height + 1;
+                        this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + this._selectedLineIndex * this._fontOffset.height + 1;
                     }
                     
                     this._cursorOffset = this._lines[this._selectedLineIndex].text.length - previousLineCursorIndex;
@@ -399,7 +401,7 @@ export class InputTextArea extends InputText {
                             this._isTextHighlightOn = true;
                             this._lastClickedLineIndex = this._selectedLineIndex + 1;
                             
-                            this._cursorIndex = previousLineCursorIndex;// this._lines[this._lastClickedLineIndex].text.length - this._cursorOffset - 1;
+                            this._cursorIndex = previousLineCursorIndex;
                         }
                         
                         this._updateValueFromCursorIndex(this._cursorOffset);
@@ -427,9 +429,9 @@ export class InputTextArea extends InputText {
                     this._selectedLineIndex--;
                 }else {
                     if (this._clicked) {
-                        this.lastClickedCoordinateY += this._fontOffset.height;
+                        this.lastClickedCoordinateY += this._fontOffset.height + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
                     }else {
-                        this.lastClickedCoordinateY = (this._selectedLineIndex) * this._fontOffset.height + 1;
+                        this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + this._selectedLineIndex * this._fontOffset.height + 1;
                     }
 
                     this._cursorOffset = this._lines[this._selectedLineIndex].text.length -previousLineCursorIndex;
@@ -522,7 +524,7 @@ export class InputTextArea extends InputText {
                 this._lines[this._selectedLineIndex].text = this._lines[this._selectedLineIndex].text.substring(0, this._cursorIndex) + key + this._lines[this._selectedLineIndex].text.substring(this._cursorIndex);
                 this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
-                this._lines = this._breakLines(this._currentMeasure.width, this._contextForBreakLines);
+                this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
 
                 this._cursorIndex += key.length;
                 
@@ -550,7 +552,7 @@ export class InputTextArea extends InputText {
                 }
 
                 if (this._selectedLineIndex === this._oldlines.length-1 
-                    && this._lines.length > this._oldlines.length) {
+                    && this._lines.length > this._oldlines.length) {                    
                     this._cursorIndex -= this._lines[this._selectedLineIndex].text.length; 
 
                     this.lastClickedCoordinateY += this._fontOffset.height;
@@ -657,7 +659,7 @@ export class InputTextArea extends InputText {
         super._processMeasures(parentMeasure, context);
 
         // Prepare lines
-        this._lines = this._breakLines(this._currentMeasure.width, context);
+        this._lines = this._breakLines(this._availableWidth, context);
         // can we find a cleaner implementation here?
         this._contextForBreakLines = context;
 
@@ -726,7 +728,7 @@ export class InputTextArea extends InputText {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
-        context.fillText(text, this._currentMeasure.left + x, y);
+        context.fillText(text, (this._scrollLeft as number)/* this._currentMeasure.left*/ + x, y);
     }
 
     /** @hidden */
@@ -773,7 +775,7 @@ export class InputTextArea extends InputText {
         const line = this._lines[this._selectedLineIndex];
         line.text = line.text.substring(0, innerPosition) + data + line.text.substring(innerPosition);
         this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
-        this._lines = this._breakLines(this._currentMeasure.width, this._contextForBreakLines);
+        this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
         this._cursorOffset = this._lines[this._selectedLineIndex].text.length - innerPosition;
 
         this._textHasChanged();
@@ -816,7 +818,7 @@ export class InputTextArea extends InputText {
         // Text
         // clipTextLeft is the start of the InputTextPosition + margin
         // _currentMeasure := left, top, width, height
-        let clipTextLeft = this._currentMeasure.left; // + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
         // sets the color of the rectangle (border if background available)
         if (this.color) {
             context.fillStyle = this.color;
@@ -865,7 +867,7 @@ export class InputTextArea extends InputText {
         }
         // OLD let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         // availableWidth is basically the width of our inputField
-        let availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width); //- marginWidth;
+        this._availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
 
         context.save();
         context.beginPath();
@@ -873,7 +875,7 @@ export class InputTextArea extends InputText {
 
         // here we define the visible reactangle to clip it in next line
         //context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
-        context.rect(clipTextLeft, this._currentMeasure.top , availableWidth + 2, this._currentMeasure.height);
+        context.rect(clipTextLeft, this._currentMeasure.top , this._availableWidth + 2, this._currentMeasure.height);
         //context.clip();
 
         //if (this._isFocused && this._textWidth > availableWidth) {
@@ -888,11 +890,11 @@ export class InputTextArea extends InputText {
             }
         }
 
-        if (this._isFocused && this._lines[this._selectedLineIndex].width > availableWidth) {
+        if (this._isFocused && this._lines[this._selectedLineIndex].width > this._availableWidth) {
 
             // var naming is confusing?: text(WhichIs)Left vs clipTextLeft, but let's deal with it.
             //let textLeft = clipTextLeft - this._textWidth + availableWidth;
-            let textLeft = clipTextLeft - this._lines[this._selectedLineIndex].width + availableWidth;
+            let textLeft = clipTextLeft - this._lines[this._selectedLineIndex].width + this._availableWidth;
             //let textLeft = clipTextLeft;
             if (!this._scrollLeft) {
                 this._scrollLeft = textLeft;
@@ -901,7 +903,7 @@ export class InputTextArea extends InputText {
             this._scrollLeft = clipTextLeft;
         }
 
-        rootY += this._currentMeasure.top;
+        rootY += this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
 
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
@@ -930,7 +932,7 @@ export class InputTextArea extends InputText {
             if (this._clickedCoordinateX && this._clickedCoordinateY) {
                 this._clicked = true;
 
-                this.lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top;
+                this.lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top - this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);;
 
                 if (this.lastClickedCoordinateY <= this._fontOffset.height) {
                     this._selectedLineIndex = 0;
@@ -984,20 +986,22 @@ export class InputTextArea extends InputText {
                 let highlightCursorLeft = 0;
                 let highlightCursorRight = 0;
                 this._highlightedText = "";
+                let yOffset = this._currentMeasure.top+ this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+                const xOffset = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
 
                 this._applyOnSelectedRange((line, currentIndex, startIndex, endIndex) => {
                     highlightCursorLeft = currentIndex === startIndex ? this._startHighlightIndex : 0;
                     highlightCursorRight = currentIndex === endIndex ? this._endHighlightIndex : line.text.length;
 
                     let width = context.measureText(line.text.substring(highlightCursorLeft, highlightCursorRight)).width;
-                    let leftOffsetWidth = context.measureText(line.text.substring(0, highlightCursorLeft)).width+this._currentMeasure.left;
+                    let leftOffsetWidth = context.measureText(line.text.substring(0, highlightCursorLeft)).width + xOffset;
 
                     this._highlightedText += line.text.substring(highlightCursorLeft, highlightCursorRight);
                     
                     context.globalAlpha = this._highligherOpacity;
                     context.fillStyle = "green"; // this._textHighlightColor;
                     
-                    context.fillRect(leftOffsetWidth, this._currentMeasure.top + currentIndex * this._fontOffset.height, width, this._fontOffset.height);
+                    context.fillRect(leftOffsetWidth, yOffset + currentIndex * this._fontOffset.height, width, this._fontOffset.height);
                     context.globalAlpha = 1.0;
                 });
             }
@@ -1016,19 +1020,19 @@ export class InputTextArea extends InputText {
                     this._scrollLeft += (clipTextLeft - cursorLeft);
                     cursorLeft = clipTextLeft;
                     this._markAsDirty();
-                } else if (cursorLeft > clipTextLeft + availableWidth) {
-                    this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
-                    cursorLeft = clipTextLeft + availableWidth;
+                } else if (cursorLeft > clipTextLeft + this._availableWidth) {
+                    this._scrollLeft += (clipTextLeft + this._availableWidth - cursorLeft);
+                    cursorLeft = clipTextLeft + this._availableWidth;
                     this._markAsDirty();
                 }
 
-                let cursorTop; //cursorTop distance from top to cursor start
+                let cursorTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height); //cursorTop distance from top to cursor start
                 if (this.lastClickedCoordinateY <= this._fontOffset.height) {
-                    cursorTop = this._currentMeasure.top;
+                    // Nothing to do here
                 } else if (this.lastClickedCoordinateY > this._fontOffset.height * (this._lines.length - 1)) {
-                    cursorTop = this._currentMeasure.top + (this._fontOffset.height * (this._lines.length - 1));
+                    cursorTop += (this._fontOffset.height * (this._lines.length - 1));
                 } else {
-                    cursorTop = this._currentMeasure.top + (Math.floor(this.lastClickedCoordinateY / this._fontOffset.height)) * this._fontOffset.height;
+                    cursorTop += (Math.floor(this.lastClickedCoordinateY / this._fontOffset.height)) * this._fontOffset.height;
                 }
 
                 context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
@@ -1079,7 +1083,7 @@ export class InputTextArea extends InputText {
                 break;
         }
 
-        rootY += this._currentMeasure.top;
+        rootY += this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
 
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
@@ -1118,8 +1122,7 @@ export class InputTextArea extends InputText {
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
                 }
-                const lines = this._lines ? this._lines : this._breakLines(
-                    this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                const lines = this._lines ? this._lines : this._breakLines(this._availableWidth, context);
 
                 let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
 
@@ -1240,7 +1243,7 @@ export class InputTextArea extends InputText {
         const tmpLine = {text: "", index: -1};
         this._applyOnSelectedRange((line, index, startIndex, endIndex)=>{
             this._selectedLineIndex = startIndex;
-            this.lastClickedCoordinateY = startIndex * this._fontOffset.height + 1;
+            this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + startIndex * this._fontOffset.height + 1;
             
             const begin = index === startIndex ? this._startHighlightIndex : 0;
             const end = index === endIndex ? this._endHighlightIndex : line.text.length;
