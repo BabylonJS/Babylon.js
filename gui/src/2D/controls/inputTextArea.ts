@@ -738,14 +738,12 @@ console.log(this._cursorIndex,this._lines[this._selectedLineIndex].text.length);
         catch { } //pass
         this._host.clipboardData = this._highlightedText;
     }
+
     /** @hidden */
     protected _onCutText(ev: ClipboardEvent): void {
         if (!this._highlightedText) {
             return;
         }
-        this._deleteSelection();
-        this._textHasChanged();
-        this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
@@ -753,8 +751,11 @@ console.log(this._cursorIndex,this._lines[this._selectedLineIndex].text.length);
         catch { } //pass
 
         this._host.clipboardData = this._highlightedText;
-        this._highlightedText = "";
+
+        this._deleteSelection();
+        this._textHasChanged();
     }
+    
     /** @hidden */
     protected _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
@@ -1262,6 +1263,8 @@ console.log(this._cursorIndex,this._lines[this._selectedLineIndex].text.length);
         this._cursorOffset = this._lines[tmpLine.index].text.length - this._cursorIndex;
 
         this._isTextHighlightOn = false;
+
+        this._highlightedText = "";
     }
     
     /** @hidden */
