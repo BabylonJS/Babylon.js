@@ -1370,6 +1370,9 @@ export class Animation {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
+                        if (serializationObject.animations) {
+                            serializationObject = serializationObject.animations;
+                        }
 
                         if (serializationObject.length) {
                             let output = new Array<Animation>();
