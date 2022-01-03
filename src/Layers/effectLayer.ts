@@ -369,6 +369,35 @@ export abstract class EffectLayer {
         this._mainTexture.renderList = null;
         this._mainTexture.ignoreCameraViewport = true;
 
+        this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
+            if (!mesh.isReady(false)) {
+                return false;
+            }
+            if (refreshRate === 0 && mesh.subMeshes) {
+                // full check: check that the effects are ready
+                for (let i = 0; i < mesh.subMeshes.length; ++i) {
+                    const subMesh = mesh.subMeshes[i];
+                    const material = subMesh.getMaterial();
+                    const renderingMesh = subMesh.getRenderingMesh();
+
+                    if (!material) {
+                        continue;
+                    }
+
+                    const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+                    const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
+
+                    this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
+
+                    if (!this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        };
+
         // Custom render function
         this._mainTexture.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
             this.onBeforeRenderMainTextureObservable.notifyObservers(this);
