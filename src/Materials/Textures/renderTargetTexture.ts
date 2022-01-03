@@ -434,13 +434,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Creates a depth stencil texture.
      * This is only available in WebGL 2 or with the depth texture extension available.
-     * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode
-     * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
-     * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
-     * @param samples sample count of the depth/stencil texture
+     * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode (default: 0)
+     * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture (default: true)
+     * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
+     * @param samples sample count of the depth/stencil texture (default: 1)
+     * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
      */
-    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1): void {
-        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples);
+    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1, format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT): void {
+        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format);
     }
 
     private _releaseRenderPassId(): void {
