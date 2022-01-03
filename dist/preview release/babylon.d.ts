@@ -23449,12 +23449,12 @@ declare module BABYLON {
         camera: FreeCamera;
         /**
          * Defines the touch sensibility for rotation.
-         * The higher the faster.
+         * The lower the faster.
          */
         touchAngularSensibility: number;
         /**
          * Defines the touch sensibility for move.
-         * The higher the faster.
+         * The lower the faster.
          */
         touchMoveSensibility: number;
         /**
@@ -25504,16 +25504,19 @@ declare module BABYLON {
         vScale: number;
         /**
          * Define an offset on the texture to rotate around the u coordinates of the UVs
+         * The angle is defined in radians.
          * @see https://doc.babylonjs.com/how_to/more_materials
          */
         uAng: number;
         /**
          * Define an offset on the texture to rotate around the v coordinates of the UVs
+         * The angle is defined in radians.
          * @see https://doc.babylonjs.com/how_to/more_materials
          */
         vAng: number;
         /**
          * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
+         * The angle is defined in radians.
          * @see https://doc.babylonjs.com/how_to/more_materials
          */
         wAng: number;
@@ -41898,6 +41901,10 @@ declare module BABYLON {
          */
         get renderPassIds(): readonly number[];
         /**
+         * Gets the current value of the refreshId counter
+         */
+        get currentRefreshId(): number;
+        /**
          * Sets a specific material to be used to render a mesh/a list of meshes in this render target texture
          * @param mesh mesh or array of meshes
          * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
@@ -41962,12 +41969,13 @@ declare module BABYLON {
         /**
          * Creates a depth stencil texture.
          * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode
-         * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
-         * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
-         * @param samples sample count of the depth/stencil texture
+         * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode (default: 0)
+         * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture (default: true)
+         * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
+         * @param samples sample count of the depth/stencil texture (default: 1)
+         * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
          */
-        createDepthStencilTexture(comparisonFunction?: number, bilinearFiltering?: boolean, generateStencil?: boolean, samples?: number): void;
+        createDepthStencilTexture(comparisonFunction?: number, bilinearFiltering?: boolean, generateStencil?: boolean, samples?: number, format?: number): void;
         private _releaseRenderPassId;
         private _createRenderPassId;
         private _processSizeParameter;
@@ -67769,7 +67777,9 @@ declare module BABYLON {
         /** @hidden */
         _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
         /** @hidden */
-        _copyInvertYBindGroupd: GPUBindGroup;
+        _copyInvertYBindGroup: GPUBindGroup;
+        /** @hidden */
+        _copyInvertYBindGroupWithOfst: GPUBindGroup;
         private _webgpuTexture;
         private _webgpuMSAATexture;
         get underlyingResource(): Nullable<GPUTexture>;
@@ -67829,6 +67839,7 @@ declare module BABYLON {
         private _tintWASM;
         private _bufferManager;
         private _mipmapSampler;
+        private _ubCopyWithOfst;
         private _pipelines;
         private _compiledShaders;
         private _deferredReleaseTextures;
@@ -67854,7 +67865,7 @@ declare module BABYLON {
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number;
         static HasStencilAspect(format: GPUTextureFormat): boolean;
-        invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
+        invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, ofstX?: number, ofstY?: number, rectWidth?: number, rectHeight?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -67869,8 +67880,8 @@ declare module BABYLON {
         generateMipmaps(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
-        updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
+        updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number): void;
+        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, allowGPUOptimization?: boolean): void;
         readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>, noDataConversion?: boolean): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;
@@ -91952,6 +91963,7 @@ interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
 interface GPUImageCopyExternalImage {
     source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
     origin?: GPUOrigin2D; /* default={} */
+    flipY?: boolean; /* default=false */
 }
 
 interface GPUProgrammablePassEncoder {
