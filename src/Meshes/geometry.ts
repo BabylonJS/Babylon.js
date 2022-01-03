@@ -249,7 +249,7 @@ export class Geometry implements IGetSetVerticesData {
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the vertex data to use
      * @param updatable defines if the vertex must be flagged as updatable (false as default)
-     * @param stride defines the stride size to use in the position buffer i.e. the distance between two positions in the positions array. (Default is 3)
+     * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
      */
     public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
         if (updatable && Array.isArray(data)) {
