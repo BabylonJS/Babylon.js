@@ -270,8 +270,9 @@ export class Geometry implements IGetSetVerticesData {
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
      * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
+     * @param stride defines the stride size to use (distance between two positions in the positions array)
      */
-    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null, disposeExistingBuffer = true): void {
+    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null, disposeExistingBuffer = true, stride?: number): void {
         var kind = buffer.getKind();
         if (this._vertexBuffers[kind] && disposeExistingBuffer) {
             this._vertexBuffers[kind].dispose();
@@ -295,7 +296,7 @@ export class Geometry implements IGetSetVerticesData {
                 }
             }
 
-            this._updateExtend(data);
+            this._updateExtend(data, stride);
             this._resetPointsArrayCache();
 
             for (var index = 0; index < numOfMeshes; index++) {
@@ -352,9 +353,9 @@ export class Geometry implements IGetSetVerticesData {
         this.notifyUpdate(kind);
     }
 
-    private _updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>) {
+    private _updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>, stride?: number) {
         if (updateExtends) {
-            this._updateExtend(data);
+            this._updateExtend(data, stride);
         }
 
         this._resetPointsArrayCache();
@@ -646,8 +647,9 @@ export class Geometry implements IGetSetVerticesData {
     /**
      * Apply current geometry to a given mesh
      * @param mesh defines the mesh to apply geometry to
+     * @param stride defines the stride size to use (distance between two positions in the positions array)
      */
-    public applyToMesh(mesh: Mesh): void {
+    public applyToMesh(mesh: Mesh, stride?: number): void {
         if (mesh._geometry === this) {
             return;
         }
@@ -672,13 +674,13 @@ export class Geometry implements IGetSetVerticesData {
         meshes.push(mesh);
 
         if (this.isReady()) {
-            this._applyToMesh(mesh);
+            this._applyToMesh(mesh, stride);
         } else if (this._boundingInfo) {
             mesh.setBoundingInfo(this._boundingInfo);
         }
     }
 
-    private _updateExtend(data: Nullable<FloatArray> = null) {
+    private _updateExtend(data: Nullable<FloatArray> = null, stride?: number) {
         if (this.useBoundingInfoFromGeometry && this._boundingInfo) {
             this._extend = {
                 minimum: this._boundingInfo.minimum.clone(),
@@ -689,11 +691,11 @@ export class Geometry implements IGetSetVerticesData {
                 data = this.getVerticesData(VertexBuffer.PositionKind)!;
             }
 
-            this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+            this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, stride);
         }
     }
 
-    private _applyToMesh(mesh: Mesh): void {
+    private _applyToMesh(mesh: Mesh, stride?: number): void {
         var numOfMeshes = this._meshes.length;
 
         // vertexBuffers
@@ -704,7 +706,7 @@ export class Geometry implements IGetSetVerticesData {
 
             if (kind === VertexBuffer.PositionKind) {
                 if (!this._extend) {
-                    this._updateExtend();
+                    this._updateExtend(null, stride);
                 }
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
