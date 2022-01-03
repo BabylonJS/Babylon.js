@@ -1420,7 +1420,7 @@ export class Animation {
                     }
                 }
             });
-    
+
             request.open("GET", url);
             request.send();
         });
