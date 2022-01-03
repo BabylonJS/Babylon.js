@@ -62,7 +62,7 @@
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
-- Update `geometry.setVerticesBuffer` and `geometry.applyToMesh` which now take an optional `stride` parameter as in `geometry.setVerticesData`. It is used to compute `geometry._extend` with the correct stride ([barroij](https://github.com/barroij))
+- Prevent the `Geometry` object from using an hardcoded position stride when possible. ([barroij](https://github.com/barroij))
 
 ### Engine
 
