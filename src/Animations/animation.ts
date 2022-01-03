@@ -1360,9 +1360,10 @@ export class Animation {
      * Creates a new animation or an array of animations from a snippet saved in a remote file
      * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
      * @param url defines the url to load from
+     * @param savedFromACE defines if the file was saved from the Animation Curve Editor (false by default)
      * @returns a promise that will resolve to the new animation or an array of animations
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, savedFromACE: boolean = false): Promise<Animation | Array<Animation>> {
 
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
@@ -1370,6 +1371,9 @@ export class Animation {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
+                        if (savedFromACE) {
+                            serializationObject = serializationObject.animations;
+                        }
 
                         if (serializationObject.length) {
                             let output = new Array<Animation>();
@@ -1397,34 +1401,6 @@ export class Animation {
             request.send();
         });
     }
-
-    /**
-     * Creates a new array of animations from a remote file that was saved from the Animation Curve Editor
-     * @param url defines the url to load from
-     * @returns a promise that will resolve to the new array of animations
-     */
-     public static ParseFromACEFileAsync(url: string): Promise<Array<Animation>> {
-        return new Promise((resolve, reject) => {
-            var request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        let animations = JSON.parse(request.responseText).animations;
-                        const parsedAnimations = [];
-                         for (const animation of animations) {
-                            parsedAnimations.push(Animation.Parse(animation));
-                        }
-                        resolve(parsedAnimations);
-                    } else {
-                        reject("Unable to load the animations");
-                    }
-                }
-            });
-
-            request.open("GET", url);
-            request.send();
-        });
-     }
 
     /**
      * Creates an animation or an array of animations from a snippet saved by the Inspector
