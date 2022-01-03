@@ -1360,10 +1360,9 @@ export class Animation {
      * Creates a new animation or an array of animations from a snippet saved in a remote file
      * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
      * @param url defines the url to load from
-     * @param savedFromACE defines if the file was saved from the Animation Curve Editor (false by default)
      * @returns a promise that will resolve to the new animation or an array of animations
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string, savedFromACE: boolean = false): Promise<Animation | Array<Animation>> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
 
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
@@ -1371,7 +1370,7 @@ export class Animation {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
-                        if (savedFromACE) {
+                        if (serializationObject.animations) {
                             serializationObject = serializationObject.animations;
                         }
 
