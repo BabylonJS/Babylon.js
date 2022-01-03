@@ -91,14 +91,24 @@ export class Geometry implements IGetSetVerticesData {
      *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
      */
     public set boundingBias(value: Vector2) {
-        if (this._boundingBias) {
-            this._boundingBias.copyFrom(value);
-        } else {
-            this._boundingBias = value.clone();
-        }
-
-        this._updateBoundingInfo(true, null);
+        this.setBoundingBias(value)
     }
+
+    /**
+     *  Sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
+     *  This function comes in addition to the `Geometry.boundingBias`setter in order to be able to specify a stride different from the default value
+     * @param value defines the new value of the boundingBias
+     * @param stride defines the stride size to use in the position buffer i.e. the distance between two positions in the positions array. (Default is 3)
+     */
+    public setBoundingBias(value: Vector2, stride?: number): void {
+       if (this._boundingBias) {
+           this._boundingBias.copyFrom(value);
+       } else {
+           this._boundingBias = value.clone();
+       }
+
+       this._updateBoundingInfo(true, null, stride);
+   }
 
     /**
      * Static function used to attach a new empty geometry to a mesh
@@ -239,7 +249,7 @@ export class Geometry implements IGetSetVerticesData {
      * @param kind defines the data kind (Position, normal, etc...)
      * @param data defines the vertex data to use
      * @param updatable defines if the vertex must be flagged as updatable (false as default)
-     * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
+     * @param stride defines the stride size to use in the position buffer i.e. the distance between two positions in the positions array. (Default is 3)
      */
     public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
         if (updatable && Array.isArray(data)) {
@@ -270,7 +280,7 @@ export class Geometry implements IGetSetVerticesData {
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
      * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
-     * @param stride defines the stride size to use (distance between two positions in the positions array)
+     * @param stride defines the stride size to use in the position buffer i.e. the distance between two positions in the positions array. (Default is 3)
      */
     public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null, disposeExistingBuffer = true, stride?: number): void {
         var kind = buffer.getKind();
@@ -647,7 +657,7 @@ export class Geometry implements IGetSetVerticesData {
     /**
      * Apply current geometry to a given mesh
      * @param mesh defines the mesh to apply geometry to
-     * @param stride defines the stride size to use (distance between two positions in the positions array)
+     * @param stride defines the stride size to use in the position buffer i.e. the distance between two positions in the positions array. (Default is 3)
      */
     public applyToMesh(mesh: Mesh, stride?: number): void {
         if (mesh._geometry === this) {
