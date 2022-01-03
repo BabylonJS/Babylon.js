@@ -1399,6 +1399,34 @@ export class Animation {
     }
 
     /**
+     * Creates a new array of animations from a remote file that was saved from the Animation Curve Editor
+     * @param url defines the url to load from
+     * @returns a promise that will resolve to the new array of animations
+     */
+     public static ParseFromACEFileAsync(url: string): Promise<Array<Animation>> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let animations = JSON.parse(request.responseText).animations;
+                        const parsedAnimations = [];
+                         for (const animation of animations) {
+                            parsedAnimations.push(Animation.Parse(animation));
+                        }
+                        resolve(parsedAnimations);
+                    } else {
+                        reject("Unable to load the animations");
+                    }
+                }
+            });
+    
+            request.open("GET", url);
+            request.send();
+        });
+     }
+
+    /**
      * Creates an animation or an array of animations from a snippet saved by the Inspector
      * @param snippetId defines the snippet to load
      * @returns a promise that will resolve to the new animation or a new array of animations

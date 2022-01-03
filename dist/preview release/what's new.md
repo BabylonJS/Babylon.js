@@ -124,6 +124,7 @@
 
 ### Inspector
 
+- Added static function `ParseFromACEFileAsync` to class Animation to handle files saved from ACE ([BlakeOne](https://github.com/BlakeOne))
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
