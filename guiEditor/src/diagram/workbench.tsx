@@ -73,6 +73,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _selectionDepth = 0;
     private _doubleClick: Nullable<Control> = null;
     private _lockMainSelection: boolean = false;
+    public _liveGuiTextureRerender: boolean = true;
     public get globalState() {
         return this.props.globalState;
     }
@@ -670,6 +671,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
+        this._liveGuiTextureRerender = false;
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -860,16 +862,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
-            let doRerender = true;
             this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(() => {
-                if (doRerender) {
+                if (this._liveGuiTextureRerender) {
                     this.globalState.liveGuiTexture?.markAsDirty();
                 }
-                doRerender = true;
+                this._liveGuiTextureRerender = true;
             });
             this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(() => {
                 this.globalState.guiTexture?.markAsDirty();
-                doRerender = false;
+                this._liveGuiTextureRerender = false;
             });
         }
 
@@ -886,11 +887,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
     synchronizeLiveGUI() {
         if (this.globalState.liveGuiTexture) {
-            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(desc => {
                 this.globalState.liveGuiTexture?.removeControl(desc);
                 this.appendBlock(desc);
             })
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     }
 

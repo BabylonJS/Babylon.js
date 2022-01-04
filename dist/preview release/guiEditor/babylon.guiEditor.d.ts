@@ -703,6 +703,7 @@ declare module GUIEDITOR {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];

@@ -189,7 +189,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         if (windowAsAny.Playground && oldId) {
                             windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                 regex: new RegExp(oldId, "g"),
-                                replace: `parseFromSnippetAsync("${adt.snippetId}`,
+                                replace: `parseFromSnippetAsync("${adt.snippetId})`,
                             });
                         }
                         resolve(adt.snippetId);
@@ -222,8 +222,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             .then((snippetId: string) => {
                 adt.snippetId = snippetId;
                 const alertMessage = `GUI saved with ID:  ${adt.snippetId}`;
-                if (navigator.clipboard) {
-                    navigator.clipboard
+                if (this.props.globalState.hostWindow.navigator.clipboard) {
+                    this.props.globalState.hostWindow.navigator.clipboard
                         .writeText(adt.snippetId)
                         .then(() => {
                             this.props.globalState.hostWindow.alert(`${alertMessage}. The ID was copied to your clipboard.`);
