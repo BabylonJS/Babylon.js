@@ -19,7 +19,7 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
     }
 
     this.createImageBitmap(video).then((bitmap) => {
-        this._textureHelper.updateTexture(bitmap, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(bitmap, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }

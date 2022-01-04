@@ -197,6 +197,7 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to rotate around the u coordinates of the UVs
+     * The angle is defined in radians.
      * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
@@ -204,6 +205,7 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to rotate around the v coordinates of the UVs
+     * The angle is defined in radians.
      * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
@@ -211,6 +213,7 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
+     * The angle is defined in radians.
      * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
