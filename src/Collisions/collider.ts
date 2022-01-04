@@ -426,7 +426,7 @@ export class Collider {
     public _getResponse(pos: Vector3, vel: Vector3): void {
         pos.addToRef(vel, this._destinationPoint);
         vel.scaleInPlace((this._nearestDistance / vel.length()));
-    
+
         this._basePoint.addToRef(vel, pos);
         pos.subtractToRef(this.intersectionPoint, this._slidePlaneNormal);
         this._slidePlaneNormal.normalize();
