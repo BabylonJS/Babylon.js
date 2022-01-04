@@ -64,7 +64,6 @@
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
 - Added `onCreateCustomMeshCollider` handler to support cureating custom mesh colliders like Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
 
-
 ### Engine
 
 - Moved all instance data from `Geometry` to `Mesh` such that the same `Geometry` object can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
@@ -187,6 +186,7 @@
 - Added `HandConstraintBehavior`, to make the assigned mesh follow the hand pose. This behavior requires to be linked to a XR experience with the `HandTracking` feature activated. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Updated `SixDofDragBehavior` and `PointerDragBehavior` to respond to grabs made with the `WebXRNearInteraction` feature ([rickfromwork](https://github.com/rickfromwork))
 - Updated `SixDofDragBehavior` to support XR motion controller specific rotation options when one is used, allowing for 1:1 mesh rotation with controllers ([rickfromwork](https://github.com/rickfromwork))
+- Added `TextWrapping.WordWrapEllipsis` mode to textblock ([mysunnytime](https://github.com/mysunnytime))
 
 ### WebXR
 
@@ -392,3 +392,4 @@
 - Rework of the inner working of render targets. Those are mostly internal changes. From the end user standpoint, the most visible change is that the `PostProcess` class is now dealing with `RenderTargetWrapper` instead of `InternalTexture` objects. So, if you are directly updating the `inputTexture` property with a render target texture that you previously rendered, you will need to pass a `RenderTargetWrapper` instead of an `InternalTexture`: you will get it by doing `rtt.renderTarget`, where `rtt` is the instance of your `RenderTargetTexture`. ([Popov72](https://github.com/Popov72))
 - `ShaderMaterial` is now storing the effect on submeshes by default. It may be a breaking change in some special cases where one creates a `ShaderMaterial` not to be used as the material property of a mesh but instead to handle it "by hand" by calling `ShaderMaterial.isReady` / `ShaderMaterial.bind` directly. If you are doing that, you may want to pass `false` as the 5th parameter of the `ShaderMaterial` constructor to disable storing the effect on submeshes.
 - The `glTFLoader.rootBabylonMesh` getter now has a nullable return type (glTF files without mesh data) ([simonihmig](https://github.com/simonihmig))
+
