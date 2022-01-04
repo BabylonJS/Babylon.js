@@ -160,9 +160,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public onCreateCustomShape: (impostor: PhysicsImpostor) => any;
 
     /**
-     * The create custom mesh collider handler function to support building custom mesh collider vertex data
+     * The create custom mesh impostor handler function to support building custom mesh impostor vertex data (Ex: Ammo.btSmoothTriangleMesh)
      */
-     public onCreateCustomMeshCollider: (impostor: PhysicsImpostor) => any;
+     public onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
 
     // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
     private _isImpostorInContact(impostor: PhysicsImpostor) {
@@ -1006,8 +1006,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (impostor.getParam("mass") == 0) {
                     // Only create btBvhTriangleMeshShape impostor is static
                     // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
-                    if (this.onCreateCustomMeshCollider) {
-                        returnValue = this.onCreateCustomMeshCollider(impostor);
+                    if (this.onCreateCustomMeshImpostor) {
+                        returnValue = this.onCreateCustomMeshImpostor(impostor);
                     } else {
                         var tetraMesh = new this.bjsAMMO.btTriangleMesh();
                         impostor._pluginData.toDispose.push(tetraMesh);
