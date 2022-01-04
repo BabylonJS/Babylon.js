@@ -434,7 +434,7 @@ export class Collider {
 
         pos.addInPlace(this._displacementVector);
         this.intersectionPoint.addInPlace(this._displacementVector);
-        
+
         this._slidePlaneNormal.scaleInPlace(Plane.SignedDistanceToPlaneFromPositionAndNormal(this.intersectionPoint, this._slidePlaneNormal, this._destinationPoint));
         this._destinationPoint.subtractInPlace(this._slidePlaneNormal);
 

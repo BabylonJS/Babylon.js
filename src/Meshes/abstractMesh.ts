@@ -1724,7 +1724,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // Transformation matrix
         const collisionsScalingMatrix = TmpVectors.Matrix[0];
         const collisionsTransformMatrix = TmpVectors.Matrix[1];
-        Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, collisionsScalingMatrix);     
+        Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, collisionsScalingMatrix);
         this.worldMatrixFromCache.multiplyToRef(collisionsScalingMatrix, collisionsTransformMatrix);
         this._processCollisionsForSubMeshes(collider, collisionsTransformMatrix);
         return this;
