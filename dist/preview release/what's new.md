@@ -62,7 +62,7 @@
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
-- Added `onCreateCustomMeshCollider` handler to support cureating custom mesh colliders like Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomMeshImpostor` handler for creating custom mesh impostors to support Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
 
 ### Engine
 
