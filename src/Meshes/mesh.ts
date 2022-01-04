@@ -4501,6 +4501,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.instances.pop();
         }
     }
+
+    /** @hidden */
+    public _shouldConvertRHS() {
+        return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
+    }
 }
 
 RegisterClass("BABYLON.Mesh", Mesh);
