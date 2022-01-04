@@ -1685,7 +1685,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.indexStart + subMesh.indexCount,
             subMesh.verticesStart,
             !!subMesh.getMaterial(),
-            this
+            this,
+            this._shouldConvertRHS()
         );
         return this;
     }
@@ -1709,6 +1710,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
+    public _shouldConvertRHS() {
+        return false;
+    }
+
+    /** @hidden */
     public _checkCollision(collider: Collider): AbstractMesh {
         // Bounding box test
         if (!this.getBoundingInfo()._checkCollision(collider)) {
@@ -1718,7 +1724,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // Transformation matrix
         const collisionsScalingMatrix = TmpVectors.Matrix[0];
         const collisionsTransformMatrix = TmpVectors.Matrix[1];
-        Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, collisionsScalingMatrix);
+        Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, collisionsScalingMatrix);     
         this.worldMatrixFromCache.multiplyToRef(collisionsScalingMatrix, collisionsTransformMatrix);
         this._processCollisionsForSubMeshes(collider, collisionsTransformMatrix);
         return this;
