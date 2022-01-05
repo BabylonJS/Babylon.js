@@ -113,6 +113,7 @@
 - Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 - Set the `metadata` property on `Material` to be serializable, so that it can be properly loaded from .babylon files ([jlivak](https://github.com/jlivak))
 - Add `mesh.visibility` support to grid material ([bghgary](https://github.com/bghgary))
+- Transform `getAlphaFromRGB` in a property and dirty the materials that use it when it's changed ([carolhmj](https://github.com/carolhmj))
 
 ### Meshes
 
@@ -135,6 +136,7 @@
 - ACE usability improvements and addition of new Step Tangent interpolation. ([carolhmj](https://github.com/carolhmj))
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
+- Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
