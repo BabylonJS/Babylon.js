@@ -232,10 +232,9 @@ export class GoldbergMesh extends Mesh {
      */
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
+        serializationObject.type = "GoldbergMesh";
 
         const goldbergData: any = {};
-        goldbergData.type = "GoldbergMesh";
-        goldbergData.goldbergData = { };
         goldbergData.adjacentFaces = this.goldbergData.adjacentFaces;
         goldbergData.nbSharedFaces = this.goldbergData.nbSharedFaces;
         goldbergData.nbUnsharedFaces = this.goldbergData.nbUnsharedFaces;
