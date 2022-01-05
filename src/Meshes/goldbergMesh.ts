@@ -232,43 +232,48 @@ export class GoldbergMesh extends Mesh {
      */
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
-        serializationObject.type = "GoldbergMesh";
-        serializationObject.goldbergData = { };
-        serializationObject.adjacentFaces = this.goldbergData.adjacentFaces;
-        serializationObject.nbSharedFaces = this.goldbergData.nbSharedFaces;
-        serializationObject.nbUnsharedFaces = this.goldbergData.nbUnsharedFaces;
-        serializationObject.nbFaces = this.goldbergData.nbFaces;
-        serializationObject.nbFacesAtPole = this.goldbergData.nbFacesAtPole;
+
+        const goldbergData: any = {};
+        goldbergData.type = "GoldbergMesh";
+        goldbergData.goldbergData = { };
+        goldbergData.adjacentFaces = this.goldbergData.adjacentFaces;
+        goldbergData.nbSharedFaces = this.goldbergData.nbSharedFaces;
+        goldbergData.nbUnsharedFaces = this.goldbergData.nbUnsharedFaces;
+        goldbergData.nbFaces = this.goldbergData.nbFaces;
+        goldbergData.nbFacesAtPole = this.goldbergData.nbFacesAtPole;
+
         if (this.goldbergData.faceColors) {
-            serializationObject.faceColors = [];
+            goldbergData.faceColors = [];
             for (const color of this.goldbergData.faceColors) {
-                serializationObject.faceColors.push(color.asArray());
+                goldbergData.faceColors.push(color.asArray());
             }
         }
         if (this.goldbergData.faceCenters) {
-            serializationObject.faceCenters = [];
+            goldbergData.faceCenters = [];
             for (const vector of this.goldbergData.faceCenters) {
-                serializationObject.faceCenters.push(vector.asArray());
+                goldbergData.faceCenters.push(vector.asArray());
             }
         }
         if (this.goldbergData.faceZaxis) {
-            serializationObject.faceZaxis = [];
+            goldbergData.faceZaxis = [];
             for (const vector of this.goldbergData.faceZaxis) {
-                serializationObject.faceZaxis.push(vector.asArray());
+                goldbergData.faceZaxis.push(vector.asArray());
             }
         }
         if (this.goldbergData.faceYaxis) {
-            serializationObject.faceYaxis = [];
+            goldbergData.faceYaxis = [];
             for (const vector of this.goldbergData.faceYaxis) {
-                serializationObject.faceYaxis.push(vector.asArray());
+                goldbergData.faceYaxis.push(vector.asArray());
             }
         }
         if (this.goldbergData.faceXaxis) {
-            serializationObject.faceXaxis = [];
+            goldbergData.faceXaxis = [];
             for (const vector of this.goldbergData.faceXaxis) {
-                serializationObject.faceXaxis.push(vector.asArray());
+                goldbergData.faceXaxis.push(vector.asArray());
             }
         }
+
+        serializationObject.goldbergData = goldbergData;
     }
 
      /**
