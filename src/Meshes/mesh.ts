@@ -3701,7 +3701,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public static _GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
-        throw _WarnImport("GroundMesh");
+        throw _WarnImport("GoldbergMesh");
     };
 
     /** @hidden */
