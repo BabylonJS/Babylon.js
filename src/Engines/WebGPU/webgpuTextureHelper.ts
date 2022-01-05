@@ -609,29 +609,6 @@ export class WebGPUTextureHelper {
         return !!(texture as InternalTexture).dispose;
     }
 
-    public static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
-        switch (compareFunction) {
-            case Constants.ALWAYS:
-                return WebGPUConstants.CompareFunction.Always;
-            case Constants.EQUAL:
-                return WebGPUConstants.CompareFunction.Equal;
-            case Constants.GREATER:
-                return WebGPUConstants.CompareFunction.Greater;
-            case Constants.GEQUAL:
-                return WebGPUConstants.CompareFunction.GreaterEqual;
-            case Constants.LESS:
-                return WebGPUConstants.CompareFunction.Less;
-            case Constants.LEQUAL:
-                return WebGPUConstants.CompareFunction.LessEqual;
-            case Constants.NEVER:
-                return WebGPUConstants.CompareFunction.Never;
-            case Constants.NOTEQUAL:
-                return WebGPUConstants.CompareFunction.NotEqual;
-            default:
-                return WebGPUConstants.CompareFunction.Less;
-        }
-    }
-
     public static IsImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
         return (imageBitmap as ImageBitmap).close !== undefined;
     }
