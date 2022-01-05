@@ -62,6 +62,7 @@
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
+- Added `onCreateCustomMeshImpostor` handler for creating custom mesh impostors to support Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
 
 ### Engine
 
@@ -112,6 +113,8 @@
 - Added the `stencil` object property to `Material` ([Popov72](https://github.com/Popov72))
 - Set the `metadata` property on `Material` to be serializable, so that it can be properly loaded from .babylon files ([jlivak](https://github.com/jlivak))
 - Add `mesh.visibility` support to grid material ([bghgary](https://github.com/bghgary))
+- Transform `getAlphaFromRGB` in a property and dirty the materials that use it when it's changed ([carolhmj](https://github.com/carolhmj))
+- When `scene.markAllMaterialsAsDirty` is called on `BaseTexture`, only dirty the materials related to that specific texture. ([carolhmj](https://github.com/carolhmj))
 
 ### Meshes
 
@@ -124,6 +127,7 @@
 
 ### Inspector
 
+- Added support for parsing files saved from ACE to `Animation.ParseFromFileAsync` ([BlakeOne](https://github.com/BlakeOne))
 - Increased float precision to 4 ([msDestiny14](https://github.com/msDestiny14))
 - Added support for sounds in the inspector ([Deltakosh](https://github.com/deltakosh))
 - Added a debug option to show the frustum of a directional light ([Popov72](https://github.com/Popov72))
@@ -133,6 +137,7 @@
 - ACE usability improvements and addition of new Step Tangent interpolation. ([carolhmj](https://github.com/carolhmj))
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
+- Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
@@ -184,6 +189,7 @@
 - Added `HandConstraintBehavior`, to make the assigned mesh follow the hand pose. This behavior requires to be linked to a XR experience with the `HandTracking` feature activated. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Updated `SixDofDragBehavior` and `PointerDragBehavior` to respond to grabs made with the `WebXRNearInteraction` feature ([rickfromwork](https://github.com/rickfromwork))
 - Updated `SixDofDragBehavior` to support XR motion controller specific rotation options when one is used, allowing for 1:1 mesh rotation with controllers ([rickfromwork](https://github.com/rickfromwork))
+- Added `TextWrapping.WordWrapEllipsis` mode to textblock ([mysunnytime](https://github.com/mysunnytime))
 
 ### WebXR
 
@@ -328,6 +334,7 @@
 - Fix the `StandardMaterial` not using the tangent attribute when available ([Popov72](https://github.com/Popov72))
 - Fix code for handling getting DeviceType/DeviceSlot in DeviceInputSystem to work better with MouseEvents ([PolygonalSun](https://github.com/PolygonalSun))
 - Fix vector2/3/4 and quaternion toString formatting ([rgerd](https://github.com/rgerd))
+- Fix non initialized matrix when setting orientation for bones ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix cloning skeleton when mesh is an instanced mesh ([Popov72](https://github.com/Popov72))
 - Fix a bug where pointer up/move events were not sent to 3D controls when no mesh in the `UtilityLayerRenderer` is hit by the picking ray. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fix issue with DeviceInputSystem where Mouse was being deregistered on Safari/MacOS ([PolygonalSun](https://github.com/PolygonalSun))
@@ -362,6 +369,7 @@
 - Fix Button3D, HolographicButton, TouchHolographicButton and HolographicSlate content when scene is right-handed ([carolhmj](https://github.com/carolhmj))
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
+- Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
 
 ## Breaking changes
 
@@ -388,3 +396,4 @@
 - Rework of the inner working of render targets. Those are mostly internal changes. From the end user standpoint, the most visible change is that the `PostProcess` class is now dealing with `RenderTargetWrapper` instead of `InternalTexture` objects. So, if you are directly updating the `inputTexture` property with a render target texture that you previously rendered, you will need to pass a `RenderTargetWrapper` instead of an `InternalTexture`: you will get it by doing `rtt.renderTarget`, where `rtt` is the instance of your `RenderTargetTexture`. ([Popov72](https://github.com/Popov72))
 - `ShaderMaterial` is now storing the effect on submeshes by default. It may be a breaking change in some special cases where one creates a `ShaderMaterial` not to be used as the material property of a mesh but instead to handle it "by hand" by calling `ShaderMaterial.isReady` / `ShaderMaterial.bind` directly. If you are doing that, you may want to pass `false` as the 5th parameter of the `ShaderMaterial` constructor to disable storing the effect on submeshes.
 - The `glTFLoader.rootBabylonMesh` getter now has a nullable return type (glTF files without mesh data) ([simonihmig](https://github.com/simonihmig))
+

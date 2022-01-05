@@ -803,6 +803,8 @@ export class Bone extends Node {
         if (tNode) {
             rotMatInv.multiplyToRef(tNode.getWorldMatrix(), rotMatInv);
             Matrix.ScalingToRef(tNode.scaling.x, tNode.scaling.y, tNode.scaling.z, scaleMatrix);
+        } else {
+            Matrix.IdentityToRef(scaleMatrix);
         }
 
         rotMatInv.invert();

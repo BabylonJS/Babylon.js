@@ -720,6 +720,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -3640,6 +3641,7 @@ declare module GUIEDITOR {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];

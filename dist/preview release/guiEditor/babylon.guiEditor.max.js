@@ -44976,7 +44976,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             if (windowAsAny.Playground && oldId) {
                                 windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                     regex: new RegExp(oldId, "g"),
-                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId + ")",
                                 });
                             }
                             resolve(adt.snippetId);
@@ -45011,8 +45011,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     .then(function (snippetId) {
                     adt.snippetId = snippetId;
                     var alertMessage = "GUI saved with ID:  " + adt.snippetId;
-                    if (navigator.clipboard) {
-                        navigator.clipboard
+                    if (_this.props.globalState.hostWindow.navigator.clipboard) {
+                        _this.props.globalState.hostWindow.navigator.clipboard
                             .writeText(adt.snippetId)
                             .then(function () {
                             _this.props.globalState.hostWindow.alert(alertMessage + ". The ID was copied to your clipboard.");
@@ -47823,6 +47823,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                     if (_this._responsive) {
                         _this.props.globalState.workbench.convertToPercentage(node, false);
                     }
+                    _this.props.globalState.workbench._liveGuiTextureRerender = false;
                     _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
                 }
             }
@@ -48095,7 +48096,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a, _b;
         // Get the canvas element from the DOM.
-        var canvas = document.getElementById("workbench-canvas");
+        var canvas = this.props.globalState.hostDocument.getElementById("workbench-canvas");
         var scalePointCursors = [
             "nesw-resize",
             "nwse-resize",
@@ -48349,6 +48350,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._selectionDepth = 0;
         _this._doubleClick = null;
         _this._lockMainSelection = false;
+        _this._liveGuiTextureRerender = true;
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
             _this._altKeyIsPressed = evt.altKey;
@@ -48933,6 +48935,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
         if (ignorClick === void 0) { ignorClick = false; }
+        this._liveGuiTextureRerender = false;
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
         if (this._setConstraintDirection) {
@@ -49103,18 +49106,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
-            var doRerender_1 = true;
             this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(function () {
                 var _a;
-                if (doRerender_1) {
+                if (_this._liveGuiTextureRerender) {
                     (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
                 }
-                doRerender_1 = true;
+                _this._liveGuiTextureRerender = true;
             });
             this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(function () {
                 var _a;
                 (_a = _this.globalState.guiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
-                doRerender_1 = false;
+                _this._liveGuiTextureRerender = false;
             });
         }
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
@@ -49128,12 +49130,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
         var _this = this;
         if (this.globalState.liveGuiTexture) {
-            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(function (desc) {
                 var _a;
                 (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(desc);
                 _this.appendBlock(desc);
             });
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     };
     //Add map-like controls to an ArcRotate camera
@@ -49468,15 +49471,13 @@ var GUIEditor = /** @class */ (function () {
      */
     GUIEditor.Show = function (options) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var popupWindow, hostElement, globalState, graphEditor, error_1, popupWindow;
+            var hostElement, popupWindow, globalState, graphEditor, error_1, popupWindow;
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this._CurrentState) {
-                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
-                            if (popupWindow) {
-                                popupWindow.close();
-                            }
+                        hostElement = options.hostElement;
+                        // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
+                        if (this._CurrentState && hostElement) {
                             if (options.currentSnippetToken) {
                                 try {
                                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -49485,13 +49486,13 @@ var GUIEditor = /** @class */ (function () {
                                     //swallow and continue
                                 }
                             }
-                            if (options.liveGuiTexture) {
-                                this._CurrentState.liveGuiTexture = options.liveGuiTexture;
-                            }
                             return [2 /*return*/];
                         }
-                        hostElement = options.hostElement;
                         if (!hostElement) {
+                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                            if (popupWindow) {
+                                popupWindow.close();
+                            }
                             hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800);
                         }
                         globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();

@@ -159,6 +159,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public onCreateCustomShape: (impostor: PhysicsImpostor) => any;
 
+    /**
+     * The create custom mesh impostor handler function to support building custom mesh impostor vertex data (Ex: Ammo.btSmoothTriangleMesh)
+     */
+     public onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
+
     // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
     private _isImpostorInContact(impostor: PhysicsImpostor) {
         this._tmpContactCallbackResult = false;
@@ -1001,13 +1006,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (impostor.getParam("mass") == 0) {
                     // Only create btBvhTriangleMeshShape impostor is static
                     // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
-                    var tetraMesh = new this.bjsAMMO.btTriangleMesh();
-                    impostor._pluginData.toDispose.push(tetraMesh);
-                    var triangeCount = this._addMeshVerts(tetraMesh, object, object);
-                    if (triangeCount == 0) {
-                        returnValue = new this.bjsAMMO.btCompoundShape();
+                    if (this.onCreateCustomMeshImpostor) {
+                        returnValue = this.onCreateCustomMeshImpostor(impostor);
                     } else {
-                        returnValue = new this.bjsAMMO.btBvhTriangleMeshShape(tetraMesh);
+                        var tetraMesh = new this.bjsAMMO.btTriangleMesh();
+                        impostor._pluginData.toDispose.push(tetraMesh);
+                        var triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                        if (triangeCount == 0) {
+                            returnValue = new this.bjsAMMO.btCompoundShape();
+                        } else {
+                            returnValue = new this.bjsAMMO.btBvhTriangleMeshShape(tetraMesh);
+                        }
                     }
                     break;
                 }

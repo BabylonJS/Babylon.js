@@ -115,7 +115,7 @@ export class InputTextArea extends InputText {
 
         this.text = text;
 
-        this.isPointerBlocker = true;
+        this.isPointerBlocker = true;        
     }
 
     protected _getTypeName(): string {
@@ -137,7 +137,7 @@ export class InputTextArea extends InputText {
             return;
         }
 
-        this._oldlines = this._lines.map((l) => l.text);
+        this._oldlines = this._lines.map(l => l.text);;
 
         // Specific cases
         switch (keyCode) {
@@ -157,24 +157,24 @@ export class InputTextArea extends InputText {
                     this._deleteSelection();
                 } else if (line && line.text.length > 0) {
                     if (this._cursorOffset < line.text.length) { // Delete single character in current line
-                        this._cursorIndex = line.text.length - this._cursorOffset - 1;
-                        line.text = line.text.substring(0, this._cursorIndex) + line.text.substring(this._cursorIndex + 1);
-
+                        this._cursorIndex = line.text.length - this._cursorOffset -1;
+                        line.text = line.text.substring(0, this._cursorIndex) + line.text.substring(this._cursorIndex+1);
+                        
                     } else if (this._selectedLineIndex > 0) { // Delete at the start of the line (concatenation with previous word)
                         // Find the last word to adapt cursor index of current line
                         const prevLine = this._lines[this._selectedLineIndex - 1];
                         const words = prevLine.text.split(" ");
                         this._cursorIndex = words[words.length - 1].length;
-
+                                               
                         prevLine.text += line.text;
 
                         // Empty string to force the line breaking to recompute
                         line.text = "";
                     } else { // Nothing to do at the beginning of the text
-                        break;
+                        break;  
                     }
                 } else { // Beginning of a empty line
-                    this._selectedLineIndex--;
+                    this._selectedLineIndex--
                     this.lastClickedCoordinateY -= this._fontOffset.height;
 
                     line.text = "";
@@ -184,18 +184,18 @@ export class InputTextArea extends InputText {
                 if (evt) {
                     evt.preventDefault();
                 }
-
+                
                 this._isTextHighlightOn = false;
-
-                this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
+                
+                this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
                 this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
-
+                
                 if (this._selectedLineIndex > 0) {
-                    const lengthDiff = this._oldlines[this._selectedLineIndex - 1].length - this._lines[this._selectedLineIndex - 1].text.length;
+                    const lengthDiff = this._oldlines[this._selectedLineIndex -1].length - this._lines[this._selectedLineIndex-1].text.length;
                     if (lengthDiff < 0) {
                         // The word was enough tiny to fill in previous line
-                        this._cursorIndex += this._oldlines[this._selectedLineIndex - 1].length + 1 ;
+                        this._cursorIndex += this._oldlines[this._selectedLineIndex -1].length +1 ;
                         this.lastClickedCoordinateY -= this._fontOffset.height;
                         this._selectedLineIndex--;
                     }
@@ -214,11 +214,11 @@ export class InputTextArea extends InputText {
                     if (this._cursorOffset > 0) { // Delete single character in current line
                         this._cursorIndex = line.text.length - this._cursorOffset;
                         line.text = line.text.substring(0, this._cursorIndex) + line.text.substring(this._cursorIndex + 1);
-                    } else if (this._selectedLineIndex < this._lines.length - 1) { // Delete at the end of the line (concatenation with next word)
+                    } else if (this._selectedLineIndex < this._lines.length-1) { // Delete at the end of the line (concatenation with next word)
                         // Find the last word to adapt cursor index of next line
                         const words = line.text.split(" ");
                         this._cursorIndex = words[words.length - 1].length;
-
+                                               
                         const nextLine = this._lines[this._selectedLineIndex + 1];
                         line.text += nextLine.text;
 
@@ -228,26 +228,26 @@ export class InputTextArea extends InputText {
                         this.lastClickedCoordinateY += this._fontOffset.height;
                         this._selectedLineIndex++;
                     } else { // Nothing to do at the end of the text
-                        break;
+                        break;  
                     }
                 }
                 if (evt) {
                     evt.preventDefault();
                 }
-
+                
                 this._isTextHighlightOn = false;
-
-                this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
+                
+                this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
                 this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
-
+                
                 if (this._selectedLineIndex > 0) {
-                    const lengthDiff = this._oldlines[this._selectedLineIndex - 1].length - this._lines[this._selectedLineIndex - 1].text.length;
+                    const lengthDiff = this._oldlines[this._selectedLineIndex -1].length - this._lines[this._selectedLineIndex-1].text.length;
                     if (lengthDiff < 0) {
                         // The word was enough tiny to fill in previous line
-                        this._cursorIndex += this._oldlines[this._selectedLineIndex - 1].length + 1 ;
+                        this._cursorIndex += this._oldlines[this._selectedLineIndex -1].length +1 ;
                         this.lastClickedCoordinateY -= this._fontOffset.height;
-                        this._selectedLineIndex--;
+                        this._selectedLineIndex--;                        
                     }
                 }
 
@@ -361,9 +361,9 @@ export class InputTextArea extends InputText {
                 this._blinkIsEven = false;
 
                 let previousLineCursorIndex = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
-
+                
                 this._selectedLineIndex--;
-
+                
                 if (typeof this._lines[this._selectedLineIndex] === 'undefined') {
                     this._selectedLineIndex++;
                 }else {
@@ -372,11 +372,11 @@ export class InputTextArea extends InputText {
                     }else {
                         this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + this._selectedLineIndex * this._fontOffset.height + 1;
                     }
-
+                    
                     this._cursorOffset = this._lines[this._selectedLineIndex].text.length - previousLineCursorIndex;
 
                     const curLine = this._lines[this._selectedLineIndex].text;
-                    const prevLine = this._lines[this._selectedLineIndex + 1].text;
+                    const prevLine = this._lines[this._selectedLineIndex+1].text;
                     const subCurLine = curLine.substring(0, previousLineCursorIndex);
                     const subPrevLine = prevLine.substring(0, previousLineCursorIndex);
                     const currentCursorIndexWidth = this._contextForBreakLines.measureText(subCurLine).width;
@@ -389,7 +389,7 @@ export class InputTextArea extends InputText {
                         const averageFontWidth = this._contextForBreakLines.measureText(this._lines[this._selectedLineIndex].text).width / this._lines[this._selectedLineIndex].text.length;
                         const diff = Math.abs(prevCursorIndexWidth - currentCursorIndexWidth);
 
-                        const nbChar = Math.round(diff / averageFontWidth) * direction;
+                        const nbChar = Math.round(diff/averageFontWidth) * direction;
 
                         this._cursorOffset += nbChar;
                     }
@@ -400,16 +400,16 @@ export class InputTextArea extends InputText {
                         if (!this._isTextHighlightOn) {
                             this._isTextHighlightOn = true;
                             this._lastClickedLineIndex = this._selectedLineIndex + 1;
-
+                            
                             this._cursorIndex = previousLineCursorIndex;
                         }
-
+                        
                         this._updateValueFromCursorIndex(this._cursorOffset);
                         return;
                     }
                     evt.preventDefault();
                 }
-
+                
                 this._cursorIndex = previousLineCursorIndex;
                 this._lastClickedLineIndex = this._selectedLineIndex;
 
@@ -434,23 +434,23 @@ export class InputTextArea extends InputText {
                         this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + this._selectedLineIndex * this._fontOffset.height + 1;
                     }
 
-                    this._cursorOffset = this._lines[this._selectedLineIndex].text.length - previousLineCursorIndex;
+                    this._cursorOffset = this._lines[this._selectedLineIndex].text.length -previousLineCursorIndex;
 
                     const curLine = this._lines[this._selectedLineIndex].text;
-                    const prevLine = this._lines[this._selectedLineIndex - 1].text;
-                    const subCurLine = curLine.substring(0, previousLineCursorIndex);
-                    const subPrevLine = prevLine.substring(0, previousLineCursorIndex);
+                    const prevLine = this._lines[this._selectedLineIndex-1].text;
+                    const subCurLine = curLine.substring(0,previousLineCursorIndex);
+                    const subPrevLine = prevLine.substring(0,previousLineCursorIndex);
                     const currentCursorIndexWidth = this._contextForBreakLines.measureText(subCurLine).width;
                     const prevCursorIndexWidth = this._contextForBreakLines.measureText(subPrevLine).width;
                     const direction = currentCursorIndexWidth - prevCursorIndexWidth < 0 ? -1 : +1;
-
+                    
                     if (this._lines[this._selectedLineIndex].text.length < previousLineCursorIndex) {
                         this._cursorOffset = 0;
                     } else {
                         const averageFontWidth = this._contextForBreakLines.measureText(curLine).width / curLine.length;
                         const diff = Math.abs(prevCursorIndexWidth - currentCursorIndexWidth);
 
-                        const nbChar = Math.round(diff / averageFontWidth) * direction;
+                        const nbChar = Math.round(diff/averageFontWidth) * direction;
 
                         this._cursorOffset += nbChar;
                     }
@@ -460,7 +460,7 @@ export class InputTextArea extends InputText {
                         if (!this._isTextHighlightOn) {
                             this._isTextHighlightOn = true;
                             this._lastClickedLineIndex = this._selectedLineIndex - 1;
-                            this._cursorIndex = previousLineCursorIndex; // this._lines[this._lastClickedLineIndex].text.length - this._cursorOffset - 1;
+                            this._cursorIndex = previousLineCursorIndex;// this._lines[this._lastClickedLineIndex].text.length - this._cursorOffset - 1;
                         }
 
                         this._updateValueFromCursorIndex(this._cursorOffset);
@@ -471,7 +471,7 @@ export class InputTextArea extends InputText {
 
                 this._cursorIndex = previousLineCursorIndex;
                 this._lastClickedLineIndex = this._selectedLineIndex;
-
+                
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._markAsDirty();
@@ -517,43 +517,43 @@ export class InputTextArea extends InputText {
             key = this._currentKey;
             if (this._addKey) {
                 this._clicked = false;
-
+                
                 this._deleteSelection();
                 this._cursorIndex = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
-
+                
                 this._lines[this._selectedLineIndex].text = this._lines[this._selectedLineIndex].text.substring(0, this._cursorIndex) + key + this._lines[this._selectedLineIndex].text.substring(this._cursorIndex);
-                this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
+                this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
                 this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
 
                 this._cursorIndex += key.length;
-
+                
                 if (this._selectedLineIndex > 0) {
-                    if (this._oldlines[this._selectedLineIndex - 1].length !== this._lines[this._selectedLineIndex - 1].text.length) {
+                    if (this._oldlines[this._selectedLineIndex -1].length !== this._lines[this._selectedLineIndex-1].text.length) {
                         // The word was enough tiny to fill in previous line
-                        this._cursorIndex = 0;
+                        this._cursorIndex = 0;                        
                     }
-                }
+                } 
 
-                if (this._selectedLineIndex < this._oldlines.length - 1
+                if (this._selectedLineIndex < this._oldlines.length - 1 
                     && this._selectedLineIndex < this._lines.length - 1) {
                     const breakWord = this._lines[this._selectedLineIndex + 1].text.split(" ");
                     const oldBreakWord = this._oldlines[this._selectedLineIndex + 1].split(" ");
-
+                    
                     if (breakWord[0] !== oldBreakWord[0]) {
                         if (this._cursorOffset < breakWord[0].length) { // cursor is within breakWord
                             this.lastClickedCoordinateY += this._fontOffset.height;
-
+    
                             this._selectedLineIndex++;
-
+    
                             this._cursorIndex = (breakWord[0].length - this._cursorOffset);
                         }
                     }
                 }
 
-                if (this._selectedLineIndex === this._oldlines.length - 1
-                    && this._lines.length > this._oldlines.length) {
-                    this._cursorIndex -= this._lines[this._selectedLineIndex].text.length;
+                if (this._selectedLineIndex === this._oldlines.length-1 
+                    && this._lines.length > this._oldlines.length) {                    
+                    this._cursorIndex -= this._lines[this._selectedLineIndex].text.length; 
 
                     this.lastClickedCoordinateY += this._fontOffset.height;
 
@@ -562,9 +562,9 @@ export class InputTextArea extends InputText {
 
                 this._cursorOffset = this._lines[this._selectedLineIndex].text.length - this._cursorIndex;
             }
-        }
+        }  
 
-        this._oldlines = this._lines.map((l) => l.text);
+        this._oldlines = this._lines.map(l => l.text); 
     }
 
     protected _parseLineEllipsis(line: string = '', width: number,
@@ -593,26 +593,26 @@ export class InputTextArea extends InputText {
             const metrics = context.measureText(testLine);
             const testWidth = metrics.width;
             if (testWidth > width) {
-
-                lineWidth = context.measureText(line).width;
+                
+                lineWidth = context.measureText(line).width; 
                 lines.push({ text: line, width: lineWidth, lineEnding: " "  });
-
+                
                 line = words[n];
 
                 let flushedLine = "";
 
-                line.split('').map((char) => {
-                    if (context.measureText(flushedLine + char).width > width) {
+                line.split('').map(char => {
+                    if (context.measureText(flushedLine+char).width > width) {
                         lines.push({ text: flushedLine, width: context.measureText(flushedLine).width, lineEnding: "" });
                         flushedLine = "";
                     }
                     flushedLine += char;
-                });
+                })
 
                 line = flushedLine;
                 // Measure remaining characters
                 lineWidth = context.measureText(line).width;
-
+                
             } else {
                 lineWidth = testWidth;
                 line = testLine;
@@ -626,6 +626,7 @@ export class InputTextArea extends InputText {
     protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
         var lines: { text: string, width: number, lineEnding: string }[] = [];
         var _lines = this.text.split("\n");
+        
 
         if (this._textWrapping === TextWrapping_.Ellipsis) {
             for (var _line of _lines) {
@@ -641,7 +642,7 @@ export class InputTextArea extends InputText {
             }
         }
 
-        lines[lines.length - 1].lineEnding = "";
+        lines[lines.length-1].lineEnding = "";
 
         return lines;
     }
@@ -727,7 +728,7 @@ export class InputTextArea extends InputText {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
-        context.fillText(text, (this._scrollLeft as number) /* this._currentMeasure.left*/ + x, y);
+        context.fillText(text, (this._scrollLeft as number)/* this._currentMeasure.left*/ + x, y);
     }
 
     /** @hidden */
@@ -773,7 +774,7 @@ export class InputTextArea extends InputText {
         const innerPosition = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
         const line = this._lines[this._selectedLineIndex];
         line.text = line.text.substring(0, innerPosition) + data + line.text.substring(innerPosition);
-        this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
+        this.text = this._lines.filter(e => e.text !== "").map((e) => e.text + e.lineEnding).join("");
         this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
         this._cursorOffset = this._lines[this._selectedLineIndex].text.length - innerPosition;
 
@@ -825,7 +826,7 @@ export class InputTextArea extends InputText {
         // before render just returns the same string
         // TODO: why do we need this method?
         let text = this._beforeRenderText(this._textWrapper).text;
-
+        
         // placeholder conditions and color setting
         if (!this._isFocused && !this.text && this._placeholderText) {
             text = this._placeholderText;
@@ -931,7 +932,7 @@ export class InputTextArea extends InputText {
             if (this._clickedCoordinateX && this._clickedCoordinateY) {
                 this._clicked = true;
 
-                this.lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top - this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+                this.lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top - this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);;
 
                 if (this.lastClickedCoordinateY <= this._fontOffset.height) {
                     this._selectedLineIndex = 0;
@@ -979,13 +980,13 @@ export class InputTextArea extends InputText {
                 this._clickedCoordinateX = null;
                 this._clickedCoordinateY = null;
             }
-
+ 
             //show the highlighted text
             if (this._isTextHighlightOn) {
                 let highlightCursorLeft = 0;
                 let highlightCursorRight = 0;
                 this._highlightedText = "";
-                let yOffset = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+                let yOffset = this._currentMeasure.top+ this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
                 const xOffset = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
 
                 this._applyOnSelectedRange((line, currentIndex, startIndex, endIndex) => {
@@ -996,15 +997,15 @@ export class InputTextArea extends InputText {
                     let leftOffsetWidth = context.measureText(line.text.substring(0, highlightCursorLeft)).width + xOffset;
 
                     this._highlightedText += line.text.substring(highlightCursorLeft, highlightCursorRight);
-
+                    
                     context.globalAlpha = this._highligherOpacity;
                     context.fillStyle = "green"; // this._textHighlightColor;
-
+                    
                     context.fillRect(leftOffsetWidth, yOffset + currentIndex * this._fontOffset.height, width, this._fontOffset.height);
                     context.globalAlpha = 1.0;
                 });
             }
-
+            
             context.restore();
 
             // Render cursor
@@ -1183,10 +1184,10 @@ export class InputTextArea extends InputText {
     }
 
     /** @hidden */
-    protected  _updateValueFromCursorIndex(offset: number) {
+    protected  _updateValueFromCursorIndex(offset:number){
         //update the cursor
         this._blinkIsEven = false;
-
+        
         if (this._cursorIndex === -1) {
             this._cursorIndex = this._lines[this._selectedLineIndex].text.length - offset;
             this._lastClickedLineIndex = this._selectedLineIndex;
@@ -1222,12 +1223,12 @@ export class InputTextArea extends InputText {
      * Apply the given callback to the selected range
      * @param callback {function} The callback to apply with these parameters : line object, current index, start index, end index
      */
-    private _applyOnSelectedRange(callback: (line: any, currentIndex: number, startIndex: number, endIndex: number) => void) {
-        if (!this._isTextHighlightOn) { return; }
+    private _applyOnSelectedRange(callback: (line: any, currentIndex: number, startIndex: number, endIndex: number)=>void) {
+        if (!this._isTextHighlightOn) return;
 
         const startLineIndex = Math.min(this._lastClickedLineIndex, this._selectedLineIndex);
-        const endLineIndex = Math.max(this._lastClickedLineIndex, this._selectedLineIndex);
-
+        const endLineIndex = Math.max(this._lastClickedLineIndex, this._selectedLineIndex);        
+        
         for (let index = startLineIndex; index <= endLineIndex; index++) {
             callback(this._lines[index], index, startLineIndex, endLineIndex);
         }
@@ -1237,23 +1238,23 @@ export class InputTextArea extends InputText {
      * Delete the current selection if any and move the cursor to the correct place
      */
     private _deleteSelection() {
-        if (!this._isTextHighlightOn) { return; }
+        if (!this._isTextHighlightOn) return;
 
         const tmpLine = {text: "", index: -1};
-        this._applyOnSelectedRange((line, index, startIndex, endIndex) => {
+        this._applyOnSelectedRange((line, index, startIndex, endIndex)=>{
             this._selectedLineIndex = startIndex;
             this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + startIndex * this._fontOffset.height + 1;
-
+            
             const begin = index === startIndex ? this._startHighlightIndex : 0;
             const end = index === endIndex ? this._endHighlightIndex : line.text.length;
-
+            
             tmpLine.text += line.text.substring(0, begin) + line.text.substring(end);
-            tmpLine.index = startIndex;
+            tmpLine.index = startIndex;                        
             line.text = "";
         });
         this._lines[tmpLine.index].text = tmpLine.text;
 
-        this._lines = this._lines.filter((l) => l.text !== "");
+        this._lines = this._lines.filter(l => l.text !== "");
 
         // In case of complete deletion a blank line is added
         if (this._lines.length === 0) {
@@ -1268,7 +1269,7 @@ export class InputTextArea extends InputText {
 
         this._highlightedText = "";
     }
-
+    
     /** @hidden */
     protected _selectAllText() {
         this._selectedLineIndex = this._lines.length - 1;
@@ -1278,4 +1279,4 @@ export class InputTextArea extends InputText {
         this._updateValueFromCursorIndex(this._cursorOffset);
     }
 }
-RegisterClass("BABYLON.GUI.InputTextArea", InputTextArea);
+RegisterClass("BABYLON.GUI.InputTextArea", InputTextArea); 
