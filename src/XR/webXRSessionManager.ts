@@ -438,7 +438,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         return this.session.updateTargetFrameRate(rate);
     }
 
-
     /**
      * Run a callback in the xr render loop
      * @param callback the callback to call when in XR Frame
