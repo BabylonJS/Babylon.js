@@ -445,9 +445,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @param ignoreIfNotInSession if no session is currently running, run it first thing on the next session
      */
     public runInXRFrame(callback: () => void, ignoreIfNotInSession = true): void {
-        if(this.inXRFrameLoop) {
+        if (this.inXRFrameLoop) {
             callback();
-        } else if(this.inXRSession || !ignoreIfNotInSession) {
+        } else if (this.inXRSession || !ignoreIfNotInSession) {
             this.onXRFrameObservable.addOnce(callback);
         }
     }
