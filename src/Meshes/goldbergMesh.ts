@@ -242,31 +242,31 @@ export class GoldbergMesh extends Mesh {
         if (this.goldbergData.faceColors) {
             serializationObject.faceColors = [];
             for (const color of this.goldbergData.faceColors) {
-                serializationObject.faceColors.push(color.asArray())
+                serializationObject.faceColors.push(color.asArray());
             }
         }
         if (this.goldbergData.faceCenters) {
             serializationObject.faceCenters = [];
             for (const vector of this.goldbergData.faceCenters) {
-                serializationObject.faceCenters.push(vector.asArray())
+                serializationObject.faceCenters.push(vector.asArray());
             }
         }
         if (this.goldbergData.faceZaxis) {
             serializationObject.faceZaxis = [];
             for (const vector of this.goldbergData.faceZaxis) {
-                serializationObject.faceZaxis.push(vector.asArray())
+                serializationObject.faceZaxis.push(vector.asArray());
             }
         }
         if (this.goldbergData.faceYaxis) {
             serializationObject.faceYaxis = [];
             for (const vector of this.goldbergData.faceYaxis) {
-                serializationObject.faceYaxis.push(vector.asArray())
+                serializationObject.faceYaxis.push(vector.asArray());
             }
         }
         if (this.goldbergData.faceXaxis) {
             serializationObject.faceXaxis = [];
             for (const vector of this.goldbergData.faceXaxis) {
-                serializationObject.faceXaxis.push(vector.asArray())
+                serializationObject.faceXaxis.push(vector.asArray());
             }
         }
     }
