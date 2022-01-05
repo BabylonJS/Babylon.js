@@ -1,18 +1,18 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Material', function() {
+describe('Babylon Material', function () {
     let subject: BABYLON.Engine;
 
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
@@ -22,7 +22,7 @@ describe('Babylon Material', function() {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function() {
+    beforeEach(function () {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -35,13 +35,13 @@ describe('Babylon Material', function() {
     describe('#PBRMaterial', () => {
         it('forceCompilation of a single material', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.PBRMaterial("material", scene);
             return material.forceCompilationAsync(mesh);
         });
         it('forceCompilation of already compiled material', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.PBRMaterial("material", scene);
             material.albedoTexture = new BABYLON.Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             return material.forceCompilationAsync(mesh).then(() => {
@@ -50,7 +50,7 @@ describe('Babylon Material', function() {
         });
         it('forceCompilation of same material in parallel', () => {
             const scene = new BABYLON.Scene(subject);
-            const mesh = BABYLON.Mesh.CreateBox("mesh", 1, scene);
+            const mesh = BABYLON.MeshBuilder.CreateBox("mesh", { size: 1 }, scene);
             const material = new BABYLON.PBRMaterial("material", scene);
             material.albedoTexture = new BABYLON.Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             return Promise.all([

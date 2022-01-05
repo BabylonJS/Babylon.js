@@ -11,7 +11,6 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
  * It is used as the base class for both the specGloss and metalRough conventions.
  */
 export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
-
     /**
      * Number of Simultaneous lights allowed on the material.
      */
@@ -69,7 +68,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
     public emissiveTexture: BaseTexture;
 
     /**
-     * Occlusion Channel Strenght.
+     * Occlusion Channel Strength.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTextureStrength")

@@ -4,14 +4,15 @@ import { Nullable } from "../types";
  * @hidden
  **/
 export class AlphaState {
+    public _blendFunctionParameters = new Array<Nullable<number>>(4);
+    public _blendEquationParameters = new Array<Nullable<number>>(2);
+    public _blendConstants = new Array<Nullable<number>>(4);
+    public _isBlendConstantsDirty = false;
+
+    private _alphaBlend = false;
     private _isAlphaBlendDirty = false;
     private _isBlendFunctionParametersDirty = false;
     private _isBlendEquationParametersDirty = false;
-    private _isBlendConstantsDirty = false;
-    private _alphaBlend = false;
-    private _blendFunctionParameters = new Array<Nullable<number>>(4);
-    private _blendEquationParameters = new Array<Nullable<number>>(2);
-    private _blendConstants = new Array<Nullable<number>>(4);
 
     /**
      * Initializes the state.
@@ -21,7 +22,7 @@ export class AlphaState {
     }
 
     public get isDirty(): boolean {
-        return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty;
+        return this._isAlphaBlendDirty || this._isBlendFunctionParametersDirty || this._isBlendEquationParametersDirty;
     }
 
     public get alphaBlend(): boolean {

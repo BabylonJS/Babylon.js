@@ -2,14 +2,16 @@
 // http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
 
 uniform sampler2D textureSampler;
+#ifdef SSR_SUPPORTED
+uniform sampler2D reflectivitySampler;
 uniform sampler2D normalSampler;
 uniform sampler2D positionSampler;
-uniform sampler2D reflectivitySampler;
+#endif
 
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform float step;
+uniform float stepSize;
 uniform float strength;
 uniform float threshold;
 uniform float roughnessFactor;
@@ -17,6 +19,8 @@ uniform float reflectionSpecularFalloffExponent;
 
 // Varyings
 varying vec2 vUV;
+
+#ifdef SSR_SUPPORTED
 
 // Structs
 struct ReflectionInfo {
@@ -84,7 +88,7 @@ ReflectionInfo getReflectionInfo(vec3 dir, vec3 hitCoord)
     vec4 projectedCoord;
     float sampledDepth;
 
-    dir *= step;
+    dir *= stepSize;
 
     for(int i = 0; i < REFLECTION_SAMPLES; i++)
     {
@@ -97,6 +101,9 @@ ReflectionInfo getReflectionInfo(vec3 dir, vec3 hitCoord)
         sampledDepth = (view * texture2D(positionSampler, projectedCoord.xy)).z;
  
         float depth = sampledDepth - hitCoord.z;
+        #ifdef RIGHT_HANDED_SCENE
+            depth *= -1.0;
+        #endif
 
         if(((depth - dir.z) < threshold) && depth <= 0.0)
         {
@@ -121,15 +128,17 @@ vec3 hash(vec3 a)
     a += dot(a, a.yxz + 19.19);
     return fract((a.xxy + a.yxx) * a.zyx);
 }
+#endif
 
 void main()
 {
     #ifdef SSR_SUPPORTED
         // Intensity
-        vec3 albedo = texture2D(textureSampler, vUV).rgb;
+        vec4 albedoFull = texture2D(textureSampler, vUV);
+        vec3 albedo = albedoFull.rgb;
         float spec = texture2D(reflectivitySampler, vUV).r;
         if (spec == 0.0) {
-            gl_FragColor = vec4(albedo, 1.0);
+            gl_FragColor = albedoFull;
             return;
         }
         
@@ -146,18 +155,21 @@ void main()
 
         vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - info.coords.xy));
         float screenEdgefactor = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
-
+        
         // Fresnel
         vec3 F0 = vec3(0.04);
         F0      = mix(F0, albedo, spec);
         vec3 fresnel = fresnelSchlick(max(dot(normalize(normal), normalize(position)), 0.0), F0);
 
+        #ifdef RIGHT_HANDED_SCENE
+            reflected.z *= -1.0;
+        #endif
         // Apply
         float reflectionMultiplier = clamp(pow(spec * strength, reflectionSpecularFalloffExponent) * screenEdgefactor * reflected.z, 0.0, 0.9);
         float albedoMultiplier = 1.0 - reflectionMultiplier;
         vec3 SSR = info.color * fresnel;
 
-        gl_FragColor = vec4((albedo * albedoMultiplier) + (SSR * reflectionMultiplier), 1.0);
+        gl_FragColor = vec4((albedo * albedoMultiplier) + (SSR * reflectionMultiplier), albedoFull.a);
     #else
         gl_FragColor = texture2D(textureSampler, vUV);
     #endif

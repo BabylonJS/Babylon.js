@@ -10,34 +10,18 @@
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": true,
         "inlineSourceMap": true,
-        "lib": [
-            "es5",
-            "dom",
-            "es2015.promise",
-            "es2015.collection",
-            "es2015.iterable"
-        ],
+        "lib": ["es5", "dom", "es2015.promise", "es2015.collection", "es2015.iterable"],
         "skipDefaultLibCheck": true,
         "skipLibCheck": true,
         "baseUrl": "./src/",
         "rootDir": "../../",
         "paths": {
-            "babylonjs": [
-                "../../../../dist/preview release/babylon.module.d.ts"
-            ],
-            "babylonjs-loaders": [
-                "../../../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
-            ],
-            "babylonjs-gltf2interface": [
-                "../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
-            ],
-            "babylonjs-viewer-assets": [
-                "../../src/assets/"
-            ]
+            "babylonjs": ["../../../../dist/preview release/babylon.module.d.ts"],
+            "babylonjs-loaders": ["../../../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"],
+            "babylonjs-gltf2interface": ["../../../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"],
+            "babylonjs-viewer-assets": ["../../src/assets/"]
         },
         "outDir": "./build"
     },
-    "include": [
-        "./src/**/*.ts"
-    ]
+    "include": ["./src/**/*.ts"]
 }

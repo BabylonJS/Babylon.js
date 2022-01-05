@@ -11,114 +11,114 @@ import { EngineStore } from "../Engines/engineStore";
 import { IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
-import { _TypeStore } from "../Misc/typeStore";
+import { GetClass } from "../Misc/typeStore";
 import { AbstractActionManager } from './abstractActionManager';
 import { Constants } from "../Engines/constants";
 
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
  * A single scene can have many Action Managers to handle predefined actions on specific meshes.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class ActionManager extends AbstractActionManager {
     /**
      * Nothing
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly NothingTrigger = Constants.ACTION_NothingTrigger;
 
     /**
      * On pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickTrigger = Constants.ACTION_OnPickTrigger;
 
     /**
      * On left pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnLeftPickTrigger = Constants.ACTION_OnLeftPickTrigger;
 
     /**
      * On right pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnRightPickTrigger = Constants.ACTION_OnRightPickTrigger;
 
     /**
      * On center pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnCenterPickTrigger = Constants.ACTION_OnCenterPickTrigger;
 
     /**
      * On pick down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickDownTrigger = Constants.ACTION_OnPickDownTrigger;
 
     /**
      * On double pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnDoublePickTrigger = Constants.ACTION_OnDoublePickTrigger;
 
     /**
      * On pick up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickUpTrigger = Constants.ACTION_OnPickUpTrigger;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickOutTrigger = Constants.ACTION_OnPickOutTrigger;
 
     /**
      * On long press
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnLongPressTrigger = Constants.ACTION_OnLongPressTrigger;
 
     /**
      * On pointer over
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPointerOverTrigger = Constants.ACTION_OnPointerOverTrigger;
 
     /**
      * On pointer out
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPointerOutTrigger = Constants.ACTION_OnPointerOutTrigger;
 
     /**
      * On every frame
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnEveryFrameTrigger = Constants.ACTION_OnEveryFrameTrigger;
     /**
      * On intersection enter
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnIntersectionEnterTrigger = Constants.ACTION_OnIntersectionEnterTrigger;
 
     /**
      * On intersection exit
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnIntersectionExitTrigger = Constants.ACTION_OnIntersectionExitTrigger;
 
     /**
      * On key down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnKeyDownTrigger = Constants.ACTION_OnKeyDownTrigger;
 
     /**
      * On key up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnKeyUpTrigger = 15;
 
@@ -296,7 +296,7 @@ export class ActionManager extends AbstractActionManager {
             if (ActionManager.Triggers[action.trigger] === 0) {
                 delete ActionManager.Triggers[action.trigger];
             }
-            delete action._actionManager;
+            action._actionManager = null;
             return true;
         }
         return false;
@@ -423,7 +423,7 @@ export class ActionManager extends AbstractActionManager {
 
         // instanciate a new object
         var instanciate = (name: string, params: Array<any>): any => {
-            const internalClassType = _TypeStore.GetClass("BABYLON." + name);
+            const internalClassType = GetClass("BABYLON." + name);
             if (internalClassType) {
                 var newInstance: Object = Object.create(internalClassType.prototype);
                 newInstance.constructor.apply(newInstance, params);
@@ -613,7 +613,7 @@ export class ActionManager extends AbstractActionManager {
                 var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
 
                 if (value._meshId) {
-                    value.mesh = scene.getMeshByID(value._meshId);
+                    value.mesh = scene.getMeshById(value._meshId);
                 }
 
                 triggerParams = { trigger: (<any>ActionManager)[trigger.name], parameter: value };

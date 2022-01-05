@@ -20,7 +20,25 @@ export enum WebXRState {
     /**
      * Not entered XR mode
      */
-    NOT_IN_XR
+    NOT_IN_XR,
+}
+
+/**
+ * The state of the XR camera's tracking
+ */
+export enum WebXRTrackingState {
+    /**
+     * No transformation received, device is not being tracked
+     */
+    NOT_TRACKING,
+    /**
+     * Tracking lost - using emulated position
+     */
+    TRACKING_LOST,
+    /**
+     * Transformation tracking works normally
+     */
+    TRACKING
 }
 
 /**
@@ -38,9 +56,9 @@ export interface WebXRRenderTarget extends IDisposable {
     xrLayer: Nullable<XRWebGLLayer>;
 
     /**
-     * Initializes the xr layer for the session
+     * Initializes a XRWebGLLayer to be used as the session's baseLayer.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    initializeXRLayerAsync(xrSession: XRSession) : Promise<XRWebGLLayer>;
+    initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
 }

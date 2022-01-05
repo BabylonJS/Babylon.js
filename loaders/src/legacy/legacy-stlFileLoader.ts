@@ -1,4 +1,4 @@
-import * as Loaders from "../STL";
+import * as Loaders from "../STL/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../STL";
+export * from "../STL/index";

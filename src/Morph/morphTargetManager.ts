@@ -2,27 +2,51 @@ import { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
-import { Scene } from "../scene";
+import { IDisposable, Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
+import { Constants } from "../Engines/constants";
+import { Effect } from "../Materials/effect";
+import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
+import { AbstractScene } from "../abstractScene";
 /**
  * This class is used to deform meshes using morphing between different targets
- * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
  */
-export class MorphTargetManager {
+export class MorphTargetManager implements IDisposable {
+    /** Enable storing morph target data into textures when set to true (true by default) */
+    public static EnableTextureStorage = true;
+
     private _targets = new Array<MorphTarget>();
     private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
     private _targetDataLayoutChangedObservers = new Array<Nullable<Observer<void>>>();
     private _activeTargets = new SmartArray<MorphTarget>(16);
     private _scene: Nullable<Scene>;
     private _influences: Float32Array;
+    private _morphTargetTextureIndices: Float32Array;
     private _supportsNormals = false;
     private _supportsTangents = false;
     private _supportsUVs = false;
     private _vertexCount = 0;
+    private _textureVertexStride = 0;
+    private _textureWidth = 0;
+    private _textureHeight = 1;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
+    private _canUseTextureForTargets = false;
+    private _blockCounter = 0;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
+    /** @hidden */
+    public _targetStoreTexture: Nullable<RawTexture2DArray>;
+
+    /**
+     * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+     */
+    public optimizeInfluencers = true;
 
     /**
      * Gets or sets a boolean indicating if normals must be morphed
@@ -40,6 +64,26 @@ export class MorphTargetManager {
     public enableUVMorphing = true;
 
     /**
+     * Sets a boolean indicating that adding new target or updating an existing target will not update the underlying data buffers
+     */
+    public set areUpdatesFrozen(block: boolean) {
+        if (block) {
+            this._blockCounter++;
+        } else {
+            this._blockCounter--;
+            if (this._blockCounter <= 0) {
+                this._blockCounter = 0;
+
+                this._syncActiveTargets(true);
+            }
+        }
+    }
+
+    public get areUpdatesFrozen() {
+        return this._blockCounter > 0;
+    }
+
+    /**
      * Creates a new MorphTargetManager
      * @param scene defines the current scene
      */
@@ -54,6 +98,9 @@ export class MorphTargetManager {
             this._scene.morphTargetManagers.push(this);
 
             this._uniqueId = this._scene.getUniqueId();
+
+            const engineCaps = this._scene.getEngine().getCaps();
+            this._canUseTextureForTargets = engineCaps.canUseGLVertexID && engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
         }
     }
 
@@ -113,6 +160,26 @@ export class MorphTargetManager {
         return this._influences;
     }
 
+    private _useTextureToStoreTargets = true;
+    /**
+     * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
+     * Please note that this option is not available if the hardware does not support it
+     */
+    public get useTextureToStoreTargets(): boolean {
+        return this._useTextureToStoreTargets;
+    }
+
+    public set useTextureToStoreTargets(value: boolean) {
+        this._useTextureToStoreTargets = value;
+    }
+
+    /**
+     * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
+     */
+    public get isUsingTextureForTargets() {
+        return MorphTargetManager.EnableTextureStorage && this.useTextureToStoreTargets && this._canUseTextureForTargets;
+    }
+
     /**
      * Gets the active target at specified index. An active target is a target with an influence > 0
      * @param index defines the index to check
@@ -161,6 +228,13 @@ export class MorphTargetManager {
         }
     }
 
+    /** @hidden */
+    public _bind(effect: Effect) {
+        effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
+        effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
+        effect.setTexture("morphTargets", this._targetStoreTexture);
+    }
+
     /**
      * Clone the current manager
      * @returns a new MorphTargetManager
@@ -197,18 +271,30 @@ export class MorphTargetManager {
     }
 
     private _syncActiveTargets(needUpdate: boolean): void {
+        if (this.areUpdatesFrozen) {
+            return;
+        }
+
         let influenceCount = 0;
         this._activeTargets.reset();
         this._supportsNormals = true;
         this._supportsTangents = true;
         this._supportsUVs = true;
         this._vertexCount = 0;
+
+        if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length) {
+            this._morphTargetTextureIndices = new Float32Array(this._targets.length);
+        }
+
+        var targetIndex = -1;
         for (var target of this._targets) {
-            if (target.influence === 0) {
+            targetIndex++;
+            if (target.influence === 0 && this.optimizeInfluencers) {
                 continue;
             }
 
             this._activeTargets.push(target);
+            this._morphTargetTextureIndices[influenceCount] = targetIndex;
             this._tempInfluences[influenceCount++] = target.influence;
 
             this._supportsNormals = this._supportsNormals && target.hasNormals;
@@ -242,16 +328,134 @@ export class MorphTargetManager {
     }
 
     /**
-     * Syncrhonize the targets with all the meshes using this morph target manager
+     * Synchronize the targets with all the meshes using this morph target manager
      */
     public synchronize(): void {
-        if (!this._scene) {
+        if (!this._scene || this.areUpdatesFrozen) {
             return;
         }
+
+        if (this.isUsingTextureForTargets && this._vertexCount) {
+            this._textureVertexStride = 1;
+
+            if (this._supportsNormals) {
+                this._textureVertexStride++;
+            }
+
+            if (this._supportsTangents) {
+                this._textureVertexStride++;
+            }
+
+            if (this._supportsUVs) {
+                this._textureVertexStride++;
+            }
+
+            this._textureWidth = this._vertexCount * this._textureVertexStride;
+            this._textureHeight = 1;
+
+            const maxTextureSize = this._scene.getEngine().getCaps().maxTextureSize;
+            if (this._textureWidth > maxTextureSize) {
+                this._textureHeight = Math.ceil(this._textureWidth / maxTextureSize);
+                this._textureWidth = maxTextureSize;
+            }
+
+            let mustUpdateTexture = true;
+            if (this._targetStoreTexture) {
+                let textureSize = this._targetStoreTexture.getSize();
+                if (textureSize.width === this._textureWidth
+                    && textureSize.height === this._textureHeight
+                    && this._targetStoreTexture.depth === this._targets.length) {
+                    mustUpdateTexture = false;
+                }
+            }
+
+            if (mustUpdateTexture) {
+                if (this._targetStoreTexture) {
+                    this._targetStoreTexture.dispose();
+                }
+
+                let targetCount = this._targets.length;
+                let data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
+
+                let offset = 0;
+                for (var index = 0; index < targetCount; index++) {
+                    let target = this._targets[index];
+
+                    const positions = target.getPositions();
+                    const normals = target.getNormals();
+                    const uvs = target.getUVs();
+                    const tangents = target.getTangents();
+
+                    if (!positions) {
+                        if (index === 0) {
+                            Logger.Error("Invalid morph target. Target must have positions.");
+                        }
+                        return;
+                    }
+
+                    offset = index * this._textureWidth * this._textureHeight * 4;
+                    for (var vertex = 0; vertex < this._vertexCount; vertex++) {
+                        data[offset] = positions[vertex * 3];
+                        data[offset + 1] = positions[vertex * 3 + 1];
+                        data[offset + 2] = positions[vertex * 3 + 2];
+
+                        offset += 4;
+
+                        if (normals) {
+                            data[offset] = normals[vertex * 3];
+                            data[offset + 1] = normals[vertex * 3 + 1];
+                            data[offset + 2] = normals[vertex * 3 + 2];
+                            offset += 4;
+                        }
+
+                        if (uvs) {
+                            data[offset] = uvs[vertex * 2];
+                            data[offset + 1] = uvs[vertex * 2 + 1];
+                            offset += 4;
+                        }
+
+                        if (tangents) {
+                            data[offset] = tangents[vertex * 3];
+                            data[offset + 1] = tangents[vertex * 3 + 1];
+                            data[offset + 2] = tangents[vertex * 3 + 2];
+                            offset += 4;
+                        }
+                    }
+                }
+
+                this._targetStoreTexture = RawTexture2DArray.CreateRGBATexture(data, this._textureWidth, this._textureHeight, targetCount,
+                    this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            }
+        }
+
         // Flag meshes as dirty to resync with the active targets
         for (var mesh of this._scene.meshes) {
             if ((<any>mesh).morphTargetManager === this) {
                 (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
+            }
+        }
+    }
+
+    /**
+     * Release all resources
+     */
+    public dispose() {
+        if (this._targetStoreTexture) {
+            this._targetStoreTexture.dispose();
+        }
+
+        this._targetStoreTexture = null;
+
+        // Remove from scene
+        if (this._scene) {
+            this._scene.removeMorphTargetManager(this);
+
+            if (this._parentContainer) {
+                const index = this._parentContainer.morphTargetManagers.indexOf(this);
+                if (index > -1) {
+                    this._parentContainer.morphTargetManagers.splice(index, 1);
+                }
+                this._parentContainer = null;
             }
         }
     }

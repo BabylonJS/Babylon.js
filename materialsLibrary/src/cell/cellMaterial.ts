@@ -8,12 +8,12 @@ import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./cell.fragment";
@@ -43,6 +43,8 @@ class CellMaterialDefines extends MaterialDefines {
     public CUSTOMUSERLIGHTING = true;
     public CELLBASIC = true;
     public DEPTHPREPASS = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -98,11 +100,11 @@ export class CellMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new CellMaterialDefines();
+        if (!subMesh.materialDefines) {
+            subMesh.materialDefines = new CellMaterialDefines();
         }
 
-        var defines = <CellMaterialDefines>subMesh._materialDefines;
+        var defines = <CellMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -158,6 +160,8 @@ export class CellMaterial extends PushMaterial {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
 
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
@@ -209,7 +213,7 @@ export class CellMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -225,7 +229,7 @@ export class CellMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <CellMaterialDefines>subMesh._materialDefines;
+        var defines = <CellMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -260,7 +264,7 @@ export class CellMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -337,4 +341,4 @@ export class CellMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.CellMaterial"] = CellMaterial;
+RegisterClass("BABYLON.CellMaterial", CellMaterial);

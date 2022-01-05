@@ -67,7 +67,7 @@ export type IFresnelParametersSerialized = {
 
 /**
  * This represents all the required information to add a fresnel effect on a material:
- * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+ * @see https://doc.babylonjs.com/divingDeeper/materials/using/fresnelParameters
  */
 export class FresnelParameters {
     private _isEnabled = true;
@@ -122,7 +122,7 @@ export class FresnelParameters {
     }
 
     /**
-     * Clones the current fresnel and its valuues
+     * Clones the current fresnel and its values
      * @returns a clone fresnel configuration
      */
     public clone(): FresnelParameters {

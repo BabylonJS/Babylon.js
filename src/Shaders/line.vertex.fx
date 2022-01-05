@@ -1,5 +1,7 @@
 ﻿#include<instancesDeclaration>
 
+#include<clipPlaneVertexDeclaration>
+
 // Attributes
 attribute vec3 position;
 attribute vec4 normal;
@@ -10,7 +12,13 @@ uniform mat4 viewProjection;
 uniform float width;
 uniform float aspectRatio;
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
     #include<instancesVertex>
 
     mat4 worldViewProjection = viewProjection * finalWorld;
@@ -32,4 +40,12 @@ void main(void) {
 
 	vec4 offset = vec4(normalDir * normal.w, 0.0, 0.0);
 	gl_Position = viewPosition + offset;
+
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
+    vec4 worldPos = finalWorld * vec4(position, 1.0);
+    #include<clipPlaneVertex>
+#endif
+
+#define CUSTOM_VERTEX_MAIN_END
+
 }

@@ -1,10 +1,10 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerEventTypes, PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
 
 import { Container } from "./container";
@@ -13,11 +13,14 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from "babylonjs/Misc/typeStore";
+import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { Engine } from "babylonjs/Engines/engine";
 
 /**
  * Root class used for all 2D controls
- * @see http://doc.babylonjs.com/how_to/gui#controls
+ * @see https://doc.babylonjs.com/how_to/gui#controls
  */
 export class Control {
     /**
@@ -34,6 +37,8 @@ export class Control {
     public parent: Nullable<Container>;
     /** @hidden */
     public _currentMeasure = Measure.Empty();
+    /** @hidden */
+    public _tempPaddingMeasure = Measure.Empty();
     private _fontFamily = "Arial";
     private _fontStyle = "";
     private _fontWeight = "";
@@ -44,7 +49,7 @@ export class Control {
     /** @hidden */
     public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
     /** @hidden */
-    protected _fontOffset: { ascent: number, height: number, descent: number };
+    protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
     private _style: Nullable<Style> = null;
     private _styleObserver: Nullable<Observer<Style>>;
@@ -62,6 +67,7 @@ export class Control {
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @hidden */
     protected _cachedParentMeasure = Measure.Empty();
+    private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
     private _paddingTop = new ValueAndUnit(0);
@@ -86,17 +92,22 @@ export class Control {
     private _cachedOffsetY: number;
     private _isVisible = true;
     private _isHighlighted = false;
+    private _highlightColor = "#4affff";
+    protected _highlightLineWidth = 2;
     /** @hidden */
-    public _linkedMesh: Nullable<AbstractMesh>;
+    public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
     private _dummyVector2 = Vector2.Zero();
     private _downCount = 0;
     private _enterCount = -1;
     private _doNotRender = false;
     private _downPointerIds: { [id: number]: boolean } = {};
+    private _evaluatedMeasure = new Measure(0, 0, 0, 0);
+    private _evaluatedParentMeasure = new Measure(0, 0, 0, 0);
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
+    protected _isReadOnly = false;
     /** @hidden */
     protected _rebuildLayout = false;
 
@@ -118,38 +129,65 @@ export class Control {
     public uniqueId: number;
 
     /**
+     * Gets or sets a boolean indicating if the control is readonly (default: false).
+     * A readonly control will still raise pointer events but will not react to them
+     */
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+    }
+
+    /**
+     * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+     */
+    public get transformedMeasure(): Measure {
+        return this._evaluatedMeasure;
+    }
+
+    /**
      * Gets or sets an object used to store user defined information for the node
      */
+    @serialize()
     public metadata: any = null;
 
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
+    @serialize()
     public isHitTestVisible = true;
     /** Gets or sets a boolean indicating if the control can block pointer events */
+    @serialize()
     public isPointerBlocker = false;
     /** Gets or sets a boolean indicating if the control can be focusable */
+    @serialize()
     public isFocusInvisible = false;
 
     /**
      * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
+    @serialize()
     public clipChildren = true;
 
     /**
      * Gets or sets a boolean indicating that control content must be clipped
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
+    @serialize()
     public clipContent = true;
 
     /**
      * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
      */
+    @serialize()
     public useBitmapCache = false;
 
     private _cacheData: Nullable<ImageData>;
 
     private _shadowOffsetX = 0;
     /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
+    @serialize()
     public get shadowOffsetX() {
         return this._shadowOffsetX;
     }
@@ -165,6 +203,7 @@ export class Control {
 
     private _shadowOffsetY = 0;
     /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
+    @serialize()
     public get shadowOffsetY() {
         return this._shadowOffsetY;
     }
@@ -179,7 +218,9 @@ export class Control {
     }
 
     private _shadowBlur = 0;
+    private _previousShadowBlur = 0;
     /** Gets or sets a value indicating the amount of blur to use to render the shadow */
+    @serialize()
     public get shadowBlur() {
         return this._shadowBlur;
     }
@@ -189,12 +230,15 @@ export class Control {
             return;
         }
 
+        this._previousShadowBlur = this._shadowBlur;
+
         this._shadowBlur = value;
         this._markAsDirty();
     }
 
-    private _shadowColor = 'black';
+    private _shadowColor = "black";
     /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
+    @serialize()
     public get shadowColor() {
         return this._shadowColor;
     }
@@ -209,6 +253,7 @@ export class Control {
     }
 
     /** Gets or sets the cursor to use when the control is hovered */
+    @serialize()
     public hoverCursor = "";
 
     /** @hidden */
@@ -232,42 +277,42 @@ export class Control {
     }
 
     /**
-    * An event triggered when pointer wheel is scrolled
-    */
+     * An event triggered when pointer wheel is scrolled
+     */
     public onWheelObservable = new Observable<Vector2>();
     /**
-    * An event triggered when the pointer move over the control.
-    */
+     * An event triggered when the pointer moves over the control.
+     */
     public onPointerMoveObservable = new Observable<Vector2>();
 
     /**
-    * An event triggered when the pointer move out of the control.
-    */
+     * An event triggered when the pointer moves out of the control.
+     */
     public onPointerOutObservable = new Observable<Control>();
 
     /**
-    * An event triggered when the pointer taps the control
-    */
+     * An event triggered when the pointer taps the control
+     */
     public onPointerDownObservable = new Observable<Vector2WithInfo>();
 
     /**
-    * An event triggered when pointer up
-    */
+     * An event triggered when pointer up
+     */
     public onPointerUpObservable = new Observable<Vector2WithInfo>();
 
     /**
-    * An event triggered when a control is clicked on
-    */
+     * An event triggered when a control is clicked on
+     */
     public onPointerClickObservable = new Observable<Vector2WithInfo>();
 
     /**
-    * An event triggered when pointer enters the control
-    */
+     * An event triggered when pointer enters the control
+     */
     public onPointerEnterObservable = new Observable<Control>();
 
     /**
-    * An event triggered when the control is marked as dirty
-    */
+     * An event triggered when the control is marked as dirty
+     */
     public onDirtyObservable = new Observable<Control>();
 
     /**
@@ -281,9 +326,9 @@ export class Control {
     public onAfterDrawObservable = new Observable<Control>();
 
     /**
-    * An event triggered when the control has been disposed
-    */
-   public onDisposeObservable = new Observable<Control>();
+     * An event triggered when the control has been disposed
+     */
+    public onDisposeObservable = new Observable<Control>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -293,15 +338,17 @@ export class Control {
     }
 
     /** Gets or set information about font offsets (used to render and align text) */
-    public get fontOffset(): { ascent: number, height: number, descent: number } {
+    @serialize()
+    public get fontOffset(): { ascent: number; height: number; descent: number } {
         return this._fontOffset;
     }
 
-    public set fontOffset(offset: { ascent: number, height: number, descent: number }) {
+    public set fontOffset(offset: { ascent: number; height: number; descent: number }) {
         this._fontOffset = offset;
     }
 
     /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
+    @serialize()
     public get alpha(): number {
         return this._alpha;
     }
@@ -312,6 +359,22 @@ export class Control {
         }
         this._alphaSet = true;
         this._alpha = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+     */
+    public get highlightLineWidth(): number {
+        return this._highlightLineWidth;
+    }
+
+    public set highlightLineWidth(value: number) {
+        if (this._highlightLineWidth === value) {
+            return;
+        }
+
+        this._highlightLineWidth = value;
         this._markAsDirty();
     }
 
@@ -331,9 +394,26 @@ export class Control {
         this._markAsDirty();
     }
 
+    /**
+     * Gets or sets a string defining the color to use for highlighting this control
+     */
+    public get highlightColor(): string {
+        return this._highlightColor;
+    }
+
+    public set highlightColor(value: string) {
+        if (this._highlightColor === value) {
+            return;
+        }
+
+        this._highlightColor = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     */
+    @serialize()
     public get scaleX(): number {
         return this._scaleX;
     }
@@ -349,8 +429,9 @@ export class Control {
     }
 
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     */
+    @serialize()
     public get scaleY(): number {
         return this._scaleY;
     }
@@ -366,8 +447,9 @@ export class Control {
     }
 
     /** Gets or sets the rotation angle (0 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     */
+    @serialize()
     public get rotation(): number {
         return this._rotation;
     }
@@ -383,8 +465,9 @@ export class Control {
     }
 
     /** Gets or sets the transformation center on Y axis (0 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     */
+    @serialize()
     public get transformCenterY(): number {
         return this._transformCenterY;
     }
@@ -400,8 +483,9 @@ export class Control {
     }
 
     /** Gets or sets the transformation center on X axis (0 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
-    */
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     */
+    @serialize()
     public get transformCenterX(): number {
         return this._transformCenterX;
     }
@@ -418,8 +502,9 @@ export class Control {
 
     /**
      * Gets or sets the horizontal alignment
-     * @see http://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
+    @serialize()
     public get horizontalAlignment(): number {
         return this._horizontalAlignment;
     }
@@ -435,8 +520,9 @@ export class Control {
 
     /**
      * Gets or sets the vertical alignment
-     * @see http://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
+    @serialize()
     public get verticalAlignment(): number {
         return this._verticalAlignment;
     }
@@ -451,14 +537,28 @@ export class Control {
     }
 
     /**
-     * Gets or sets control width
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * Gets or sets a fixed ratio for this control.
+     * When different from 0, the ratio is used to compute the "second" dimension.
+     * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+     * second dimension is computed as first dimension * fixedRatio
      */
+    @serialize()
+    public fixedRatio = 0;
+
+    private _fixedRatioMasterIsWidth = true;
+
+    /**
+     * Gets or sets control width
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    @serialize()
     public get width(): string | number {
         return this._width.toString(this._host);
     }
 
     public set width(value: string | number) {
+        this._fixedRatioMasterIsWidth = true;
+
         if (this._width.toString(this._host) === value) {
             return;
         }
@@ -470,7 +570,7 @@ export class Control {
 
     /**
      * Gets or sets the control width in pixel
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get widthInPixels(): number {
         return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -480,18 +580,22 @@ export class Control {
         if (isNaN(value)) {
             return;
         }
+        this._fixedRatioMasterIsWidth = true;
         this.width = value + "px";
     }
 
     /**
      * Gets or sets control height
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get height(): string | number {
         return this._height.toString(this._host);
     }
 
     public set height(value: string | number) {
+        this._fixedRatioMasterIsWidth = false;
+
         if (this._height.toString(this._host) === value) {
             return;
         }
@@ -503,7 +607,7 @@ export class Control {
 
     /**
      * Gets or sets control height in pixel
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get heightInPixels(): number {
         return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -513,14 +617,12 @@ export class Control {
         if (isNaN(value)) {
             return;
         }
+        this._fixedRatioMasterIsWidth = false;
         this.height = value + "px";
     }
 
     /** Gets or set font family */
     public get fontFamily(): string {
-        if (!this._fontSet) {
-            return "";
-        }
         return this._fontFamily;
     }
 
@@ -563,8 +665,9 @@ export class Control {
 
     /**
      * Gets or sets style
-     * @see http://doc.babylonjs.com/how_to/gui#styles
+     * @see https://doc.babylonjs.com/how_to/gui#styles
      */
+    @serialize()
     public get style(): Nullable<Style> {
         return this._style;
     }
@@ -628,6 +731,7 @@ export class Control {
     }
 
     /** Gets or sets foreground color */
+    @serialize()
     public get color(): string {
         return this._color;
     }
@@ -642,6 +746,7 @@ export class Control {
     }
 
     /** Gets or sets z index which is used to reorder controls on the z axis */
+    @serialize()
     public get zIndex(): number {
         return this._zIndex;
     }
@@ -659,6 +764,7 @@ export class Control {
     }
 
     /** Gets or sets a boolean indicating if the control can be rendered */
+    @serialize()
     public get notRenderable(): boolean {
         return this._doNotRender;
     }
@@ -673,6 +779,7 @@ export class Control {
     }
 
     /** Gets or sets a boolean indicating if the control is visible */
+    @serialize()
     public get isVisible(): boolean {
         return this._isVisible;
     }
@@ -694,14 +801,33 @@ export class Control {
     /**
      * Gets the current linked mesh (or null if none)
      */
-    public get linkedMesh(): Nullable<AbstractMesh> {
+    public get linkedMesh(): Nullable<TransformNode> {
         return this._linkedMesh;
     }
 
     /**
-     * Gets or sets a value indicating the padding to use on the left of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * Gets or sets a value indicating the padding should work like in CSS.
+     * Basically, it will add the padding amount on each side of the parent control for its children.
      */
+    @serialize()
+    public get descendantsOnlyPadding(): boolean {
+        return this._descendantsOnlyPadding;
+    }
+
+    public set descendantsOnlyPadding(value: boolean) {
+        if (this._descendantsOnlyPadding === value) {
+            return;
+        }
+
+        this._descendantsOnlyPadding = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a value indicating the padding to use on the left of the control
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    @serialize()
     public get paddingLeft(): string | number {
         return this._paddingLeft.toString(this._host);
     }
@@ -714,7 +840,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the left of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
         return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -727,10 +853,20 @@ export class Control {
         this.paddingLeft = value + "px";
     }
 
+    /** @hidden */
+    public get _paddingLeftInPixels(): number {
+        if (this._descendantsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingLeftInPixels;
+    }
+
     /**
      * Gets or sets a value indicating the padding to use on the right of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingRight(): string | number {
         return this._paddingRight.toString(this._host);
     }
@@ -743,7 +879,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the right of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
         return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -756,10 +892,20 @@ export class Control {
         this.paddingRight = value + "px";
     }
 
+    /** @hidden */
+    public get _paddingRightInPixels(): number {
+        if (this._descendantsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingRightInPixels;
+    }
+
     /**
      * Gets or sets a value indicating the padding to use on the top of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingTop(): string | number {
         return this._paddingTop.toString(this._host);
     }
@@ -772,7 +918,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the top of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
         return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -785,10 +931,20 @@ export class Control {
         this.paddingTop = value + "px";
     }
 
+    /** @hidden */
+    public get _paddingTopInPixels(): number {
+        if (this._descendantsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingTopInPixels;
+    }
+
     /**
      * Gets or sets a value indicating the padding to use on the bottom of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get paddingBottom(): string | number {
         return this._paddingBottom.toString(this._host);
     }
@@ -801,7 +957,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
         return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -814,10 +970,20 @@ export class Control {
         this.paddingBottom = value + "px";
     }
 
+    /** @hidden */
+    public get _paddingBottomInPixels(): number {
+        if (this._descendantsOnlyPadding) {
+            return 0;
+        }
+
+        return this.paddingBottomInPixels;
+    }
+
     /**
      * Gets or sets a value indicating the left coordinate of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get left(): string | number {
         return this._left.toString(this._host);
     }
@@ -830,7 +996,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the left coordinate in pixels of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get leftInPixels(): number {
         return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -845,8 +1011,9 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the top coordinate of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
+    @serialize()
     public get top(): string | number {
         return this._top.toString(this._host);
     }
@@ -859,7 +1026,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the top coordinate in pixels of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get topInPixels(): number {
         return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -874,8 +1041,9 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset on X axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
+    @serialize()
     public get linkOffsetX(): string | number {
         return this._linkOffsetX.toString(this._host);
     }
@@ -888,7 +1056,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
         return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -903,8 +1071,9 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset on Y axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
+    @serialize()
     public get linkOffsetY(): string | number {
         return this._linkOffsetY.toString(this._host);
     }
@@ -917,7 +1086,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
         return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -940,7 +1109,8 @@ export class Control {
         return this._currentMeasure.top + this._currentMeasure.height / 2;
     }
 
-    /** Gets or sets if control is Enabled*/
+    /** Gets or sets if control is Enabled */
+    @serialize()
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
@@ -953,7 +1123,8 @@ export class Control {
         this._isEnabled = value;
         this._markAsDirty();
     }
-    /** Gets or sets background color of control if it's disabled*/
+    /** Gets or sets background color of control if it's disabled */
+    @serialize()
     public get disabledColor(): string {
         return this._disabledColor;
     }
@@ -966,7 +1137,8 @@ export class Control {
         this._disabledColor = value;
         this._markAsDirty();
     }
-    /** Gets or sets front color of control if it's disabled*/
+    /** Gets or sets front color of control if it's disabled */
+    @serialize()
     public get disabledColorItem(): string {
         return this._disabledColorItem;
     }
@@ -979,6 +1151,21 @@ export class Control {
         this._disabledColorItem = value;
         this._markAsDirty();
     }
+
+    /**
+     * Gets/sets the overlap group of the control.
+     * Controls with overlapGroup set to a number can be deoverlapped.
+     * Controls with overlapGroup set to undefined are not deoverlapped.
+     * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+     */
+    @serialize()
+    public overlapGroup?: number;
+    /**
+     * Gets/sets the deoverlap movement multiplier
+     */
+    @serialize()
+    public overlapDeltaMultiplier?: number;
+
     // Functions
 
     /**
@@ -987,8 +1174,8 @@ export class Control {
      */
     constructor(
         /** defines the name of the control */
-        public name?: string) {
-    }
+        public name?: string
+    ) { }
 
     /** @hidden */
     protected _getTypeName(): string {
@@ -1088,7 +1275,7 @@ export class Control {
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
-        var globalViewport = this._host._getGlobalViewport(scene);
+        var globalViewport = this._host._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition);
@@ -1127,10 +1314,10 @@ export class Control {
     /**
      * Link current control with a target mesh
      * @param mesh defines the mesh to link with
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
-    public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
-        if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
+    public linkWithMesh(mesh: Nullable<TransformNode>): void {
+        if (!this._host || (this.parent && this.parent !== this._host._rootContainer)) {
             if (mesh) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
             }
@@ -1154,13 +1341,60 @@ export class Control {
         this._host._linkedControls.push(this);
     }
 
+    /**
+     * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+     * @param { string | number} paddingTop - The value of the top padding.
+     * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
+     * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
+     * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number) {
+        const top = paddingTop;
+        const right = paddingRight ?? top;
+        const bottom = paddingBottom ?? top;
+        const left = paddingLeft ?? right;
+
+        this.paddingTop = top;
+        this.paddingRight = right;
+        this.paddingBottom = bottom;
+        this.paddingLeft = left;
+    }
+
+    /**
+     * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+     * @param { number} paddingTop - The value in pixels of the top padding.
+     * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
+     * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
+     * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     */
+    public setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number) {
+        const top = paddingTop;
+        const right = paddingRight ?? top;
+        const bottom = paddingBottom ?? top;
+        const left = paddingLeft ?? right;
+
+        this.paddingTopInPixels = top;
+        this.paddingRightInPixels = right;
+        this.paddingBottomInPixels = bottom;
+        this.paddingLeftInPixels = left;
+    }
+
     /** @hidden */
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
         let oldLeft = this._left.getValue(this._host);
         let oldTop = this._top.getValue(this._host);
 
-        var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
-        var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
+        if (this._currentMeasure.width === 0 && this._currentMeasure.height === 0) {
+            let parentMeasure = this.parent?._currentMeasure;
+            if (parentMeasure) {
+                this._processMeasures(parentMeasure, this._host.getContext());
+            }
+        }
+
+        var newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
+        var newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
         if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
@@ -1227,6 +1461,16 @@ export class Control {
     }
 
     /** @hidden */
+    protected _computeAdditionnalOffsetX() {
+        return 0;
+    }
+
+    /** @hidden */
+    protected _computeAdditionnalOffsetY() {
+        return 0;
+    }
+
+    /** @hidden */
     protected invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
@@ -1236,32 +1480,25 @@ export class Control {
             // the previous measure is used to properly clear a control that is scaled down
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
 
-            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                // Expand rect based on shadows
-                var shadowOffsetX = this.shadowOffsetX;
-                var shadowOffsetY = this.shadowOffsetY;
-                var shadowBlur = this.shadowBlur;
+            // Expand rect based on shadows
+            var shadowOffsetX = this.shadowOffsetX;
+            var shadowOffsetY = this.shadowOffsetY;
+            var shadowBlur = Math.max(this._previousShadowBlur, this.shadowBlur);
 
-                var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
-                var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
-                var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
-                var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-                this.host.invalidateRect(
-                    Math.floor(this._tmpMeasureA.left + leftShadowOffset),
-                    Math.floor(this._tmpMeasureA.top + topShadowOffset),
-                    Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset),
-                    Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset),
-                );
-            } else {
-                this.host.invalidateRect(
-                    Math.floor(this._tmpMeasureA.left),
-                    Math.floor(this._tmpMeasureA.top),
-                    Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width),
-                    Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height),
-                );
-            }
+            const offsetX = this._computeAdditionnalOffsetX();
+            const offsetY = this._computeAdditionnalOffsetY();
 
+            this.host.invalidateRect(
+                Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX),
+                Math.floor(this._tmpMeasureA.top + topShadowOffset - offsetY),
+                Math.ceil(this._tmpMeasureA.left + this._tmpMeasureA.width + rightShadowOffset + offsetX),
+                Math.ceil(this._tmpMeasureA.top + this._tmpMeasureA.height + bottomShadowOffset + offsetY)
+            );
         }
     }
 
@@ -1297,7 +1534,7 @@ export class Control {
     }
 
     /** @hidden */
-    protected _transform(context?: CanvasRenderingContext2D): void {
+    protected _transform(context?: ICanvasRenderingContext): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
@@ -1331,27 +1568,31 @@ export class Control {
     }
 
     /** @hidden */
-    public _renderHighlight(context: CanvasRenderingContext2D): void {
+    public _renderHighlight(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
             return;
         }
 
         context.save();
-        context.strokeStyle = "#4affff";
-        context.lineWidth = 2;
+        context.strokeStyle = this._highlightColor;
+        context.lineWidth = this._highlightLineWidth;
 
         this._renderHighlightSpecific(context);
         context.restore();
     }
 
     /** @hidden */
-    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /** @hidden */
-    protected _applyStates(context: CanvasRenderingContext2D): void {
+    protected _applyStates(context: ICanvasRenderingContext): void {
         if (this._isFontSizeInPercentage) {
+            this._fontSet = true;
+        }
+
+        if (this._host && this._host.useSmallestIdeal && !this._font) {
             this._fontSet = true;
         }
 
@@ -1371,12 +1612,12 @@ export class Control {
         if (Control.AllowAlphaInheritance) {
             context.globalAlpha *= this._alpha;
         } else if (this._alphaSet) {
-            context.globalAlpha = this.parent ? this.parent.alpha * this._alpha : this._alpha;
+            context.globalAlpha = this.parent && !this.parent.renderToIntermediateTexture ? this.parent.alpha * this._alpha : this._alpha;
         }
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -1384,7 +1625,14 @@ export class Control {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
 
-            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.addAndTransformToRef(
+                this._transformMatrix,
+                -this._paddingLeftInPixels | 0,
+                -this._paddingTopInPixels | 0,
+                this._paddingRightInPixels | 0,
+                this._paddingBottomInPixels | 0,
+                this._prevCurrentMeasureTransformedIntoGlobalSpace
+            );
 
             context.save();
 
@@ -1395,8 +1643,7 @@ export class Control {
                 this._rebuildLayout = false;
                 this._processMeasures(parentMeasure, context);
                 rebuildCount++;
-            }
-            while (this._rebuildLayout && rebuildCount < 3);
+            } while (this._rebuildLayout && rebuildCount < 3);
 
             if (rebuildCount >= 3) {
                 Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
@@ -1414,14 +1661,24 @@ export class Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
-        this._currentMeasure.copyFrom(parentMeasure);
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        this._tempPaddingMeasure.copyFrom(parentMeasure);
+
+        // Apply padding if in correct mode
+        if (this.parent && this.parent.descendantsOnlyPadding) {
+            this._tempPaddingMeasure.left += this.parent.paddingLeftInPixels;
+            this._tempPaddingMeasure.top += this.parent.paddingTopInPixels;
+            this._tempPaddingMeasure.width -= this.parent.paddingLeftInPixels + this.parent.paddingRightInPixels;
+            this._tempPaddingMeasure.height -= this.parent.paddingTopInPixels + this.parent.paddingBottomInPixels;
+        }
+
+        this._currentMeasure.copyFrom(this._tempPaddingMeasure);
 
         // Let children take some pre-measurement actions
-        this._preMeasure(parentMeasure, context);
+        this._preMeasure(this._tempPaddingMeasure, context);
 
         this._measure();
-        this._computeAlignment(parentMeasure, context);
+        this._computeAlignment(this._tempPaddingMeasure, context);
 
         // Convert to int values
         this._currentMeasure.left = this._currentMeasure.left | 0;
@@ -1430,10 +1687,11 @@ export class Control {
         this._currentMeasure.height = this._currentMeasure.height | 0;
 
         // Let children add more features
-        this._additionalProcessing(parentMeasure, context);
+        this._additionalProcessing(this._tempPaddingMeasure, context);
 
-        this._cachedParentMeasure.copyFrom(parentMeasure);
+        this._cachedParentMeasure.copyFrom(this._tempPaddingMeasure);
 
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
         }
@@ -1441,23 +1699,24 @@ export class Control {
 
     protected _evaluateClippingState(parentMeasure: Measure) {
         if (this.parent && this.parent.clipChildren) {
+            parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
-            if (this._currentMeasure.left > parentMeasure.left + parentMeasure.width) {
+            if (this._evaluatedMeasure.left > this._evaluatedParentMeasure.left + this._evaluatedParentMeasure.width) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.left + this._currentMeasure.width < parentMeasure.left) {
+            if (this._evaluatedMeasure.left + this._evaluatedMeasure.width < this._evaluatedParentMeasure.left) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.top > parentMeasure.top + parentMeasure.height) {
+            if (this._evaluatedMeasure.top > this._evaluatedParentMeasure.top + this._evaluatedParentMeasure.height) {
                 this._isClipped = true;
                 return;
             }
 
-            if (this._currentMeasure.top + this._currentMeasure.height < parentMeasure.top) {
+            if (this._evaluatedMeasure.top + this._evaluatedMeasure.height < this._evaluatedParentMeasure.top) {
                 this._isClipped = true;
                 return;
             }
@@ -1480,10 +1739,18 @@ export class Control {
         } else {
             this._currentMeasure.height *= this._height.getValue(this._host);
         }
+
+        if (this.fixedRatio !== 0) {
+            if (this._fixedRatioMasterIsWidth) {
+                this._currentMeasure.height = this._currentMeasure.width * this.fixedRatio;
+            } else {
+                this._currentMeasure.width = this._currentMeasure.height * this.fixedRatio;
+            }
+        }
     }
 
     /** @hidden */
-    protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
 
@@ -1518,32 +1785,34 @@ export class Control {
                 break;
         }
 
-        if (this._paddingLeft.isPixel) {
-            this._currentMeasure.left += this._paddingLeft.getValue(this._host);
-            this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
-        } else {
-            this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
-            this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
-        }
+        if (!this.descendantsOnlyPadding) {
+            if (this._paddingLeft.isPixel) {
+                this._currentMeasure.left += this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
+            } else {
+                this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
+                this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
+            }
 
-        if (this._paddingRight.isPixel) {
-            this._currentMeasure.width -= this._paddingRight.getValue(this._host);
-        } else {
-            this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
-        }
+            if (this._paddingRight.isPixel) {
+                this._currentMeasure.width -= this._paddingRight.getValue(this._host);
+            } else {
+                this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
+            }
 
-        if (this._paddingTop.isPixel) {
-            this._currentMeasure.top += this._paddingTop.getValue(this._host);
-            this._currentMeasure.height -= this._paddingTop.getValue(this._host);
-        } else {
-            this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
-            this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
-        }
+            if (this._paddingTop.isPixel) {
+                this._currentMeasure.top += this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= this._paddingTop.getValue(this._host);
+            } else {
+                this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
+                this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
+            }
 
-        if (this._paddingBottom.isPixel) {
-            this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
-        } else {
-            this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
+            if (this._paddingBottom.isPixel) {
+                this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
+            } else {
+                this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
+            }
         }
 
         if (this._left.isPixel) {
@@ -1563,23 +1832,23 @@ export class Control {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /** @hidden */
-    protected _clipForChildren(context: CanvasRenderingContext2D): void {
+    protected _clipForChildren(context: ICanvasRenderingContext): void {
         // DO nothing
     }
 
     private static _ClipMeasure = new Measure(0, 0, 0, 0);
     private _tmpMeasureA = new Measure(0, 0, 0, 0);
-    private _clip(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>) {
+    private _clip(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>) {
         context.beginPath();
         Control._ClipMeasure.copyFrom(this._currentMeasure);
         if (invalidatedRectangle) {
@@ -1619,7 +1888,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _render(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): boolean {
+    public _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
             return false;
@@ -1665,7 +1934,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
@@ -1706,7 +1975,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1718,20 +1987,22 @@ export class Control {
             return false;
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
-        var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
+        var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerMove(target, coordinates, pointerId); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerMove(target, coordinates, pointerId, pi);
+        }
     }
 
     /** @hidden */
-    public _onPointerEnter(target: Control): boolean {
+    public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1739,20 +2010,23 @@ export class Control {
             return false;
         }
 
-        if (this._enterCount === -1) { // -1 is for touch input, we are now sure we are with a mouse or pencil
+        if (this._enterCount === -1) {
+            // -1 is for touch input, we are now sure we are with a mouse or pencil
             this._enterCount = 0;
         }
         this._enterCount++;
 
-        var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+        var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerEnter(target); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerEnter(target, pi);
+        }
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control, force = false): void {
+    public _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force = false): void {
         if (!force && (!this._isEnabled || target === this)) {
             return;
         }
@@ -1761,19 +2035,19 @@ export class Control {
         var canNotify: boolean = true;
 
         if (!target.isAscendant(this)) {
-            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
 
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target, force);
+            this.parent._onPointerOut(target, pi, force);
         }
     }
 
     /** @hidden */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
-        this._onPointerEnter(this);
+        this._onPointerEnter(this, pi);
 
         if (this._downCount !== 0) {
             return false;
@@ -1783,15 +2057,17 @@ export class Control {
 
         this._downPointerIds[pointerId] = true;
 
-        var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+        var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
+        }
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: PointerInfoBase): void {
         if (!this._isEnabled) {
             return;
         }
@@ -1801,11 +2077,13 @@ export class Control {
 
         var canNotifyClick: boolean = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+            canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
         }
-        var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+        var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick); }
+        if (canNotify && this.parent != null) {
+            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
+        }
     }
 
     /** @hidden */
@@ -1826,25 +2104,30 @@ export class Control {
         }
         var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
 
-        if (canNotify && this.parent != null) { this.parent._onWheelScroll(deltaX, deltaY); }
+        if (canNotify && this.parent != null) {
+            this.parent._onWheelScroll(deltaX, deltaY);
+        }
     }
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _onCanvasBlur(): void { }
+
+    /** @hidden */
+    public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === PointerEventTypes.POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2, pointerId);
+            this._onPointerMove(this, this._dummyVector2, pointerId, pi);
 
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
-                previousControlOver._onPointerOut(this);
+                previousControlOver._onPointerOut(this, pi);
             }
 
             if (previousControlOver !== this) {
-                this._onPointerEnter(this);
+                this._onPointerEnter(this, pi);
             }
 
             this._host._lastControlOver[pointerId] = this;
@@ -1852,7 +2135,7 @@ export class Control {
         }
 
         if (type === PointerEventTypes.POINTERDOWN) {
-            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
+            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex, pi);
             this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
@@ -1860,7 +2143,7 @@ export class Control {
 
         if (type === PointerEventTypes.POINTERUP) {
             if (this._host._lastControlDown[pointerId]) {
-                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
+                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
             }
             delete this._host._lastControlDown[pointerId];
             return true;
@@ -1888,6 +2171,45 @@ export class Control {
         }
 
         this._fontOffset = Control._GetFontOffset(this._font);
+
+        //children need to be refreshed
+        this.getDescendants().forEach((child) => child._markAllAsDirty());
+    }
+
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serialize(serializationObject: any) {
+        SerializationHelper.Serialize(this, serializationObject);
+        serializationObject.name = this.name;
+        serializationObject.className = this.getClassName();
+
+        if (this._font) {
+            serializationObject.fontFamily = this._fontFamily;
+            serializationObject.fontSize = this.fontSize;
+            serializationObject.fontWeight = this.fontWeight;
+            serializationObject.fontStyle = this.fontStyle;
+        }
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        if (serializedObject.fontFamily) {
+            this.fontFamily = serializedObject.fontFamily;
+        }
+
+        if (serializedObject.fontSize) {
+            this.fontSize = serializedObject.fontSize;
+        }
+
+        if (serializedObject.fontWeight) {
+            this.fontWeight = serializedObject.fontWeight;
+        }
+
+        if (serializedObject.fontStyle) {
+            this.fontStyle = serializedObject.fontStyle;
+        }
     }
 
     /** Releases associated resources */
@@ -1964,44 +2286,40 @@ export class Control {
         return Control._VERTICAL_ALIGNMENT_CENTER;
     }
 
-    private static _FontHeightSizes: { [key: string]: { ascent: number, height: number, descent: number } } = {};
+    private static _FontHeightSizes: { [key: string]: { ascent: number; height: number; descent: number } } = {};
 
     /** @hidden */
-    public static _GetFontOffset(font: string): { ascent: number, height: number, descent: number } {
-
+    public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
         }
 
-        var text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.style.font = font;
-
-        var block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
-
-        var div = document.createElement("div");
-        div.appendChild(text);
-        div.appendChild(block);
-
-        document.body.appendChild(div);
-
-        var fontAscent = 0;
-        var fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
+        const engine = Engine.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
         }
-        var result = { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+
+        var result = engine.getFontOffset(font);
         Control._FontHeightSizes[font] = result;
 
         return result;
+    }
+
+    /**
+     * Creates a Control from parsed data
+     * @param serializedObject defines parsed data
+     * @param host defines the hosting AdvancedDynamicTexture
+     * @returns a new Control
+     */
+    public static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control {
+        let controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
+        let control = SerializationHelper.Parse(() => new controlType(), serializedObject, null);
+
+        control.name = serializedObject.name;
+
+        control._parseFromContent(serializedObject, host);
+
+        return control;
     }
 
     /**
@@ -2014,10 +2332,10 @@ export class Control {
      * @ignore
      * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean, controlFirst: boolean }) => any = () => { };
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => { };
 
     /** @hidden */
-    protected static drawEllipse(x: number, y: number, width: number, height: number, context: CanvasRenderingContext2D): void {
+    protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);
         context.scale(width, height);
 
@@ -2029,4 +2347,4 @@ export class Control {
         context.translate(-x, -y);
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Control"] = Control;
+RegisterClass("BABYLON.GUI.Control", Control);

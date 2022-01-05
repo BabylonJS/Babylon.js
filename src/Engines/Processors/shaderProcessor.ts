@@ -8,26 +8,65 @@ import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAnd
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { _DevTools } from '../../Misc/devTools';
+import { _WarnImport } from '../../Misc/devTools';
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
 declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
-declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
+declare type IFileRequest = import("../../Misc/fileRequest").IFileRequest;
+declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
 
 /** @hidden */
 export class ShaderProcessor {
-    public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void) {
+    public static Initialize(options: ProcessingOptions): void {
+        if (options.processor && options.processor.initializeShaders) {
+            options.processor.initializeShaders(options.processingContext);
+        }
+    }
+
+    public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        if (options.processor?.preProcessShaderCode) {
+            sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
+        }
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
-            let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options);
+            if (options.processCodeAfterIncludes) {
+                codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
+            }
+            let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
             callback(migratedCode);
         });
     }
 
+    public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+        if (options.processor?.preProcessShaderCode) {
+            sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
+        }
+        this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+            if (options.processCodeAfterIncludes) {
+                codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
+            }
+            let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
+            callback(migratedCode);
+        });
+    }
+
+    public static Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string, fragmentCode: string } {
+        if (!options.processor || !options.processor.finalizeShaders) {
+            return { vertexCode, fragmentCode };
+        }
+
+        return options.processor.finalizeShaders(vertexCode, fragmentCode, options.processingContext);
+    }
+
     private static _ProcessPrecision(source: string, options: ProcessingOptions): string {
+        if (options.processor?.noPrecision) {
+            return source;
+        }
+
         const shouldUseHighPrecisionShader = options.shouldUseHighPrecisionShader;
 
         if (source.indexOf("precision highp float") === -1) {
@@ -94,16 +133,16 @@ export class ShaderProcessor {
 
                 let operator = c == '&&' ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
 
-                if (typeof(v1) === 'string') {
+                if (typeof (v1) === 'string') {
                     v1 = v1.replace(regexSERevert, "defined($1)");
                 }
 
-                if (typeof(v2) === 'string') {
+                if (typeof (v2) === 'string') {
                     v2 = v2.replace(regexSERevert, "defined($1)");
                 }
 
-                operator.leftOperand = typeof(v2) === 'string' ? this._ExtractOperation(v2) : v2;
-                operator.rightOperand = typeof(v1) === 'string' ? this._ExtractOperation(v1) : v1;
+                operator.leftOperand = typeof (v2) === 'string' ? this._ExtractOperation(v2) : v2;
+                operator.rightOperand = typeof (v1) === 'string' ? this._ExtractOperation(v1) : v1;
 
                 stack.push(operator);
             }
@@ -111,13 +150,13 @@ export class ShaderProcessor {
 
         let result = stack[stack.length - 1];
 
-        if (typeof(result) === 'string') {
+        if (typeof (result) === 'string') {
             result = result.replace(regexSERevert, "defined($1)");
         }
 
         // note: stack.length !== 1 if there was an error in the parsing
 
-        return typeof(result) === 'string' ? this._ExtractOperation(result) : result;
+        return typeof (result) === 'string' ? this._ExtractOperation(result) : result;
     }
 
     private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
@@ -236,7 +275,7 @@ export class ShaderProcessor {
         return rootNode.process(preprocessors, options);
     }
 
-    private static _PreparePreProcessors(options: ProcessingOptions): { [key: string]: string } {
+    private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine): { [key: string]: string } {
         let defines = options.defines;
         let preprocessors: { [key: string]: string } = {};
 
@@ -246,14 +285,18 @@ export class ShaderProcessor {
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
-        preprocessors["GL_ES"] = "true";
+        if (options.processor?.shaderLanguage === ShaderLanguage.GLSL) {
+            preprocessors["GL_ES"] = "true";
+        }
         preprocessors["__VERSION__"] = options.version;
         preprocessors[options.platformName] = "true";
+
+        engine._getGlobalDefines(preprocessors);
 
         return preprocessors;
     }
 
-    private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions): string {
+    private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
 
         var preparedSourceCode = this._ProcessPrecision(sourceCode, options);
 
@@ -262,32 +305,64 @@ export class ShaderProcessor {
         }
 
         // Already converted
-        if (preparedSourceCode.indexOf("#version 3") !== -1) {
+        if (options.processor.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
             return preparedSourceCode.replace("#version 300 es", "");
         }
 
         let defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options);
+        let preprocessors = this._PreparePreProcessors(options, engine);
 
         // General pre processing
         if (options.processor.preProcessor) {
-            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment);
+            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
         }
 
         preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
         // Post processing
         if (options.processor.postProcessor) {
-            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment);
+            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
+        }
+
+        // Inline functions tagged with #define inline
+        if (engine._features.needShaderCodeInlining) {
+            preparedSourceCode = engine.inlineShaderCode(preparedSourceCode);
+        }
+
+        return preparedSourceCode;
+    }
+
+    private static _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
+        let preparedSourceCode = sourceCode;
+
+        const defines = options.defines;
+
+        let preprocessors = this._PreparePreProcessors(options, engine);
+
+        // General pre processing
+        if (options.processor?.preProcessor) {
+            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+        }
+
+        preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+
+        // Post processing
+        if (options.processor?.postProcessor) {
+            preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
+        }
+
+        // Inline functions tagged with #define inline
+        if (engine._features.needShaderCodeInlining) {
+            preparedSourceCode = engine.inlineShaderCode(preparedSourceCode);
         }
 
         return preparedSourceCode;
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-        var match = regex.exec(sourceCode);
+        const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+        var match = regexShaderInclude.exec(sourceCode);
 
         var returnValue = new String(sourceCode);
         var keepProcessing = false;
@@ -356,7 +431,10 @@ export class ShaderProcessor {
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
 
-                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0;
+                keepProcessing =
+                    keepProcessing ||
+                    includeContent.indexOf("#include<") >= 0 ||
+                    includeContent.indexOf("#include <") >= 0;
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
@@ -367,7 +445,7 @@ export class ShaderProcessor {
                 return;
             }
 
-            match = regex.exec(sourceCode);
+            match = regexShaderInclude.exec(sourceCode);
         }
 
         if (keepProcessing) {
@@ -389,6 +467,6 @@ export class ShaderProcessor {
      * @hidden
      */
     public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
-        throw  _DevTools.WarnImport("FileTools");
+        throw _WarnImport("FileTools");
     }
 }

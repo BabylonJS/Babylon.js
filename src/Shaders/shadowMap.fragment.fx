@@ -1,4 +1,4 @@
-﻿#include<shadowMapFragmentDeclaration>
+﻿#include<shadowMapFragmentExtraDeclaration>
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -6,6 +6,9 @@ uniform sampler2D diffuseSampler;
 #endif
 
 #include<clipPlaneFragmentDeclaration>
+
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
 
 void main(void)
 {

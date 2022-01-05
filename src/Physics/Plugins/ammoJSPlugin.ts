@@ -3,16 +3,17 @@ import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysi
 import { Logger } from "../../Misc/logger";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData } from "../../Physics/physicsJoint";
-import { VertexBuffer } from "../../Meshes/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Nullable } from "../../types";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { ShapeBuilder } from "../../Meshes/Builders/shapeBuilder";
-import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { ExtrudeShape } from "../../Meshes/Builders/shapeBuilder";
+import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
+import { Epsilon } from '../../Maths/math.constants';
 
 declare var Ammo: any;
 
@@ -55,6 +56,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorRCA: any;
     private _tmpAmmoVectorRCB: any;
     private _raycastResult: PhysicsRaycastResult;
+    private _tmpContactPoint = new Vector3();
+    private _tmpVec3 = new Vector3();
 
     private static readonly DISABLE_COLLISION_FLAG = 4;
     private static readonly KINEMATIC_FLAG = 2;
@@ -68,7 +71,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo, overlappingPairCache: any = null) {
         if (typeof ammoInjection === "function") {
-            ammoInjection(this.bjsAMMO);
+            Logger.Error("AmmoJS is not ready. Please make sure you await Ammo() before using the plugin.");
+            return;
         } else {
             this.bjsAMMO = ammoInjection;
         }
@@ -87,7 +91,14 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this.world = new this.bjsAMMO.btSoftRigidDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration, this._softBodySolver);
 
         this._tmpAmmoConcreteContactResultCallback = new this.bjsAMMO.ConcreteContactResultCallback();
-        this._tmpAmmoConcreteContactResultCallback.addSingleResult = () => { this._tmpContactCallbackResult = true; };
+        this._tmpAmmoConcreteContactResultCallback.addSingleResult = (contactPoint: any, colObj0Wrap: any, partId0: any, index0: any) => {
+            contactPoint = this.bjsAMMO.wrapPointer(contactPoint, this.bjsAMMO.btManifoldPoint);
+            const worldPoint = contactPoint.getPositionWorldOnA();
+            this._tmpContactPoint.x = worldPoint.x();
+            this._tmpContactPoint.y = worldPoint.y();
+            this._tmpContactPoint.z = worldPoint.z();
+            this._tmpContactCallbackResult = true;
+        };
 
         this._raycastResult = new PhysicsRaycastResult();
 
@@ -147,6 +158,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * The create custom shape handler function to be called when using BABYLON.PhysicsImposter.CustomImpostor
      */
     public onCreateCustomShape: (impostor: PhysicsImpostor) => any;
+
+    /**
+     * The create custom mesh impostor handler function to support building custom mesh impostor vertex data (Ex: Ammo.btSmoothTriangleMesh)
+     */
+     public onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
 
     // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
     private _isImpostorInContact(impostor: PhysicsImpostor) {
@@ -219,8 +235,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                         for (var otherImpostor of collideCallback.otherImpostors) {
                             if (mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()) {
                                 if (this._isImpostorPairInContact(mainImpostor, otherImpostor)) {
-                                    mainImpostor.onCollide({ body: otherImpostor.physicsBody });
-                                    otherImpostor.onCollide({ body: mainImpostor.physicsBody });
+                                    mainImpostor.onCollide({ body: otherImpostor.physicsBody, point: this._tmpContactPoint });
+                                    otherImpostor.onCollide({ body: mainImpostor.physicsBody, point: this._tmpContactPoint });
                                 }
                             }
                         }
@@ -265,10 +281,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         var object = impostor.object;
         var shape = impostor.getParam("shape");
         if (impostor._isFromLine) {
-            impostor.object = LinesBuilder.CreateLines("lines", { points: path, instance: <LinesMesh>object });
+            impostor.object = CreateLines("lines", { points: path, instance: <LinesMesh>object });
         }
         else {
-            impostor.object = ShapeBuilder.ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
+            impostor.object = ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
         }
 
     }
@@ -368,12 +384,16 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
 
+            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
+
             // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
-                contactPoint.subtractInPlace(impostor.object.getWorldMatrix().getTranslation());
+                var localTranslation = impostor.object.getWorldMatrix().getTranslation();
+                worldPoint.x -= localTranslation.x;
+                worldPoint.y -= localTranslation.y;
+                worldPoint.z -= localTranslation.z;
             }
 
-            worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
             impulse.setValue(force.x, force.y, force.z);
 
             impostor.physicsBody.applyForce(impulse, worldPoint);
@@ -424,6 +444,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             else {
                 var localInertia = new this.bjsAMMO.btVector3(0, 0, 0);
                 var startTransform = new this.bjsAMMO.btTransform();
+                impostor.object.computeWorldMatrix(true);
                 startTransform.setIdentity();
                 if (mass !== 0) {
                     colShape.calculateLocalInertia(mass, localInertia);
@@ -445,6 +466,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 // Disable collision if NoImpostor, but keep collision if shape is btCompoundShape
                 if (impostor.type == PhysicsImpostor.NoImpostor && !colShape.getChildShape) {
                     body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
+                }
+
+                // compute delta position: compensate the difference between shape center and mesh origin
+                if (impostor.type !== PhysicsImpostor.MeshImpostor && impostor.type !== PhysicsImpostor.NoImpostor) {
+                    const boundingInfo = impostor.object.getBoundingInfo();
+                    this._tmpVec3.copyFrom(impostor.object.getAbsolutePosition());
+                    this._tmpVec3.subtractInPlace(boundingInfo.boundingBox.centerWorld);
+                    this._tmpVec3.x /= impostor.object.scaling.x;
+                    this._tmpVec3.y /= impostor.object.scaling.y;
+                    this._tmpVec3.z /= impostor.object.scaling.z;
+                    impostor.setDeltaPosition(this._tmpVec3);
                 }
 
                 let group = impostor.getParam("group");
@@ -557,16 +589,37 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             if (!vertexPositions) {
                 vertexPositions = [];
             }
-            object.computeWorldMatrix(false);
+
+            let localMatrix;
+
+            if (topLevelObject && topLevelObject !== object) {
+                // top level matrix used for shape transform doesn't take scale into account.
+                // Moreover, every children vertex position must be in that space.
+                // So, each vertex position here is transform by (mesh world matrix * toplevelMatrix -1)
+                let topLevelQuaternion;
+                if (topLevelObject.rotationQuaternion) {
+                    topLevelQuaternion = topLevelObject.rotationQuaternion;
+                } else if (topLevelObject.rotation) {
+                    topLevelQuaternion = Quaternion.FromEulerAngles(topLevelObject.rotation.x, topLevelObject.rotation.y, topLevelObject.rotation.z);
+                } else {
+                    topLevelQuaternion = Quaternion.Identity();
+                }
+                const topLevelMatrix = Matrix.Compose(Vector3.One(), topLevelQuaternion, topLevelObject.position);
+                topLevelMatrix.invertToRef(this._tmpMatrix);
+                const wm = object.computeWorldMatrix(false);
+                localMatrix = wm.multiply(this._tmpMatrix);
+            } else {
+                // current top level is same as object level -> only use local scaling
+                Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
+                localMatrix = this._tmpMatrix;
+            }
             var faceCount = indices.length / 3;
             for (var i = 0; i < faceCount; i++) {
                 var triPoints = [];
                 for (var point = 0; point < 3; point++) {
                     var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
 
-                    // Adjust for initial scaling
-                    Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
-                    v = Vector3.TransformCoordinates(v, this._tmpMatrix);
+                    v = Vector3.TransformCoordinates(v, localMatrix);
 
                     var vec: any;
                     if (point == 0) {
@@ -782,10 +835,6 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 Logger.Warn("No shape available for extruded mesh");
                 return new this.bjsAMMO.btCompoundShape();
             }
-            if ((vertexPositions!.length % (3 * pathVectors.length)) !== 0) {
-                Logger.Warn("Path does not match extrusion");
-                return new this.bjsAMMO.btCompoundShape();
-            }
             len = pathVectors.length;
             segments = len - 1;
             this._tmpAmmoVectorA.setValue(pathVectors[0].x, pathVectors[0].y, pathVectors[0].z);
@@ -927,7 +976,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
-                // Is there a better way to compare floats number? With an epsylon or with a Math function
+                // Is there a better way to compare floats number? With an epsilon or with a Math function
                 if (Scalar.WithinEpsilon(extendSize.x, extendSize.y, 0.0001) && Scalar.WithinEpsilon(extendSize.x, extendSize.z, 0.0001)) {
                     returnValue = new this.bjsAMMO.btSphereShape(extendSize.x / 2);
                 } else {
@@ -939,7 +988,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
                 break;
             case PhysicsImpostor.CapsuleImpostor:
-                returnValue = new this.bjsAMMO.btCapsuleShape(extendSize.x / 2, extendSize.y / 2);
+                // https://pybullet.org/Bullet/BulletFull/classbtCapsuleShape.html#details
+                // Height is just the height between the center of each 'sphere' of the capsule caps
+                const capRadius = extendSize.x / 2;
+                returnValue = new this.bjsAMMO.btCapsuleShape(capRadius, extendSize.y - capRadius * 2);
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);
@@ -954,13 +1006,17 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (impostor.getParam("mass") == 0) {
                     // Only create btBvhTriangleMeshShape impostor is static
                     // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
-                    var tetraMesh = new this.bjsAMMO.btTriangleMesh();
-                    impostor._pluginData.toDispose.push(tetraMesh);
-                    var triangeCount = this._addMeshVerts(tetraMesh, object, object);
-                    if (triangeCount == 0) {
-                        returnValue = new this.bjsAMMO.btCompoundShape();
+                    if (this.onCreateCustomMeshImpostor) {
+                        returnValue = this.onCreateCustomMeshImpostor(impostor);
                     } else {
-                        returnValue = new this.bjsAMMO.btBvhTriangleMeshShape(tetraMesh);
+                        var tetraMesh = new this.bjsAMMO.btTriangleMesh();
+                        impostor._pluginData.toDispose.push(tetraMesh);
+                        var triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                        if (triangeCount == 0) {
+                            returnValue = new this.bjsAMMO.btCompoundShape();
+                        } else {
+                            returnValue = new this.bjsAMMO.btBvhTriangleMeshShape(tetraMesh);
+                        }
                     }
                     break;
                 }
@@ -1031,15 +1087,15 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
         var trans = impostor.physicsBody.getWorldTransform();
 
-        // If rotation/position has changed update and activate riged body
+        // If rotation/position has changed update and activate rigged body
         if (
-            trans.getOrigin().x() != newPosition.x ||
-            trans.getOrigin().y() != newPosition.y ||
-            trans.getOrigin().z() != newPosition.z ||
-            trans.getRotation().x() != newRotation.x ||
-            trans.getRotation().y() != newRotation.y ||
-            trans.getRotation().z() != newRotation.z ||
-            trans.getRotation().w() != newRotation.w
+            Math.abs(trans.getOrigin().x() - newPosition.x) > Epsilon ||
+            Math.abs(trans.getOrigin().y() - newPosition.y) > Epsilon ||
+            Math.abs(trans.getOrigin().z() - newPosition.z) > Epsilon ||
+            Math.abs(trans.getRotation().x() - newRotation.x) > Epsilon ||
+            Math.abs(trans.getRotation().y() - newRotation.y) > Epsilon ||
+            Math.abs(trans.getRotation().z() - newRotation.z) > Epsilon ||
+            Math.abs(trans.getRotation().w() - newRotation.w) > Epsilon
         ) {
             this._tmpAmmoVectorA.setValue(newPosition.x, newPosition.y, newPosition.z);
             trans.setOrigin(this._tmpAmmoVectorA);
@@ -1196,7 +1252,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Sets resitution of the impostor
+     * Sets restitution of the impostor
      * @param impostor impostor to set resitution on
      * @param restitution resitution value
      */
@@ -1334,7 +1390,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     * @param otherImpostor is the rigid impostor to anchor to
     * @param width ratio across width from 0 to 1
     * @param height ratio up height from 0 to 1
-    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little stretch
     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
     */
     public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
@@ -1351,7 +1407,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor is the rope impostor to add hook to
      * @param otherImpostor is the rigid impostor to hook to
      * @param length ratio along the rope from 0 to 1
-     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little strech
+     * @param influence the elasticity between soft impostor and anchor from 0, very stretchy to 1, little stretch
      * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
      */
     public appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
@@ -1364,7 +1420,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor impostor to sleep
      */
     public sleepBody(impostor: PhysicsImpostor) {
-        Logger.Warn("sleepBody is not currently supported by the Ammo physics plugin");
+        impostor.physicsBody.forceActivationState(0);
     }
 
     /**

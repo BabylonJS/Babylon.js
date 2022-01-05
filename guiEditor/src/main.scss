@@ -1,0 +1,242 @@
+:root {
+    --blackBarHeight: 55px;
+}
+
+#gui-editor-workbench-root {
+    display: grid;
+    grid-template-rows: calc(100% - 55px);
+    height: 100%;
+    width: 100%;
+    background: #e2e2e2;
+    font: 14px "acumin-pro-condensed";   
+}
+
+.wait-screen {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    width: 100%;
+    background: #464646;
+    opacity: 0.95;
+    color:white;
+    font: 24px "acumin-pro-condensed";  
+    position: absolute;
+    top: 0;
+    left: 0; 
+
+    &.hidden {
+        visibility: hidden;
+    }
+}
+
+#leftGrab {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    cursor: ew-resize;
+}
+
+#rightGrab {
+    grid-row: 1 / span 2;
+    grid-column: 5;
+    cursor: ew-resize;
+}
+
+
+#toolbarGrab {
+    background: #333333;
+    grid-row: 1 / span 3;
+    grid-column: 3;
+    height: 100%;
+
+    .blackLine {
+        height:  5px;
+        background: black;
+    }
+    .toolbar-label {
+        color:white;
+        padding: 5px;
+        padding-left: 7px;
+        height: 35px;
+        font-size: 18px;
+        display: grid;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        grid-template-columns: 1fr 20px;
+        grid-template-rows: 100%;
+        position: relative;
+
+        &.active {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        &:hover {
+            background: var(--selectionGrey);
+            .sub-items {
+                display: block;
+            }
+        } 
+    }
+}
+
+.diagram-container {
+    position: relative;
+    display: grid;
+    grid-row: 1;
+    grid-column: 4;
+    background: #5f5b60;
+    width: 100%;
+    height: 100%;
+
+    .diagram {
+        display: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    .ge-scalePoint {
+        width: 10px;
+        height: 10px;
+        background: transparent;
+        outline: rgb(125, 125, 125) 2px solid;
+    }
+
+    .ge-pivotPoint {
+        width: 30px;
+        height: 30px;
+        background: transparent;
+    }
+}
+
+.right-panel {
+    grid-row: 1 / span 2;
+    grid-column: 6;
+    display: grid;
+    grid-template-rows: 1fr 40px auto 40px;
+    grid-template-columns: 100%;
+    height: calc(100% - var(--blackBarHeight));
+    overflow-y: auto;
+
+    #propertyTab {
+        grid-row: 1;
+        grid-column: 1;
+    }        
+    
+    .button {
+        display: grid;
+        justify-content: center;
+        align-content: center;
+        height: auto;
+        width: calc(100% / 7);
+        cursor: pointer;
+
+        &:hover {
+            background: rgb(51, 122, 183);
+            color: white;
+            opacity: 0.8;
+        }
+
+        &.selected {
+            background: rgb(51, 122, 183);
+            color: white;
+        }
+        
+        &.align {
+            justify-content: stretch;
+            text-align: center;
+        }
+    }    
+}
+
+.blocker {
+    visibility: hidden;
+    position: absolute;
+    width: calc(100% - 40px);
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    background: rgba(20, 20, 20, 0.95);    
+    font-family: "acumin-pro-condensed";
+    color: white;
+    font-size: 24px;
+
+    display: grid;
+    align-content: center;
+    justify-content: center;
+
+    user-select: none;
+
+    padding: 20px;
+    text-align: center;
+}
+
+#log-console {
+    grid-row: 2;
+    grid-column: 4;
+    display: none;
+}
+
+.dialog-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0.1, 0.1, 0.1, 0.6);
+    display: grid;
+    font-family: "acumin-pro-condensed";
+    top:0;
+
+    .dialog {
+        align-self: center;
+        justify-self: center;
+        min-height: 140px;
+        max-width: 400px;
+        border-radius: 10px;
+        background: white;
+
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: calc(100% - 50px) 50px;
+
+        .dialog-message {
+            grid-row: 1;
+            grid-column: 1;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 18px;
+            color: black;
+        }
+
+        .dialog-buttons {
+            grid-row: 2;
+            grid-column: 1;
+            display: grid;
+            grid-template-rows: 100%;
+            grid-template-columns: 100%;
+            color: white;
+
+            .dialog-button-ok {
+                cursor: pointer;
+                justify-self: center;
+                background:green;
+                min-width: 80px;
+                justify-content: center;
+                display: grid;
+                align-content: center;
+                align-self: center;
+                height: 35px;      
+                border-radius: 10px;
+
+                &:hover {
+                    opacity: 0.8;
+                }
+
+                &.error {
+                    background: red;
+                }
+            }
+        }
+    }
+}

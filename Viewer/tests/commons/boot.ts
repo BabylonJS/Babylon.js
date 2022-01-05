@@ -12,7 +12,7 @@ export class Boot {
         document.body.innerHTML = `<div id="result-div"></div><div id="working-div"></div>`;
 
         //register actions to occur before each test
-        beforeEach(function(done) {
+        beforeEach(function (done) {
             // tslint:disable-next-line:no-console
             //console.debug('> Executing "' + details.name + '"');
 
@@ -62,7 +62,7 @@ export class Boot {
             done();
         });
 
-        afterEach(function(done) {
+        afterEach(function (done) {
             Helper.disposeViewer();
             //(<any>window).BabylonViewer.disposeAll();
             done();

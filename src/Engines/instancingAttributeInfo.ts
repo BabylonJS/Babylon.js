@@ -1,5 +1,5 @@
 /**
- * Interface for attribute information associated with buffer instanciation
+ * Interface for attribute information associated with buffer instantiation
  */
 export interface InstancingAttributeInfo {
     /**

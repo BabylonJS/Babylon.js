@@ -214,6 +214,11 @@ export class DigitalRainPostProcess extends PostProcess {
     public mixToNormal: number = 0;
 
     /**
+     * Speed of the effect
+     */
+    public speed: number = 0.003;
+
+    /**
      * Instantiates a new Digital Rain Post Process.
      * @param name the name to give to the postprocess
      * @camera the camera to apply the post process to.
@@ -279,7 +284,7 @@ export class DigitalRainPostProcess extends PostProcess {
             effect.setMatrix("matrixSpeed",
                 matrix);
 
-            alpha += 0.003;
+            alpha += this.speed;
             cosTimeZeroOne = alpha;
             effect.setFloat('cosTimeZeroOne', cosTimeZeroOne);
         };

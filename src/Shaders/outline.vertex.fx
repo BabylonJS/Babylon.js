@@ -3,9 +3,12 @@ attribute vec3 position;
 attribute vec3 normal;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
+#include<clipPlaneVertexDeclaration>
 
 // Uniform
 uniform float offset;
@@ -26,21 +29,28 @@ attribute vec2 uv2;
 #endif
 #include<logDepthDeclaration>
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;
     vec3 normalUpdated = normal;
 #ifdef UV1
     vec2 uvUpdated = uv;
-#endif    
+#endif
+    #include<morphTargetsVertexGlobal>
     #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 	vec3 offsetPosition = positionUpdated + (normalUpdated * offset);
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
-	gl_Position = viewProjection * finalWorld * vec4(offsetPosition, 1.0);
+    vec4 worldPos = finalWorld * vec4(offsetPosition, 1.0);
+
+	gl_Position = viewProjection * worldPos;
 
 #ifdef ALPHATEST
 #ifdef UV1
@@ -50,5 +60,6 @@ void main(void)
 	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 #endif
 #endif
+#include<clipPlaneVertex>
 #include<logDepthVertex>
 }

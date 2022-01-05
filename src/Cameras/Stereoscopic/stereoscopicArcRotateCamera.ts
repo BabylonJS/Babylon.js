@@ -3,9 +3,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicRigMode";
+import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
 
 Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) => {
     return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
@@ -13,7 +11,7 @@ Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) =>
 
 /**
  * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class StereoscopicArcRotateCamera extends ArcRotateCamera {
     /**
@@ -41,4 +39,6 @@ export class StereoscopicArcRotateCamera extends ArcRotateCamera {
     public getClassName(): string {
         return "StereoscopicArcRotateCamera";
     }
+
+    protected _setRigMode = setStereoscopicRigMode.bind(null, this);
 }

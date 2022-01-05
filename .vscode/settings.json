@@ -28,11 +28,13 @@
         "proceduralTexturesLibrary/**/*.js.map": true,
         "serielazers/**/*.js.map": true,
         "**/*.js.fx": true,
+        "**/*.js.wgsl": true,
         "**/*.js": {
             "when": "$(basename).ts"
         },
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
         "**/ShadersInclude/**/*.ts": true
     },
     "files.associations": {
@@ -52,11 +54,14 @@
         "dist/**/*.d.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
         "**/ShadersInclude/**/*.ts": true,
         "assets": true,
         "**/babylonWeb**": true,
     },
     "editor.tabSize": 4,
     "typescript.tsdk": "node_modules\\typescript\\lib",
-    "typescript.preferences.importModuleSpecifier": "relative"
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "ponicode.testSettings.testLocation.locationType": "Custom",
+    "ponicode.testSettings.testLocation.path": "{rootDir}/tests/ponicode/babylon/{filePathWithoutSrc}/{fileName}.test.{ext}"
 }

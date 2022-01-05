@@ -51,7 +51,7 @@ export class DepthReducer extends MinMaxReducer {
                 scene._depthRenderer = {};
             }
 
-            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false);
+            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             depthRenderer.enabled = false;
 
             this._depthRendererId = "minmax" + this._camera.id;
@@ -69,7 +69,7 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * Activates the reduction computation.
      * When activated, the observers registered in onAfterReductionPerformed are
-     * called after the compuation is performed
+     * called after the computation is performed
      */
     public activate(): void {
         if (this._depthRenderer) {

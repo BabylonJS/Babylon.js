@@ -32,7 +32,7 @@ function processUMDViewer(module, version) {
     // build the viewer.
     colorConsole.log("    Executing " + ('tsc -p ' + projectPath).yellow);
 
-    let tscCompile = shelljs.exec('tsc -p ' + projectPath, {
+    let tscCompile = shelljs.exec('npx tsc -p ' + projectPath, {
         cwd: path.resolve(__dirname)
     });
     if (tscCompile.code !== 0) {

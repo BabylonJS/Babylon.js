@@ -1,13 +1,13 @@
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCube } from '@fortawesome/free-solid-svg-icons';
-import { faEye, faEyeSlash, faSquare } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCube } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { GlobalState } from '../../globalState';
+import { GlobalState } from "../../globalState";
 
 interface IMeshTreeItemComponentProps {
     mesh: AbstractMesh;
@@ -16,7 +16,7 @@ interface IMeshTreeItemComponentProps {
     globalState: GlobalState;
 }
 
-export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isBoundingBoxEnabled: boolean, isVisible: boolean }> {
+export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isBoundingBoxEnabled: boolean; isVisible: boolean }> {
     constructor(props: IMeshTreeItemComponentProps) {
         super(props);
 
@@ -45,15 +45,17 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
         return (
             <div className="meshTools">
                 <TreeItemLabelComponent label={mesh.name} onClick={() => this.props.onClick()} icon={faCube} color="dodgerblue" />
-                <div className={this.state.isBoundingBoxEnabled ? "bounding-box selected icon" : "bounding-box icon"} onClick={() => this.showBoundingBox()} title="Show/Hide bounding box">
+                <div
+                    className={this.state.isBoundingBoxEnabled ? "bounding-box selected icon" : "bounding-box icon"}
+                    onClick={() => this.showBoundingBox()}
+                    title="Show/Hide bounding box"
+                >
                     <FontAwesomeIcon icon={faSquare} />
                 </div>
                 <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide mesh">
                     {visibilityElement}
                 </div>
-                {
-                    <ExtensionsComponent target={mesh} extensibilityGroups={this.props.extensibilityGroups} />
-                }
+                {<ExtensionsComponent target={mesh} extensibilityGroups={this.props.extensibilityGroups} />}
             </div>
         );
     }

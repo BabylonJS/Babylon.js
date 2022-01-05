@@ -38,7 +38,7 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
 
     /**
      * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
-     * @param ui The transform node that should be attched to the mesh
+     * @param ui The transform node that should be attached to the mesh
      */
     constructor(private ui: TransformNode) {
         /* Does nothing */
@@ -61,7 +61,7 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
             Vector3.TransformCoordinatesToRef(v.direction, this._tmpMatrix, v.rotatedDirection);
             v.diff = Vector3.GetAngleBetweenVectors(v.rotatedDirection, targetDirection, Vector3.Cross(v.rotatedDirection, targetDirection));
         });
-        // Return the face information of the one with the normal closeset to target direction
+        // Return the face information of the one with the normal closest to target direction
         return this._faceVectors.reduce((min, p) => {
             if (min.ignore) {
                 return p;
@@ -109,7 +109,7 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
 
             // Get camera up direction
             Vector3.TransformCoordinatesToRef(Vector3.Up(), this._tmpMatrix, this._tmpVector);
-            // Ignore faces to not select a parrelel face for the up vector of the UI
+            // Ignore faces to not select a parallel face for the up vector of the UI
             this._faceVectors.forEach((v) => {
                 if (facing.direction.x && v.direction.x) {
                     v.ignore = true;

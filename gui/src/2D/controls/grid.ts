@@ -5,14 +5,19 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { Tools } from 'babylonjs/Misc/tools';
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { Observer } from "babylonjs/Misc/observable";
 
 /**
  * Class used to create a 2D grid container
  */
 export class Grid extends Container {
     private _rowDefinitions = new Array<ValueAndUnit>();
+    private _rowDefinitionObservers: Observer<void>[] = [];
     private _columnDefinitions = new Array<ValueAndUnit>();
+    private _columnDefinitionObservers: Observer<void>[] = [];
     private _cells: { [key: string]: Container } = {};
     private _childControls = new Array<Control>();
 
@@ -74,7 +79,7 @@ export class Grid extends Container {
      */
     public addRowDefinition(height: number, isPixel = false): Grid {
         this._rowDefinitions.push(new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-
+        this._rowDefinitionObservers.push(this._rowDefinitions[this.rowCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
         this._markAsDirty();
 
         return this;
@@ -88,7 +93,7 @@ export class Grid extends Container {
      */
     public addColumnDefinition(width: number, isPixel = false): Grid {
         this._columnDefinitions.push(new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE));
-
+        this._columnDefinitionObservers.push(this._columnDefinitions[this.columnCount - 1].onChangedObservable.add(() => this._markAsDirty())!);
         this._markAsDirty();
 
         return this;
@@ -107,11 +112,13 @@ export class Grid extends Container {
         }
 
         let current = this._rowDefinitions[index];
-        if (current && current.isPixel === isPixel && current.internalValue === height) {
+        if (current && current.isPixel === isPixel && current.value === height) {
             return this;
         }
 
+        this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         this._rowDefinitions[index] = new ValueAndUnit(height, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
+        this._rowDefinitionObservers[index] = this._rowDefinitions[index].onChangedObservable.add(() => this._markAsDirty())!;
 
         this._markAsDirty();
 
@@ -131,11 +138,13 @@ export class Grid extends Container {
         }
 
         let current = this._columnDefinitions[index];
-        if (current && current.isPixel === isPixel && current.internalValue === width) {
+        if (current && current.isPixel === isPixel && current.value === width) {
             return this;
         }
 
+        this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         this._columnDefinitions[index] = new ValueAndUnit(width, isPixel ? ValueAndUnit.UNITMODE_PIXEL : ValueAndUnit.UNITMODE_PERCENTAGE);
+        this._columnDefinitionObservers[index] = this._columnDefinitions[index].onChangedObservable.add(() => this._markAsDirty())!;
 
         this._markAsDirty();
 
@@ -225,7 +234,9 @@ export class Grid extends Container {
             }
         }
 
+        this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         this._columnDefinitions.splice(index, 1);
+        this._columnDefinitionObservers.splice(index, 1);
 
         this._markAsDirty();
 
@@ -258,7 +269,9 @@ export class Grid extends Container {
             }
         }
 
+        this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         this._rowDefinitions.splice(index, 1);
+        this._rowDefinitionObservers.splice(index, 1);
 
         this._markAsDirty();
 
@@ -359,55 +372,55 @@ export class Grid extends Container {
 
         // Heights
         let index = 0;
-        for (var value of this._rowDefinitions) {
-            if (value.isPixel) {
-                let height = value.getValue(this._host);
+        for (var rowDefinition of this._rowDefinitions) {
+            if (rowDefinition.isPixel) {
+                let height = rowDefinition.getValue(this._host);
                 availableHeight -= height;
                 heights[index] = height;
             } else {
-                globalHeightPercentage += value.internalValue;
+                globalHeightPercentage += rowDefinition.value;
             }
             index++;
         }
 
         let top = 0;
         index = 0;
-        for (var value of this._rowDefinitions) {
+        for (var rowDefinition of this._rowDefinitions) {
             tops.push(top);
 
-            if (!value.isPixel) {
-                let height = (value.internalValue / globalHeightPercentage) * availableHeight;
+            if (!rowDefinition.isPixel) {
+                let height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
                 top += height;
                 heights[index] = height;
             } else {
-                top += value.getValue(this._host);
+                top += rowDefinition.getValue(this._host);
             }
             index++;
         }
 
         // Widths
         index = 0;
-        for (var value of this._columnDefinitions) {
-            if (value.isPixel) {
-                let width = value.getValue(this._host);
+        for (var columnDefinition of this._columnDefinitions) {
+            if (columnDefinition.isPixel) {
+                let width = columnDefinition.getValue(this._host);
                 availableWidth -= width;
                 widths[index] = width;
             } else {
-                globalWidthPercentage += value.internalValue;
+                globalWidthPercentage += columnDefinition.value;
             }
             index++;
         }
 
         let left = 0;
         index = 0;
-        for (var value of this._columnDefinitions) {
+        for (var columnDefinition of this._columnDefinitions) {
             lefts.push(left);
-            if (!value.isPixel) {
-                let width = (value.internalValue / globalWidthPercentage) * availableWidth;
+            if (!columnDefinition.isPixel) {
+                let width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
                 left += width;
                 widths[index] = width;
             } else {
-                left += value.getValue(this._host);
+                left += columnDefinition.getValue(this._host);
             }
             index++;
         }
@@ -415,7 +428,7 @@ export class Grid extends Container {
         definitionCallback(lefts, tops, widths, heights);
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Setting child sizes
             for (var key in this._cells) {
@@ -452,7 +465,7 @@ export class Grid extends Container {
         }
     }
 
-    public _renderHighlightSpecific(context: CanvasRenderingContext2D): void {
+    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         super._renderHighlightSpecific(context);
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
@@ -486,8 +499,79 @@ export class Grid extends Container {
         for (var control of this._childControls) {
             control.dispose();
         }
-
+        for (var index = 0; index < this._rowDefinitions.length; index++) {
+            this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
+        }
+        for (var index = 0; index < this._columnDefinitions.length; index++) {
+            this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
+        }
+        this._rowDefinitionObservers = [];
+        this._rowDefinitions = [];
+        this._columnDefinitionObservers = [];
+        this._columnDefinitions = [];
+        this._cells = {};
         this._childControls = [];
     }
+
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        serializationObject.columnCount = this.columnCount;
+        serializationObject.rowCount = this.rowCount;
+        serializationObject.columns = [];
+        serializationObject.rows = [];
+        serializationObject.tags = [];
+        for (let i = 0; i < this.columnCount; ++i) {
+            let cd = this.getColumnDefinition(i);
+            let childSerializationObject = { value: cd?.getValue(this.host), unit: cd?.unit };
+            serializationObject.columns.push(childSerializationObject);
+
+        }
+        for (let i = 0; i < this.rowCount; ++i) {
+            let rd = this.getRowDefinition(i);
+            let childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
+            serializationObject.rows.push(childSerializationObject);
+        }
+        this.children.forEach((child) => {
+            serializationObject.tags.push(child._tag);
+        });
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        let children: Control[] = [];
+        this.children.forEach((child) => {
+            children.push(child);
+        });
+        this.removeRowDefinition(0);
+        this.removeColumnDefinition(0);
+        for (let i = 0; i < serializedObject.columnCount; ++i) {
+            const columnValue = serializedObject.columns[i].value;
+            const unit = serializedObject.columns[i].unit;
+            this.addColumnDefinition(columnValue, unit === 1 ? true : false);
+        }
+        for (let i = 0; i < serializedObject.rowCount; ++i) {
+            const rowValue = serializedObject.rows[i].value;
+            const unit = serializedObject.rows[i].unit;
+            this.addRowDefinition(rowValue, unit === 1 ? true : false);
+        }
+
+        for (let i = 0; i < children.length; ++i) {
+            const cellInfo = serializedObject.tags[i];
+            let rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
+            if (isNaN(rowNumber)) {
+                rowNumber = 0;
+            }
+            let columnNumber = parseInt(cellInfo.substring(cellInfo.search(":") + 1));
+            if (isNaN(columnNumber)) {
+                columnNumber = 0;
+            }
+            this.addControl(children[i], rowNumber, columnNumber);
+        }
+    }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Grid"] = Grid;
+RegisterClass("BABYLON.GUI.Grid", Grid);

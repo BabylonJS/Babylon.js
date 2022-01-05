@@ -4,7 +4,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 
@@ -35,7 +35,6 @@ export class AnisotropyBlock extends NodeMaterialBlock {
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("direction", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true); // need this property and the next one in case there's no PerturbNormal block connected to the main PBR block
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
 
@@ -75,24 +74,17 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the texture input component
-     */
-    public get texture(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
      * Gets the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[2];
     }
 
     /**
      * Gets the worldTangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[3];
     }
 
     /**
@@ -160,13 +152,12 @@ export class AnisotropyBlock extends NodeMaterialBlock {
 
         const intensity = this.intensity.isConnected ? this.intensity.associatedVariableName : "1.0";
         const direction = this.direction.isConnected ? this.direction.associatedVariableName : "vec2(1., 0.)";
-        const texture = this.texture.isConnected ? this.texture.associatedVariableName : "vec3(0.)";
 
         code += `anisotropicOutParams anisotropicOut;
             anisotropicBlock(
                 vec3(${direction}, ${intensity}),
             #ifdef ANISOTROPIC_TEXTURE
-                ${texture},
+                vec3(0.),
             #endif
                 TBN,
                 normalW,
@@ -181,7 +172,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("ANISOTROPIC", true);
-        defines.setValue("ANISOTROPIC_TEXTURE", this.texture.isConnected, true);
+        defines.setValue("ANISOTROPIC_TEXTURE", false, true);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -193,4 +184,4 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.AnisotropyBlock"] = AnisotropyBlock;
+RegisterClass("BABYLON.AnisotropyBlock", AnisotropyBlock);

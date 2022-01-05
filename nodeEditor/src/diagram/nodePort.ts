@@ -20,7 +20,6 @@ export class NodePort {
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     protected _exposedOnFrame: boolean;
-    
     public delegatedPort: Nullable<FrameNodePort> = null;
 
     public get element(): HTMLDivElement {
@@ -31,16 +30,16 @@ export class NodePort {
         return this._element;
     }
 
-    public get portName(){
+    public get portName() {
         let portName = this.connectionPoint.displayName || this.connectionPoint.name;
         if (this.connectionPoint.ownerBlock.isInput) {
             portName = this.node.name;
         }
-        return portName
+        return portName;
     }
 
-    public set portName(newName: string){
-        if(this._portLabelElement) {
+    public set portName(newName: string) {
+        if (this._portLabelElement) {
             this.connectionPoint.displayName = newName;
             this._portLabelElement.innerHTML = newName;
         }
@@ -52,8 +51,8 @@ export class NodePort {
         } else if (this._isConnectedToNodeOutsideOfFrame()) { //connected to outside node
             return true;
         } else {
-            const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
-            if (link.length){
+            const link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+            if (link.length) {
                 if (link[0].nodeB === this.node) { // check if this node is the receiving
                     return true;
                 }
@@ -62,28 +61,35 @@ export class NodePort {
         return false;
     }
 
-    public hasLabel(){
+    public hasLabel() {
         return !!this._portLabelElement;
     }
 
     public get exposedOnFrame() {
-        if(!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
-            return true
+        if (!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            return true;
         } return false;
     }
 
     public set exposedOnFrame(value: boolean) {
-        if(this.disabled){
+        if (this.disabled) {
             return;
         }
-        this._exposedOnFrame = value;
+        this.connectionPoint.isExposedOnFrame = value;
     }
-    
-    
+
+    public get exposedPortPosition() {
+        return this.connectionPoint.exposedPortPosition;
+    }
+
+    public set exposedPortPosition(value: number) {
+        this.connectionPoint.exposedPortPosition = value;
+    }
+
     private _isConnectedToNodeOutsideOfFrame() {
-        const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
-        if (link.length){
-            for(let i = 0; i < link.length; i++){
+        const link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+        if (link.length) {
+            for (let i = 0; i < link.length; i++) {
                 if (link[i].nodeA.enclosingFrameId !== link[i].nodeB!.enclosingFrameId) {
                     return true;
                 }
@@ -114,7 +120,9 @@ export class NodePort {
                 this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Object:
-                this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
+                this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIj48Y2lyY2xlIGN4PSI3LjEiIGN5PSIxMy4wOCIgcj0iMy4yNSIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0xMC40OSwzQTcuNTIsNy41MiwwLDAsMCwzLDEwYTUuMTMsNS4xMywwLDEsMSw2LDcuODUsNy42MSw3LjYxLDAsMCwwLDEuNTIuMTYsNy41Miw3LjUyLDAsMCwwLDAtMTVaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+";
+                this._img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
+                this._img.style.height = "100%";
                 break;
         }
     }
@@ -126,7 +134,7 @@ export class NodePort {
         this._globalState = globalState;
 
         this._img = portContainer.ownerDocument!.createElement("img");
-        this._element.appendChild(this._img );
+        this._element.appendChild(this._img);
 
         // determine if node name is editable
         if (portContainer.children[0].className === 'port-label') {
@@ -136,17 +144,17 @@ export class NodePort {
         (this._element as any).port = this;
 
         // Drag support
-        this._element.ondragstart= () => false;
+        this._element.ondragstart = () => false;
 
-        this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add(coords => {
+        this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add((coords) => {
             const rect = this._element.getBoundingClientRect();
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
-                this._element.classList.remove("selected"); 
+                this._element.classList.remove("selected");
                 return;
             }
 
-            this._element.classList.add("selected"); 
+            this._element.classList.add("selected");
             this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
@@ -169,8 +177,8 @@ export class NodePort {
         }
     }
 
-    public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
-            displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
+    public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement,
+        displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 
@@ -181,10 +189,10 @@ export class NodePort {
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
             let portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
-            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;        
+            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;
             portContainer.appendChild(portLabel);
         }
-    
+
         return new NodePort(portContainer, connectionPoint, node, globalState);
     }
 }

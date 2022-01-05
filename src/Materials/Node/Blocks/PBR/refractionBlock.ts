@@ -3,7 +3,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
@@ -18,6 +18,7 @@ import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
+import { Scalar } from '../../../../Maths/math.scalar';
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
@@ -42,25 +43,45 @@ export class RefractionBlock extends NodeMaterialBlock {
     public _vRefractionMicrosurfaceInfosName: string;
     /** @hidden */
     public _vRefractionInfosName: string;
+    /** @hidden */
+    public _vRefractionFilteringInfoName: string;
 
     private _scene: Scene;
 
     /**
-     * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+     * The properties below are set by the main PBR block prior to calling methods of this class.
+     * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
+     * It's less burden on the user side in the editor part.
+    */
+
+    /** @hidden */
+    public viewConnectionPoint: NodeMaterialConnectionPoint;
+
+    /** @hidden */
+    public indexOfRefractionConnectionPoint: NodeMaterialConnectionPoint;
+
+    /**
+     * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
-    @editableInPropertyPage("Link refraction to transparency", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Link refraction to transparency", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public linkRefractionWithTransparency: boolean = false;
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
-    @editableInPropertyPage("Invert refraction Y", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Invert refraction Y", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
     public invertRefractionY: boolean = false;
 
     /**
-     * Gets or sets the texture associated with the node
+     * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
+    @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    public useThicknessAsDepth: boolean = false;
+
+    /**
+    * Gets or sets the texture associated with the node
+    */
     public texture: Nullable<BaseTexture>;
 
     /**
@@ -73,12 +94,20 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._isUnique = true;
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("volumeIndexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Output, RefractionBlock, "RefractionBlock"));
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("vRefractionPosition");
+        state._excludeVariableName("vRefractionSize");
     }
 
     /**
@@ -97,16 +126,16 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the index of refraction input component
+     * Gets the tint at distance input component
      */
-    public get indexOfRefraction(): NodeMaterialConnectionPoint {
+    public get tintAtDistance(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the tint at distance input component
+     * Gets the volume index of refraction input component
      */
-    public get tintAtDistance(): NodeMaterialConnectionPoint {
+    public get volumeIndexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
@@ -114,7 +143,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      * Gets the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this.viewConnectionPoint;
     }
 
     /**
@@ -146,7 +175,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             intensityInput.output.connectTo(this.intensity);
         }
 
-        if (!this.view.isConnected) {
+        if (this.view && !this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {
@@ -177,6 +206,8 @@ export class RefractionBlock extends NodeMaterialBlock {
         defines.setValue("SS_LINKREFRACTIONTOTRANSPARENCY", this.linkRefractionWithTransparency, true);
         defines.setValue("SS_GAMMAREFRACTION", refractionTexture!.gammaSpace, true);
         defines.setValue("SS_RGBDREFRACTION", refractionTexture!.isRGBD, true);
+        defines.setValue("SS_USE_LOCAL_REFRACTIONMAP_CUBIC", (<any>refractionTexture).boundingBoxSize ? true : false, true);
+        defines.setValue("SS_USE_THICKNESS_AS_DEPTH", this.useThicknessAsDepth, true);
     }
 
     public isReady() {
@@ -213,11 +244,21 @@ export class RefractionBlock extends NodeMaterialBlock {
             }
         }
 
-        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
+        const indexOfRefraction = this.volumeIndexOfRefraction.connectInputBlock?.value ?? this.indexOfRefractionConnectionPoint.connectInputBlock?.value ?? 1.5;
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
-        effect.setFloat3(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset);
+        effect.setFloat4(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset, 1 / indexOfRefraction);
+
+        const width = refractionTexture.getSize().width;
+
+        effect.setFloat2(this._vRefractionFilteringInfoName, width, Scalar.Log2(width));
+
+        if ((<any>refractionTexture).boundingBoxSize) {
+            let cubeTexture = <CubeTexture>refractionTexture;
+            effect.setVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
+            effect.setVector3("vRefractionSize", cubeTexture.boundingBoxSize);
+        }
     }
 
     /**
@@ -274,11 +315,18 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec3");
+        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec4");
 
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
         state._emitUniformFromString(this._vRefractionInfosName, "vec4");
+
+        this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
+
+        state._emitUniformFromString(this._vRefractionFilteringInfoName, "vec2");
+
+        state._emitUniformFromString("vRefractionPosition", "vec3");
+        state._emitUniformFromString("vRefractionSize", "vec3");
 
         return code;
     }
@@ -290,7 +338,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
 
         if (this.texture) {
             if (this.texture.isCube) {
@@ -303,6 +351,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         codeString += `${this._codeVariableName}.linkRefractionWithTransparency = ${this.linkRefractionWithTransparency};\r\n`;
         codeString += `${this._codeVariableName}.invertRefractionY = ${this.invertRefractionY};\r\n`;
+        codeString += `${this._codeVariableName}.useThicknessAsDepth = ${this.useThicknessAsDepth};\r\n`;
 
         return codeString;
     }
@@ -310,12 +359,13 @@ export class RefractionBlock extends NodeMaterialBlock {
     public serialize(): any {
         let serializationObject = super.serialize();
 
-        if (this.texture) {
+        if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();
         }
 
         serializationObject.linkRefractionWithTransparency = this.linkRefractionWithTransparency;
         serializationObject.invertRefractionY = this.invertRefractionY;
+        serializationObject.useThicknessAsDepth = this.useThicknessAsDepth;
 
         return serializationObject;
     }
@@ -334,7 +384,8 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this.linkRefractionWithTransparency = serializationObject.linkRefractionWithTransparency;
         this.invertRefractionY = serializationObject.invertRefractionY;
+        this.useThicknessAsDepth = !!serializationObject.useThicknessAsDepth;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.RefractionBlock"] = RefractionBlock;
+RegisterClass("BABYLON.RefractionBlock", RefractionBlock);

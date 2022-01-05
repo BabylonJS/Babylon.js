@@ -19,7 +19,7 @@ export interface ICameraInput<TCamera extends Camera> {
      */
     camera: Nullable<TCamera>;
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     getClassName(): string;
@@ -30,15 +30,13 @@ export interface ICameraInput<TCamera extends Camera> {
     getSimpleName(): string;
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+    attachControl(noPreventDefault?: boolean): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    detachControl(element: Nullable<HTMLElement>): void;
+    detachControl(): void;
     /**
      * Update the current camera state depending on the inputs that have been used this frame.
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
@@ -63,11 +61,11 @@ export interface CameraInputsMap<TCamera extends Camera> {
 /**
  * This represents the input manager used within a camera.
  * It helps dealing with all the different kind of input attached to a camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class CameraInputsManager<TCamera extends Camera> {
     /**
-     * Defines the list of inputs attahed to the camera.
+     * Defines the list of inputs attached to the camera.
      */
     public attached: CameraInputsMap<TCamera>;
 
@@ -75,7 +73,7 @@ export class CameraInputsManager<TCamera extends Camera> {
      * Defines the dom element the camera is collecting inputs from.
      * This is null if the controls have not been attached.
      */
-    public attachedElement: Nullable<HTMLElement>;
+    public attachedToElement: boolean = false;
 
     /**
      * Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -95,7 +93,7 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Instantiate a new Camera Input Manager.
-     * @param camera Defines the camera the input manager blongs to
+     * @param camera Defines the camera the input manager belongs to
      */
     constructor(camera: TCamera) {
         this.attached = {};
@@ -105,7 +103,7 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Add an input method to a camera
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      * @param input camera input method
      */
     public add(input: ICameraInput<TCamera>): void {
@@ -125,8 +123,8 @@ export class CameraInputsManager<TCamera extends Camera> {
             this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
         }
 
-        if (this.attachedElement) {
-            input.attachControl(this.attachedElement);
+        if (this.attachedToElement) {
+            input.attachControl();
         }
     }
 
@@ -139,7 +137,7 @@ export class CameraInputsManager<TCamera extends Camera> {
         for (var cam in this.attached) {
             var input = this.attached[cam];
             if (input === inputToRemove) {
-                input.detachControl(this.attachedElement);
+                input.detachControl();
                 input.camera = null;
                 delete this.attached[cam];
                 this.rebuildInputCheck();
@@ -156,7 +154,7 @@ export class CameraInputsManager<TCamera extends Camera> {
         for (var cam in this.attached) {
             var input = this.attached[cam];
             if (input.getClassName() === inputType) {
-                input.detachControl(this.attachedElement);
+                input.detachControl();
                 input.camera = null;
                 delete this.attached[cam];
                 this.rebuildInputCheck();
@@ -177,8 +175,8 @@ export class CameraInputsManager<TCamera extends Camera> {
      * @param input Defines the input to attach
      */
     public attachInput(input: ICameraInput<TCamera>): void {
-        if (this.attachedElement) {
-            input.attachControl(this.attachedElement, this.noPreventDefault);
+        if (this.attachedToElement) {
+            input.attachControl(this.noPreventDefault);
         }
     }
 
@@ -187,17 +185,17 @@ export class CameraInputsManager<TCamera extends Camera> {
      * @param element Defines the dom element to collect the events from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachElement(element: HTMLElement, noPreventDefault: boolean = false): void {
-        if (this.attachedElement) {
+    public attachElement(noPreventDefault: boolean = false): void {
+        if (this.attachedToElement) {
             return;
         }
 
         noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
-        this.attachedElement = element;
+        this.attachedToElement = true;
         this.noPreventDefault = noPreventDefault;
 
         for (var cam in this.attached) {
-            this.attached[cam].attachControl(element, noPreventDefault);
+            this.attached[cam].attachControl(noPreventDefault);
         }
     }
 
@@ -206,20 +204,15 @@ export class CameraInputsManager<TCamera extends Camera> {
      * @param element Defines the dom element to collect the events from
      * @param disconnect Defines whether the input should be removed from the current list of attached inputs
      */
-    public detachElement(element: HTMLElement, disconnect = false): void {
-        if (this.attachedElement !== element) {
-            return;
-        }
-
+    public detachElement(disconnect = false): void {
         for (var cam in this.attached) {
-            this.attached[cam].detachControl(element);
+            this.attached[cam].detachControl();
 
             if (disconnect) {
                 this.attached[cam].camera = null;
             }
         }
-
-        this.attachedElement = null;
+        this.attachedToElement = false;
     }
 
     /**
@@ -241,11 +234,11 @@ export class CameraInputsManager<TCamera extends Camera> {
      * Remove all attached input methods from a camera
      */
     public clear(): void {
-        if (this.attachedElement) {
-            this.detachElement(this.attachedElement, true);
+        if (this.attachedToElement) {
+            this.detachElement(true);
         }
         this.attached = {};
-        this.attachedElement = null;
+        this.attachedToElement = false;
         this.checkInputs = () => { };
     }
 
@@ -280,7 +273,13 @@ export class CameraInputsManager<TCamera extends Camera> {
                 var construct = (<any>CameraInputTypes)[n];
                 if (construct) {
                     var parsedinput = parsedInputs[n];
-                    var input = SerializationHelper.Parse(() => { return new construct(); }, parsedinput, null);
+                    var input = SerializationHelper.Parse(
+                        () => {
+                            return new construct();
+                        },
+                        parsedinput,
+                        null
+                    );
                     this.add(input as any);
                 }
             }
@@ -289,7 +288,13 @@ export class CameraInputsManager<TCamera extends Camera> {
             for (var n in this.attached) {
                 var construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
                 if (construct) {
-                    var input = SerializationHelper.Parse(() => { return new construct(); }, parsedCamera, null);
+                    var input = SerializationHelper.Parse(
+                        () => {
+                            return new construct();
+                        },
+                        parsedCamera,
+                        null
+                    );
                     this.remove(this.attached[n]);
                     this.add(input as any);
                 }

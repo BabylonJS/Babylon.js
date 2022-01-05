@@ -4,9 +4,7 @@ import { VRCameraMetrics } from "./vrCameraMetrics";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/vrRigMode";
+import { setVRRigMode } from "../RigModes/vrRigMode";
 
 Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
@@ -14,7 +12,7 @@ Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
 
 /**
  * Camera used to simulate VR rendering (based on FreeCamera)
- * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
+ * @see https://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
  */
 export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
 
@@ -23,7 +21,7 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
      * @param name defines camera name
      * @param position defines the start position of the camera
      * @param scene defines the scene the camera belongs to
-     * @param compensateDistortion defines if the camera needs to compensate the lens distorsion
+     * @param compensateDistortion defines if the camera needs to compensate the lens distortion
      * @param vrCameraMetrics defines the vr metrics associated to the camera
      */
     constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
@@ -40,4 +38,6 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
     public getClassName(): string {
         return "VRDeviceOrientationFreeCamera";
     }
+
+    protected _setRigMode = setVRRigMode.bind(null, this);
 }

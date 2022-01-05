@@ -16,10 +16,11 @@ import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { IInspectable } from '../Misc/iInspectable';
 import { IAnimatable } from '../Animations/animatable.interface';
+import { AbstractScene } from "../abstractScene";
 
 /**
  * Class used to handle skinning animations
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
  */
 export class Skeleton implements IAnimatable {
     /**
@@ -65,6 +66,12 @@ export class Skeleton implements IAnimatable {
 
     /** @hidden */
     public _hasWaitingData: Nullable<boolean> = null;
+
+    /** @hidden */
+    public _waitingOverrideMeshId: Nullable<string> = null;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Specifies if the skeleton should be serialized
@@ -248,7 +255,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Creater a new animation range
+     * Create a new animation range
      * @param name defines the name of the range
      * @param from defines the start key
      * @param to defines the end key
@@ -316,7 +323,7 @@ export class Skeleton implements IAnimatable {
         var ret = true;
         var frameOffset = this._getHighestAnimationFrame() + 1;
 
-        // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
+        // make a dictionary of source skeleton's bones, so exact same order or doubly nested loop is not required
         var boneDict: { [key: string]: Bone } = {};
         var sourceBones = source.bones;
         var nBones: number;
@@ -354,8 +361,10 @@ export class Skeleton implements IAnimatable {
      * Forces the skeleton to go to rest pose
      */
     public returnToRest(): void {
-        for (var index = 0; index < this.bones.length; index++) {
-            this.bones[index].returnToRest();
+        for (const bone of this.bones) {
+            if (bone._index !== -1) {
+                bone.returnToRest();
+            }
         }
     }
 
@@ -398,7 +407,7 @@ export class Skeleton implements IAnimatable {
      * @returns the original skeleton
      */
     public static MakeAnimationAdditive(skeleton: Skeleton, referenceFrame = 0, range: string): Nullable<Skeleton> {
-        var rangeValue = skeleton.getAnimationRange(name);
+        var rangeValue = skeleton.getAnimationRange(range);
 
         // We can't make a range additive if it doesn't exist
         if (!rangeValue) {
@@ -500,7 +509,6 @@ export class Skeleton implements IAnimatable {
                     // Computing the world matrix also computes the local matrix.
                     bone._linkedTransformNode.computeWorldMatrix();
                     bone._matrix = bone._linkedTransformNode._localMatrix;
-                    bone.markAsDirty();
                 }
             }
         }
@@ -645,7 +653,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Enable animation blending for this skeleton
      * @param blendingSpeed defines the blending speed to apply
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
      */
     public enableBlending(blendingSpeed = 0.01) {
         this.bones.forEach((bone) => {
@@ -667,6 +675,14 @@ export class Skeleton implements IAnimatable {
 
         // Remove from scene
         this.getScene().removeSkeleton(this);
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.skeletons.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.skeletons.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
 
         if (this._transformMatrixTexture) {
             this._transformMatrixTexture.dispose();
@@ -691,6 +707,7 @@ export class Skeleton implements IAnimatable {
         serializationObject.bones = [];
 
         serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
+        serializationObject.overrideMeshId = this.overrideMesh?.id;
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
@@ -698,9 +715,12 @@ export class Skeleton implements IAnimatable {
 
             var serializedBone: any = {
                 parentBoneIndex: parent ? this.bones.indexOf(parent) : -1,
+                index: bone.getIndex(),
                 name: bone.name,
+                id: bone.id,
                 matrix: bone.getBaseMatrix().toArray(),
-                rest: bone.getRestPose().toArray()
+                rest: bone.getRestPose().toArray(),
+                linkedTransformNodeId: bone.getTransformNode()?.id
             };
 
             serializationObject.bones.push(serializedBone);
@@ -749,16 +769,22 @@ export class Skeleton implements IAnimatable {
 
         skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
+        if (parsedSkeleton.overrideMeshId) {
+            skeleton._hasWaitingData = true;
+            skeleton._waitingOverrideMeshId = parsedSkeleton.overrideMeshId;
+        }
+
         let index: number;
         for (index = 0; index < parsedSkeleton.bones.length; index++) {
             var parsedBone = parsedSkeleton.bones[index];
-
+            var parsedBoneIndex = parsedSkeleton.bones[index].index;
             var parentBone = null;
             if (parsedBone.parentBoneIndex > -1) {
                 parentBone = skeleton.bones[parsedBone.parentBoneIndex];
             }
+
             var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
-            var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
+            var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest, null, parsedBoneIndex);
 
             if (parsedBone.id !== undefined && parsedBone.id !== null) {
                 bone.id = parsedBone.id;
@@ -852,5 +878,14 @@ export class Skeleton implements IAnimatable {
         }
 
         bones.push(bone);
+    }
+
+    /**
+     * Set the current local matrix as the restPose for all bones in the skeleton.
+     */
+    public setCurrentPoseAsRest(): void {
+        this.bones.forEach((b) => {
+            b.setCurrentPoseAsRest();
+        });
     }
 }

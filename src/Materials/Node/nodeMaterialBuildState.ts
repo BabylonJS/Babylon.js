@@ -2,7 +2,7 @@ import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
-import { StringTools } from '../../Misc/stringTools';
+import { StartsWith } from '../../Misc/stringTools';
 
 /**
  * Class used to store node based material build state
@@ -120,6 +120,8 @@ export class NodeMaterialBuildState {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
 
+        this.compilationString = "precision highp float;\r\n" + this.compilationString;
+
         for (var extensionName in this.extensions) {
             let extension = this.extensions[extensionName];
             this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
@@ -171,8 +173,10 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _emit2DSampler(name: string) {
-        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
-        this.samplers.push(name);
+        if (this.samplers.indexOf(name) < 0) {
+            this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+            this.samplers.push(name);
+        }
     }
 
     /** @hidden */
@@ -332,7 +336,7 @@ export class NodeMaterialBuildState {
         this.sharedData.varyings.push(name);
 
         if (define) {
-            if (StringTools.StartsWith(define, "defined(")) {
+            if (StartsWith(define, "defined(")) {
                 this.sharedData.varyingDeclaration += `#if ${define}\r\n`;
             } else {
                 this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
@@ -355,7 +359,7 @@ export class NodeMaterialBuildState {
         this.uniforms.push(name);
 
         if (define) {
-            if (StringTools.StartsWith(define, "defined(")) {
+            if (StartsWith(define, "defined(")) {
                 this._uniformDeclaration += `#if ${define}\r\n`;
             } else {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;

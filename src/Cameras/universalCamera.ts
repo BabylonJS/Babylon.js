@@ -15,7 +15,7 @@ Node.AddNodeConstructor("FreeCamera", (name, scene) => {
 /**
  * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera,
  * which still works and will still be found in many Playgrounds.
- * @see http://doc.babylonjs.com/features/cameras#universal-camera
+ * @see https://doc.babylonjs.com/features/cameras#universal-camera
  */
 export class UniversalCamera extends TouchCamera {
     /**
@@ -61,7 +61,7 @@ export class UniversalCamera extends TouchCamera {
     /**
      * The Universal Camera is the one to choose for first person shooter type games, and works with all the keyboard, mouse, touch and gamepads. This replaces the earlier Free Camera,
      * which still works and will still be found in many Playgrounds.
-     * @see http://doc.babylonjs.com/features/cameras#universal-camera
+     * @see https://doc.babylonjs.com/features/cameras#universal-camera
      * @param name Define the name of the camera in the scene
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to

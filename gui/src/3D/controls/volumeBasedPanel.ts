@@ -94,8 +94,8 @@ export abstract class VolumeBasedPanel extends Container3D {
     /**
      * Creates new VolumeBasedPanel
      */
-    public constructor() {
-        super();
+    public constructor(name?: string) {
+        super(name);
     }
 
     protected _arrangeChildren() {

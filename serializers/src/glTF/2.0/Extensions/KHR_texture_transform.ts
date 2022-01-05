@@ -6,21 +6,11 @@ import { Scene } from "babylonjs/scene";
 
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
+import { IKHRTextureTransform } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_texture_transform";
 
 import "../shaders/textureTransform.fragment";
-
-/**
- * Interface for handling KHR texture transform
- * @hidden
- */
-interface IKHRTextureTransform {
-    offset?: number[];
-    rotation?: number;
-    scale?: number[];
-    texCoord?: number;
-}
 
 /**
  * @hidden
@@ -55,7 +45,9 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+        const canUseExtension = babylonTexture && ((babylonTexture.uAng === 0 && babylonTexture.wAng === 0 && babylonTexture.vAng === 0) || (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
+
+        if (canUseExtension) {
             let textureTransform: IKHRTextureTransform = {};
             let transformIsRequired = false;
 

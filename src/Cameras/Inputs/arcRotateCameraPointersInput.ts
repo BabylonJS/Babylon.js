@@ -4,16 +4,22 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
 import { PointerTouch } from "../../Events/pointerEvents";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Defines the camera the input is attached to.
      */
     public camera: ArcRotateCamera;
+
+    /**
+     * The minimum radius used for pinch, to avoid radius lock at 0
+     */
+    public static MinimumRadiusForPinch: number = 0.001;
 
     /**
      * Gets the class name of the current input.
@@ -68,6 +74,12 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public useNaturalPinchZoom: boolean = false;
 
     /**
+     * Defines whether zoom (2 fingers pinch) is enabled through multitouch
+     */
+    @serialize()
+    public pinchZoom: boolean = true;
+
+    /**
      * Defines the pointer panning sensibility or how fast is the camera moving.
      */
     @serialize()
@@ -96,13 +108,53 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     private _isPinching: boolean = false;
 
     /**
+     * Move camera from multi touch panning positions.
+     */
+    private _computeMultiTouchPanning(
+        previousMultiTouchPanPosition: Nullable<PointerTouch>,
+        multiTouchPanPosition: Nullable<PointerTouch>
+    ): void {
+        if (this.panningSensibility !== 0 && previousMultiTouchPanPosition
+            && multiTouchPanPosition) {
+            var moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
+            var moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
+            this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
+            this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
+        }
+    }
+
+    /**
+     * Move camera from pinch zoom distances.
+     */
+    private _computePinchZoom(
+        previousPinchSquaredDistance: number,
+        pinchSquaredDistance: number
+    ): void {
+        const radius = (this.camera.radius || ArcRotateCameraPointersInput.MinimumRadiusForPinch);
+        if (this.useNaturalPinchZoom) {
+            this.camera.radius = radius *
+                Math.sqrt(previousPinchSquaredDistance) / Math.sqrt(pinchSquaredDistance);
+        } else if (this.pinchDeltaPercentage) {
+            this.camera.inertialRadiusOffset +=
+                (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
+                radius * this.pinchDeltaPercentage;
+        }
+        else {
+            this.camera.inertialRadiusOffset +=
+                (pinchSquaredDistance - previousPinchSquaredDistance) /
+                (this.pinchPrecision * (this.pinchInwards ? 1 : -1) *
+                    (this.angularSensibilityX + this.angularSensibilityY) / 2);
+        }
+    }
+
+    /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
      */
     protected onTouch(point: Nullable<PointerTouch>,
-                      offsetX: number,
-                      offsetY: number): void {
+        offsetX: number,
+        offsetY: number): void {
         if (this.panningSensibility !== 0 &&
-          ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
+            ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
             this.camera.inertialPanningX += -offsetX / this.panningSensibility;
             this.camera.inertialPanningY += offsetY / this.panningSensibility;
         } else {
@@ -124,12 +176,11 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called on pointer POINTERMOVE event if multiple touches are active.
      */
     protected onMultiTouch(pointA: Nullable<PointerTouch>,
-                           pointB: Nullable<PointerTouch>,
-                           previousPinchSquaredDistance: number,
-                           pinchSquaredDistance: number,
-                           previousMultiTouchPanPosition: Nullable<PointerTouch>,
-                           multiTouchPanPosition: Nullable<PointerTouch>): void
-    {
+        pointB: Nullable<PointerTouch>,
+        previousPinchSquaredDistance: number,
+        pinchSquaredDistance: number,
+        previousMultiTouchPanPosition: Nullable<PointerTouch>,
+        multiTouchPanPosition: Nullable<PointerTouch>): void {
         if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
             // First time this method is called for new pinch.
             // Next time this is called there will be a
@@ -141,64 +192,36 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
             return;
         }
 
-        var direction = this.pinchInwards ? 1 : -1;
-
+        // Zoom and panning enabled together
         if (this.multiTouchPanAndZoom) {
-            if (this.useNaturalPinchZoom) {
-                this.camera.radius = this.camera.radius *
-                    Math.sqrt(previousPinchSquaredDistance) / Math.sqrt(pinchSquaredDistance);
-            } else if (this.pinchDeltaPercentage) {
-                this.camera.inertialRadiusOffset +=
-                    (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
-                    this.camera.radius * this.pinchDeltaPercentage;
-            }
-            else {
-                this.camera.inertialRadiusOffset +=
-                    (pinchSquaredDistance - previousPinchSquaredDistance) /
-                    (this.pinchPrecision * direction *
-                    (this.angularSensibilityX + this.angularSensibilityY) / 2);
-            }
+            this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
+            this._computeMultiTouchPanning(previousMultiTouchPanPosition, multiTouchPanPosition);
 
-            if (this.panningSensibility !== 0 &&
-              previousMultiTouchPanPosition && multiTouchPanPosition) {
-                var moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
-                var moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-                this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
-                this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
-            }
-        } else {
+            // Zoom and panning enabled but only one at a time
+        } else if (this.multiTouchPanning && this.pinchZoom) {
             this._twoFingerActivityCount++;
-            var previousPinchDistance = Math.sqrt(previousPinchSquaredDistance);
-            var pinchDistance = Math.sqrt(pinchSquaredDistance);
-            if (this._isPinching ||
-              (this._twoFingerActivityCount < 20 &&
-               Math.abs(pinchDistance - previousPinchDistance) >
-               this.camera.pinchToPanMaxDistance)) {
+
+            if (this._isPinching || (this._twoFingerActivityCount < 20
+                && Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) >
+                this.camera.pinchToPanMaxDistance)) {
+
                 // Since pinch has not been active long, assume we intend to zoom.
-                if (this.pinchDeltaPercentage) {
-                    this.camera.inertialRadiusOffset +=
-                      (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
-                      this.camera.radius * this.pinchDeltaPercentage;
-                } else {
-                    this.camera.inertialRadiusOffset +=
-                        (pinchSquaredDistance - previousPinchSquaredDistance) /
-                        (this.pinchPrecision * direction *
-                        (this.angularSensibilityX + this.angularSensibilityY) / 2);
-                }
+                this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
 
                 // Since we are pinching, remain pinching on next iteration.
                 this._isPinching = true;
             } else {
-                // Pause between pinch starting and moving implies not a zoom event.
-                // Pan instead.
-                if (this.panningSensibility !== 0 && this.multiTouchPanning &&
-                  multiTouchPanPosition && previousMultiTouchPanPosition) {
-                    var moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
-                    var moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-                    this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
-                    this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
-                }
+                // Pause between pinch starting and moving implies not a zoom event. Pan instead.
+                this._computeMultiTouchPanning(previousMultiTouchPanPosition, multiTouchPanPosition);
             }
+
+            // Panning enabled, zoom disabled
+        } else if (this.multiTouchPanning) {
+            this._computeMultiTouchPanning(previousMultiTouchPanPosition, multiTouchPanPosition);
+
+            // Zoom enabled, panning disabled
+        } else if (this.pinchZoom) {
+            this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
         }
     }
 
@@ -206,7 +229,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
      */
-    protected onButtonDown(evt: PointerEvent): void {
+    protected onButtonDown(evt: IPointerEvent): void {
         this._isPanClick = evt.button === this.camera._panningMouseButton;
     }
 
@@ -214,7 +237,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      */
-    protected onButtonUp(evt: PointerEvent): void {
+    protected onButtonUp(evt: IPointerEvent): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }
@@ -229,4 +252,4 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     }
 }
 (<any>CameraInputTypes)["ArcRotateCameraPointersInput"] =
-  ArcRotateCameraPointersInput;
+    ArcRotateCameraPointersInput;

@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
@@ -16,6 +16,8 @@ import { SubMesh } from '../../../../Meshes/subMesh';
 import { Effect } from '../../../effect';
 import { PBRMetallicRoughnessBlock } from './pbrMetallicRoughnessBlock';
 import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
+import { PBRClearCoatConfiguration } from '../../../PBR/pbrClearCoatConfiguration';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -35,9 +37,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("ior", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("bumpTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
@@ -47,6 +48,12 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerOutput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Output, ClearCoatBlock, "ClearCoatBlock"));
     }
+
+    /**
+     * Defines if the F0 value should be remapped to account for the interface change in the material.
+     */
+    @editableInPropertyPage("Remap F0 on interface change", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public remapF0OnInterfaceChange: boolean = true;
 
     /**
      * Initialize the block and prepare the context for build
@@ -85,57 +92,50 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     /**
      * Gets the ior input component
      */
-    public get ior(): NodeMaterialConnectionPoint {
+    public get indexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[2];
-    }
-
-    /**
-     * Gets the texture input component
-     */
-    public get texture(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
     }
 
     /**
      * Gets the bump texture input component
      */
-    public get bumpTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
+    public get normalMapColor(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
      * Gets the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
-        return this._inputs[5];
+        return this._inputs[4];
     }
 
     /**
      * Gets the tint color input component
      */
     public get tintColor(): NodeMaterialConnectionPoint {
-        return this._inputs[6];
+        return this._inputs[5];
     }
 
     /**
      * Gets the tint "at distance" input component
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
-        return this._inputs[7];
+        return this._inputs[6];
     }
 
     /**
      * Gets the tint thickness input component
      */
     public get tintThickness(): NodeMaterialConnectionPoint {
-        return this._inputs[8];
+        return this._inputs[7];
     }
 
     /**
      * Gets the world tangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
-        return this._inputs[9];
+        return this._inputs[8];
     }
 
     /**
@@ -157,17 +157,19 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("CLEARCOAT", true);
-        defines.setValue("CLEARCOAT_TEXTURE", this.texture.isConnected, true);
+        defines.setValue("CLEARCOAT_TEXTURE", false, true);
+        defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
-        defines.setValue("CLEARCOAT_BUMP", this.bumpTexture.isConnected, true);
-        defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === 1.5 : false, true);
+        defines.setValue("CLEARCOAT_BUMP", this.normalMapColor.isConnected, true);
+        defines.setValue("CLEARCOAT_DEFAULTIOR", this.indexOfRefraction.isConnected ? this.indexOfRefraction.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true, true);
+        defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         // Clear Coat Refraction params
-        const indexOfRefraction = this.ior.connectInputBlock?.value ?? 1.5;
+        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? PBRClearCoatConfiguration._DefaultIndexOfRefraction;
 
         const a = 1 - indexOfRefraction;
         const b = 1 + indexOfRefraction;
@@ -229,8 +231,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
         const roughness = ccBlock?.roughness.isConnected ? ccBlock.roughness.associatedVariableName : "0.";
-        const texture = ccBlock?.texture.isConnected ? ccBlock.texture.associatedVariableName : "vec2(0.)";
-        const bumpTexture = ccBlock?.bumpTexture.isConnected ? ccBlock.bumpTexture.associatedVariableName : "vec4(0.)";
+        const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : "vec3(0.)";
         const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : "vec2(0.)";
 
         const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : "vec3(1.)";
@@ -261,7 +262,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 vClearCoatParams,
                 specularEnvironmentR0,
             #ifdef CLEARCOAT_TEXTURE
-                ${texture}.rg,
+                vec2(0.),
             #endif
             #ifdef CLEARCOAT_TINT
                 vClearCoatTintParams,
@@ -273,7 +274,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             #endif
             #ifdef CLEARCOAT_BUMP
                 vec2(0., 1.),
-                ${bumpTexture},
+                vec4(${normalMapColor}, 0.),
                 ${uv},
                 #if defined(${vTBNAvailable ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
                     vTBN,
@@ -312,6 +313,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                     ambientMonochrome,
                 #endif
             #endif
+            #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+                (gl_FrontFacing ? 1. : -1.),
+            #endif
                 clearcoatOut
             );
         #else
@@ -331,6 +335,28 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         return this;
     }
+
+    protected _dumpPropertiesCode() {
+        let codeString = super._dumpPropertiesCode();
+
+        codeString += `${this._codeVariableName}.remapF0OnInterfaceChange = ${this.remapF0OnInterfaceChange};\r\n`;
+
+        return codeString;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.remapF0OnInterfaceChange = this.remapF0OnInterfaceChange;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.remapF0OnInterfaceChange = serializationObject.remapF0OnInterfaceChange ?? true;
+    }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ClearCoatBlock"] = ClearCoatBlock;
+RegisterClass("BABYLON.ClearCoatBlock", ClearCoatBlock);

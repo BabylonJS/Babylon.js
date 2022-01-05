@@ -1,6 +1,6 @@
 import { Scene } from "../scene";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 
 Mesh._GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -8,7 +8,7 @@ Mesh._GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
 };
 
 /**
- * Mesh representing the gorund
+ * Mesh representing the ground
  */
 export class GroundMesh extends Mesh {
     /** If octree should be generated */
@@ -85,7 +85,7 @@ export class GroundMesh extends Mesh {
     }
 
     /**
-     * Returns a height (y) value in the Worl system :
+     * Returns a height (y) value in the World system :
      * the ground altitude at the coordinates (x, z) expressed in the World system.
      * @param x x coordinate
      * @param z z coordinate
@@ -129,7 +129,7 @@ export class GroundMesh extends Mesh {
     /**
      * Updates the Vector3 passed a reference with a normalized vector orthogonal to the ground
      * at the ground coordinates (x, z) expressed in the World system.
-     * Doesn't uptade the reference Vector3 if (x, z) are outside the ground surface.
+     * Doesn't update the reference Vector3 if (x, z) are outside the ground surface.
      * @param x x coordinate
      * @param z z coordinate
      * @param ref vector to store the result
@@ -186,7 +186,7 @@ export class GroundMesh extends Mesh {
 
     //  Creates and populates the heightMap array with "facet" elements :
     // a quad is two triangular facets separated by a slope, so a "facet" element is 1 slope + 2 facets
-    // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
+    // slope : Vector2(c, h) = 2D diagonal line equation setting apart two triangular facets in a quad : z = cx + h
     // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
     // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
     // Returns the GroundMesh.
@@ -204,7 +204,7 @@ export class GroundMesh extends Mesh {
     }
 
     // Compute each quad element values and update the the heightMap array :
-    // slope : Vector2(c, h) = 2D diagonal line equation setting appart two triangular facets in a quad : z = cx + h
+    // slope : Vector2(c, h) = 2D diagonal line equation setting apart two triangular facets in a quad : z = cx + h
     // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
     // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
     // Returns the GroundMesh.

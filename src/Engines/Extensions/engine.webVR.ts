@@ -3,7 +3,7 @@ import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
 import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
-import { DomManagement } from '../../Misc/domManagement';
+import { IsWindowObjectExist } from '../../Misc/domManagement';
 import { WebVROptions } from '../../Cameras/VR/webVRCamera';
 
 /**
@@ -97,7 +97,7 @@ declare module "../../Engines/engine" {
          * Call this function to switch to webVR mode
          * Will do nothing if webVR is not supported or if there is no webVR device
          * @param options the webvr options provided to the camera. mainly used for multiview
-         * @see http://doc.babylonjs.com/how_to/webvr_camera
+         * @see https://doc.babylonjs.com/how_to/webvr_camera
          */
         enableVR(options: WebVROptions): void;
 
@@ -107,14 +107,14 @@ declare module "../../Engines/engine" {
 }
 
 Object.defineProperty(Engine.prototype, "isInVRExclusivePointerMode", {
-    get: function(this: Engine) {
+    get: function (this: Engine) {
         return this._vrExclusivePointerMode;
     },
     enumerable: true,
     configurable: true
 });
 
-Engine.prototype._prepareVRComponent = function() {
+Engine.prototype._prepareVRComponent = function () {
     this._vrSupported = false;
     this._vrExclusivePointerMode = false;
     this.onVRDisplayChangedObservable = new Observable<IDisplayChangedEventArgs>();
@@ -122,20 +122,20 @@ Engine.prototype._prepareVRComponent = function() {
     this.onVRRequestPresentStart = new Observable<Engine>();
 };
 
-Engine.prototype.isVRDevicePresent = function() {
+Engine.prototype.isVRDevicePresent = function () {
     return !!this._vrDisplay;
 };
 
-Engine.prototype.getVRDevice = function(): any {
+Engine.prototype.getVRDevice = function (): any {
     return this._vrDisplay;
 };
 
-Engine.prototype.initWebVR = function(): Observable<IDisplayChangedEventArgs> {
+Engine.prototype.initWebVR = function (): Observable<IDisplayChangedEventArgs> {
     this.initWebVRAsync();
     return this.onVRDisplayChangedObservable;
 };
 
-Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> {
+Engine.prototype.initWebVRAsync = function (): Promise<IDisplayChangedEventArgs> {
     var notifyObservers = () => {
         var eventArgs = {
             vrDisplay: this._vrDisplay,
@@ -171,7 +171,7 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
     return this._webVRInitPromise;
 };
 
-Engine.prototype._getVRDisplaysAsync = function(): Promise<IDisplayChangedEventArgs> {
+Engine.prototype._getVRDisplaysAsync = function (): Promise<IDisplayChangedEventArgs> {
     return new Promise((res) => {
         if (navigator.getVRDisplays) {
             navigator.getVRDisplays().then((devices: Array<any>) => {
@@ -195,7 +195,7 @@ Engine.prototype._getVRDisplaysAsync = function(): Promise<IDisplayChangedEventA
     });
 };
 
-Engine.prototype.enableVR = function(options: WebVROptions) {
+Engine.prototype.enableVR = function (options: WebVROptions) {
     if (this._vrDisplay && !this._vrDisplay.isPresenting) {
         var onResolved = () => {
             this.onVRRequestPresentComplete.notifyObservers(true);
@@ -221,7 +221,7 @@ Engine.prototype.enableVR = function(options: WebVROptions) {
     }
 };
 
-Engine.prototype._onVRFullScreenTriggered = function() {
+Engine.prototype._onVRFullScreenTriggered = function () {
     if (this._vrDisplay && this._vrDisplay.isPresenting) {
         //get the old size before we change
         this._oldSize = new Size(this.getRenderWidth(), this.getRenderHeight());
@@ -237,14 +237,14 @@ Engine.prototype._onVRFullScreenTriggered = function() {
     }
 };
 
-Engine.prototype.disableVR = function() {
+Engine.prototype.disableVR = function () {
     if (this._vrDisplay && this._vrDisplay.isPresenting) {
         this._vrDisplay.exitPresent()
             .then(() => this._onVRFullScreenTriggered())
             .catch(() => this._onVRFullScreenTriggered());
     }
 
-    if (DomManagement.IsWindowObjectExist()) {
+    if (IsWindowObjectExist()) {
         window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
         window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
 
@@ -263,7 +263,7 @@ Engine.prototype.disableVR = function() {
     }
 };
 
-Engine.prototype._connectVREvents = function(canvas?: HTMLCanvasElement, document?: any) {
+Engine.prototype._connectVREvents = function (canvas?: HTMLCanvasElement, document?: any) {
     this._onVRDisplayPointerRestricted = () => {
         if (canvas) {
             canvas.requestPointerLock();
@@ -285,14 +285,14 @@ Engine.prototype._connectVREvents = function(canvas?: HTMLCanvasElement, documen
         document.exitPointerLock();
     };
 
-    if (DomManagement.IsWindowObjectExist()) {
+    if (IsWindowObjectExist()) {
         let hostWindow = this.getHostWindow()!;
         hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
         hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
     }
 };
 
-Engine.prototype._submitVRFrame = function() {
+Engine.prototype._submitVRFrame = function () {
     // Submit frame to the vr device, if enabled
     if (this._vrDisplay && this._vrDisplay.isPresenting) {
         // TODO: We should only submit the frame if we read frameData successfully.
@@ -304,10 +304,10 @@ Engine.prototype._submitVRFrame = function() {
     }
 };
 
-Engine.prototype.isVRPresenting = function() {
+Engine.prototype.isVRPresenting = function () {
     return this._vrDisplay && this._vrDisplay.isPresenting;
 };
 
-Engine.prototype._requestVRFrame = function() {
+Engine.prototype._requestVRFrame = function () {
     this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction, this._vrDisplay);
 };

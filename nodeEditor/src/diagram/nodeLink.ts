@@ -14,7 +14,7 @@ export class NodeLink {
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
     private _selectionPath: SVGPathElement;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     private _isVisible = true;
 
     public onDisposedObservable = new Observable<NodeLink>();
@@ -128,7 +128,7 @@ export class NodeLink {
         this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
     }
 
-    public dispose() {
+    public dispose(notify = true) {
         this._graphCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
 
         if (this._path.parentElement) {
@@ -145,10 +145,14 @@ export class NodeLink {
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
 
             this._portA.connectionPoint.disconnectFrom(this._portB!.connectionPoint);
+
+            GraphCanvasComponent._RefreshNode(this._nodeB);
         }
 
-        this.onDisposedObservable.notifyObservers(this);
+        if (notify) {
+            this.onDisposedObservable.notifyObservers(this);
 
-        this.onDisposedObservable.clear();
+            this.onDisposedObservable.clear();
+        }
     }
 }

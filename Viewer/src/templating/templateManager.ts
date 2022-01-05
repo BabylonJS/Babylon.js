@@ -202,9 +202,9 @@ export class TemplateManager {
 }
 
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
-Handlebars.registerHelper('eachInMap', function(map, block) {
+Handlebars.registerHelper('eachInMap', function (map, block) {
     var out = '';
-    Object.keys(map).map(function(prop) {
+    Object.keys(map).map(function (prop) {
         let data = map[prop];
         if (typeof data === 'object') {
             data.id = data.id || prop;
@@ -216,31 +216,31 @@ Handlebars.registerHelper('eachInMap', function(map, block) {
     return out;
 });
 
-Handlebars.registerHelper('add', function(a, b) {
+Handlebars.registerHelper('add', function (a, b) {
     var out = a + b;
     return out;
 });
 
-Handlebars.registerHelper('eq', function(a, b) {
+Handlebars.registerHelper('eq', function (a, b) {
     var out = (a == b);
     return out;
 });
 
-Handlebars.registerHelper('or', function(a, b) {
+Handlebars.registerHelper('or', function (a, b) {
     var out = a || b;
     return out;
 });
 
-Handlebars.registerHelper('not', function(a) {
+Handlebars.registerHelper('not', function (a) {
     var out = !a;
     return out;
 });
 
-Handlebars.registerHelper('count', function(map) {
+Handlebars.registerHelper('count', function (map) {
     return map.length;
 });
 
-Handlebars.registerHelper('gt', function(a, b) {
+Handlebars.registerHelper('gt', function (a, b) {
     var out = a > b;
     return out;
 });
@@ -540,8 +540,6 @@ export class Template {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
-
-        delete this._fragment;
     }
 
     private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
@@ -598,7 +596,7 @@ export class Template {
                             selector = this.parent.tagName;
                         }
                         let binding = functionToFire.bind(this, selector);
-                        this.parent.addEventListener(eventName, functionToFire.bind(this, selector), false);
+                        this.parent.addEventListener(eventName, binding, false);
                         this._registeredEvents.push({
                             htmlElement: this.parent,
                             eventName: eventName,

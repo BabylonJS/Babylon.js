@@ -8,37 +8,38 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
+import { ISortableLight, LightConstants } from "./lightConstants";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
  * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
  * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
  */
-export abstract class Light extends Node {
+export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Falloff Default: light is falling off following the material specification:
      * standard material is using standard falloff whereas pbr material can request special falloff per materials.
      */
-    public static readonly FALLOFF_DEFAULT = 0;
+    public static readonly FALLOFF_DEFAULT = LightConstants.FALLOFF_DEFAULT;
 
     /**
      * Falloff Physical: light is falling off following the inverse squared distance law.
      */
-    public static readonly FALLOFF_PHYSICAL = 1;
+    public static readonly FALLOFF_PHYSICAL = LightConstants.FALLOFF_PHYSICAL;
 
     /**
      * Falloff gltf: light is falling off as described in the gltf moving to PBR document
      * to enhance interoperability with other engines.
      */
-    public static readonly FALLOFF_GLTF = 2;
+    public static readonly FALLOFF_GLTF = LightConstants.FALLOFF_GLTF;
 
     /**
      * Falloff Standard: light is falling off like in the standard material
      * to enhance interoperability with other materials.
      */
-    public static readonly FALLOFF_STANDARD = 3;
+    public static readonly FALLOFF_STANDARD = LightConstants.FALLOFF_STANDARD;
 
     //lightmapMode Consts
     /**
@@ -47,19 +48,19 @@ export abstract class Light extends Node {
      * (depends on material.useLightmapAsShadowmap)
      * after every other light calculations.
      */
-    public static readonly LIGHTMAP_DEFAULT = 0;
+    public static readonly LIGHTMAP_DEFAULT = LightConstants.LIGHTMAP_DEFAULT;
     /**
      * material.lightmapTexture as only diffuse lighting from this light
      * adds only specular lighting from this light
      * adds dynamic shadows
      */
-    public static readonly LIGHTMAP_SPECULAR = 1;
+    public static readonly LIGHTMAP_SPECULAR = LightConstants.LIGHTMAP_SPECULAR;
     /**
      * material.lightmapTexture as only lighting
      * no light calculation from this light
      * only adds dynamic shadows from this light
      */
-    public static readonly LIGHTMAP_SHADOWSONLY = 2;
+    public static readonly LIGHTMAP_SHADOWSONLY = LightConstants.LIGHTMAP_SHADOWSONLY;
 
     // Intensity Mode Consts
     /**
@@ -67,41 +68,41 @@ export abstract class Light extends Node {
      *      point/spot lights use luminous intensity
      *      directional lights use illuminance
      */
-    public static readonly INTENSITYMODE_AUTOMATIC = 0;
+    public static readonly INTENSITYMODE_AUTOMATIC = LightConstants.INTENSITYMODE_AUTOMATIC;
     /**
      * lumen (lm)
      */
-    public static readonly INTENSITYMODE_LUMINOUSPOWER = 1;
+    public static readonly INTENSITYMODE_LUMINOUSPOWER = LightConstants.INTENSITYMODE_LUMINOUSPOWER;
     /**
      * candela (lm/sr)
      */
-    public static readonly INTENSITYMODE_LUMINOUSINTENSITY = 2;
+    public static readonly INTENSITYMODE_LUMINOUSINTENSITY = LightConstants.INTENSITYMODE_LUMINOUSINTENSITY;
     /**
      * lux (lm/m^2)
      */
-    public static readonly INTENSITYMODE_ILLUMINANCE = 3;
+    public static readonly INTENSITYMODE_ILLUMINANCE = LightConstants.INTENSITYMODE_ILLUMINANCE;
     /**
      * nit (cd/m^2)
      */
-    public static readonly INTENSITYMODE_LUMINANCE = 4;
+    public static readonly INTENSITYMODE_LUMINANCE = LightConstants.INTENSITYMODE_LUMINANCE;
 
     // Light types ids const.
     /**
      * Light type const id of the point light.
      */
-    public static readonly LIGHTTYPEID_POINTLIGHT = 0;
+    public static readonly LIGHTTYPEID_POINTLIGHT = LightConstants.LIGHTTYPEID_POINTLIGHT;
     /**
      * Light type const id of the directional light.
      */
-    public static readonly LIGHTTYPEID_DIRECTIONALLIGHT = 1;
+    public static readonly LIGHTTYPEID_DIRECTIONALLIGHT = LightConstants.LIGHTTYPEID_DIRECTIONALLIGHT;
     /**
      * Light type const id of the spot light.
      */
-    public static readonly LIGHTTYPEID_SPOTLIGHT = 2;
+    public static readonly LIGHTTYPEID_SPOTLIGHT = LightConstants.LIGHTTYPEID_SPOTLIGHT;
     /**
      * Light type const id of the hemispheric light.
      */
-    public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = 3;
+    public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = LightConstants.LIGHTTYPEID_HEMISPHERICLIGHT;
 
     /**
      * Diffuse gives the basic color to an object.
@@ -111,13 +112,13 @@ export abstract class Light extends Node {
 
     /**
      * Specular produces a highlight color on an object.
-     * Note: This is note affecting PBR materials.
+     * Note: This is not affecting PBR materials.
      */
     @serializeAsColor3()
     public specular = new Color3(1.0, 1.0, 1.0);
 
     /**
-     * Defines the falloff type for this light. This lets overrriding how punctual light are
+     * Defines the falloff type for this light. This lets overriding how punctual light are
      * falling off base on range or angle.
      * This can be set to any values in Light.FALLOFF_x.
      *
@@ -207,14 +208,14 @@ export abstract class Light extends Node {
     @serialize("shadowEnabled")
     private _shadowEnabled: boolean = true;
     /**
-     * Gets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+     * Gets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
      * the current shadow generator.
      */
     public get shadowEnabled(): boolean {
         return this._shadowEnabled;
     }
     /**
-     * Sets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+     * Sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
      * the current shadow generator.
      */
     public set shadowEnabled(value: boolean) {
@@ -313,7 +314,7 @@ export abstract class Light extends Node {
     }
 
     /**
-     * Shadow generator associted to the light.
+     * Shadow generator associated to the light.
      * @hidden Internal use only.
      */
     public _shadowGenerator: Nullable<IShadowGenerator>;
@@ -329,23 +330,26 @@ export abstract class Light extends Node {
     public _includedOnlyMeshesIds = new Array<string>();
 
     /**
-     * The current light unifom buffer.
+     * The current light uniform buffer.
      * @hidden Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
 
     /** @hidden */
     public _renderId: number;
+
+    private _lastUseSpecular: boolean;
+
     /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/babylon101/lights
-     * @param name The firendly name of the light
+     * @param name The friendly name of the light
      * @param scene The scene the light belongs too
      */
     constructor(name: string, scene: Scene) {
         super(name, scene);
         this.getScene().addLight(this);
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine());
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
         this._buildUniformLayout();
 
         this.includedOnlyMeshes = new Array<AbstractMesh>();
@@ -381,20 +385,17 @@ export abstract class Light extends Node {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
         let iAsString = lightIndex.toString();
         let needUpdate = false;
 
-        if (rebuildInParallel && this._uniformBuffer._alreadyBound) {
-            return;
-        }
-
         this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
 
-        if (this._renderId !== scene.getRenderId() || !this._uniformBuffer.useUbo) {
+        if (this._renderId !== scene.getRenderId() || this._lastUseSpecular !== useSpecular || !this._uniformBuffer.useUbo) {
             this._renderId = scene.getRenderId();
+            this._lastUseSpecular = useSpecular;
 
             let scaledIntensity = this.getScaledIntensity();
 
@@ -413,7 +414,7 @@ export abstract class Light extends Node {
         this.transferTexturesToEffect(effect, iAsString);
 
         // Shadows
-        if (scene.shadowsEnabled && this.shadowEnabled) {
+        if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
             var shadowGenerator = this.getShadowGenerator();
             if (shadowGenerator) {
                 shadowGenerator.bindShadowLight(iAsString, effect);
@@ -423,6 +424,8 @@ export abstract class Light extends Node {
 
         if (needUpdate) {
             this._uniformBuffer.update();
+        } else {
+            this._uniformBuffer.bindUniformBuffer();
         }
     }
 
@@ -527,21 +530,6 @@ export abstract class Light extends Node {
     }
 
     /**
-     * Sort function to order lights for rendering.
-     * @param a First Light object to compare to second.
-     * @param b Second Light object to compare first.
-     * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
-     */
-    public static CompareLightsPriority(a: Light, b: Light): number {
-        //shadow-casting lights have priority over non-shadow-casting lights
-        //the renderPrioirty is a secondary sort criterion
-        if (a.shadowEnabled !== b.shadowEnabled) {
-            return (b.shadowEnabled ? 1 : 0) - (a.shadowEnabled ? 1 : 0);
-        }
-        return b.renderPriority - a.renderPriority;
-    }
-
-    /**
      * Releases resources associated with this node.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
@@ -554,6 +542,14 @@ export abstract class Light extends Node {
 
         // Animations
         this.getScene().stopAnimation(this);
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.lights.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.lights.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
 
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {
@@ -596,10 +592,16 @@ export abstract class Light extends Node {
             return null;
         }
         let clonedLight = SerializationHelper.Clone(constructor, this);
+        if (name) {
+            clonedLight.name = name;
+        }
         if (newParent) {
             clonedLight.parent = newParent;
         }
         clonedLight.setEnabled(this.isEnabled());
+
+        this.onClonedObservable.notifyObservers(clonedLight);
+
         return clonedLight;
     }
 
@@ -609,13 +611,14 @@ export abstract class Light extends Node {
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getTypeID();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         // Inclusion / exclusions
@@ -636,6 +639,8 @@ export abstract class Light extends Node {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
+
+        serializationObject.isEnabled = this.isEnabled();
 
         return serializationObject;
     }
@@ -684,7 +689,7 @@ export abstract class Light extends Node {
         }
 
         // Parent
-        if (parsedLight.parentId) {
+        if (parsedLight.parentId !== undefined) {
             light._waitingParentId = parsedLight.parentId;
         }
 
@@ -702,7 +707,7 @@ export abstract class Light extends Node {
         if (parsedLight.animations) {
             for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
                 var parsedAnimation = parsedLight.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     light.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -712,6 +717,11 @@ export abstract class Light extends Node {
 
         if (parsedLight.autoAnimate) {
             scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedLight.isEnabled !== undefined) {
+            light.setEnabled(parsedLight.isEnabled);
         }
 
         return light;
@@ -845,7 +855,7 @@ export abstract class Light extends Node {
                 break;
 
             case Light.LIGHTTYPEID_HEMISPHERICLIGHT:
-                // No fall off in hemisperic light.
+                // No fall off in hemispheric light.
                 photometricScale = 1.0;
                 break;
         }

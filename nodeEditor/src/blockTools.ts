@@ -19,6 +19,7 @@ import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
 import { ModBlock } from 'babylonjs/Materials/Node/Blocks/modBlock';
 import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
 import { TrigonometryBlock, TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { ConditionalBlockConditions, ConditionalBlock } from 'babylonjs/Materials/Node/Blocks/conditionalBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 import { CrossBlock } from 'babylonjs/Materials/Node/Blocks/crossBlock';
 import { DotBlock } from 'babylonjs/Materials/Node/Blocks/dotBlock';
@@ -65,8 +66,6 @@ import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
 import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
 import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock';
 import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/PBR/sheenBlock';
-import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/ambientOcclusionBlock';
-import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectivityBlock';
 import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
 import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlock';
@@ -79,10 +78,27 @@ import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Part
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
 import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
+import { MatrixBuilderBlock } from 'babylonjs/Materials/Node/Blocks/matrixBuilderBlock';
+import { SceneDepthBlock } from 'babylonjs/Materials/Node/Blocks/Dual/sceneDepthBlock';
+import { ImageSourceBlock } from 'babylonjs/Materials/Node/Blocks/Dual/imageSourceBlock';
+import { CloudBlock } from 'babylonjs/Materials/Node/Blocks/cloudBlock';
+import { VoronoiNoiseBlock } from 'babylonjs/Materials/Node/Blocks/voronoiNoiseBlock';
+import { ScreenSpaceBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSpaceBlock';
+import { TwirlBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/twirlBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "TwirlBlock":
+                return new TwirlBlock("Twirl");
+            case "VoronoiNoiseBlock":
+                return new VoronoiNoiseBlock("VoronoiNoise");
+            case "ScreenSpaceBlock":
+                return new ScreenSpaceBlock("ScreenSpace");
+            case "CloudBlock":
+                return new CloudBlock("Cloud");
+            case "MatrixBuilderBlock":
+                return new MatrixBuilderBlock("MatrixBuilder");
             case "DesaturateBlock":
                 return new DesaturateBlock("Desaturate");
             case "RefractBlock":
@@ -341,6 +357,14 @@ export class BlockTools {
                 cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
                 return cameraPosition;
             }
+            case "CameraParametersBlock": {
+                let cameraParameters = new InputBlock("Camera parameters");
+                cameraParameters.setAsSystemValue(NodeMaterialSystemValues.CameraParameters);
+
+                let splitter = new VectorSplitterBlock("Vector splitter");
+                cameraParameters.connectTo(splitter);
+                return splitter;
+            }
             case "FogColorBlock": {
                 let FogColor = new InputBlock("Fog color");
                 FogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);
@@ -351,7 +375,7 @@ export class BlockTools {
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
-            case "Position2DBlock": {
+            case "ScreenPositionBlock": {
                 let meshPosition = new InputBlock("position");
                 meshPosition.setAsAttribute("position2d");
                 return meshPosition;
@@ -460,10 +484,6 @@ export class BlockTools {
                 return new PBRMetallicRoughnessBlock("PBRMetallicRoughness");
             case "SheenBlock":
                 return new SheenBlock("Sheen");
-            case "AmbientOcclusionBlock":
-                return new AmbientOcclusionBlock("AmbientOcclusion");
-            case "ReflectivityBlock":
-                return new ReflectivityBlock("Reflectivity");
             case "AnisotropyBlock":
                 return new AnisotropyBlock("Anisotropy");
             case "ReflectionBlock":
@@ -506,6 +526,46 @@ export class BlockTools {
                 return new FragCoordBlock("FragCoord");
             case "ScreenSizeBlock":
                 return new ScreenSizeBlock("ScreenSize");
+            case "SceneDepthBlock":
+                return new SceneDepthBlock("SceneDepth");
+            case "EqualBlock":
+                let equalBlock = new ConditionalBlock("Equal");
+                equalBlock.condition = ConditionalBlockConditions.Equal;
+                return equalBlock;
+            case "NotEqualBlock":
+                let notEqualBlock = new ConditionalBlock("NotEqual");
+                notEqualBlock.condition = ConditionalBlockConditions.NotEqual;
+                return notEqualBlock;
+            case "LessThanBlock":
+                let lessThanBlock = new ConditionalBlock("LessThan");
+                lessThanBlock.condition = ConditionalBlockConditions.LessThan;
+                return lessThanBlock;
+            case "LessOrEqualBlock":
+                let lessOrEqualBlock = new ConditionalBlock("LessOrEqual");
+                lessOrEqualBlock.condition = ConditionalBlockConditions.LessOrEqual;
+                return lessOrEqualBlock;
+            case "GreaterThanBlock":
+                let greaterThanBlock = new ConditionalBlock("GreaterThan");
+                greaterThanBlock.condition = ConditionalBlockConditions.GreaterThan;
+                return greaterThanBlock;
+            case "GreaterOrEqualBlock":
+                let greaterOrEqualBlock = new ConditionalBlock("GreaterOrEqual");
+                greaterOrEqualBlock.condition = ConditionalBlockConditions.GreaterOrEqual;
+                return greaterOrEqualBlock;
+            case "XorBlock":
+                let xorBlock = new ConditionalBlock("Xor");
+                xorBlock.condition = ConditionalBlockConditions.Xor;
+                return xorBlock;
+            case "OrBlock":
+                let orBlock = new ConditionalBlock("Or");
+                orBlock.condition = ConditionalBlockConditions.Or;
+                return orBlock;
+            case "AndBlock":
+                let andBlock = new ConditionalBlock("And");
+                andBlock.condition = ConditionalBlockConditions.And;
+                return andBlock;
+            case "ImageSourceBlock":
+                return new ImageSourceBlock("ImageSource");
         }
 
         return null;
@@ -530,6 +590,9 @@ export class BlockTools {
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 color = "#591990";
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Object:
+                color = "#6174FA";
                 break;
         }
 
@@ -558,7 +621,7 @@ export class BlockTools {
     }
 
     public static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type){
+        switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 return "Float";
             case NodeMaterialBlockConnectionPointTypes.Vector2:

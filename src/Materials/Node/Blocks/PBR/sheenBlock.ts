@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
@@ -39,13 +39,13 @@ export class SheenBlock extends NodeMaterialBlock {
      * It allows the strength of the sheen effect to not depend on the base color of the material,
      * making it easier to setup and tweak the effect
      */
-    @editableInPropertyPage("Albedo scaling", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Albedo scaling", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public albedoScaling: boolean = false;
 
     /**
      * Defines if the sheen is linked to the sheen color.
      */
-    @editableInPropertyPage("Link sheen with albedo", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    @editableInPropertyPage("Link sheen with albedo", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
     public linkSheenWithAlbedo: boolean = false;
 
     /**
@@ -99,6 +99,7 @@ export class SheenBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("SHEEN", true);
+        defines.setValue("SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("SHEEN_LINKWITHALBEDO", this.linkSheenWithAlbedo, true);
         defines.setValue("SHEEN_ROUGHNESS", this.roughness.isConnected, true);
         defines.setValue("SHEEN_ALBEDOSCALING", this.albedoScaling, true);
@@ -130,6 +131,7 @@ export class SheenBlock extends NodeMaterialBlock {
                 roughness,
             #ifdef SHEEN_TEXTURE
                 ${texture},
+                1.0,
             #endif
                 reflectance,
             #ifdef SHEEN_LINKWITHALBEDO
@@ -189,7 +191,7 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString: string = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\r\n`;
         codeString += `${this._codeVariableName}.linkSheenWithAlbedo = ${this.linkSheenWithAlbedo};\r\n`;
@@ -214,4 +216,4 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SheenBlock"] = SheenBlock;
+RegisterClass("BABYLON.SheenBlock", SheenBlock);

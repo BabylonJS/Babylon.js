@@ -24,10 +24,12 @@ export interface EngineCapabilities {
     maxVertexUniformVectors: number;
     /** Maximum number of uniforms per fragment shader */
     maxFragmentUniformVectors: number;
-    /** Defines if standard derivates (dx/dy) are supported */
+    /** Defines if standard derivatives (dx/dy) are supported */
     standardDerivatives: boolean;
     /** Defines if s3tc texture compression is supported */
     s3tc?: WEBGL_compressed_texture_s3tc;
+    /** Defines if s3tc sRGB texture compression is supported */
+    s3tc_srgb?: WEBGL_compressed_texture_s3tc_srgb;
     /** Defines if pvrtc texture compression is supported */
     pvrtc: any; //WEBGL_compressed_texture_pvrtc;
     /** Defines if etc1 texture compression is supported */
@@ -36,6 +38,8 @@ export interface EngineCapabilities {
     etc2: any; //WEBGL_compressed_texture_etc;
     /** Defines if astc texture compression is supported */
     astc: any; //WEBGL_compressed_texture_astc;
+    /** Defines if bptc texture compression is supported */
+    bptc: any; //EXT_texture_compression_bptc;
     /** Defines if float textures are supported */
     textureFloat: boolean;
     /** Defines if vertex array objects are supported */
@@ -74,6 +78,8 @@ export interface EngineCapabilities {
     timerQuery?: EXT_disjoint_timer_query;
     /** Defines if timestamp can be used with timer query */
     canUseTimestampForTimerQuery: boolean;
+    /** Defines if occlusion queries are supported by the engine */
+    supportOcclusionQuery: boolean;
     /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
     multiview?: any;
     /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
@@ -86,4 +92,12 @@ export interface EngineCapabilities {
     maxMSAASamples: number;
     /** Defines if the blend min max extension is supported */
     blendMinMax: boolean;
+    /** In some iOS + WebGL1, gl_InstanceID (and gl_InstanceIDEXT) is undefined even if instancedArrays is true. So don't use gl_InstanceID in those cases */
+    canUseGLInstanceID: boolean;
+    /** Defines if gl_vertexID is available */
+    canUseGLVertexID: boolean;
+    /** Defines if compute shaders are supported by the engine */
+    supportComputeShaders: boolean;
+    /** Defines if sRGB texture formats are supported */
+    supportSRGBBuffers: boolean;
 }

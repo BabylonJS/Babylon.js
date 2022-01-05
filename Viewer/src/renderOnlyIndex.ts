@@ -13,6 +13,6 @@ import "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerS
 
 // Override default material factory to avoid the dependency on standard material
 import { Scene } from 'babylonjs/scene';
-Scene.DefaultMaterialFactory = (scene:Scene)=>{return null as any};
+Scene.DefaultMaterialFactory = (scene: Scene) => { return null as any };
 
 export { RenderOnlyViewer };

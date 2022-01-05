@@ -7,15 +7,17 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import { PrePassConfiguration } from "./prePassConfiguration";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
 import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
+import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -24,7 +26,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { _TypeStore } from "../Misc/typeStore";
+import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
 import "../Shaders/default.fragment";
@@ -32,15 +34,22 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
+import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
-export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+export class StandardMaterialDefines extends MaterialDefines
+    implements IImageProcessingConfigurationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
+    public MAINUV3 = false;
+    public MAINUV4 = false;
+    public MAINUV5 = false;
+    public MAINUV6 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
+    public BAKED_VERTEX_ANIMATION_TEXTURE = false;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public OPACITY = false;
@@ -75,13 +84,19 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public EMISSIVEFRESNEL = false;
     public FRESNEL = false;
     public NORMAL = false;
+    public TANGENT = false;
     public UV1 = false;
     public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
+    public BONES_VELOCITY_ENABLED = false;
     public INSTANCES = false;
     public THIN_INSTANCES = false;
     public GLOSSINESS = false;
@@ -98,12 +113,14 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public REFLECTIONMAP_PLANAR = false;
     public REFLECTIONMAP_CUBIC = false;
     public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
+    public USE_LOCAL_REFRACTIONMAP_CUBIC = false;
     public REFLECTIONMAP_PROJECTION = false;
     public REFLECTIONMAP_SKYBOX = false;
     public REFLECTIONMAP_EXPLICIT = false;
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
     public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+    public REFLECTIONMAP_OPPOSITEZ = false;
     public INVERTCUBICMAP = false;
     public LOGARITHMICDEPTH = false;
     public REFRACTION = false;
@@ -116,10 +133,28 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MORPHTARGETS_TANGENT = false;
     public MORPHTARGETS_UV = false;
     public NUM_MORPH_INFLUENCERS = 0;
+    public MORPHTARGETS_TEXTURE = false;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
     public ALPHABLEND = true;
+
+    public PREPASS = false;
+    public PREPASS_IRRADIANCE = false;
+    public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO_SQRT = false;
+    public PREPASS_ALBEDO_SQRT_INDEX = -1;
+    public PREPASS_DEPTH = false;
+    public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_NORMAL = false;
+    public PREPASS_NORMAL_INDEX = -1;
+    public PREPASS_POSITION = false;
+    public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_VELOCITY = false;
+    public PREPASS_VELOCITY_INDEX = -1;
+    public PREPASS_REFLECTIVITY = false;
+    public PREPASS_REFLECTIVITY_INDEX = -1;
+    public SCENE_MRT_COUNT = 0;
 
     public RGBDLIGHTMAP = false;
     public RGBDREFLECTION = false;
@@ -138,7 +173,11 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
     public MULTIVIEW = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+
     /**
      * If the reflection texture on this material is in linear color space
      * @hidden
@@ -151,8 +190,12 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;
 
-    constructor() {
-        super();
+    /**
+     * Initializes the Standard Material defines.
+     * @param externalProperties The external properties
+     */
+    constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
+        super(externalProperties);
         this.rebuild();
     }
 
@@ -173,7 +216,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
 /**
  * This is the default material used in Babylon. It is the best trade off between quality
  * and performances.
- * @see http://doc.babylonjs.com/babylon101/materials
+ * @see https://doc.babylonjs.com/babylon101/materials
  */
 export class StandardMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
@@ -206,7 +249,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the reflection.
-     * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionTexture: Nullable<BaseTexture>;
@@ -233,7 +276,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Bump mapping is a technique to simulate bump and dents on a rendered surface.
      * These are made by creating a normal map from an image. The means to do this can be found on the web, a search for 'normal map generator' will bring up free and paid for methods of doing this.
-     * @see http://doc.babylonjs.com/how_to/more_materials#bump-map
+     * @see https://doc.babylonjs.com/how_to/more_materials#bump-map
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture>;
@@ -243,7 +286,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Complex lighting can be computationally expensive to compute at runtime.
      * To save on computation, lightmaps may be used to store calculated lighting in a texture which will be applied to a given mesh.
-     * @see http://doc.babylonjs.com/babylon101/lights#lightmaps
+     * @see https://doc.babylonjs.com/babylon101/lights#lightmaps
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public lightmapTexture: Nullable<BaseTexture>;
@@ -252,14 +295,14 @@ export class StandardMaterial extends PushMaterial {
     private _refractionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the refraction.
-     * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture>;
 
     /**
      * The color of the material lit by the environmental background lighting.
-     * @see http://doc.babylonjs.com/babylon101/materials#ambient-color-example
+     * @see https://doc.babylonjs.com/babylon101/materials#ambient-color-example
      */
     @serializeAsColor3("ambient")
     public ambientColor = new Color3(0, 0, 0);
@@ -319,7 +362,7 @@ export class StandardMaterial extends PushMaterial {
     @serialize("useSpecularOverAlpha")
     private _useSpecularOverAlpha = false;
     /**
-     * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
+     * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -328,7 +371,7 @@ export class StandardMaterial extends PushMaterial {
     @serialize("useReflectionOverAlpha")
     private _useReflectionOverAlpha = false;
     /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
+     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -355,7 +398,7 @@ export class StandardMaterial extends PushMaterial {
     private _useParallax = false;
     /**
      * Is parallax enabled or not.
-     * @see http://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallax: boolean;
@@ -365,7 +408,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Is parallax occlusion enabled or not.
      * If true, the outcome is way more realistic than traditional Parallax but you can expect a performance hit that worthes consideration.
-     * @see http://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallaxOcclusion: boolean;
@@ -386,7 +429,7 @@ export class StandardMaterial extends PushMaterial {
 
     /**
      * In case of refraction, define the value of the index of refraction.
-     * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
      */
     @serialize()
     public indexOfRefraction = 0.98;
@@ -394,7 +437,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Invert the refraction texture alongside the y axis.
      * It can be useful with procedural textures or probe for instance.
-     * @see http://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
      */
     @serialize()
     public invertRefractionY = true;
@@ -418,7 +461,7 @@ export class StandardMaterial extends PushMaterial {
     private _diffuseFresnelParameters: FresnelParameters;
     /**
      * Define the diffuse fresnel parameters of the material.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public diffuseFresnelParameters: FresnelParameters;
@@ -427,7 +470,7 @@ export class StandardMaterial extends PushMaterial {
     private _opacityFresnelParameters: FresnelParameters;
     /**
      * Define the opacity fresnel parameters of the material.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
     public opacityFresnelParameters: FresnelParameters;
@@ -436,7 +479,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionFresnelParameters: FresnelParameters;
     /**
      * Define the reflection fresnel parameters of the material.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public reflectionFresnelParameters: FresnelParameters;
@@ -445,7 +488,7 @@ export class StandardMaterial extends PushMaterial {
     private _refractionFresnelParameters: FresnelParameters;
     /**
      * Define the refraction fresnel parameters of the material.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public refractionFresnelParameters: FresnelParameters;
@@ -454,7 +497,7 @@ export class StandardMaterial extends PushMaterial {
     private _emissiveFresnelParameters: FresnelParameters;
     /**
      * Define the emissive fresnel parameters of the material.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public emissiveFresnelParameters: FresnelParameters;
@@ -463,7 +506,7 @@ export class StandardMaterial extends PushMaterial {
     private _useReflectionFresnelFromSpecular = false;
     /**
      * If true automatically deducts the fresnels values from the material specularity.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public useReflectionFresnelFromSpecular: boolean;
@@ -568,39 +611,51 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Gets wether the color curves effect is enabled.
+     * Defines additional PrePass parameters for the material.
+     */
+    public readonly prePassConfiguration: PrePassConfiguration;
+
+    /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return !this.disableDepthWrite;
+    }
+
+    /**
+     * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
         return this.imageProcessingConfiguration.colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set cameraColorCurvesEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorCurvesEnabled = value;
     }
 
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get cameraColorGradingEnabled(): boolean {
         return this.imageProcessingConfiguration.colorGradingEnabled;
     }
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public set cameraColorGradingEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorGradingEnabled = value;
     }
 
     /**
-     * Gets wether tonemapping is enabled or not.
+     * Gets whether tonemapping is enabled or not.
      */
     public get cameraToneMappingEnabled(): boolean {
         return this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
-     * Sets wether tonemapping is enabled or not
+     * Sets whether tonemapping is enabled or not
      */
     public set cameraToneMappingEnabled(value: boolean) {
         this._imageProcessingConfiguration.toneMappingEnabled = value;
@@ -660,7 +715,7 @@ export class StandardMaterial extends PushMaterial {
         return this._imageProcessingConfiguration.colorCurves;
     }
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -669,25 +724,40 @@ export class StandardMaterial extends PushMaterial {
         this._imageProcessingConfiguration.colorCurves = value;
     }
 
+    /**
+     * Can this material render to several textures at once
+     */
+    public get canRenderToMRT() {
+        return true;
+    }
+
+    /**
+     * Defines the detail map parameters for the material.
+     */
+    public readonly detailMap: DetailMapConfiguration;
+
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _useLogarithmicDepth: boolean;
-    protected _rebuildInParallel = false;
+    protected _cacheHasRenderTargetTextures = false;
 
     /**
      * Instantiates a new standard material.
      * This is the default material used in Babylon. It is the best trade off between quality
      * and performances.
-     * @see http://doc.babylonjs.com/babylon101/materials
+     * @see https://doc.babylonjs.com/babylon101/materials
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
+        this.detailMap = new DetailMapConfiguration(this);
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
+        this.prePassConfiguration = new PrePassConfiguration();
 
         this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
             this._renderTargets.reset();
@@ -699,6 +769,9 @@ export class StandardMaterial extends PushMaterial {
             if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
                 this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
             }
+
+            this._eventInfo.renderTargets = this._renderTargets;
+            this._callbackPluginEventFillRenderTargetTextures(this._eventInfo);
 
             return this._renderTargets;
         };
@@ -716,7 +789,7 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return false;
+        return this._cacheHasRenderTargetTextures;
     }
 
     /**
@@ -731,7 +804,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
      * You can try switching to logarithmic depth.
-     * @see http://doc.babylonjs.com/how_to/using_logarithmic_depth_buffer
+     * @see https://doc.babylonjs.com/how_to/using_logarithmic_depth_buffer
      */
     @serialize()
     public get useLogarithmicDepth(): boolean {
@@ -765,11 +838,21 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
+        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
+    /**
+     * Specifies whether or not the alpha value of the diffuse texture should be used for alpha blending.
+     */
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
         return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
+    }
+
+    /**
+     * Specifies whether or not there is a usable alpha channel for transparency.
+     */
+    protected _hasAlphaChannel(): boolean {
+        return (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._opacityTexture != null;
     }
 
     /**
@@ -789,18 +872,23 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+        if (!this._uniformBufferLayoutBuilt) {
+            this.buildUniformLayout();
+        }
+
         if (subMesh.effect && this.isFrozen) {
             if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
 
-        if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new StandardMaterialDefines();
+        if (!subMesh.materialDefines) {
+            this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
+            subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
         var scene = this.getScene();
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
@@ -813,11 +901,22 @@ export class StandardMaterial extends PushMaterial {
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
+        // PrePass
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+
+        // Order independant transparency
+        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
+
         // Textures
         if (defines._areTexturesDirty) {
+            this._eventInfo.hasRenderTargetTextures = false;
+            this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
+            this._cacheHasRenderTargetTextures = this._eventInfo.hasRenderTargetTextures;
             defines._needUVs = false;
-            defines.MAINUV1 = false;
-            defines.MAINUV2 = false;
+            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+                defines["MAINUV" + i] = false;
+            }
             if (scene.texturesEnabled) {
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     if (!this._diffuseTexture.isReadyOrNotBlocking()) {
@@ -862,6 +961,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
+                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -899,6 +999,7 @@ export class StandardMaterial extends PushMaterial {
                     }
                 } else {
                     defines.REFLECTION = false;
+                    defines.REFLECTIONMAP_OPPOSITEZ = false;
                 }
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -935,7 +1036,7 @@ export class StandardMaterial extends PushMaterial {
                 }
 
                 if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled) {
-                    // Bump texure can not be not blocking.
+                    // Bump texture can not be not blocking.
                     if (!this._bumpTexture.isReady()) {
                         return false;
                     } else {
@@ -959,6 +1060,7 @@ export class StandardMaterial extends PushMaterial {
 
                         defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
                         defines.RGBDREFRACTION = this._refractionTexture.isRGBD;
+                        defines.USE_LOCAL_REFRACTIONMAP_CUBIC = (<any>this._refractionTexture).boundingBoxSize ? true : false;
                     }
                 } else {
                     defines.REFRACTION = false;
@@ -989,6 +1091,14 @@ export class StandardMaterial extends PushMaterial {
             defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
 
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
+        }
+
+        this._eventInfo.isReadyForSubMesh = true;
+        this._eventInfo.defines = defines;
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
+
+        if (!this._eventInfo.isReadyForSubMesh) {
+            return false;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -1037,6 +1147,11 @@ export class StandardMaterial extends PushMaterial {
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1118,12 +1233,14 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.NormalKind);
             }
 
-            if (defines.UV1) {
-                attribs.push(VertexBuffer.UVKind);
+            if (defines.TANGENT) {
+                attribs.push(VertexBuffer.TangentKind);
             }
 
-            if (defines.UV2) {
-                attribs.push(VertexBuffer.UV2Kind);
+            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+                if (defines["UV" + i]) {
+                    attribs.push(`uv${i === 1 ? "" : i}`);
+                }
             }
 
             if (defines.VERTEXCOLOR) {
@@ -1133,6 +1250,7 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
             var shaderName = "default";
 
@@ -1142,15 +1260,28 @@ export class StandardMaterial extends PushMaterial {
                 "mBones",
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                "vReflectionPosition", "vReflectionSize",
-                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth"
+                "vReflectionPosition", "vReflectionSize", "vRefractionPosition", "vRefractionSize",
+                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth",
+                "morphTargetTextureInfo", "morphTargetTextureIndices"
             ];
 
             var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
+                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets", "oitDepthSampler",
+                "oitFrontColorSampler"];
 
-            var uniformBuffers = ["Material", "Scene"];
+            var uniformBuffers = ["Material", "Scene", "Mesh"];
+
+            this._eventInfo.fallbacks = fallbacks;
+            this._eventInfo.fallbackRank = 0;
+            this._eventInfo.defines = defines;
+            this._eventInfo.uniforms = uniforms;
+            this._eventInfo.samplers = samplers;
+            this._eventInfo.customCode = undefined;
+            this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
+
+            PrePassConfiguration.AddUniforms(uniforms);
+            PrePassConfiguration.AddSamplers(samplers);
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1185,6 +1316,8 @@ export class StandardMaterial extends PushMaterial {
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 processFinalCode: csnrOptions.processFinalCode,
+                processCodeAfterIncludes: this._eventInfo.customCode,
+                multiTarget: defines.PREPASS
             }, engine);
 
             if (effect) {
@@ -1197,7 +1330,6 @@ export class StandardMaterial extends PushMaterial {
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
-                    this._rebuildInParallel = true;
                     defines.markAsUnprocessed();
 
                     if (lightDisposed) {
@@ -1206,10 +1338,8 @@ export class StandardMaterial extends PushMaterial {
                         return false;
                     }
                 } else {
-                    this._rebuildInParallel = false;
                     scene.resetCachedMaterial();
-                    subMesh.setEffect(effect, defines);
-                    this.buildUniformLayout();
+                    subMesh.setEffect(effect, defines, this._materialContext);
                 }
             }
         }
@@ -1230,7 +1360,7 @@ export class StandardMaterial extends PushMaterial {
      */
     public buildUniformLayout(): void {
         // Order is important !
-        let ubo = this._uniformBuffer;
+        const ubo = this._uniformBuffer;
         ubo.addUniform("diffuseLeftColor", 4);
         ubo.addUniform("diffuseRightColor", 4);
         ubo.addUniform("opacityParts", 4);
@@ -1262,38 +1392,17 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("bumpMatrix", 16);
         ubo.addUniform("vTangentSpaceParams", 2);
         ubo.addUniform("pointSize", 1);
+        ubo.addUniform("alphaCutOff", 1);
         ubo.addUniform("refractionMatrix", 16);
         ubo.addUniform("vRefractionInfos", 4);
+        ubo.addUniform("vRefractionPosition", 3);
+        ubo.addUniform("vRefractionSize", 3);
         ubo.addUniform("vSpecularColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
-        ubo.addUniform("visibility", 1);
         ubo.addUniform("vDiffuseColor", 4);
+        ubo.addUniform("vAmbientColor", 3);
 
-        ubo.create();
-    }
-
-    /**
-     * Unbinds the material from the mesh
-     */
-    public unbind(): void {
-        if (this._activeEffect) {
-            let needFlag = false;
-            if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("reflection2DSampler", null);
-                needFlag = true;
-            }
-
-            if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                this._activeEffect.setTexture("refraction2DSampler", null);
-                needFlag = true;
-            }
-
-            if (needFlag) {
-                this._markAllSubMeshesAsTexturesDirty();
-            }
-        }
-
-        super.unbind();
+        super.buildUniformLayout();
     }
 
     /**
@@ -1305,7 +1414,7 @@ export class StandardMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <StandardMaterialDefines>subMesh._materialDefines;
+        var defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -1316,10 +1425,17 @@ export class StandardMaterial extends PushMaterial {
         }
         this._activeEffect = effect;
 
-        // Matrices
-        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
-            this.bindOnlyWorldMatrix(world);
-        }
+        // Matrices Mesh.
+        mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+        mesh.transferToEffect(world);
+
+        // Binding unconditionally
+        this._uniformBuffer.bindToEffect(effect, "Material");
+
+        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -1333,8 +1449,6 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.BindBonesParameters(mesh, effect);
         let ubo = this._uniformBuffer;
         if (mustRebind) {
-            ubo.bindToEffect(effect, "Material");
-
             this.bindViewProjection(effect);
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
 
@@ -1371,9 +1485,6 @@ export class StandardMaterial extends PushMaterial {
                         ubo.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                         MaterialHelper.BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
 
-                        if (this._diffuseTexture.hasAlpha) {
-                            effect.setFloat("alphaCutOff", this.alphaCutOff);
-                        }
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -1384,6 +1495,10 @@ export class StandardMaterial extends PushMaterial {
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                         MaterialHelper.BindTextureMatrix(this._opacityTexture, ubo, "opacity");
+                    }
+
+                    if (this._hasAlphaChannel()) {
+                        ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
@@ -1434,6 +1549,13 @@ export class StandardMaterial extends PushMaterial {
                             }
                         }
                         ubo.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
+
+                        if ((<any>this._refractionTexture).boundingBoxSize) {
+                            let cubeTexture = <CubeTexture>this._refractionTexture;
+
+                            ubo.updateVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
+                            ubo.updateVector3("vRefractionSize", cubeTexture.boundingBoxSize);
+                        }
                     }
                 }
 
@@ -1445,14 +1567,13 @@ export class StandardMaterial extends PushMaterial {
                 if (defines.SPECULARTERM) {
                     ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
                 }
+
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
-
-                // Diffuse
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
-            }
 
-            // Visibility
-            ubo.updateFloat("visibility", mesh.visibility);
+                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
+            }
 
             // Textures
             if (scene.texturesEnabled) {
@@ -1502,24 +1623,31 @@ export class StandardMaterial extends PushMaterial {
                 }
             }
 
+            // OIT with depth peeling
+            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                this.getScene().depthPeelingRenderer!.bind(effect);
+            }
+
+            this._eventInfo.subMesh = subMesh;
+            this._callbackPluginEventBindForSubMesh(this._eventInfo);
+
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);
 
             // Colors
-            scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-
-            MaterialHelper.BindEyePosition(effect, scene);
-            effect.setColor3("vAmbientColor", this._globalAmbientColor);
+            this.bindEyePosition(effect);
+        } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
+            this._needToBindSceneUbo = true;
         }
 
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights, this._rebuildInParallel);
+                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
             }
 
             // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
+            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture || mesh.receiveShadows) {
                 this.bindView(effect);
             }
 
@@ -1529,6 +1657,10 @@ export class StandardMaterial extends PushMaterial {
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
                 MaterialHelper.BindMorphTargetParameters(mesh, effect);
+            }
+
+            if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
+                mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);
             }
 
             // Log. depth
@@ -1542,8 +1674,8 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        ubo.update();
         this._afterBind(mesh, this._activeEffect);
+        ubo.update();
     }
 
     /**
@@ -1551,7 +1683,7 @@ export class StandardMaterial extends PushMaterial {
      * @returns the list of animatables object used in the material
      */
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        var results = super.getAnimatables();
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
             results.push(this._diffuseTexture);
@@ -1694,41 +1826,15 @@ export class StandardMaterial extends PushMaterial {
      */
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
-            if (this._diffuseTexture) {
-                this._diffuseTexture.dispose();
-            }
-
-            if (this._ambientTexture) {
-                this._ambientTexture.dispose();
-            }
-
-            if (this._opacityTexture) {
-                this._opacityTexture.dispose();
-            }
-
-            if (this._reflectionTexture) {
-                this._reflectionTexture.dispose();
-            }
-
-            if (this._emissiveTexture) {
-                this._emissiveTexture.dispose();
-            }
-
-            if (this._specularTexture) {
-                this._specularTexture.dispose();
-            }
-
-            if (this._bumpTexture) {
-                this._bumpTexture.dispose();
-            }
-
-            if (this._lightmapTexture) {
-                this._lightmapTexture.dispose();
-            }
-
-            if (this._refractionTexture) {
-                this._refractionTexture.dispose();
-            }
+            this._diffuseTexture?.dispose();
+            this._ambientTexture?.dispose();
+            this._opacityTexture?.dispose();
+            this._reflectionTexture?.dispose();
+            this._emissiveTexture?.dispose();
+            this._specularTexture?.dispose();
+            this._bumpTexture?.dispose();
+            this._lightmapTexture?.dispose();
+            this._refractionTexture?.dispose();
         }
 
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
@@ -1749,6 +1855,8 @@ export class StandardMaterial extends PushMaterial {
         result.name = name;
         result.id = name;
 
+        this.stencil.copyTo(result.stencil);
+
         return result;
     }
 
@@ -1757,7 +1865,11 @@ export class StandardMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**
@@ -1768,7 +1880,13 @@ export class StandardMaterial extends PushMaterial {
      * @returns a new standard material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
-        return SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
+
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
+
+        return material;
     }
 
     // Flags used to enable or disable a type of texture for all Standard Materials
@@ -1780,6 +1898,16 @@ export class StandardMaterial extends PushMaterial {
     }
     public static set DiffuseTextureEnabled(value: boolean) {
         MaterialFlags.DiffuseTextureEnabled = value;
+    }
+
+    /**
+     * Are detail textures enabled in the application.
+     */
+    public static get DetailTextureEnabled(): boolean {
+        return MaterialFlags.DetailTextureEnabled;
+    }
+    public static set DetailTextureEnabled(value: boolean) {
+        MaterialFlags.DetailTextureEnabled = value;
     }
 
     /**
@@ -1883,7 +2011,7 @@ export class StandardMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.StandardMaterial"] = StandardMaterial;
+RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 
 Scene.DefaultMaterialFactory = (scene: Scene) => {
     return new StandardMaterial("default material", scene);

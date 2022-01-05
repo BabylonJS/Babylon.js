@@ -14,7 +14,7 @@ export interface INavigationEnginePlugin {
 
     /**
      * Creates a navigation mesh
-     * @param meshes array of all the geometry used to compute the navigatio mesh
+     * @param meshes array of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      */
     createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
@@ -128,9 +128,68 @@ export interface INavigationEnginePlugin {
     getDefaultQueryExtentToRef(result: Vector3): void;
 
     /**
+     * Set the time step of the navigation tick update.
+     * Default is 1/60.
+     * A value of 0 will disable fixed time update
+     * @param newTimeStep the new timestep to apply to this world.
+     */
+    setTimeStep(newTimeStep: number): void;
+
+    /**
+     * Get the time step of the navigation tick update.
+     * @returns the current time step
+     */
+    getTimeStep(): number;
+
+    /**
+     * If delta time in navigation tick update is greater than the time step
+     * a number of sub iterations are done. If more iterations are need to reach deltatime
+     * they will be discarded.
+     * A value of 0 will set to no maximum and update will use as many substeps as needed
+     * @param newStepCount the maximum number of iterations
+     */
+    setMaximumSubStepCount(newStepCount: number): void;
+
+    /**
+     * Get the maximum number of iterations per navigation tick update
+     * @returns the maximum number of iterations
+     */
+    getMaximumSubStepCount(): number;
+
+    /**
+     * Creates a cylinder obstacle and add it to the navigation
+     * @param position world position
+     * @param radius cylinder radius
+     * @param height cylinder height
+     * @returns the obstacle freshly created
+     */
+    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle;
+
+    /**
+     * Creates an oriented box obstacle and add it to the navigation
+     * @param position world position
+     * @param extent box size
+     * @param angle angle in radians of the box orientation on Y axis
+     * @returns the obstacle freshly created
+     */
+    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle;
+
+    /**
+     * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
+     * @param obstacle obstacle to remove from the navigation
+     */
+    removeObstacle(obstacle: IObstacle): void;
+
+    /**
      * Release all resources
      */
     dispose(): void;
+}
+
+/**
+ * Obstacle interface
+ */
+export interface IObstacle {
 }
 
 /**
@@ -176,6 +235,34 @@ export interface ICrowd {
     getAgentVelocityToRef(index: number, result: Vector3): void;
 
     /**
+     * Gets the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @returns world space position
+     */
+    getAgentNextTargetPath(index: number): Vector3;
+
+    /**
+     * Gets the agent state
+     * @param index agent index returned by addAgent
+     * @returns agent state
+     */
+    getAgentState(index: number): number;
+
+    /**
+     * returns true if the agent in over an off mesh link connection
+     * @param index agent index returned by addAgent
+     * @returns true if over an off mesh link connection
+     */
+    overOffmeshConnection(index: number): boolean;
+
+    /**
+     * Gets the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    getAgentNextTargetPathToRef(index: number, result: Vector3): void;
+
+    /**
      * remove a particular agent previously created
      * @param index agent index returned by addAgent
      */
@@ -185,7 +272,7 @@ export interface ICrowd {
      * get the list of all agents attached to this crowd
      * @returns list of agent indices
      */
-    getAgents() : number[];
+    getAgents(): number[];
 
     /**
      * Tick update done by the Scene. Agent position/velocity/acceleration is updated by this function
@@ -235,9 +322,16 @@ export interface ICrowd {
     getDefaultQueryExtentToRef(result: Vector3): void;
 
     /**
+     * Get the next corner points composing the path (max 4 points)
+     * @param index agent index returned by addAgent
+     * @returns array containing world position composing the path
+     */
+    getCorners(index: number): Vector3[];
+
+    /**
      * Release all resources
      */
-    dispose() : void;
+    dispose(): void;
 }
 
 /**
@@ -275,9 +369,15 @@ export interface IAgentParameters {
     pathOptimizationRange: number;
 
     /**
-     * How aggresive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
+     * How aggressive the agent manager should be at avoiding collisions with this agent. [Limit: >= 0]
      */
     separationWeight: number;
+
+    /**
+     * Observers will be notified when agent gets inside the virtual circle with this Radius around destination point.
+     * Default is agent radius
+     */
+     reachRadius?: number;
 }
 
 /**
@@ -322,7 +422,7 @@ export interface INavMeshParameters {
     maxEdgeLen: number;
 
     /**
-     * The maximum distance a simplfied contour's border edges should deviate
+     * The maximum distance a simplified contour's border edges should deviate
      * the original raw contour. [Limit: >=0] [Units: vx]
      */
     maxSimplificationError: number;
@@ -355,4 +455,16 @@ export interface INavMeshParameters {
      * data. (For height detail only.) [Limit: >=0] [Units: wu]
      */
     detailSampleMaxError: number;
+
+    /**
+     * If using obstacles, the navmesh must be subdivided internaly by tiles.
+     * This member defines the tile cube side length in world units.
+     * If no obstacles are needed, leave it undefined or 0.
+     */
+    tileSize?: number;
+
+    /**
+    * The size of the non-navigable border around the heightfield.
+    */
+    borderSize?: number;
 }

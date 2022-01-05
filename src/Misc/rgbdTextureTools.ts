@@ -4,8 +4,11 @@ import "../Shaders/rgbdDecode.fragment";
 import { Engine } from '../Engines/engine';
 
 import "../Engines/Extensions/engine.renderTarget";
+import { ApplyPostProcess } from './textureTools';
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
+declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
+declare type Scene = import("../scene").Scene;
 
 /**
  * Class used to host RGBD texture specific utilities
@@ -24,6 +27,7 @@ export class RGBDTextureTools {
         // Gets everything ready.
         const engine = internalTexture.getEngine() as Engine;
         const caps = engine.getCaps();
+        const isReady = internalTexture.isReady;
         let expandTexture = false;
 
         // If half float available we can uncompress the texture
@@ -44,11 +48,12 @@ export class RGBDTextureTools {
             internalTexture.invertY = false;
         }
 
-        texture.onLoadObservable.addOnce(() => {
+        const expandRGBDTexture = () => {
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP.
                 const rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, internalTexture.type, undefined, null, false);
+                rgbdPostProcess.externalTextureSamplerBinding = true;
 
                 // Hold the output of the decoding.
                 const expandedTexture = engine.createRenderTargetTexture(internalTexture.width, {
@@ -71,7 +76,6 @@ export class RGBDTextureTools {
                     // Cleanup
                     engine.restoreDefaultFramebuffer();
                     engine._releaseTexture(internalTexture);
-                    engine._releaseFramebufferObjects(expandedTexture);
                     if (rgbdPostProcess) {
                         rgbdPostProcess.dispose();
                     }
@@ -83,6 +87,23 @@ export class RGBDTextureTools {
                     internalTexture.isReady = true;
                 });
             }
-        });
+        };
+
+        if (isReady) {
+            expandRGBDTexture();
+        } else {
+            texture.onLoadObservable.addOnce(expandRGBDTexture);
+        }
+    }
+
+    /**
+     * Encode the texture to RGBD if possible.
+     * @param internalTexture the texture to encode
+     * @param scene the scene hosting the texture
+     * @param outputTextureType type of the texture in which the encoding is performed
+     * @return a promise with the internalTexture having its texture replaced by the result of the processing
+     */
+    public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
+        return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
     }
 }

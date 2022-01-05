@@ -6,12 +6,13 @@ import { Nullable } from "../types";
 import { AbstractScene } from "../abstractScene";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
+import { UniformBuffer } from "../Materials/uniformBuffer";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         * @see https://doc.babylonjs.com/how_to/how_to_use_reflection_probes
          */
         reflectionProbes: Array<ReflectionProbe>;
 
@@ -30,7 +31,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.removeReflectionProbe = function(toRemove: ReflectionProbe): number {
+AbstractScene.prototype.removeReflectionProbe = function (toRemove: ReflectionProbe): number {
     if (!this.reflectionProbes) {
         return -1;
     }
@@ -43,7 +44,7 @@ AbstractScene.prototype.removeReflectionProbe = function(toRemove: ReflectionPro
     return index;
 };
 
-AbstractScene.prototype.addReflectionProbe = function(newReflectionProbe: ReflectionProbe): void {
+AbstractScene.prototype.addReflectionProbe = function (newReflectionProbe: ReflectionProbe): void {
     if (!this.reflectionProbes) {
         this.reflectionProbes = [];
     }
@@ -53,7 +54,7 @@ AbstractScene.prototype.addReflectionProbe = function(newReflectionProbe: Reflec
 
 /**
  * Class used to generate realtime reflection / refraction cube textures
- * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+ * @see https://doc.babylonjs.com/how_to/how_to_use_reflection_probes
  */
 export class ReflectionProbe {
     private _scene: Scene;
@@ -66,10 +67,15 @@ export class ReflectionProbe {
     private _attachedMesh: Nullable<AbstractMesh>;
 
     private _invertYAxis = false;
+    private _sceneUBOs: UniformBuffer[];
+    private _currentSceneUBO: UniformBuffer;
 
     /** Gets or sets probe position (center of the cube map) */
     @serializeAsVector3()
     public position = Vector3.Zero();
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Creates a new reflection probe
@@ -77,13 +83,21 @@ export class ReflectionProbe {
      * @param size defines the texture resolution (for each face)
      * @param scene defines the hosting scene
      * @param generateMipMaps defines if mip maps should be generated automatically (true by default)
-     * @param useFloat defines if HDR data (flaot data) should be used to store colors (false by default)
+     * @param useFloat defines if HDR data (float data) should be used to store colors (false by default)
+     * @param linearSpace defines if the probe should be generated in linear space or not (false by default)
      */
     constructor(
         /** defines the name of the probe */
         public name: string,
-        size: number, scene: Scene, generateMipMaps = true, useFloat = false) {
+        size: number, scene: Scene, generateMipMaps = true, useFloat = false, linearSpace = false) {
         this._scene = scene;
+
+        if (scene.getEngine().supportsUniformBuffers) {
+            this._sceneUBOs = [];
+            for (let i = 0; i < 6; ++i) {
+                this._sceneUBOs.push(scene.createSceneUniformBuffer(`Scene for Reflection Probe (name "${name}") face #${i}`));
+            }
+        }
 
         // Create the scene field if not exist.
         if (!this._scene.reflectionProbes) {
@@ -102,8 +116,15 @@ export class ReflectionProbe {
             }
         }
         this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);
+        this._renderTargetTexture.gammaSpace = !linearSpace;
+
+        const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 
         this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
+            if (this._sceneUBOs) {
+                scene.setSceneUniformBuffer(this._sceneUBOs[faceIndex]);
+                scene.getSceneUniformBuffer().unbindEffect();
+            }
             switch (faceIndex) {
                 case 0:
                     this._add.copyFromFloats(1, 0, 0);
@@ -118,10 +139,10 @@ export class ReflectionProbe {
                     this._add.copyFromFloats(0, this._invertYAxis ? -1 : 1, 0);
                     break;
                 case 4:
-                    this._add.copyFromFloats(0, 0, 1);
+                    this._add.copyFromFloats(0, 0, scene.useRightHandedSystem ? -1 : 1);
                     break;
                 case 5:
-                    this._add.copyFromFloats(0, 0, -1);
+                    this._add.copyFromFloats(0, 0, scene.useRightHandedSystem ? 1 : -1);
                     break;
 
             }
@@ -132,19 +153,40 @@ export class ReflectionProbe {
 
             this.position.addToRef(this._add, this._target);
 
-            Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
+            const lookAtFunction = scene.useRightHandedSystem ? Matrix.LookAtRHToRef : Matrix.LookAtLHToRef;
+            const perspectiveFunction = scene.useRightHandedSystem ? Matrix.PerspectiveFovRH : Matrix.PerspectiveFovLH;
+
+            lookAtFunction(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
             if (scene.activeCamera) {
-                this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                this._projectionMatrix = perspectiveFunction(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
                 scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+                if (scene.activeCamera.isRigCamera && !this._renderTargetTexture.activeCamera) {
+                    this._renderTargetTexture.activeCamera = scene.activeCamera.rigParent || null;
+                }
             }
-
             scene._forcedViewPosition = this.position;
         });
 
+        let currentApplyByPostProcess: boolean;
+
+        this._renderTargetTexture.onBeforeBindObservable.add(() => {
+            this._currentSceneUBO = scene.getSceneUniformBuffer();
+            scene.getEngine()._debugPushGroup?.(`reflection probe generation for ${name}`, 1);
+            currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
+            if (linearSpace) {
+                scene.imageProcessingConfiguration.applyByPostProcess = true;
+            }
+        });
+
         this._renderTargetTexture.onAfterUnbindObservable.add(() => {
+            scene.imageProcessingConfiguration.applyByPostProcess = currentApplyByPostProcess;
             scene._forcedViewPosition = null;
+            if (this._sceneUBOs) {
+                scene.setSceneUniformBuffer(this._currentSceneUBO);
+            }
             scene.updateTransformMatrix(true);
+            scene.getEngine()._debugPopGroup?.(1);
         });
     }
 
@@ -212,9 +254,24 @@ export class ReflectionProbe {
             this._scene.reflectionProbes.splice(index, 1);
         }
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.reflectionProbes.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.reflectionProbes.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         if (this._renderTargetTexture) {
             this._renderTargetTexture.dispose();
             (<any>this._renderTargetTexture) = null;
+        }
+
+        if (this._sceneUBOs) {
+            for (const ubo of this._sceneUBOs) {
+                ubo.dispose();
+            }
+            this._sceneUBOs = [];
         }
     }
 
@@ -238,7 +295,7 @@ export class ReflectionProbe {
     }
 
     /**
-     * Get the class name of the relfection probe.
+     * Get the class name of the refection probe.
      * @returns "ReflectionProbe"
      */
     public getClassName(): string {
@@ -246,7 +303,7 @@ export class ReflectionProbe {
     }
 
     /**
-     * Serialize the reflection probe to a JSON representation we can easily use in the resepective Parse function.
+     * Serialize the reflection probe to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
@@ -279,7 +336,7 @@ export class ReflectionProbe {
         reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
 
         if (parsedReflectionProbe._attachedMesh) {
-            reflectionProbe.attachToMesh(scene.getMeshByID(parsedReflectionProbe._attachedMesh));
+            reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
         }
 
         return reflectionProbe;

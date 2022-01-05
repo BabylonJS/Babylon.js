@@ -1,7 +1,7 @@
-import { IWebXRFeature } from '../webXRFeaturesManager';
-import { Observer, Observable, EventState } from '../../Misc/observable';
-import { Nullable } from '../../types';
-import { WebXRSessionManager } from '../webXRSessionManager';
+import { IWebXRFeature } from "../webXRFeaturesManager";
+import { Observer, Observable, EventState } from "../../Misc/observable";
+import { Nullable } from "../../types";
+import { WebXRSessionManager } from "../webXRSessionManager";
 
 /**
  * This is the base class for all WebXR features.
@@ -16,16 +16,25 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     }[] = [];
 
     /**
+     * Is this feature disposed?
+     */
+    public isDisposed: boolean = false;
+
+    /**
      * Should auto-attach be disabled?
      */
     public disableAutoAttach: boolean = false;
 
     /**
+     * The name of the native xr feature name (like anchor, hit-test, or hand-tracking)
+     */
+    public xrNativeFeatureName: string = "";
+
+    /**
      * Construct a new (abstract) WebXR feature
      * @param _xrSessionManager the xr session manager for this feature
      */
-    constructor(protected _xrSessionManager: WebXRSessionManager) {
-    }
+    constructor(protected _xrSessionManager: WebXRSessionManager) { }
 
     /**
      * Is this feature attached
@@ -41,6 +50,10 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * @returns true if successful, false is failed or already attached
      */
     public attach(force?: boolean): boolean {
+        // do not attach a disposed feature
+        if (this.isDisposed) {
+            return false;
+        }
         if (!force) {
             if (this.attached) {
                 return false;
@@ -79,6 +92,17 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      */
     public dispose(): void {
         this.detach();
+        this.isDisposed = true;
+    }
+
+    /**
+     * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
+     * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+     *
+     * @returns whether or not the feature is compatible in this environment
+     */
+    public isCompatible(): boolean {
+        return true;
     }
 
     /**
@@ -89,7 +113,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void) {
         this._removeOnDetach.push({
             observable,
-            observer: observable.add(callback)
+            observer: observable.add(callback),
         });
     }
 

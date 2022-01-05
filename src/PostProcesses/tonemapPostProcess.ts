@@ -23,6 +23,13 @@ export enum TonemappingOperator {
  * Defines a post process to apply tone mapping
  */
 export class TonemapPostProcess extends PostProcess {
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "TonemapPostProcess" string
+     */
+    public getClassName(): string {
+        return "TonemapPostProcess";
+    }
 
     /**
      * Creates a new TonemapPostProcess
@@ -33,11 +40,12 @@ export class TonemapPostProcess extends PostProcess {
      * @param samplingMode defines the required sampling mode (BABYLON.Texture.BILINEAR_SAMPLINGMODE by default)
      * @param engine defines the hosting engine (can be ignore if camera is set)
      * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(name: string, private _operator: TonemappingOperator,
-        /** Defines the required exposure adjustement */
-        public exposureAdjustment: number, camera: Camera, samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT) {
-        super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, true, null, textureFormat);
+        /** Defines the required exposure adjustment */
+        public exposureAdjustment: number, camera: Camera, samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT, reusable?: boolean) {
+        super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, reusable, null, textureFormat);
 
         var defines = "#define ";
 

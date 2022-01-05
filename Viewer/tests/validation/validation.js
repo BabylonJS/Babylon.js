@@ -21,7 +21,7 @@ Math.random = function () {
     seed %= maximum;
 
     return seed / maximum;
-}
+};
 
 function compare(renderData, referenceCanvas) {
     var width = referenceCanvas.width;
@@ -34,9 +34,11 @@ function compare(renderData, referenceCanvas) {
 
     var differencesCount = 0;
     for (var index = 0; index < size; index += 4) {
-        if (Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
+        if (
+            Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
             Math.abs(renderData[index + 1] - referenceData.data[index + 1]) < threshold &&
-            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold) {
+            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold
+        ) {
             continue;
         }
 
@@ -51,36 +53,47 @@ function compare(renderData, referenceCanvas) {
     return (differencesCount * 100) / (width * height) > errorRatio;
 }
 
-function getRenderData(canvas, engine) {
+async function getRenderData(canvas, engine) {
     var width = canvas.width;
     var height = canvas.height;
 
-    var renderData = engine.readPixels(0, 0, width, height);
-    var numberOfChannelsByLine = width * 4;
-    var halfHeight = height / 2;
+    return new Promise((resolve) => {
+        engine.onEndFrameObservable.addOnce(async () => {
+            var renderData = await engine.readPixels(0, 0, width, height);
+            var numberOfChannelsByLine = width * 4;
+            var halfHeight = height / 2;
 
-    for (var i = 0; i < halfHeight; i++) {
-        for (var j = 0; j < numberOfChannelsByLine; j++) {
-            var currentCell = j + i * numberOfChannelsByLine;
-            var targetLine = height - i - 1;
-            var targetCell = j + targetLine * numberOfChannelsByLine;
+            for (var i = 0; i < halfHeight; i++) {
+                for (var j = 0; j < numberOfChannelsByLine; j++) {
+                    var currentCell = j + i * numberOfChannelsByLine;
+                    var targetLine = height - i - 1;
+                    var targetCell = j + targetLine * numberOfChannelsByLine;
 
-            var temp = renderData[currentCell];
-            renderData[currentCell] = renderData[targetCell];
-            renderData[targetCell] = temp;
-        }
-    }
+                    var temp = renderData[currentCell];
+                    renderData[currentCell] = renderData[targetCell];
+                    renderData[targetCell] = temp;
+                }
+            }
+            if (engine.isWebGPU) {
+                for (var i = 0; i < width * height * 4; i += 4) {
+                    var temp = renderData[i + 0];
+                    renderData[i + 0] = renderData[i + 2];
+                    renderData[i + 2] = temp;
+                }
+            }
 
-    return renderData;
+            resolve(renderData);
+        });
+    });
 }
 
 function saveRenderImage(data, canvas) {
     var width = canvas.width;
     var height = canvas.height;
-    var screenshotCanvas = document.createElement('canvas');
+    var screenshotCanvas = document.createElement("canvas");
     screenshotCanvas.width = width;
     screenshotCanvas.height = height;
-    var context = screenshotCanvas.getContext('2d');
+    var context = screenshotCanvas.getContext("2d");
 
     var imageData = context.createImageData(width, height);
     var castData = imageData.data;
@@ -91,7 +104,6 @@ function saveRenderImage(data, canvas) {
 }
 
 function downloadDataUrlFromJavascript(filename, dataUrl) {
-
     // Construct the 'a' element
     var link = document.createElement("a");
     link.download = filename;
@@ -106,9 +118,9 @@ function downloadDataUrlFromJavascript(filename, dataUrl) {
     document.body.removeChild(link);
 }
 
-function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
+async function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
     seed = 100000;
-    var renderData = getRenderData(currentViewer.canvas, currentViewer.engine);
+    var renderData = await getRenderData(currentViewer.canvas, currentViewer.engine);
     var testRes = true;
 
     // gl check
@@ -118,20 +130,19 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
-        console.log('%c failed (gl error: ' + err + ')', 'color: red');
+        console.log("%c failed (gl error: " + err + ")", "color: red");
     } else {
-
         // Visual check
         if (!test.onlyVisual) {
             if (compare(renderData, resultCanvas)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;
-                console.log('%c failed', 'color: red');
+                console.log("%c failed", "color: red");
             } else {
                 result.innerHTML = "✔";
                 testRes = true;
-                console.log('%c validated', 'color: green');
+                console.log("%c validated", "color: green");
             }
         }
     }
@@ -150,7 +161,6 @@ function runTest(index, done) {
     if (index >= config.tests.length) {
         done(false);
     }
-
 
     var test = Object.assign({}, config.tests[index]);
 
@@ -190,7 +200,7 @@ function runTest(index, done) {
         resultCanvas.width = img.width;
         resultCanvas.height = img.height;
         resultContext.drawImage(img, 0, 0);
-    }
+    };
 
     img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
 
@@ -220,7 +230,7 @@ function runTest(index, done) {
     if (!test.enableEnvironment) {
         configuration.environmentMap = false;
     } else {
-        console.log(configuration.environmentMap)
+        console.log(configuration.environmentMap);
     }
 
     //model config
@@ -235,18 +245,21 @@ function runTest(index, done) {
     setTimeout(() => {
         currentViewer = null;
         currentScene = null;
-        viewerElement.innerHTML = '';
+        viewerElement.innerHTML = "";
         currentViewer = new BabylonViewer.DefaultViewer(viewerElement, configuration);
 
         currentViewer.onInitDoneObservable.add(() => {
-
             var currentFrame = 0;
             var waitForFrame = test.waitForFrame || 0;
 
             currentViewer.onModelLoadedObservable.add((model) => {
                 console.log("model loaded");
                 currentViewer.onFrameRenderedObservable.add(() => {
-                    console.log("frame rendered", currentFrame, model.meshes.every(m => m.isReady()));
+                    console.log(
+                        "frame rendered",
+                        currentFrame,
+                        model.meshes.every((m) => m.isReady())
+                    );
                     if (test.animationTest && !currentFrame) {
                         model.playAnimation(model.getAnimationNames()[0]);
                     }
@@ -272,7 +285,7 @@ function runTest(index, done) {
 function prepareMeshForViewer(viewer, configuration, test) {
     let meshModel = new BabylonViewer.ViewerModel(viewer, configuration.model || {});
 
-    let sphereMesh = BABYLON.Mesh.CreateSphere('sphere-' + test.title, 20, 1.0, viewer.sceneManager.scene);
+    let sphereMesh = BABYLON.MeshBuilder.CreateSphere("sphere-" + test.title, { segments: 20, diameter: 1.0 }, viewer.sceneManager.scene);
     if (test.createMaterial) {
         let material = new BABYLON.PBRMaterial("sphereMat", viewer.sceneManager.scene);
         sphereMesh.material = material;
@@ -282,18 +295,47 @@ function prepareMeshForViewer(viewer, configuration, test) {
     console.log("sphere created");
 }
 
+function GetAbsoluteUrl(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    return a.href;
+}
+
 function init() {
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
     BABYLON.DracoCompression.Configuration.decoder = {
-        wasmUrl: "../../dist/preview%20release/draco_wasm_wrapper_gltf.js",
-        wasmBinaryUrl: "../../dist/preview%20release/draco_decoder_gltf.wasm",
-        fallbackUrl: "../../dist/preview%20release/draco_decoder_gltf.js"
+        wasmUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_wasm_wrapper_gltf.js"),
+        wasmBinaryUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.wasm"),
+        fallbackUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.js"),
+    };
+    BABYLON.MeshoptCompression.Configuration.decoder = {
+        url: GetAbsoluteUrl("../../dist/preview%20release/meshopt_decoder.js"),
+    };
+    BABYLON.GLTFValidation.Configuration = {
+        url: GetAbsoluteUrl("../../dist/preview%20release/gltf_validator.js"),
+    };
+    BABYLON.KhronosTextureContainer2.URLConfig = {
+        jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
+        wasmUASTCToASTC: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+        wasmUASTCToBC7: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+        wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+        wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+        jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
-    BABYLON.GLTFValidation.Configuration = {
-        url: "../../dist/preview%20release/gltf_validator.js"
+    BABYLON.KhronosTextureContainer2.URLConfig = {
+        jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
+        wasmUASTCToASTC: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+        wasmUASTCToBC7: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+        wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+        wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+        jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
     viewerElement = document.createElement("babylon");
@@ -304,4 +346,3 @@ function init() {
 }
 
 init();
-

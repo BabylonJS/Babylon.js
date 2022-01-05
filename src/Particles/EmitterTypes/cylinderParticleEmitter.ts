@@ -1,14 +1,17 @@
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
 import { DeepCopier } from "../../Misc/deepCopier";
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a cylinder.
  * It emits the particles alongside the cylinder radius. The emission direction might be randomized.
  */
 export class CylinderParticleEmitter implements IParticleEmitterType {
+    private _tempVector = Vector3.Zero();
+
     /**
     * Creates a new instance CylinderParticleEmitter
     * @param radius the radius of the emission cylinder (1 by default)
@@ -41,25 +44,31 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
      * @param isLocal defines if the direction should be set in local space
+     * @param inverseWorldMatrix defines the inverted world matrix to use if isLocal is false
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean, inverseWorldMatrix: Matrix): void {
+        particle.position.subtractToRef(worldMatrix.getTranslation(), this._tempVector);
+
+        this._tempVector.normalize();
+
+        Vector3.TransformNormalToRef(this._tempVector, inverseWorldMatrix, this._tempVector);
+
         var randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
 
-        var angle = Math.atan2(direction.x, direction.z);
+        var angle = Math.atan2(this._tempVector.x, this._tempVector.z);
         angle += Scalar.RandomRange(-Math.PI / 2, Math.PI / 2) * this.directionRandomizer;
 
-        direction.y = randY; // set direction y to rand y to mirror normal of cylinder surface
-        direction.x = Math.sin(angle);
-        direction.z = Math.cos(angle);
-        direction.normalize();
+        this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
+        this._tempVector.x = Math.sin(angle);
+        this._tempVector.z = Math.cos(angle);
+        this._tempVector.normalize();
 
         if (isLocal) {
-            directionToUpdate.copyFrom(direction);
+            directionToUpdate.copyFrom(this._tempVector);
             return;
         }
 
-        Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
+        Vector3.TransformNormalFromFloatsToRef(this._tempVector.x, this._tempVector.y, this._tempVector.z, worldMatrix, directionToUpdate);
     }
 
     /**
@@ -101,18 +110,29 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    public applyToShader(effect: Effect): void {
-        effect.setFloat("radius", this.radius);
-        effect.setFloat("height", this.height);
-        effect.setFloat("radiusRange", this.radiusRange);
-        effect.setFloat("directionRandomizer", this.directionRandomizer);
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
+        uboOrEffect.setFloat("radius", this.radius);
+        uboOrEffect.setFloat("height", this.height);
+        uboOrEffect.setFloat("radiusRange", this.radiusRange);
+        uboOrEffect.setFloat("directionRandomizer", this.directionRandomizer);
+    }
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    public buildUniformLayout(ubo: UniformBuffer): void {
+        ubo.addUniform("radius", 1);
+        ubo.addUniform("height", 1);
+        ubo.addUniform("radiusRange", 1);
+        ubo.addUniform("directionRandomizer", 1);
     }
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         return "#define CYLINDEREMITTER";
@@ -209,19 +229,31 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    public applyToShader(effect: Effect): void {
-        effect.setFloat("radius", this.radius);
-        effect.setFloat("height", this.height);
-        effect.setFloat("radiusRange", this.radiusRange);
-        effect.setVector3("direction1", this.direction1);
-        effect.setVector3("direction2", this.direction2);
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
+        uboOrEffect.setFloat("radius", this.radius);
+        uboOrEffect.setFloat("height", this.height);
+        uboOrEffect.setFloat("radiusRange", this.radiusRange);
+        uboOrEffect.setVector3("direction1", this.direction1);
+        uboOrEffect.setVector3("direction2", this.direction2);
+    }
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    public buildUniformLayout(ubo: UniformBuffer): void {
+        ubo.addUniform("radius", 1);
+        ubo.addUniform("height", 1);
+        ubo.addUniform("radiusRange", 1);
+        ubo.addUniform("direction1", 3);
+        ubo.addUniform("direction2", 3);
     }
 
     /**
      * Returns a string to use to update the GPU particles update shader
-     * @returns a string containng the defines string
+     * @returns a string containing the defines string
      */
     public getEffectDefines(): string {
         return "#define CYLINDEREMITTER\n#define DIRECTEDCYLINDEREMITTER";

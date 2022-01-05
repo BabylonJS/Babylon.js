@@ -5,12 +5,12 @@ import { SubMesh } from "../Meshes/subMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
  * A multi-material is used to apply different materials to different parts of the same object without the need of
  * separate meshes. This can be use to improve performances.
- * @see http://doc.babylonjs.com/how_to/multi_materials
+ * @see https://doc.babylonjs.com/how_to/multi_materials
  */
 export class MultiMaterial extends Material {
     private _subMaterials: Nullable<Material>[];
@@ -40,7 +40,7 @@ export class MultiMaterial extends Material {
      * Instantiates a new Multi Material
      * A multi-material is used to apply different materials to different parts of the same object without the need of
      * separate meshes. This can be use to improve performances.
-     * @see http://doc.babylonjs.com/how_to/multi_materials
+     * @see https://doc.babylonjs.com/how_to/multi_materials
      * @param name Define the name in the scene
      * @param scene Define the scene the material belongs to
      */
@@ -102,6 +102,25 @@ export class MultiMaterial extends Material {
     }
 
     /**
+     * Specifies if any sub-materials of this multi-material use a given texture.
+     * @param texture Defines the texture to check against this multi-material's sub-materials.
+     * @returns A boolean specifying if any sub-material of this multi-material uses the texture.
+     */
+    public hasTexture(texture: BaseTexture): boolean {
+        if (super.hasTexture(texture)) {
+            return true;
+        }
+
+        for (let i = 0; i < this.subMaterials.length; i++) {
+            if (this.subMaterials[i]?.hasTexture(texture)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Gets the current class name of the material e.g. "MultiMaterial"
      * Mainly use in serialization.
      * @returns the class name
@@ -113,7 +132,7 @@ export class MultiMaterial extends Material {
     /**
      * Checks if the material is ready to render the requested sub mesh
      * @param mesh Define the mesh the submesh belongs to
-     * @param subMesh Define the sub mesh to look readyness for
+     * @param subMesh Define the sub mesh to look readiness for
      * @param useInstances Define whether or not the material is used with instances
      * @returns true if ready, otherwise false
      */
@@ -237,7 +256,7 @@ export class MultiMaterial extends Material {
             if (subMatId) {
                 // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
                 // is why this lookup should use getLastMaterialByID instead of getMaterialByID
-                multiMaterial.subMaterials.push(scene.getLastMaterialByID(subMatId));
+                multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId));
             } else {
                 multiMaterial.subMaterials.push(null);
             }
@@ -247,4 +266,4 @@ export class MultiMaterial extends Material {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MultiMaterial"] = MultiMaterial;
+RegisterClass("BABYLON.MultiMaterial", MultiMaterial);

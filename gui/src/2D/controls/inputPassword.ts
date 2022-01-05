@@ -1,16 +1,19 @@
 import { InputText } from "./inputText";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { TextWrapper } from './textWrapper';
 
 /**
  * Class used to create a password control
  */
 export class InputPassword extends InputText {
-    protected _beforeRenderText(text: string): string {
+    protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper {
+        const pwdTextWrapper = new TextWrapper();
         let txt = "";
-        for (let i = 0; i < text.length; i++) {
+        for (let i = 0; i < textWrapper.length; i++) {
             txt += "\u2022";
         }
-        return txt;
+        pwdTextWrapper.text = txt;
+        return pwdTextWrapper;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.InputPassword"] = InputPassword;
+RegisterClass("BABYLON.GUI.InputPassword", InputPassword);

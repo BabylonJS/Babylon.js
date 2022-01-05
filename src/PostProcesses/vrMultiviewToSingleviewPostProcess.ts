@@ -12,6 +12,14 @@ import "../Engines/Extensions/engine.multiview";
  */
 export class VRMultiviewToSingleviewPostProcess extends PostProcess {
     /**
+     * Gets a string identifying the name of the class
+     * @returns "VRMultiviewToSingleviewPostProcess" string
+     */
+    public getClassName(): string {
+        return "VRMultiviewToSingleviewPostProcess";
+    }
+
+    /**
      * Initializes a VRMultiviewToSingleview
      * @param name name of the post process
      * @param camera camera to be applied to
@@ -25,7 +33,7 @@ export class VRMultiviewToSingleviewPostProcess extends PostProcess {
         this.onApplyObservable.add((effect: Effect) => {
             if (camera._scene.activeCamera && camera._scene.activeCamera.isLeftCamera) {
                 effect.setInt("imageIndex", 0);
-            }else {
+            } else {
                 effect.setInt("imageIndex", 1);
             }
             effect.setTexture("multiviewSampler", camera._multiviewTexture);

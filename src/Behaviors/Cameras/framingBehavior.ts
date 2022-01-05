@@ -2,6 +2,7 @@ import { Behavior } from "../../Behaviors/behavior";
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
+import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
@@ -13,7 +14,7 @@ import { Animation } from "../../Animations/animation";
 
 /**
  * The framing behavior (FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
- * @see http://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+ * @see https://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
  */
 export class FramingBehavior implements Behavior<ArcRotateCamera> {
     /**
@@ -22,6 +23,11 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     public get name(): string {
         return "Framing";
     }
+
+    /**
+     * An event triggered when the animation to zoom on target mesh has ended
+     */
+    public onTargetFramingAnimationEndObservable = new Observable<void>();
 
     private _mode = FramingBehavior.FitFrustumSidesMode;
     private _radiusScale = 1.0;
@@ -176,7 +182,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * Initializes the behavior.
      */
     public init(): void {
-        // Do notihng
+        // Do nothing
     }
 
     /**
@@ -202,7 +208,9 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
             if (mesh) {
-                this.zoomOnMesh(mesh);
+                this.zoomOnMesh(mesh, undefined, () => {
+                    this.onTargetFramingAnimationEndObservable.notifyObservers();
+                });
             }
         });
 

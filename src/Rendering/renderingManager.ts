@@ -1,14 +1,14 @@
 import { Nullable } from "../types";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SubMesh } from "../Meshes/subMesh";
 import { SmartArray } from "../Misc/smartArray";
 import { ISpriteManager } from "../Sprites/spriteManager";
 import { IParticleSystem } from "../Particles/IParticleSystem";
-import { Material } from "../Materials/material";
 import { RenderingGroup } from "./renderingGroup";
 
 declare type Scene = import("../scene").Scene;
 declare type Camera = import("../Cameras/camera").Camera;
+declare type Material = import("../Materials/material").Material;
+declare type SubMesh = import("../Meshes/subMesh").SubMesh;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * Interface describing the different options available in the rendering manager
@@ -107,7 +107,7 @@ export class RenderingManager {
     }
 
     /**
-     * Renders the entire managed groups. This is used by the scene or the different rennder targets.
+     * Renders the entire managed groups. This is used by the scene or the different render targets.
      * @hidden
      */
     public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>,
@@ -252,8 +252,8 @@ export class RenderingManager {
     }
 
     /**
-     * Overrides the default sort function applied in the renderging group to prepare the meshes.
-     * This allowed control for front to back rendering or reversly depending of the special needs.
+     * Overrides the default sort function applied in the rendering group to prepare the meshes.
+     * This allowed control for front to back rendering or reversely depending of the special needs.
      *
      * @param renderingGroupId The rendering group id corresponding to its index
      * @param opaqueSortCompareFn The opaque queue comparison function use to sort.

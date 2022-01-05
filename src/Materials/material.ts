@@ -4,7 +4,6 @@ import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
-import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
@@ -20,7 +19,17 @@ import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
+import { MaterialHelper } from './materialHelper';
+import { IMaterialContext } from "../Engines/IMaterialContext";
+import { DrawWrapper } from "./drawWrapper";
+import { MaterialStencilState } from "./materialStencilState";
+import { Scene } from "../scene";
+import { AbstractScene } from "../abstractScene";
+import { MaterialPluginEvent,
+    MaterialPluginDisposed, MaterialPluginIsReadyForSubMesh, MaterialPluginGetDefineNames, MaterialPluginBindForSubMesh, MaterialPluginGetActiveTextures, MaterialPluginHasTexture, MaterialPluginGetAnimatables, MaterialPluginPrepareDefines, MaterialPluginPrepareEffect, MaterialPluginPrepareUniformBuffer, MaterialPluginCreated, MaterialPluginFillRenderTargetTextures, MaterialPluginHasRenderTargetTextures, MaterialPluginHardBindForSubMesh } from "./materialPluginEvent";
+import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
+declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
@@ -49,7 +58,7 @@ export interface ICustomShaderNameResolveOptions {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    processFinalCode?: Nullable<ShaderCustomProcessingFunction>;
 }
 
 /**
@@ -129,6 +138,11 @@ export class Material implements IAnimatable {
     public static readonly MiscDirtyFlag = Constants.MATERIAL_MiscDirtyFlag;
 
     /**
+     * The dirty prepass flag value
+     */
+    public static readonly PrePassDirtyFlag = Constants.MATERIAL_PrePassDirtyFlag;
+
+    /**
      * The all dirty flag value
      */
     public static readonly AllDirtyFlag = Constants.MATERIAL_AllDirtyFlag;
@@ -155,6 +169,23 @@ export class Material implements IAnimatable {
     public static readonly MATERIAL_ALPHATESTANDBLEND = 3;
 
     /**
+     * The Whiteout method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_WHITEOUT = 0;
+
+    /**
+     * The Reoriented Normal Mapping method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
+
+    /**
+     * Event observable which raises global events common to all materials (like MaterialPluginEvent.Created)
+     */
+    public static OnEventObservable = new Observable<Material>();
+
+    /**
      * Custom callback helping to override the default shader used in the material.
      */
     public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
@@ -163,6 +194,13 @@ export class Material implements IAnimatable {
      * Custom shadow depth material to use for shadow rendering instead of the in-built one
      */
     public shadowDepthWrapper: Nullable<ShadowDepthWrapper> = null;
+
+    /**
+     * Gets or sets a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
+     * This means that the material can keep using a previous shader while a new one is being compiled.
+     * This is mostly used when shader parallel compilation is supported (true by default)
+     */
+    public allowShaderHotSwapping = true;
 
     /**
      * The ID of the material
@@ -185,6 +223,7 @@ export class Material implements IAnimatable {
     /**
      * Gets or sets user defined metadata
      */
+    @serialize()
     public metadata: any = null;
 
     /**
@@ -209,6 +248,15 @@ export class Material implements IAnimatable {
      */
     @serialize()
     public state = "";
+
+    /**
+     * If the material can be rendered to several textures with MRT extension
+     */
+    public get canRenderToMRT(): boolean {
+        // By default, shaders are not compatible with MRTs
+        // Base classes should override that if their shader supports MRT
+        return false;
+    }
 
     /**
      * The alpha value of the material
@@ -247,7 +295,7 @@ export class Material implements IAnimatable {
     protected _backFaceCulling = true;
 
     /**
-     * Sets the back-face culling state
+     * Sets the culling state (true to enable culling, false to disable)
      */
     public set backFaceCulling(value: boolean) {
         if (this._backFaceCulling === value) {
@@ -258,15 +306,39 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the back-face culling state
+     * Gets the culling state
      */
     public get backFaceCulling(): boolean {
         return this._backFaceCulling;
     }
 
     /**
-     * Stores the value for side orientation
+     * Specifies if back or front faces should be culled (when culling is enabled)
      */
+    @serialize("cullBackFaces")
+    protected _cullBackFaces = true;
+
+    /**
+     * Sets the type of faces that should be culled (true for back faces, false for front faces)
+     */
+    public set cullBackFaces(value: boolean) {
+        if (this._cullBackFaces === value) {
+            return;
+        }
+        this._cullBackFaces = value;
+        this.markAsDirty(Material.TextureDirtyFlag);
+    }
+
+    /**
+     * Gets the type of faces that should be culled
+     */
+    public get cullBackFaces(): boolean {
+        return this._cullBackFaces;
+    }
+
+    /**
+    * Stores the value for side orientation
+    */
     @serialize()
     public sideOrientation: number;
 
@@ -289,7 +361,9 @@ export class Material implements IAnimatable {
      * Gets a boolean indicating that current material needs to register RTT
      */
     public get hasRenderTargetTextures(): boolean {
-        return false;
+        this._eventInfo.hasRenderTargetTextures = false;
+        this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
+        return this._eventInfo.hasRenderTargetTextures;
     }
 
     /**
@@ -367,14 +441,14 @@ export class Material implements IAnimatable {
         return this._onUnBindObservable;
     }
 
-    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
+    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }>>;
 
     /**
     * An event triggered when the effect is (re)created
     */
-    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}> {
+    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }> {
         if (!this._onEffectCreatedObservable) {
-            this._onEffectCreatedObservable = new Observable<{effect: Effect, subMesh: Nullable<SubMesh>}>();
+            this._onEffectCreatedObservable = new Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }>();
         }
 
         return this._onEffectCreatedObservable;
@@ -446,6 +520,13 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return false;
+    }
+
+    /**
      * Specifies if depth writing should be disabled
      */
     @serialize()
@@ -476,7 +557,7 @@ export class Material implements IAnimatable {
     public separateCullingPass = false;
 
     /**
-     * Stores the state specifing if fog should be enabled
+     * Stores the state specifying if fog should be enabled
      */
     @serialize("fogEnabled")
     private _fogEnabled = true;
@@ -506,10 +587,16 @@ export class Material implements IAnimatable {
     public pointSize = 1.0;
 
     /**
-     * Stores the z offset value
+     * Stores the z offset Factor value
      */
     @serialize()
     public zOffset = 0;
+
+    /**
+     * Stores the z offset Units value
+     */
+     @serialize()
+     public zOffsetUnits = 0;
 
     public get wireframe(): boolean {
         switch (this._fillMode) {
@@ -572,10 +659,25 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Gives access to the stencil properties of the material
+     */
+    public readonly stencil = new MaterialStencilState();
+
+    /**
      * @hidden
      * Stores the effects for the material
      */
-    public _effect: Nullable<Effect> = null;
+    protected _materialContext: IMaterialContext | undefined;
+
+    protected _drawWrapper: DrawWrapper;
+    /** @hidden */
+    public _getDrawWrapper(): DrawWrapper {
+        return this._drawWrapper;
+    }
+    /** @hidden */
+    public _setDrawWrapper(drawWrapper: DrawWrapper) {
+        this._drawWrapper = drawWrapper;
+    }
 
     /**
      * Specifies if uniform buffers should be used
@@ -586,6 +688,7 @@ export class Material implements IAnimatable {
      * Stores a reference to the scene
      */
     private _scene: Scene;
+    protected _needToBindSceneUbo: boolean;
 
     /**
      * Stores the fill mode state
@@ -609,14 +712,56 @@ export class Material implements IAnimatable {
 
     /**
      * Stores the uniform buffer
+     * @hidden
      */
-    protected _uniformBuffer: UniformBuffer;
+    public _uniformBuffer: UniformBuffer;
 
     /** @hidden */
     public _indexInSceneMaterialArray = -1;
 
     /** @hidden */
     public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
+    /** @hidden */
+    public _dirtyCallbacks: { [code: number]: () => void };
+
+    /** @hidden */
+    public _uniformBufferLayoutBuilt = false;
+
+    protected _eventInfo:
+            MaterialPluginCreated &
+            MaterialPluginDisposed &
+            MaterialPluginHasTexture &
+            MaterialPluginIsReadyForSubMesh &
+            MaterialPluginGetDefineNames &
+            MaterialPluginPrepareEffect &
+            MaterialPluginPrepareDefines &
+            MaterialPluginPrepareUniformBuffer &
+            MaterialPluginBindForSubMesh &
+            MaterialPluginGetAnimatables &
+            MaterialPluginGetActiveTextures &
+            MaterialPluginFillRenderTargetTextures &
+            MaterialPluginHasRenderTargetTextures &
+            MaterialPluginHardBindForSubMesh
+    = { } as any; // will be initialized before each event notification
+
+    /** @hidden */
+    public _callbackPluginEventGeneric: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void(0);
+    /** @hidden */
+    public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void(0);
 
     /**
      * Creates a material instance
@@ -626,10 +771,22 @@ export class Material implements IAnimatable {
      */
     constructor(name: string, scene: Scene, doNotAdd?: boolean) {
         this.name = name;
-        this.id = name || Tools.RandomId();
-
         this._scene = scene || EngineStore.LastCreatedScene;
+        this._dirtyCallbacks = {};
+
+        this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_LightDirtyFlag] = this._markAllSubMeshesAsLightsDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_FresnelDirtyFlag] = this._markAllSubMeshesAsFresnelDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_AttributesDirtyFlag] = this._markAllSubMeshesAsAttributesDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag] = this._markAllSubMeshesAsMiscDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag] = this._markAllSubMeshesAsPrePassDirty.bind(this);
+        this._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
+
+        this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
+        this._materialContext = this._scene.getEngine().createMaterialContext();
+        this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
+        this._drawWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Material.ClockWiseSideOrientation;
@@ -637,7 +794,7 @@ export class Material implements IAnimatable {
             this.sideOrientation = Material.CounterClockWiseSideOrientation;
         }
 
-        this._uniformBuffer = new UniformBuffer(this._scene.getEngine());
+        this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
         if (!doNotAdd) {
@@ -647,6 +804,8 @@ export class Material implements IAnimatable {
         if (this._scene.useMaterialMeshMap) {
             this.meshMap = {};
         }
+
+        Material.OnEventObservable.notifyObservers(this, MaterialPluginEvent.Created);
     }
 
     /**
@@ -710,7 +869,16 @@ export class Material implements IAnimatable {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return false;
+        const defines = subMesh.materialDefines;
+        if (!defines) {
+            return false;
+        }
+
+        this._eventInfo.isReadyForSubMesh = true;
+        this._eventInfo.defines = defines;
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
+
+        return this._eventInfo.isReadyForSubMesh;
     }
 
     /**
@@ -718,7 +886,7 @@ export class Material implements IAnimatable {
      * @returns the effect associated with the material
      */
     public getEffect(): Nullable<Effect> {
-        return this._effect;
+        return this._drawWrapper.effect;
     }
 
     /**
@@ -775,7 +943,7 @@ export class Material implements IAnimatable {
      */
     protected get _disableAlphaBlending(): boolean {
         return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
-                this._transparencyMode === Material.MATERIAL_ALPHATEST);
+            this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
     /**
@@ -855,14 +1023,14 @@ export class Material implements IAnimatable {
     }
 
     /** @hidden */
-    public _preBind(effect?: Effect, overrideOrientation: Nullable<number> = null): boolean {
+    public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         var engine = this._scene.getEngine();
 
         var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
         var reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._effect);
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse);
+        engine.enableEffect(effect ? effect : this._getDrawWrapper());
+        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil, this.zOffsetUnits);
 
         return reverse;
     }
@@ -876,12 +1044,33 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Initializes the uniform buffer layout for the shader.
+     */
+    public buildUniformLayout(): void {
+        const ubo = this._uniformBuffer;
+
+        this._eventInfo.ubo = ubo;
+        this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareUniformBuffer, this._eventInfo);
+
+        ubo.create();
+
+        this._uniformBufferLayoutBuilt = true;
+    }
+
+    /**
      * Binds the submesh to the material
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        const effect = subMesh.effect;
+        if (!effect) {
+            return;
+        }
+
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventBindForSubMesh(this._eventInfo);
     }
 
     /**
@@ -892,15 +1081,6 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Binds the scene's uniform buffer to the effect.
-     * @param effect defines the effect to bind to the scene uniform buffer
-     * @param sceneUbo defines the uniform buffer storing scene data
-     */
-    public bindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
-        sceneUbo.bindToEffect(effect, "Scene");
-    }
-
-    /**
      * Binds the view matrix to the effect
      * @param effect defines the effect to bind the view matrix to
      */
@@ -908,19 +1088,33 @@ export class Material implements IAnimatable {
         if (!this._useUBO) {
             effect.setMatrix("view", this.getScene().getViewMatrix());
         } else {
-            this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            this._needToBindSceneUbo = true;
         }
     }
 
     /**
-     * Binds the view projection matrix to the effect
-     * @param effect defines the effect to bind the view projection matrix to
+     * Binds the view projection and projection matrices to the effect
+     * @param effect defines the effect to bind the view projection and projection matrices to
      */
     public bindViewProjection(effect: Effect): void {
         if (!this._useUBO) {
             effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+            effect.setMatrix("projection", this.getScene().getProjectionMatrix());
         } else {
-            this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+            this._needToBindSceneUbo = true;
+        }
+    }
+
+    /**
+     * Binds the view matrix to the effect
+     * @param effect defines the effect to bind the view matrix to
+     * @param variableName name of the shader variable that will hold the eye position
+     */
+    public bindEyePosition(effect: Effect, variableName?: string): void {
+        if (!this._useUBO) {
+            this._scene.bindEyePosition(effect, variableName);
+        } else {
+            this._needToBindSceneUbo = true;
         }
     }
 
@@ -928,8 +1122,15 @@ export class Material implements IAnimatable {
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
      */
-    protected _afterBind(mesh?: Mesh): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         this._scene._cachedMaterial = this;
+        if (this._needToBindSceneUbo) {
+            if (effect) {
+                this._needToBindSceneUbo = false;
+                MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                this._scene.finalizeSceneUbo();
+            }
+        }
         if (mesh) {
             this._scene._cachedVisibility = mesh.visibility;
         } else {
@@ -984,11 +1185,23 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Returns the animatable textures.
+     * @returns - Array of animatable textures.
+     */
+    public getAnimatables(): IAnimatable[] {
+        this._eventInfo.animatables = [];
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetAnimatables, this._eventInfo);
+        return this._eventInfo.animatables;
+    }
+
+    /**
      * Gets the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
-        return [];
+        this._eventInfo.activeTextures = [];
+        this._callbackPluginEventGeneric(MaterialPluginEvent.GetActiveTextures, this._eventInfo);
+        return this._eventInfo.activeTextures;
     }
 
     /**
@@ -997,7 +1210,10 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if the material uses the texture
      */
     public hasTexture(texture: BaseTexture): boolean {
-        return false;
+        this._eventInfo.hasTexture = false;
+        this._eventInfo.texture = texture;
+        this._callbackPluginEventGeneric(MaterialPluginEvent.HasTexture, this._eventInfo);
+        return this._eventInfo.hasTexture;
     }
 
     /**
@@ -1045,6 +1261,8 @@ export class Material implements IAnimatable {
         };
 
         var scene = this.getScene();
+        let currentHotSwapingState = this.allowShaderHotSwapping;
+        this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
         var checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
@@ -1060,34 +1278,21 @@ export class Material implements IAnimatable {
             if (this._storeEffectOnSubMeshes) {
                 var allDone = true, lastError = null;
                 if (mesh.subMeshes) {
-                    for (var subMesh of mesh.subMeshes) {
-                        let effectiveMaterial = subMesh.getMaterial();
-                        if (effectiveMaterial) {
-                            if (effectiveMaterial._storeEffectOnSubMeshes) {
-                                if (!effectiveMaterial.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
-                                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
-                                        lastError = subMesh.effect.getCompilationError();
-                                    } else {
-                                        allDone = false;
-                                        setTimeout(checkReady, 16);
-                                        break;
-                                    }
-                                }
-                            } else {
-                                if (!effectiveMaterial.isReady(mesh, localOptions.useInstances)) {
-                                    if (effectiveMaterial.getEffect() && effectiveMaterial.getEffect()!.getCompilationError() && effectiveMaterial.getEffect()!.allFallbacksProcessed()) {
-                                        lastError = effectiveMaterial.getEffect()!.getCompilationError();
-                                    } else {
-                                        allDone = false;
-                                        setTimeout(checkReady, 16);
-                                        break;
-                                    }
-                                }
-                            }
+                    let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
+                    if (tempSubMesh.materialDefines) {
+                        tempSubMesh.materialDefines._renderId = -1;
+                    }
+                    if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
+                        if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
+                            lastError = tempSubMesh.effect.getCompilationError();
+                        } else {
+                            allDone = false;
+                            setTimeout(checkReady, 16);
                         }
                     }
                 }
                 if (allDone) {
+                    this.allowShaderHotSwapping = currentHotSwapingState;
                     if (lastError) {
                         if (onError) {
                             onError(lastError);
@@ -1099,6 +1304,7 @@ export class Material implements IAnimatable {
                 }
             } else {
                 if (this.isReady()) {
+                    this.allowShaderHotSwapping = currentHotSwapingState;
                     if (onCompiled) {
                         onCompiled(this);
                     }
@@ -1137,6 +1343,7 @@ export class Material implements IAnimatable {
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
     private static readonly _MiscDirtyCallBack = (defines: MaterialDefines) => defines.markAsMiscDirty();
+    private static readonly _PrePassDirtyCallBack = (defines: MaterialDefines) => defines.markAsPrePassDirty();
     private static readonly _LightsDirtyCallBack = (defines: MaterialDefines) => defines.markAsLightDirty();
     private static readonly _AttributeDirtyCallBack = (defines: MaterialDefines) => defines.markAsAttributesDirty();
 
@@ -1188,11 +1395,34 @@ export class Material implements IAnimatable {
             Material._DirtyCallbackArray.push(Material._MiscDirtyCallBack);
         }
 
+        if (flag & Material.PrePassDirtyFlag) {
+            Material._DirtyCallbackArray.push(Material._PrePassDirtyCallBack);
+        }
+
         if (Material._DirtyCallbackArray.length) {
             this._markAllSubMeshesAsDirty(Material._RunDirtyCallBacks);
         }
 
         this.getScene().resetCachedMaterial();
+    }
+
+    /**
+     * Resets the draw wrappers cache for all submeshes that are using this material
+     */
+    public resetDrawCache(): void {
+        const meshes = this.getScene().meshes;
+        for (const mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+            for (const subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
+                    continue;
+                }
+
+                subMesh.resetDrawCache();
+            }
+        }
     }
 
     /**
@@ -1205,27 +1435,44 @@ export class Material implements IAnimatable {
         }
 
         const meshes = this.getScene().meshes;
-        for (var mesh of meshes) {
+        for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
             }
-            for (var subMesh of mesh.subMeshes) {
+            for (const subMesh of mesh.subMeshes) {
                 if (subMesh.getMaterial() !== this) {
                     continue;
                 }
 
-                if (!subMesh._materialDefines) {
-                    continue;
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    if (!drawWrapper || !drawWrapper.defines || !(drawWrapper.defines as MaterialDefines).markAllAsDirty) {
+                        continue;
+                    }
+                    if (this._materialContext === drawWrapper.materialContext) {
+                        func(drawWrapper.defines as MaterialDefines);
+                    }
                 }
-
-                func(subMesh._materialDefines);
             }
         }
     }
 
     /**
- * Indicates that we need to re-calculated for all submeshes
- */
+     * Indicates that the scene should check if the rendering now needs a prepass
+     */
+    protected _markScenePrePassDirty() {
+        if (this.getScene().blockMaterialDirtyMechanism) {
+            return;
+        }
+
+        const prePassRenderer = this.getScene().enablePrePassRenderer();
+        if (prePassRenderer) {
+            prePassRenderer.markAsDirty();
+        }
+    }
+
+    /**
+     * Indicates that we need to re-calculated for all submeshes
+     */
     protected _markAllSubMeshesAsAllDirty() {
         this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }
@@ -1280,10 +1527,27 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Indicates that prepass needs to be re-calculated for all submeshes
+     */
+    protected _markAllSubMeshesAsPrePassDirty() {
+        this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
+    }
+
+    /**
      * Indicates that textures and misc need to be re-calculated for all submeshes
      */
     protected _markAllSubMeshesAsTexturesAndMiscDirty() {
         this._markAllSubMeshesAsDirty(Material._TextureAndMiscDirtyCallBack);
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup.
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        // Do Nothing by default
+        return false;
     }
 
     /**
@@ -1300,6 +1564,17 @@ export class Material implements IAnimatable {
 
         // Remove from scene
         scene.removeMaterial(this);
+
+        this._eventInfo.forceDisposeTextures = forceDisposeTextures;
+        this._callbackPluginEventGeneric(MaterialPluginEvent.Disposed, this._eventInfo);
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.materials.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.materials.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
 
         if (notBoundToMesh !== true) {
             // Remove from meshes
@@ -1326,13 +1601,15 @@ export class Material implements IAnimatable {
         this._uniformBuffer.dispose();
 
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
-        if (forceDisposeEffect && this._effect) {
+        if (forceDisposeEffect && this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {
-                this._effect.dispose();
+                this._drawWrapper.effect.dispose();
             }
 
-            this._effect = null;
+            this._drawWrapper.effect = null;
         }
+
+        this.metadata = null;
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);
@@ -1357,13 +1634,13 @@ export class Material implements IAnimatable {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh._materialEffect);
-                    if (forceDisposeEffect && subMesh._materialEffect) {
-                        subMesh._materialEffect.dispose();
+                    geometry._releaseVertexArrayObject(subMesh.effect);
+                    if (forceDisposeEffect && subMesh.effect) {
+                        subMesh.effect.dispose();
                     }
                 }
             } else {
-                geometry._releaseVertexArrayObject(this._effect);
+                geometry._releaseVertexArrayObject(this._drawWrapper.effect);
             }
         }
     }
@@ -1373,7 +1650,11 @@ export class Material implements IAnimatable {
      * @returns the serialized material object
      */
     public serialize(): any {
-        return SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
+
+        serializationObject.stencil = this.stencil.serialize();
+
+        return serializationObject;
     }
 
     /**

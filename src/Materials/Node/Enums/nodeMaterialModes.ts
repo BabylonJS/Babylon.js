@@ -8,4 +8,6 @@ export enum NodeMaterialModes {
     PostProcess = 1,
     /** For particle system */
     Particle = 2,
+    /** For procedural texture */
+    ProceduralTexture = 3,
 }

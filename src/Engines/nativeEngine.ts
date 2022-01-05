@@ -1,6 +1,6 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
@@ -8,103 +8,65 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { Tools } from "../Misc/tools";
-import { Observer } from "../Misc/observable";
-import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
-import { Matrix, Viewport, Color3 } from "../Maths/math";
-import { IColor4Like } from '../Maths/math.like';
+import { Observable, Observer } from "../Misc/observable";
+import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
+import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
-import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
+import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
+import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
+import { IMaterialContext } from "./IMaterialContext";
+import { IDrawContext } from "./IDrawContext";
+import { ICanvas, IImage } from "./ICanvas";
+import { IStencilState } from "../States/IStencilState";
+import { RenderTargetWrapper } from "./renderTargetWrapper";
+import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
+import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 
-interface INativeEngine {
-    dispose(): void;
+declare const _native: INative;
 
-    requestAnimationFrame(callback: () => void): void;
+const onNativeObjectInitialized = new Observable<INative>();
+if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
+    let __native: INative;
+    Object.defineProperty(self, "_native", {
+        get: () => __native,
+        set: (value: INative) => {
+            __native = value;
+            if (__native) {
+                onNativeObjectInitialized.notifyObservers(__native);
+            }
+        }
+    });
+}
 
-    createVertexArray(): any;
-    deleteVertexArray(vertexArray: any): void;
-    bindVertexArray(vertexArray: any): void;
+/**
+ * Returns _native only after it has been defined by BabylonNative.
+ * @hidden
+ */
+export function AcquireNativeObjectAsync(): Promise<INative> {
+    return new Promise((resolve) => {
+        if (typeof _native === 'undefined') {
+            onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
+        } else {
+            resolve(_native);
+        }
+    });
+}
 
-    createIndexBuffer(data: ArrayBufferView, dynamic: boolean): any;
-    deleteIndexBuffer(buffer: any): void;
-    recordIndexBuffer(vertexArray: any, buffer: any): void;
-    updateDynamicIndexBuffer(buffer: any, data: ArrayBufferView, startingIndex: number): void;
-
-    createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
-    deleteVertexBuffer(buffer: any): void;
-    recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
-    updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
-
-    createProgram(vertexShader: string, fragmentShader: string): any;
-    getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
-    getAttributes(shaderProgram: any, attributeNames: string[]): number[];
-    setProgram(program: any): void;
-
-    setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
-    setZOffset(zOffset: number): void;
-    getZOffset(): number;
-    setDepthTest(enable: boolean): void;
-    getDepthWrite(): boolean;
-    setDepthWrite(enable: boolean): void;
-    setColorWrite(enable: boolean): void;
-    setBlendMode(blendMode: number): void;
-
-    setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setInt(uniform: WebGLUniformLocation, int: number): void;
-    setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
-    setFloatArray(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array | number[]): void;
-    setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
-    setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-    setFloat(uniform: WebGLUniformLocation, value: number): void;
-    setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
-    setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-    setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-
-    createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
-    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
-    getTextureWidth(texture: WebGLTexture): number;
-    getTextureHeight(texture: WebGLTexture): number;
-    setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
-    setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number): void; // addressModes are NativeAddressMode.XXXX values.
-    setTextureAnisotropicLevel(texture: WebGLTexture, value: number): void;
-    setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
-    deleteTexture(texture: Nullable<WebGLTexture>): void;
-
-    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
-    deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
-    bindFramebuffer(framebuffer: WebGLFramebuffer): void;
-    unbindFramebuffer(framebuffer: WebGLFramebuffer): void;
-
-    drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
-    draw(fillMode: number, vertexStart: number, vertexCount: number): void;
-
-    clear(flags: number): void;
-    clearColor(r: number, g: number, b: number, a: number): void;
-    clearDepth(depth: number): void;
-    clearStencil(stencil: number): void;
-
-    getRenderWidth(): number;
-    getRenderHeight(): number;
-
-    setViewPort(x: number, y: number, width: number, height: number): void;
+/**
+ * Registers a constructor on the _native object. See NativeXRFrame for an example.
+ * @hidden
+ */
+export async function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type) {
+    (await AcquireNativeObjectAsync() as any)[typeName] = constructor;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -126,6 +88,577 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     public nativeProgram: any;
+
+    private _valueCache: { [key: string]: any } = {};
+    private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
+
+    public engine: NativeEngine;
+    public context?: WebGLRenderingContext;
+    public vertexShader?: WebGLShader;
+    public fragmentShader?: WebGLShader;
+    public isParallelCompiled: boolean;
+    public onCompiled?: () => void;
+    public transformFeedback?: WebGLTransformFeedback | null;
+
+    constructor(engine: NativeEngine) {
+        this.engine = engine;
+    }
+
+    public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
+        const engine = this.engine;
+        if (engine.supportsUniformBuffers) {
+            for (var name in uniformBuffersNames) {
+                effect.bindUniformBlock(name, uniformBuffersNames[name]);
+            }
+        }
+
+        const effectAvailableUniforms = this.engine.getUniforms(this, uniformsNames);
+        effectAvailableUniforms.forEach((uniform, index) => {
+            uniforms[uniformsNames[index]] = uniform;
+        });
+        this._uniforms = uniforms;
+
+        let index: number;
+        for (index = 0; index < samplerList.length; index++) {
+            const sampler = effect.getUniform(samplerList[index]);
+            if (sampler == null) {
+                samplerList.splice(index, 1);
+                index--;
+            }
+        }
+
+        samplerList.forEach((name, index) => {
+            samplers[name] = index;
+        });
+
+        attributes.push(...engine.getAttributes(this, attributesNames));
+    }
+
+    /**
+     * Release all associated resources.
+     **/
+    public dispose() {
+        this._uniforms = {};
+    }
+
+    /** @hidden */
+    public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
+        var cache = this._valueCache[uniformName];
+        var flag = matrix.updateFlag;
+        if (cache !== undefined && cache === flag) {
+            return false;
+        }
+
+        this._valueCache[uniformName] = flag;
+
+        return true;
+    }
+
+    /** @hidden */
+    public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
+        var cache = this._valueCache[uniformName];
+        if (!cache) {
+            cache = [x, y];
+            this._valueCache[uniformName] = cache;
+            return true;
+        }
+
+        var changed = false;
+        if (cache[0] !== x) {
+            cache[0] = x;
+            changed = true;
+        }
+        if (cache[1] !== y) {
+            cache[1] = y;
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    /** @hidden */
+    public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
+        var cache = this._valueCache[uniformName];
+        if (!cache) {
+            cache = [x, y, z];
+            this._valueCache[uniformName] = cache;
+            return true;
+        }
+
+        var changed = false;
+        if (cache[0] !== x) {
+            cache[0] = x;
+            changed = true;
+        }
+        if (cache[1] !== y) {
+            cache[1] = y;
+            changed = true;
+        }
+        if (cache[2] !== z) {
+            cache[2] = z;
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    /** @hidden */
+    public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
+        var cache = this._valueCache[uniformName];
+        if (!cache) {
+            cache = [x, y, z, w];
+            this._valueCache[uniformName] = cache;
+            return true;
+        }
+
+        var changed = false;
+        if (cache[0] !== x) {
+            cache[0] = x;
+            changed = true;
+        }
+        if (cache[1] !== y) {
+            cache[1] = y;
+            changed = true;
+        }
+        if (cache[2] !== z) {
+            cache[2] = z;
+            changed = true;
+        }
+        if (cache[3] !== w) {
+            cache[3] = w;
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    /**
+     * Sets an integer value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param value Value to be set.
+     */
+    public setInt(uniformName: string, value: number): void {
+        var cache = this._valueCache[uniformName];
+        if (cache !== undefined && cache === value) {
+            return;
+        }
+
+        if (this.engine.setInt(this._uniforms[uniformName]!, value)) {
+            this._valueCache[uniformName] = value;
+        }
+    }
+
+    /**
+     * Sets a int2 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int2.
+     * @param y Second int in int2.
+     */
+    public setInt2(uniformName: string, x: number, y: number): void {
+        if (this._cacheFloat2(uniformName, x, y)) {
+            if (!this.engine.setInt2(this._uniforms[uniformName], x, y)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a int3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int3.
+     * @param y Second int in int3.
+     * @param y Third int in int3.
+     */
+    public setInt3(uniformName: string, x: number, y: number, z: number): void {
+        if (this._cacheFloat3(uniformName, x, y, z)) {
+            if (!this.engine.setInt3(this._uniforms[uniformName], x, y, z)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a int4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First int in int4.
+     * @param y Second int in int4.
+     * @param y Third int in int4.
+     * @param w Fourth int in int4.
+     */
+    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
+        if (this._cacheFloat4(uniformName, x, y, z, w)) {
+            if (!this.engine.setInt4(this._uniforms[uniformName], x, y, z, w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets an int array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setIntArray(uniformName: string, array: Int32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setIntArray(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setIntArray2(uniformName: string, array: Int32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setIntArray2(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setIntArray3(uniformName: string, array: Int32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setIntArray3(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setIntArray4(uniformName: string, array: Int32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setIntArray4(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an float array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setFloatArray(uniformName: string, array: Float32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setFloatArray(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setFloatArray2(uniformName: string, array: Float32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setFloatArray2(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setFloatArray3(uniformName: string, array: Float32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setFloatArray3(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setFloatArray4(uniformName: string, array: Float32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setFloatArray4(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setArray(uniformName: string, array: number[]): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setArray(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setArray2(uniformName: string, array: number[]): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setArray2(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setArray3(uniformName: string, array: number[]): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setArray3(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setArray4(uniformName: string, array: number[]): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setArray4(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets matrices on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param matrices matrices to be set.
+     */
+    public setMatrices(uniformName: string, matrices: Float32Array): void {
+        if (!matrices) {
+            return;
+        }
+
+        this._valueCache[uniformName] = null;
+        this.engine.setMatrices(this._uniforms[uniformName]!, matrices);
+    }
+
+    /**
+     * Sets matrix on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param matrix matrix to be set.
+     */
+    public setMatrix(uniformName: string, matrix: IMatrixLike): void {
+        if (this._cacheMatrix(uniformName, matrix)) {
+            if (!this.engine.setMatrices(this._uniforms[uniformName]!, matrix.toArray() as Float32Array)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+     * @param uniformName Name of the variable.
+     * @param matrix matrix to be set.
+     */
+    public setMatrix3x3(uniformName: string, matrix: Float32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setMatrix3x3(this._uniforms[uniformName]!, matrix);
+    }
+
+    /**
+     * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+     * @param uniformName Name of the variable.
+     * @param matrix matrix to be set.
+     */
+    public setMatrix2x2(uniformName: string, matrix: Float32Array): void {
+        this._valueCache[uniformName] = null;
+        this.engine.setMatrix2x2(this._uniforms[uniformName]!, matrix);
+    }
+
+    /**
+     * Sets a float on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param value value to be set.
+     * @returns this effect.
+     */
+    public setFloat(uniformName: string, value: number): void {
+        var cache = this._valueCache[uniformName];
+        if (cache !== undefined && cache === value) {
+            return;
+        }
+
+        if (this.engine.setFloat(this._uniforms[uniformName]!, value)) {
+            this._valueCache[uniformName] = value;
+        }
+    }
+
+    /**
+     * Sets a boolean on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param bool value to be set.
+     */
+    public setBool(uniformName: string, bool: boolean): void {
+        var cache = this._valueCache[uniformName];
+        if (cache !== undefined && cache === bool) {
+            return;
+        }
+
+        if (this.engine.setInt(this._uniforms[uniformName]!, bool ? 1 : 0)) {
+            this._valueCache[uniformName] = bool ? 1 : 0;
+        }
+    }
+
+    /**
+     * Sets a Vector2 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param vector2 vector2 to be set.
+     */
+    public setVector2(uniformName: string, vector2: IVector2Like): void {
+        if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
+            if (!this.engine.setFloat2(this._uniforms[uniformName]!, vector2.x, vector2.y)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a float2 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First float in float2.
+     * @param y Second float in float2.
+     */
+    public setFloat2(uniformName: string, x: number, y: number): void {
+        if (this._cacheFloat2(uniformName, x, y)) {
+            if (!this.engine.setFloat2(this._uniforms[uniformName]!, x, y)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Vector3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param vector3 Value to be set.
+     */
+    public setVector3(uniformName: string, vector3: IVector3Like): void {
+        if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
+            if (!this.engine.setFloat3(this._uniforms[uniformName]!, vector3.x, vector3.y, vector3.z)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a float3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First float in float3.
+     * @param y Second float in float3.
+     * @param z Third float in float3.
+     */
+    public setFloat3(uniformName: string, x: number, y: number, z: number): void {
+        if (this._cacheFloat3(uniformName, x, y, z)) {
+            if (!this.engine.setFloat3(this._uniforms[uniformName]!, x, y, z)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Vector4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param vector4 Value to be set.
+     */
+    public setVector4(uniformName: string, vector4: IVector4Like): void {
+        if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a float4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First float in float4.
+     * @param y Second float in float4.
+     * @param z Third float in float4.
+     * @param w Fourth float in float4.
+     * @returns this effect.
+     */
+    public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
+        if (this._cacheFloat4(uniformName, x, y, z, w)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, x, y, z, w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Color3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param color3 Value to be set.
+     */
+    public setColor3(uniformName: string, color3: IColor3Like): void {
+        if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
+            if (!this.engine.setFloat3(this._uniforms[uniformName]!, color3.r, color3.g, color3.b)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Color4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param color3 Value to be set.
+     * @param alpha Alpha value to be set.
+     */
+    public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
+        if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, color3.r, color3.g, color3.b, alpha)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Color4 on a uniform variable
+     * @param uniformName defines the name of the variable
+     * @param color4 defines the value to be set
+     */
+    public setDirectColor4(uniformName: string, color4: IColor4Like): void {
+        if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, color4.r, color4.g, color4.b, color4.a)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+}
+
+class NativeRenderTargetWrapper extends RenderTargetWrapper {
+    public override readonly _engine: NativeEngine;
+
+    private __framebuffer: Nullable<WebGLFramebuffer> = null;
+    private __framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
+
+    public get _framebuffer(): Nullable<WebGLFramebuffer> {
+        return this.__framebuffer;
+    }
+
+    public set _framebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        if (this.__framebuffer) {
+            this._engine._releaseFramebufferObjects(this.__framebuffer);
+        }
+        this.__framebuffer = framebuffer;
+    }
+
+    public get _framebufferDepthStencil(): Nullable<WebGLFramebuffer> {
+        return this.__framebufferDepthStencil;
+    }
+
+    public set _framebufferDepthStencil(framebufferDepthStencil: Nullable<WebGLFramebuffer>) {
+        if (this.__framebufferDepthStencil) {
+            this._engine._releaseFramebufferObjects(this.__framebufferDepthStencil);
+        }
+        this.__framebufferDepthStencil = framebufferDepthStencil;
+    }
+
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: NativeEngine) {
+        super(isMulti, isCube, size, engine);
+        this._engine = engine;
+    }
+
+    public dispose(disposeOnlyFramebuffers = false): void {
+        this._framebuffer = null;
+        this._framebufferDepthStencil = null;
+
+        super.dispose(disposeOnlyFramebuffers);
+    }
 }
 
 /**
@@ -135,82 +668,136 @@ class NativeDataBuffer extends DataBuffer {
     /**
      * Accessor value used to identify/retrieve a natively-stored index buffer.
      */
-    public nativeIndexBuffer?: any;
+    public nativeIndexBuffer?: NativeData;
 
     /**
      * Accessor value used to identify/retrieve a natively-stored vertex buffer.
      */
-    public nativeVertexBuffer?: any;
+    public nativeVertexBuffer?: NativeData;
 }
 
-// TODO: change this to match bgfx.
-// Must match Filter enum in SpectreEngine.h.
-class NativeFilter {
-    public static readonly POINT = 0;
-    public static readonly MINPOINT_MAGPOINT_MIPPOINT = NativeFilter.POINT;
-    public static readonly BILINEAR = 1;
-    public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = NativeFilter.BILINEAR;
-    public static readonly TRILINEAR = 2;
-    public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = NativeFilter.TRILINEAR;
-    public static readonly ANISOTROPIC = 3;
-    public static readonly POINT_COMPARE = 4;
-    public static readonly TRILINEAR_COMPARE = 5;
-    public static readonly MINBILINEAR_MAGPOINT = 6;
-    public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = NativeFilter.MINBILINEAR_MAGPOINT;
-    public static readonly MINPOINT_MAGPOINT_MIPLINEAR = 7;
-    public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 8;
-    public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 9;
-    public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
-}
+/**
+ * Options to create the Native engine
+ */
+export interface NativeEngineOptions {
 
-// these flags match bgfx.
-class NativeClearFlags
-{
-    public static readonly CLEAR_COLOR = 1;
-    public static readonly CLEAR_DEPTH = 2;
-    public static readonly CLEAR_STENCIL = 4;
-}
-// TODO: change this to match bgfx.
-// Must match AddressMode enum in SpectreEngine.h.
-class NativeAddressMode {
-    public static readonly WRAP = 0;
-    public static readonly MIRROR = 1;
-    public static readonly CLAMP = 2;
-    public static readonly BORDER = 3;
-    public static readonly MIRROR_ONCE = 4;
-}
-
-class NativeTextureFormat {
-    public static readonly RGBA8 = 0;
-    public static readonly RGBA32F = 1;
+    /**
+     * defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
 }
 
 /** @hidden */
-class NativeTexture extends InternalTexture {
-    public getInternalTexture(): InternalTexture {
-        return this;
+class CommandBufferEncoder {
+    private readonly _commandStream: NativeDataStream;
+    private readonly _pending = new Array<NativeData>();
+    private _isCommandBufferScopeActive = false;
+
+    public constructor(private readonly _engine: INativeEngine) {
+        this._commandStream = NativeEngine._createNativeDataStream();
+        this._engine.setCommandDataStream(this._commandStream);
     }
 
-    public getViewCount(): number {
-        return 1;
+    public beginCommandScope() {
+        if (this._isCommandBufferScopeActive) {
+            throw new Error("Command scope already active.");
+        }
+
+        this._isCommandBufferScopeActive = true;
+    }
+
+    public endCommandScope() {
+        if (!this._isCommandBufferScopeActive) {
+            throw new Error("Command scope is not active.");
+        }
+
+        this._isCommandBufferScopeActive = false;
+        this._submit();
+    }
+
+    public startEncodingCommand(command: NativeData) {
+        this._commandStream.writeNativeData(command);
+    }
+
+    public encodeCommandArgAsUInt32(commandArg: number) {
+        this._commandStream.writeUint32(commandArg);
+    }
+
+    public encodeCommandArgAsUInt32s(commandArg: Uint32Array) {
+        this._commandStream.writeUint32Array(commandArg);
+    }
+
+    public encodeCommandArgAsInt32(commandArg: number) {
+        this._commandStream.writeInt32(commandArg);
+    }
+
+    public encodeCommandArgAsInt32s(commandArg: Int32Array) {
+        this._commandStream.writeInt32Array(commandArg);
+    }
+
+    public encodeCommandArgAsFloat32(commandArg: number) {
+        this._commandStream.writeFloat32(commandArg);
+    }
+
+    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+        this._commandStream.writeFloat32Array(commandArg);
+    }
+
+    public encodeCommandArgAsNativeData(commandArg: NativeData) {
+        this._commandStream.writeNativeData(commandArg);
+        this._pending.push(commandArg);
+    }
+
+    public finishEncodingCommand() {
+        if (!this._isCommandBufferScopeActive) {
+            this._submit();
+        }
+    }
+
+    private _submit() {
+        this._engine.submitCommands();
+        this._pending.length = 0;
     }
 }
-
-/** @hidden */
-declare var _native: any;
 
 /** @hidden */
 export class NativeEngine extends Engine {
-    private readonly _native: INativeEngine = new _native.Engine();
-    /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
-    private readonly INVALID_HANDLE = 65535;
+    // This must match the protocol version in NativeEngine.cpp
+    private static readonly PROTOCOL_VERSION = 2;
+
+    private readonly _engine: INativeEngine = new _native.Engine();
+    private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
+
+    private readonly _commandBufferEncoder = new CommandBufferEncoder(this._engine);
+
+    private _boundBuffersVertexArray: any = null;
+    private _currentDepthTest: number = _native.Engine.DEPTH_TEST_LEQUAL;
+    private _stencilTest = false;
+    private _stencilMask: number = 255;
+    private _stencilFunc: number = Constants.ALWAYS;
+    private _stencilFuncRef: number = 0;
+    private _stencilFuncMask: number = 255;
+    private _stencilOpStencilFail: number = Constants.KEEP;
+    private _stencilOpDepthFail: number = Constants.KEEP;
+    private _stencilOpStencilDepthPass: number = Constants.REPLACE;
+    private _zOffset: number = 0;
+    private _zOffsetUnits: number = 0;
+    private _depthWrite: boolean = true;
 
     public getHardwareScalingLevel(): number {
-        return 1.0;
+        return this._engine.getHardwareScalingLevel();
     }
 
-    public constructor() {
-        super(null);
+    public setHardwareScalingLevel(level: number): void {
+        this._engine.setHardwareScalingLevel(level);
+    }
+
+    public constructor(options: NativeEngineOptions = {}) {
+        super(null, false, undefined, options.adaptToDeviceRatio);
+
+        if (_native.Engine.PROTOCOL_VERSION !== NativeEngine.PROTOCOL_VERSION) {
+            throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
+        }
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -234,12 +821,13 @@ export class NativeEngine extends Engine {
             pvrtc: null,
             etc1: null,
             etc2: null,
+            bptc: null,
             maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-            uintIndices: false,
+            uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
-            textureFloat: false,
+            textureFloat: true,
             textureFloatLinearFiltering: false,
             textureFloatRender: false,
             textureHalfFloat: false,
@@ -250,32 +838,105 @@ export class NativeEngine extends Engine {
             depthTextureExtension: false,
             vertexArrayObject: true,
             instancedArrays: false,
+            supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
-            maxMSAASamples: 1
+            maxMSAASamples: 1,
+            canUseGLInstanceID: true,
+            canUseGLVertexID: true,
+            supportComputeShaders: false,
+            supportSRGBBuffers: true,
+        };
+
+        this._features = {
+            forceBitmapOverHTMLImageElement: false,
+            supportRenderAndCopyToLodForFloatTextures: false,
+            supportDepthStencilTexture: false,
+            supportShadowSamplers: false,
+            uniformBufferHardCheckMatrix: false,
+            allowTexturePrefiltering: false,
+            trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
+            supportCSM: false,
+            basisNeedsPOT: false,
+            support3DTextures: false,
+            needTypeSuffixInShaderConstants: false,
+            supportMSAA: false,
+            supportSSAO2: false,
+            supportExtendedTextureFormats: false,
+            supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
+            needsInvertingBitmap: true,
+            useUBOBindingCache: true,
+            needShaderCodeInlining: true,
+            needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: true,
+            _collectUbosUpdatedInFrame: false,
         };
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
+        Tools.LoadScript = function (scriptUrl, onSuccess, onError, scriptId) {
+            Tools.LoadFile(scriptUrl, (data) => {
+                Function(data as string).apply(null);
+                if (onSuccess) {
+                    onSuccess();
+                }
+            }, undefined, undefined, false,
+                (request, exception) => {
+                    if (onError) {
+                        onError("LoadScript Error", exception);
+                    }
+                });
+        };
+
         // Wrappers
         if (typeof URL === "undefined") {
             (window.URL as any) = {
-                createObjectURL: function() { },
-                revokeObjectURL: function() { }
+                createObjectURL: function () { },
+                revokeObjectURL: function () { }
             };
         }
 
         if (typeof Blob === "undefined") {
-            (window.Blob as any) = function() { };
+            (window.Blob as any) = function (v: any) { return v; };
+        }
+
+        // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
+        // Setup resolution scaling based on display settings.
+        var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
+        this.resize();
+
+        const currentDepthFunction = this.getDepthFunction();
+        if (currentDepthFunction) {
+            this.setDepthFunction(currentDepthFunction);
         }
 
         // Shader processor
-        this._shaderProcessor = new NativeShaderProcessor();
+        this._shaderProcessor = new WebGL2ShaderProcessor();
+
+        this.onNewSceneAddedObservable.add((scene) => {
+            const originalRender = scene.render;
+            scene.render = (...args: Parameters<typeof originalRender>) => {
+                this._commandBufferEncoder.beginCommandScope();
+                originalRender.apply(scene, args);
+                this._commandBufferEncoder.endCommandScope();
+            };
+        });
     }
 
     public dispose(): void {
         super.dispose();
-        this._native.dispose();
+        if (this._boundBuffersVertexArray) {
+            this._deleteVertexArray(this._boundBuffersVertexArray);
+        }
+        this._engine.dispose();
+    }
+
+    /** @hidden */
+    public static _createNativeDataStream(): NativeDataStream {
+        return new NativeDataStream();
     }
 
     /**
@@ -287,7 +948,7 @@ export class NativeEngine extends Engine {
         if (requester.requestAnimationFrame && requester !== window) {
             requester.requestAnimationFrame(bindedRenderFunction);
         } else {
-            this._native.requestAnimationFrame(bindedRenderFunction);
+            this._engine.requestAnimationFrame(bindedRenderFunction);
         }
         return 0;
     }
@@ -302,11 +963,15 @@ export class NativeEngine extends Engine {
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
-                this._native.unbindFramebuffer(this._currentFramebuffer!);
+                this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_UNBINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(this._currentFramebuffer as NativeData);
+                this._commandBufferEncoder.finishEncodingCommand();
             }
 
             if (framebuffer) {
-                this._native.bindFramebuffer(framebuffer);
+                this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_BINDFRAMEBUFFER);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
+                this._commandBufferEncoder.finishEncodingCommand();
             }
 
             this._currentFramebuffer = framebuffer;
@@ -322,20 +987,21 @@ export class NativeEngine extends Engine {
     }
 
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        var mode = 0;
-        if (backBuffer && color) {
-            this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            mode |= NativeClearFlags.CLEAR_COLOR;
+        if (this.useReverseDepthBuffer) {
+            throw new Error("reverse depth buffer is not currently implemented");
         }
-        if (depth) {
-            this._native.clearDepth(1.0);
-            mode |= NativeClearFlags.CLEAR_DEPTH;
-        }
-        if (stencil) {
-            this._native.clearStencil(0);
-            mode |= NativeClearFlags.CLEAR_STENCIL;
-        }
-        this._native.clear(mode);
+
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_CLEAR);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.r : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.g : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.b : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(color ? color.a : 1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depth ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
@@ -343,28 +1009,25 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
-        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-            throw new Error("Could not create a native index buffer.");
+        if (data.byteLength) {
+            buffer.nativeIndexBuffer = this._engine.createIndexBuffer(data.buffer, data.byteOffset, data.byteLength, buffer.is32Bits, updateable ?? false);
         }
         return buffer;
     }
 
-    public createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer {
+    public createVertexBuffer(vertices: DataArray, updateable?: boolean): NativeDataBuffer {
+        const data = ArrayBuffer.isView(vertices) ? vertices : new Float32Array(vertices);
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
-        buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data), updateable ?? false);
-        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-            throw new Error("Could not create a native vertex buffer.");
+        if (data.byteLength) {
+            buffer.nativeVertexBuffer = this._engine.createVertexBuffer(data.buffer, data.byteOffset, data.byteLength, updateable ?? false);
         }
         return buffer;
     }
 
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
-        const vertexArray = this._native.createVertexArray();
-
+    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
-            this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
+            this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
 
         const attributes = effect.getAttributesNames();
@@ -376,34 +1039,55 @@ export class NativeEngine extends Engine {
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
                     if (buffer) {
-                        this._native.recordVertexBuffer(
+                        this._engine.recordVertexBuffer(
                             vertexArray,
-                            buffer.nativeVertexBuffer,
+                            buffer.nativeVertexBuffer!,
                             location,
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
-                            vertexBuffer.type,
+                            this._getNativeAttribType(vertexBuffer.type),
                             vertexBuffer.normalized);
                     }
                 }
             }
         }
+    }
 
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+        if (this._boundBuffersVertexArray) {
+            this._deleteVertexArray(this._boundBuffersVertexArray);
+        }
+        this._boundBuffersVertexArray = this._engine.createVertexArray();
+        this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
+        this.bindVertexArrayObject(this._boundBuffersVertexArray);
+    }
+
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+        const vertexArray = this._engine.createVertexArray();
+        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
         return vertexArray;
     }
 
+    private _deleteVertexArray(vertexArray: unknown) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEVERTEXARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void {
-        this._native.bindVertexArray(vertexArray);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_BINDVERTEXARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
-        this._native.deleteVertexArray(vertexArray);
+        this._deleteVertexArray(vertexArray);
     }
 
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._native.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
+        return this._engine.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
     }
 
     /**
@@ -411,7 +1095,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
         // Apply states
@@ -426,7 +1110,11 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
         // } else {
-        this._native.drawIndexed(fillMode, indexStart, indexCount);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
@@ -435,7 +1123,7 @@ export class NativeEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
@@ -446,15 +1134,27 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
-        this._native.draw(fillMode, verticesStart, verticesCount);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
     public createPipelineContext(): IPipelineContext {
-        return new NativePipelineContext();
+        return new NativePipelineContext(this);
     }
 
-    public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
+    public createMaterialContext(): IMaterialContext | undefined {
+        return undefined;
+    }
+
+    public createDrawContext(): IDrawContext | undefined {
+        return undefined;
+    }
+
+    public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
         if (createAsRaw) {
@@ -495,29 +1195,44 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program = this._native.createProgram(vertexCode, fragmentCode);
+        const program = this._engine.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
     }
 
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public inlineShaderCode(code: string): string {
+        const sci = new ShaderCodeInliner(code);
+        sci.debug = false;
+        sci.processCode();
+        return sci.code;
+    }
+
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
-            this._native.setProgram(program);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETPROGRAM);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(program as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
             this._currentProgram = program;
         }
     }
 
-    public _releaseEffect(effect: Effect): void {
-        // TODO
-    }
-
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        // TODO
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+        if (nativePipelineContext && nativePipelineContext.nativeProgram) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEPROGRAM);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._native.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
+        return this._engine.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
     }
 
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
@@ -541,12 +1256,16 @@ export class NativeEngine extends Engine {
         this._currentEffect = null;
     }
 
-    public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
+    public setMatrix(uniform: WebGLUniformLocation, matrix: IMatrixLike): void {
         if (!uniform) {
             return;
         }
 
-        this._native.setMatrix(uniform, matrix.toArray() as Float32Array);
+        const matrixArray = matrix.toArray() as Float32Array;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrixArray);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public getRenderWidth(useScreen = false): number {
@@ -554,7 +1273,7 @@ export class NativeEngine extends Engine {
             return this._currentRenderTarget.width;
         }
 
-        return this._native.getRenderWidth();
+        return this._engine.getRenderWidth();
     }
 
     public getRenderHeight(useScreen = false): number {
@@ -562,32 +1281,86 @@ export class NativeEngine extends Engine {
             return this._currentRenderTarget.height;
         }
 
-        return this._native.getRenderHeight();
+        return this._engine.getRenderHeight();
     }
 
-    public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
-        this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
+        this._engine.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
-        this._native.setState(culling, zOffset, reverseSide);
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
+        this._zOffset = zOffset;
+        this._zOffsetUnits = zOffsetUnits;
+
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
-     * Set the z offset to apply to current rendering
+     * Gets the client rect of native canvas.  Needed for InputManager.
+     * @returns a client rectangle
+     */
+    public getInputElementClientRect(): Nullable<DOMRect> {
+        const rect = {
+            bottom: this.getRenderHeight(),
+            height: this.getRenderHeight(),
+            left: 0,
+            right: this.getRenderWidth(),
+            top: 0,
+            width: this.getRenderWidth(),
+            x: 0,
+            y: 0,
+            toJSON: () => {}
+        };
+        return rect;
+    }
+
+    /**
+     * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
     public setZOffset(value: number): void {
-        this._native.setZOffset(value);
+        if (value !== this._zOffset) {
+            this._zOffset = value;
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETZOFFSET);
+            this._commandBufferEncoder.encodeCommandArgAsFloat32(this.useReverseDepthBuffer ? -value : value);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
     }
 
     /**
-     * Gets the current value of the zOffset
-     * @returns the current zOffset state
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
-        return this._native.getZOffset();
+        return this._zOffset;
+    }
+
+    /**
+     * Set the z offset Units to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnits(value: number): void {
+        if (value !== this._zOffsetUnits) {
+            this._zOffsetUnits = value;
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETZOFFSETUNITS);
+            this._commandBufferEncoder.encodeCommandArgAsFloat32(this.useReverseDepthBuffer ? -value : value);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
+    }
+
+    /**
+     * Gets the current value of the zOffset Units
+     * @returns the current zOffset Units state
+     */
+    public getZOffsetUnits(): number {
+        return this._zOffsetUnits;
     }
 
     /**
@@ -595,7 +1368,9 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthBuffer(enable: boolean): void {
-        this._native.setDepthTest(enable);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(enable ? this._currentDepthTest : _native.Engine.DEPTH_TEST_ALWAYS);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -603,7 +1378,65 @@ export class NativeEngine extends Engine {
      * @returns the current depth writing state
      */
     public getDepthWrite(): boolean {
-        return this._native.getDepthWrite();
+        return this._depthWrite;
+    }
+
+    public getDepthFunction(): Nullable<number> {
+        switch (this._currentDepthTest) {
+            case _native.Engine.DEPTH_TEST_NEVER:
+                return Constants.NEVER;
+            case _native.Engine.DEPTH_TEST_ALWAYS:
+                return Constants.ALWAYS;
+            case _native.Engine.DEPTH_TEST_GREATER:
+                return Constants.GREATER;
+            case _native.Engine.DEPTH_TEST_GEQUAL:
+                return Constants.GEQUAL;
+            case _native.Engine.DEPTH_TEST_NOTEQUAL:
+                return Constants.NOTEQUAL;
+            case _native.Engine.DEPTH_TEST_EQUAL:
+                return Constants.EQUAL;
+            case _native.Engine.DEPTH_TEST_LESS:
+                return Constants.LESS;
+            case _native.Engine.DEPTH_TEST_LEQUAL:
+                return Constants.LEQUAL;
+        }
+        return null;
+    }
+
+    public setDepthFunction(depthFunc: number) {
+        let nativeDepthFunc = 0;
+        switch (depthFunc) {
+            case Constants.NEVER:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_NEVER;
+                break;
+            case Constants.ALWAYS:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_ALWAYS;
+                break;
+            case Constants.GREATER:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_GREATER;
+                break;
+            case Constants.GEQUAL:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_GEQUAL;
+                break;
+            case Constants.NOTEQUAL:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_NOTEQUAL;
+                break;
+            case Constants.EQUAL:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_EQUAL;
+                break;
+            case Constants.LESS:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_LESS;
+                break;
+            case Constants.LEQUAL:
+                nativeDepthFunc = _native.Engine.DEPTH_TEST_LEQUAL;
+                break;
+        }
+
+        this._currentDepthTest = nativeDepthFunc;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
+        this._commandBufferEncoder.finishEncodingCommand();
+
     }
 
     /**
@@ -611,7 +1444,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthWrite(enable: boolean): void {
-        this._native.setDepthWrite(enable);
+        this._depthWrite = enable;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -619,8 +1455,10 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setColorWrite(enable: boolean): void {
-        this._native.setColorWrite(enable);
         this._colorWrite = enable;
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETCOLORWRITE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(Number(enable));
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     /**
@@ -629,6 +1467,170 @@ export class NativeEngine extends Engine {
      */
     public getColorWrite(): boolean {
         return this._colorWrite;
+    }
+
+    private applyStencil(): void {
+        this._setStencil(this._stencilMask,
+            this._getStencilOpFail(this._stencilOpStencilFail),
+            this._getStencilDepthFail(this._stencilOpDepthFail),
+            this._getStencilDepthPass(this._stencilOpStencilDepthPass),
+            this._getStencilFunc(this._stencilFunc),
+            this._stencilFuncRef);
+    }
+
+    private _setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTENCIL);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mask);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilOpFail);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpFail);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(depthOpPass);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(func);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(ref);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    /**
+     * Enable or disable the stencil buffer
+     * @param enable defines if the stencil buffer must be enabled or disabled
+     */
+    public setStencilBuffer(enable: boolean): void {
+        this._stencilTest = enable;
+        if (enable) {
+            this.applyStencil();
+        } else {
+            this._setStencil(255,
+                _native.Engine.STENCIL_OP_FAIL_S_KEEP,
+                _native.Engine.STENCIL_OP_FAIL_Z_KEEP,
+                _native.Engine.STENCIL_OP_PASS_Z_KEEP,
+                _native.Engine.STENCIL_TEST_ALWAYS,
+                0);
+        }
+    }
+
+    /**
+     * Gets a boolean indicating if stencil buffer is enabled
+     * @returns the current stencil buffer state
+     */
+    public getStencilBuffer(): boolean {
+        return this._stencilTest;
+    }
+
+    /**
+ * Gets the current stencil operation when stencil passes
+ * @returns a number defining stencil operation to use when stencil passes
+ */
+    public getStencilOperationPass(): number {
+        return this._stencilOpStencilDepthPass;
+    }
+
+    /**
+     * Sets the stencil operation to use when stencil passes
+     * @param operation defines the stencil operation to use when stencil passes
+     */
+    public setStencilOperationPass(operation: number): void {
+        this._stencilOpStencilDepthPass = operation;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil mask
+     * @param mask defines the new stencil mask to use
+     */
+    public setStencilMask(mask: number): void {
+        this._stencilMask = mask;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil function
+     * @param stencilFunc defines the new stencil function to use
+     */
+    public setStencilFunction(stencilFunc: number) {
+        this._stencilFunc = stencilFunc;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil reference
+     * @param reference defines the new stencil reference to use
+     */
+    public setStencilFunctionReference(reference: number) {
+        this._stencilFuncRef = reference;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the current stencil mask
+     * @param mask defines the new stencil mask to use
+     */
+    public setStencilFunctionMask(mask: number) {
+        this._stencilFuncMask = mask;
+    }
+
+    /**
+     * Sets the stencil operation to use when stencil fails
+     * @param operation defines the stencil operation to use when stencil fails
+     */
+    public setStencilOperationFail(operation: number): void {
+        this._stencilOpStencilFail = operation;
+        this.applyStencil();
+    }
+
+    /**
+     * Sets the stencil operation to use when depth fails
+     * @param operation defines the stencil operation to use when depth fails
+     */
+    public setStencilOperationDepthFail(operation: number): void {
+        this._stencilOpDepthFail = operation;
+        this.applyStencil();
+    }
+
+    /**
+     * Gets the current stencil mask
+     * @returns a number defining the new stencil mask to use
+     */
+    public getStencilMask(): number {
+        return this._stencilMask;
+    }
+
+    /**
+     * Gets the current stencil function
+     * @returns a number defining the stencil function to use
+     */
+    public getStencilFunction(): number {
+        return this._stencilFunc;
+    }
+
+    /**
+     * Gets the current stencil reference value
+     * @returns a number defining the stencil reference value to use
+     */
+    public getStencilFunctionReference(): number {
+        return this._stencilFuncRef;
+    }
+
+    /**
+     * Gets the current stencil mask
+     * @returns a number defining the stencil mask to use
+     */
+    public getStencilFunctionMask(): number {
+        return this._stencilFuncMask;
+    }
+
+    /**
+     * Gets the current stencil operation when stencil fails
+     * @returns a number defining stencil operation to use when stencil fails
+     */
+    public getStencilOperationFail(): number {
+        return this._stencilOpStencilFail;
+    }
+
+    /**
+     * Gets the current stencil operation when depth fails
+     * @returns a number defining stencil operation to use when depth fails
+     */
+    public getStencilOperationDepthFail(): number {
+        return this._stencilOpDepthFail;
     }
 
     /**
@@ -646,14 +1648,18 @@ export class NativeEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
             return;
         }
 
-        this._native.setBlendMode(mode);
+        mode = this._getNativeAlphaMode(mode);
+
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(mode);
+        this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
@@ -664,187 +1670,260 @@ export class NativeEngine extends Engine {
 
     /**
      * Gets the current alpha mode
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      * @returns the current alpha mode
      */
     public getAlphaMode(): number {
         return this._alphaMode;
     }
 
-    public setInt(uniform: WebGLUniformLocation, int: number): void {
+    public setInt(uniform: WebGLUniformLocation, int: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setInt(uniform, int);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINT);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32(int);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setIntArray(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setIntArray2(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setIntArray3(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setIntArray4(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETINTARRAY4);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsInt32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray2(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray3(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray4(uniform, array);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOATARRAY4);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(array);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray(uniform, array);
+        return this.setFloatArray(uniform, new Float32Array(array));
     }
 
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray2(uniform, array);
+        return this.setFloatArray2(uniform, new Float32Array(array));
     }
 
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray3(uniform, array);
+        return this.setFloatArray3(uniform, new Float32Array(array));
     }
 
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloatArray4(uniform, array);
+        return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setMatrices(uniform, matrices);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRICES);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrices);
+        this._commandBufferEncoder.finishEncodingCommand();
+
+        return true;
     }
 
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setMatrix3x3(uniform, matrix);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX3X3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setMatrix2x2(uniform, matrix);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX2X2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrix);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloat(uniform: WebGLUniformLocation, value: number): void {
+    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloat(uniform, value);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(value);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloat2(uniform, x, y);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT2);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloat3(uniform, x, y, z);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT3);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloat4(uniform, x, y, z, w);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETFLOAT4);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(z);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(w);
+        this._commandBufferEncoder.finishEncodingCommand();
+        return true;
     }
 
-    public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
+    public setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloat3(uniform, color3.r, color3.g, color3.b);
+        this.setFloat3(uniform, color3.r, color3.g, color3.b);
+        return true;
     }
 
-    public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
+    public setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
-        this._native.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
+        this.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
+        return true;
     }
 
     public wipeCaches(bruteForce?: boolean): void {
@@ -857,7 +1936,7 @@ export class NativeEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this._stencilState.reset();
+            this._stencilStateComposer.reset();
             this._depthCullingState.reset();
             this._alphaState.reset();
         }
@@ -867,12 +1946,99 @@ export class NativeEngine extends Engine {
         this._cachedEffectForVertexBuffers = null;
     }
 
-    public _createTexture(): WebGLTexture {
-        return this._native.createTexture();
+    protected _createTexture(): WebGLTexture {
+        return this._engine.createTexture();
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-        this._native.deleteTexture(texture);
+        if (texture) {
+            this._engine.deleteTexture(texture);
+        }
+    }
+
+    /**
+     * Update the content of a dynamic texture
+     * @param texture defines the texture to update
+     * @param canvas defines the canvas containing the source
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param premulAlpha defines if alpha is stored as premultiplied
+     * @param format defines the format of the data
+     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+     */
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        if (premulAlpha === void 0) {
+            premulAlpha = false;
+        }
+
+        if (!!texture &&
+            !!texture._hardwareTexture) {
+            const source = canvas.getCanvasTexture();
+            const destination = texture._hardwareTexture.underlyingResource;
+            this._engine.copyTexture(destination, source);
+            texture.isReady = true;
+        }
+    }
+
+    public createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+        // it's not possible to create 0x0 texture sized. Many bgfx methods assume texture size is at least 1x1(best case).
+        // Worst case is getting a crash/assert.
+        width = Math.max(width, 1);
+        height = Math.max(height, 1);
+        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
+    }
+
+    public createVideoElement(constraints: MediaTrackConstraints): any {
+        // create native object depending on stream. Only NativeCamera is supported for now.
+        if (this._camera) {
+            return this._camera.createVideo(constraints);
+        }
+        return null;
+    }
+
+    public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+        if (texture && texture._hardwareTexture && this._camera) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._camera.updateVideoTexture(webGLTexture, video, invertY);
+        }
+    }
+
+    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        let texture = new InternalTexture(this, InternalTextureSource.Raw);
+
+        texture.format = format;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = texture.baseWidth;
+        texture.height = texture.baseHeight;
+        texture._compression = compression;
+        texture.type = type;
+
+        this.updateRawTexture(texture, data, format, invertY, compression, type);
+
+        if (texture._hardwareTexture) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._setTextureSampling(webGLTexture, filter);
+        }
+
+        this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+        if (!texture) {
+            return;
+        }
+
+        if (bufferView && texture._hardwareTexture) {
+            const underlyingResource = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture(underlyingResource, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
+        }
+
+        texture.isReady = true;
     }
 
     // TODO: Refactor to share more logic with babylon.engine.ts version.
@@ -894,12 +2060,13 @@ export class NativeEngine extends Engine {
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
+     * @param loaderOptions options to be passed to the loader
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer = false): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         //const fromBlob = url.substr(0, 5) === "blob:";
@@ -931,6 +2098,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture.samplingMode = samplingMode;
         texture.invertY = invertY;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, noMipmap);
 
         if (!this.doNotHandleContextLost) {
             // Keep a link to the buffer only if we plan to handle context lost
@@ -965,7 +2133,7 @@ export class NativeEngine extends Engine {
             else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType);
+                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType, loaderOptions);
             }
         };
 
@@ -974,8 +2142,7 @@ export class NativeEngine extends Engine {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
         } else {
             const onload = (data: ArrayBufferView) => {
-                const webGLTexture = texture._webGLTexture;
-                if (!webGLTexture) {
+                if (!texture._hardwareTexture) {
                     if (scene) {
                         scene._removePendingData(texture);
                     }
@@ -983,15 +2150,17 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap, invertY, () => {
-                    texture.baseWidth = this._native.getTextureWidth(webGLTexture);
-                    texture.baseHeight = this._native.getTextureHeight(webGLTexture);
+                const underlyingResource = texture._hardwareTexture.underlyingResource;
+
+                this._engine.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
+                    texture.baseWidth = this._engine.getTextureWidth(underlyingResource);
+                    texture.baseHeight = this._engine.getTextureHeight(underlyingResource);
                     texture.width = texture.baseWidth;
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
 
-                    var filter = this._getSamplingFilter(samplingMode);
-                    this._native.setTextureSampling(webGLTexture, filter);
+                    var filter = this._getNativeSamplingMode(samplingMode);
+                    this._setTextureSampling(underlyingResource, filter);
 
                     if (scene) {
                         scene._removePendingData(texture);
@@ -1004,7 +2173,7 @@ export class NativeEngine extends Engine {
                 });
             };
 
-            if (fromData) {
+            if (fromData && buffer) {
                 if (buffer instanceof ArrayBuffer) {
                     onload(new Uint8Array(buffer));
                 } else if (ArrayBuffer.isView(buffer)) {
@@ -1030,6 +2199,67 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+        const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
+        const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+
+        const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
+        const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
+
+        const framebuffer = this._engine.createFrameBuffer(
+            texture._hardwareTexture!.underlyingResource,
+            width,
+            height,
+            _native.Engine.TEXTURE_FORMAT_RGBA8,
+            false,
+            true,
+            false);
+        nativeRTWrapper._framebufferDepthStencil = framebuffer;
+        return texture;
+    }
+
+    /** @hidden */
+    public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
+        if (framebuffer) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
+    }
+
+    /**
+     * Engine abstraction for createImageBitmap
+     * @param image source for image
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+    public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return new Promise((resolve, reject) => {
+            if (Array.isArray(image)) {
+                const arr = <Array<ArrayBufferView>>image;
+                if (arr.length) {
+                    const image = this._engine.createImageBitmap(arr[0]);
+                    if (image) {
+                        resolve(image);
+                        return;
+                    }
+                }
+            }
+            reject(`Unsupported data for createImageBitmap.`);
+        });
+    }
+
+    /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        return this._engine.resizeImageBitmap(image, bufferWidth, bufferHeight);
+    }
+
     /**
      * Creates a cube texture
      * @param rootUrl defines the url where the files to load is located
@@ -1044,6 +2274,8 @@ export class NativeEngine extends Engine {
      * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+     * @param loaderOptions options to be passed to the loader
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the cube texture as an InternalTexture
      */
     public createCubeTexture(
@@ -1058,8 +2290,9 @@ export class NativeEngine extends Engine {
         createPolynomials = false,
         lodScale: number = 0,
         lodOffset: number = 0,
-        fallback: Nullable<InternalTexture> = null): InternalTexture
-    {
+        fallback: Nullable<InternalTexture> = null,
+        loaderOptions?: any,
+        useSRGBBuffer = false): InternalTexture {
         var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
@@ -1078,15 +2311,11 @@ export class NativeEngine extends Engine {
         // TODO: use texture loader to load env files?
         if (extension === ".env") {
             const onloaddata = (data: ArrayBufferView) => {
-                var info = EnvironmentTextureTools.GetEnvInfo(data)!;
+                var info = GetEnvInfo(data)!;
                 texture.width = info.width;
                 texture.height = info.width;
 
-                EnvironmentTextureTools.UploadEnvSpherical(texture, info);
-
-                if (info.version !== 1) {
-                    throw new Error(`Unsupported babylon environment map version "${info.version}"`);
-                }
+                UploadEnvSpherical(texture, info);
 
                 let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
                 if (!specularInfo) {
@@ -1094,7 +2323,7 @@ export class NativeEngine extends Engine {
                 }
 
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
-                const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
+                const imageData = CreateImageDataArrayBufferViews(data, info);
 
                 texture.format = Constants.TEXTUREFORMAT_RGBA;
                 texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -1103,7 +2332,7 @@ export class NativeEngine extends Engine {
                 texture._isRGBD = true;
                 texture.invertY = true;
 
-                this._native.loadCubeTextureWithMips(texture._webGLTexture!, imageData, () => {
+                this._engine.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, false, useSRGBBuffer, () => {
                     texture.isReady = true;
                     if (onLoad) {
                         onLoad();
@@ -1134,8 +2363,8 @@ export class NativeEngine extends Engine {
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
-                return new Promise((resolve, reject) => {
-                    this._native.loadCubeTexture(texture._webGLTexture!, data, !noMipmap, resolve, reject);
+                return new Promise<void>((resolve, reject) => {
+                    this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
                 });
             }).then(() => {
                 texture.isReady = true;
@@ -1154,52 +2383,17 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    // Returns a NativeFilter.XXXX value.
-    private _getSamplingFilter(samplingMode: number): number {
-        switch (samplingMode) {
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPPOINT;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return NativeFilter.MINLINEAR_MAGPOINT_MIPPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_LINEAR:
-                return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return NativeFilter.MINPOINT_MAGLINEAR_MIPPOINT;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
-            case Constants.TEXTURE_LINEAR_LINEAR:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
-            case Constants.TEXTURE_LINEAR_NEAREST:
-                return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
-            default:
-                throw new Error("Unexpected sampling mode: " + samplingMode + ".");
-        }
+    /** @hidden */
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
+        const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this);
+        this._renderTargetWrapperCache.push(rtWrapper);
+        return rtWrapper;
     }
 
-    private static _GetNativeTextureFormat(format: number, type: number): number {
-        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return NativeTextureFormat.RGBA8;
-        }
-        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
-            return NativeTextureFormat.RGBA32F;
-        }
-        else {
-            throw new Error("Unexpected texture format or type: format " + format + ", type " + type + ".");
-        }
-    }
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): NativeTexture {
-        let fullOptions = new RenderTargetCreationOptions();
+        const fullOptions: RenderTargetCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
@@ -1225,27 +2419,29 @@ export class NativeEngine extends Engine {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new NativeTexture(this, InternalTextureSource.RenderTarget);
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
-        var width = (<{ width: number, height: number }>size).width || <number>size;
-        var height = (<{ width: number, height: number }>size).height || <number>size;
+        const width = (<{ width: number, height: number }>size).width || <number>size;
+        const height = (<{ width: number, height: number }>size).height || <number>size;
 
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var framebuffer = this._native.createFramebuffer(
-            texture._webGLTexture!,
+        const framebuffer = this._engine.createFrameBuffer(
+            texture._hardwareTexture!.underlyingResource,
             width,
             height,
-            NativeEngine._GetNativeTextureFormat(fullOptions.format, fullOptions.type),
-            fullOptions.samplingMode!,
+            this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
             fullOptions.generateStencilBuffer ? true : false,
             fullOptions.generateDepthBuffer,
             fullOptions.generateMipMaps ? true : false);
 
-        texture._framebuffer = framebuffer;
+        rtWrapper._framebuffer = framebuffer;
+        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -1256,23 +2452,24 @@ export class NativeEngine extends Engine {
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
-        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
         this._internalTexturesCache.push(texture);
+        rtWrapper.setTextures(texture);
 
-        return texture;
+        return rtWrapper;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        if (texture._webGLTexture) {
-            var filter = this._getSamplingFilter(samplingMode);
-            this._native.setTextureSampling(texture._webGLTexture, filter);
+        if (texture._hardwareTexture) {
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
 
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+        const nativeRTWrapper = texture as NativeRenderTargetWrapper;
+
         if (faceIndex) {
             throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
         }
@@ -1282,16 +2479,18 @@ export class NativeEngine extends Engine {
         }
 
         if (forceFullscreenViewport) {
-            throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
+            //Not supported yet but don't stop rendering
         }
 
-        this._bindUnboundFramebuffer(texture._framebuffer);
+        if (nativeRTWrapper._framebufferDepthStencil) {
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebufferDepthStencil);
+        } else {
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
+        }
     }
 
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
-        if (disableGenerateMipMaps) {
-            Logger.Warn("Disabling mipmap generation not yet supported in NativeEngine. Ignoring.");
-        }
+    public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+        // NOTE: Disabling mipmap generation is not yet supported in NativeEngine.
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
@@ -1308,24 +2507,17 @@ export class NativeEngine extends Engine {
         const buffer = indexBuffer as NativeDataBuffer;
         const data = this._normalizeIndexData(indices);
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        this._native.updateDynamicIndexBuffer(buffer.nativeIndexBuffer, data, offset);
+        this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data (optional)
-     * @param byteLength the byte length of the data (optional)
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
-        const dataView = ArrayBuffer.isView(data) ? data : new Float32Array(data);
-        this._native.updateDynamicVertexBuffer(
-            buffer.nativeVertexBuffer,
-            dataView,
-            byteOffset ?? 0,
-            byteLength ?? dataView.byteLength);
+        const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
+        this._engine.updateDynamicVertexBuffer(
+            buffer.nativeVertexBuffer!,
+            data.buffer,
+            data.byteOffset + (byteOffset ?? 0),
+            byteLength ?? data.byteLength);
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.
@@ -1339,7 +2531,7 @@ export class NativeEngine extends Engine {
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
                 this._activeChannel = channel;
-                this._native.setTexture(uniform, null);
+                this._setTextureCore(uniform, null);
             }
             return false;
         }
@@ -1371,20 +2563,45 @@ export class NativeEngine extends Engine {
         this._activeChannel = channel;
 
         if (!internalTexture ||
-            !internalTexture._webGLTexture) {
+            !internalTexture._hardwareTexture) {
             return false;
         }
 
-        this._native.setTextureWrapMode(
-            internalTexture._webGLTexture,
+        this._setTextureWrapMode(
+            internalTexture._hardwareTexture.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._webGLTexture);
+        this._setTextureCore(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
+    }
+
+    // filter is a NativeFilter.XXXX value.
+    private _setTextureSampling(texture: WebGLTexture, filter: number) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURESAMPLING);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(filter);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    // addressModes are NativeAddressMode.XXXX values.
+    private _setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREWRAPMODE);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeU);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeV);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeW);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _setTextureCore(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>) {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURE);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     // TODO: Share more of this logic with the base implementation.
@@ -1393,12 +2610,15 @@ export class NativeEngine extends Engine {
         var internalTexture = texture.getInternalTexture();
         var value = texture.anisotropicFilteringLevel;
 
-        if (!internalTexture || !internalTexture._webGLTexture) {
+        if (!internalTexture || !internalTexture._hardwareTexture) {
             return;
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._webGLTexture, value);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREANISOTROPICLEVEL);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(internalTexture._hardwareTexture.underlyingResource);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(value);
+            this._commandBufferEncoder.finishEncodingCommand();
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
@@ -1407,11 +2627,11 @@ export class NativeEngine extends Engine {
     private _getAddressMode(wrapMode: number): number {
         switch (wrapMode) {
             case Constants.TEXTURE_WRAP_ADDRESSMODE:
-                return NativeAddressMode.WRAP;
+                return _native.Engine.ADDRESS_MODE_WRAP;
             case Constants.TEXTURE_CLAMP_ADDRESSMODE:
-                return NativeAddressMode.CLAMP;
+                return _native.Engine.ADDRESS_MODE_CLAMP;
             case Constants.TEXTURE_MIRROR_ADDRESSMODE:
-                return NativeAddressMode.MIRROR;
+                return _native.Engine.ADDRESS_MODE_MIRROR;
             default:
                 throw new Error("Unexpected wrap mode: " + wrapMode + ".");
         }
@@ -1419,23 +2639,58 @@ export class NativeEngine extends Engine {
 
     /** @hidden */
     public _bindTexture(channel: number, texture: InternalTexture): void {
-        throw new Error("_bindTexture not implemented.");
+        let uniform = this._boundUniforms[channel];
+        if (!uniform) {
+            return;
+        }
+        if (texture && texture._hardwareTexture) {
+            const underlyingResource = texture._hardwareTexture.underlyingResource;
+            this._setTextureCore(uniform, underlyingResource);
+        }
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
-            this._native.deleteIndexBuffer(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEINDEXBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeIndexBuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeIndexBuffer;
         }
 
         if (buffer.nativeVertexBuffer) {
-            this._native.deleteVertexBuffer(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEVERTEXBUFFER);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(buffer.nativeVertexBuffer);
+            this._commandBufferEncoder.finishEncodingCommand();
             delete buffer.nativeVertexBuffer;
         }
     }
 
-    public releaseEffects() {
-        // TODO
+    /**
+     * Create a canvas
+     * @param width width
+     * @param height height
+     * @return ICanvas interface
+     */
+    public createCanvas(width: number, height: number): ICanvas {
+        if (!_native.Canvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const canvas = new _native.Canvas();
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
+    /**
+     * Create an image to use with canvas
+     * @return IImage interface
+     */
+    public createCanvasImage(): IImage {
+        if (!_native.Canvas) {
+            throw new Error("Native Canvas plugin not available.");
+        }
+        const image = new _native.Image();
+        return image;
     }
 
     /** @hidden */
@@ -1456,5 +2711,197 @@ export class NativeEngine extends Engine {
     /** @hidden */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
         throw new Error("_uploadArrayBufferViewToTexture not implemented.");
+    }
+
+    // JavaScript-to-Native conversion helper functions.
+
+    private _getNativeSamplingMode(samplingMode: number): number {
+        switch (samplingMode) {
+            case Constants.TEXTURE_NEAREST_NEAREST:
+                return _native.Engine.TEXTURE_NEAREST_NEAREST;
+            case Constants.TEXTURE_LINEAR_LINEAR:
+                return _native.Engine.TEXTURE_LINEAR_LINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+                return _native.Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                return _native.Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                return _native.Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                return _native.Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_LINEAR:
+                return _native.Engine.TEXTURE_NEAREST_LINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                return _native.Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                return _native.Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                return _native.Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                return _native.Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST:
+                return _native.Engine.TEXTURE_LINEAR_NEAREST;
+            default:
+                throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
+        }
+    }
+
+    private _getStencilFunc(func: number): number {
+        switch (func) {
+            case Constants.LESS:
+                return _native.Engine.STENCIL_TEST_LESS;
+            case Constants.LEQUAL:
+                return _native.Engine.STENCIL_TEST_LEQUAL;
+            case Constants.EQUAL:
+                return _native.Engine.STENCIL_TEST_EQUAL;
+            case Constants.GEQUAL:
+                return _native.Engine.STENCIL_TEST_GEQUAL;
+            case Constants.GREATER:
+                return _native.Engine.STENCIL_TEST_GREATER;
+            case Constants.NOTEQUAL:
+                return _native.Engine.STENCIL_TEST_NOTEQUAL;
+            case Constants.NEVER:
+                return _native.Engine.STENCIL_TEST_NEVER;
+            case Constants.ALWAYS:
+                return _native.Engine.STENCIL_TEST_ALWAYS;
+            default:
+                throw new Error(`Unsupported stencil func mode: ${func}.`);
+        }
+    }
+
+    private _getStencilOpFail(opFail: number): number {
+        switch (opFail) {
+            case Constants.KEEP:
+                return _native.Engine.STENCIL_OP_FAIL_S_KEEP;
+            case Constants.ZERO:
+                return _native.Engine.STENCIL_OP_FAIL_S_ZERO;
+            case Constants.REPLACE:
+                return _native.Engine.STENCIL_OP_FAIL_S_REPLACE;
+            case Constants.INCR:
+                return _native.Engine.STENCIL_OP_FAIL_S_INCR;
+            case Constants.DECR:
+                return _native.Engine.STENCIL_OP_FAIL_S_DECR;
+            case Constants.INVERT:
+                return _native.Engine.STENCIL_OP_FAIL_S_INVERT;
+            case Constants.INCR_WRAP:
+                return _native.Engine.STENCIL_OP_FAIL_S_INCRSAT;
+            case Constants.DECR_WRAP:
+                return _native.Engine.STENCIL_OP_FAIL_S_DECRSAT;
+            default:
+                throw new Error(`Unsupported stencil OpFail mode: ${opFail}.`);
+        }
+    }
+
+    private _getStencilDepthFail(depthFail: number): number {
+        switch (depthFail) {
+            case Constants.KEEP:
+                return _native.Engine.STENCIL_OP_FAIL_Z_KEEP;
+            case Constants.ZERO:
+                return _native.Engine.STENCIL_OP_FAIL_Z_ZERO;
+            case Constants.REPLACE:
+                return _native.Engine.STENCIL_OP_FAIL_Z_REPLACE;
+            case Constants.INCR:
+                return _native.Engine.STENCIL_OP_FAIL_Z_INCR;
+            case Constants.DECR:
+                return _native.Engine.STENCIL_OP_FAIL_Z_DECR;
+            case Constants.INVERT:
+                return _native.Engine.STENCIL_OP_FAIL_Z_INVERT;
+            case Constants.INCR_WRAP:
+                return _native.Engine.STENCIL_OP_FAIL_Z_INCRSAT;
+            case Constants.DECR_WRAP:
+                return _native.Engine.STENCIL_OP_FAIL_Z_DECRSAT;
+            default:
+                throw new Error(`Unsupported stencil depthFail mode: ${depthFail}.`);
+        }
+    }
+
+    private _getStencilDepthPass(opPass: number): number {
+        switch (opPass) {
+            case Constants.KEEP:
+                return _native.Engine.STENCIL_OP_PASS_Z_KEEP;
+            case Constants.ZERO:
+                return _native.Engine.STENCIL_OP_PASS_Z_ZERO;
+            case Constants.REPLACE:
+                return _native.Engine.STENCIL_OP_PASS_Z_REPLACE;
+            case Constants.INCR:
+                return _native.Engine.STENCIL_OP_PASS_Z_INCR;
+            case Constants.DECR:
+                return _native.Engine.STENCIL_OP_PASS_Z_DECR;
+            case Constants.INVERT:
+                return _native.Engine.STENCIL_OP_PASS_Z_INVERT;
+            case Constants.INCR_WRAP:
+                return _native.Engine.STENCIL_OP_PASS_Z_INCRSAT;
+            case Constants.DECR_WRAP:
+                return _native.Engine.STENCIL_OP_PASS_Z_DECRSAT;
+            default:
+                throw new Error(`Unsupported stencil opPass mode: ${opPass}.`);
+        }
+    }
+
+    private _getNativeTextureFormat(format: number, type: number): number {
+        if (format == Constants.TEXTUREFORMAT_RGB && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+            return _native.Engine.TEXTURE_FORMAT_RGB8;
+        }
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+            return _native.Engine.TEXTURE_FORMAT_RGBA8;
+        }
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
+            return _native.Engine.TEXTURE_FORMAT_RGBA32F;
+        }
+        else {
+            throw new Error(`Unsupported texture format or type: format ${format}, type ${type}.`);
+        }
+    }
+
+    private _getNativeAlphaMode(mode: number): number {
+        switch (mode) {
+            case Constants.ALPHA_DISABLE:
+                return _native.Engine.ALPHA_DISABLE;
+            case Constants.ALPHA_ADD:
+                return _native.Engine.ALPHA_ADD;
+            case Constants.ALPHA_COMBINE:
+                return _native.Engine.ALPHA_COMBINE;
+            case Constants.ALPHA_SUBTRACT:
+                return _native.Engine.ALPHA_SUBTRACT;
+            case Constants.ALPHA_MULTIPLY:
+                return _native.Engine.ALPHA_MULTIPLY;
+            case Constants.ALPHA_MAXIMIZED:
+                return _native.Engine.ALPHA_MAXIMIZED;
+            case Constants.ALPHA_ONEONE:
+                return _native.Engine.ALPHA_ONEONE;
+            case Constants.ALPHA_PREMULTIPLIED:
+                return _native.Engine.ALPHA_PREMULTIPLIED;
+            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                return _native.Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            case Constants.ALPHA_INTERPOLATE:
+                return _native.Engine.ALPHA_INTERPOLATE;
+            case Constants.ALPHA_SCREENMODE:
+                return _native.Engine.ALPHA_SCREENMODE;
+            default:
+                throw new Error(`Unsupported alpha mode: ${mode}.`);
+        }
+    }
+
+    private _getNativeAttribType(type: number): number {
+        switch (type) {
+            case VertexBuffer.BYTE:
+                return _native.Engine.ATTRIB_TYPE_INT8;
+            case VertexBuffer.UNSIGNED_BYTE:
+                return _native.Engine.ATTRIB_TYPE_UINT8;
+            case VertexBuffer.SHORT:
+                return _native.Engine.ATTRIB_TYPE_INT16;
+            case VertexBuffer.UNSIGNED_SHORT:
+                return _native.Engine.ATTRIB_TYPE_UINT16;
+            case VertexBuffer.FLOAT:
+                return _native.Engine.ATTRIB_TYPE_FLOAT;
+            default:
+                throw new Error(`Unsupported attribute type: ${type}.`);
+        }
+    }
+
+    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+        // TODO
+        var result = { ascent: 0, height: 0, descent: 0 };
+        return result;
     }
 }

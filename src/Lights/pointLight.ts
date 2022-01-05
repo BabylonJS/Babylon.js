@@ -95,7 +95,7 @@ export class PointLight extends ShadowLight {
     }
 
     /**
-     * Specifies wether or not the shadowmap should be a cube texture.
+     * Specifies whether or not the shadowmap should be a cube texture.
      * @returns true if the shadowmap needs to be a cube texture.
      */
     public needCube(): boolean {
@@ -145,8 +145,12 @@ export class PointLight extends ShadowLight {
             return;
         }
 
-        Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0,
-            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
+        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
+        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+
+        const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
+
+        Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, true, this._scene.getEngine().isNDCHalfZRange, undefined, useReverseDepthBuffer);
     }
 
     protected _buildUniformLayout(): void {

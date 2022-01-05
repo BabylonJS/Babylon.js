@@ -18,7 +18,7 @@ export class DiscardDisplayManager implements IDisplayManager {
         return "#540b0b";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         contentArea.classList.add("discard-block");
     }
 }

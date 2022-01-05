@@ -47,7 +47,7 @@ export class GLTFData {
             else if (endsWith(key, ".gltf")) {
                 mimeType = { type: "model/gltf+json" };
             }
-            else if (endsWith(key, ".jpeg" || ".jpg")) {
+            else if (endsWith(key, ".jpeg") || endsWith(key, ".jpg")) {
                 mimeType = { type: ImageMimeType.JPEG };
             }
             else if (endsWith(key, ".png")) {

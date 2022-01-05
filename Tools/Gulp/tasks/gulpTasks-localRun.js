@@ -27,8 +27,8 @@ gulp.task("webserver", function () {
         livereload: false,
         middleware: function (connect, opt) {
             return [function (req, res, next) {
-                const baseUrl =  (req.url.indexOf('dist') !== -1 || req.url.indexOf('Tools') !== -1  || req.url.indexOf('temp/') !== -1);
                 let referer = req.headers['referer'];
+                const baseUrl =  ((req.url.indexOf('dist/preview') !== -1) || req.url.indexOf('Tools') !== -1  || req.url.indexOf('temp/') !== -1);
                 if (!baseUrl && referer) {
                     referer = referer.toLowerCase();
                     if (referer.indexOf('/playground/') !== -1 && req.url.indexOf('/Playground/') === -1) {
@@ -41,6 +41,11 @@ gulp.task("webserver", function () {
                     if (referer.indexOf('/localdev/') !== -1 && referer.indexOf(req.originalUrl) === -1) {
                         if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
                             req.url = "/Playground/" + req.url.replace(/localDev/ig, "");
+                        }
+                    }
+                    if (referer.indexOf('/localdevwebgpu/') !== -1 && referer.indexOf(req.originalUrl) === -1) {
+                        if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
+                            req.url = "/Playground/" + req.url.replace(/localdevwebgpu/ig, "");
                         }
                     }
                 }

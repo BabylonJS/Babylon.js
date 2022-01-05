@@ -6,12 +6,12 @@ import { Observable } from "../Misc/observable";
 import { Color3 } from "../Maths/math.color";
 import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { Animation } from "../Animations/animation";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
  * This defines an action responsible to change the value of a property
  * by interpolating between its current value and the newly set one once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class InterpolateValueAction extends Action {
     /**
@@ -54,7 +54,7 @@ export class InterpolateValueAction extends Action {
      * @param target defines the object containing the value to interpolate
      * @param propertyPath defines the path to the property in the target object
      * @param value defines the target value at the end of the interpolation
-     * @param duration deines the time it will take for the property to interpolate to the value.
+     * @param duration defines the time it will take for the property to interpolate to the value.
      * @param condition defines the trigger related conditions
      * @param stopOtherAnimations defines if the other scene animations should be stopped when the action has been triggered
      * @param onInterpolationDone defines a callback raised once the interpolation animation has been done
@@ -145,4 +145,4 @@ export class InterpolateValueAction extends Action {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.InterpolateValueAction"] = InterpolateValueAction;
+RegisterClass("BABYLON.InterpolateValueAction", InterpolateValueAction);

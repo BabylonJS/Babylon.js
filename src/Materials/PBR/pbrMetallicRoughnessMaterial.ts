@@ -3,13 +3,13 @@ import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 
 /**
  * The PBR material of BJS following the metal roughness convention.
  *
  * This fits to the PBR convention in the GLTF definition:
- * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
+ * https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
  */
 export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
@@ -71,7 +71,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Return the currrent class name of the material.
+     * Return the current class name of the material.
      */
     public getClassName(): string {
         return "PBRMetallicRoughnessMaterial";
@@ -113,7 +113,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Parses a JSON object correponding to the serialize function.
+     * Parses a JSON object corresponding to the serialize function.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
         const material = SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);
@@ -136,4 +136,4 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRMetallicRoughnessMaterial"] = PBRMetallicRoughnessMaterial;
+RegisterClass("BABYLON.PBRMetallicRoughnessMaterial", PBRMetallicRoughnessMaterial);

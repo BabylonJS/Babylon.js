@@ -14,6 +14,7 @@ import { GraphFrame } from './diagram/graphFrame';
 import { FrameNodePort } from './diagram/frameNodePort';
 import { FramePortData } from './diagram/graphCanvas';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { ParticleSystem } from "babylonjs/Particles/particleSystem";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -21,10 +22,10 @@ export class GlobalState {
     hostDocument: HTMLDocument;
     hostWindow: Window;
     onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
-    onRebuildRequiredObservable = new Observable<void>();
+    onRebuildRequiredObservable = new Observable<boolean>();
     onBuiltObservable = new Observable<void>();
-    onResetRequiredObservable = new Observable<void>();
-    onUpdateRequiredObservable = new Observable<void>();
+    onResetRequiredObservable = new Observable<void>();    
+    onUpdateRequiredObservable = new Observable<Nullable<NodeMaterialBlock>>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
@@ -40,12 +41,15 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onFrameCreatedObservable = new Observable<GraphFrame>();
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
+    onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
+    onPopupClosedObservable = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     previewType: PreviewType;
     previewFile: File;
+    particleSystemBlendMode = ParticleSystem.BLENDMODE_ONEONE;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
@@ -56,7 +60,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    storeEditorData: (serializationObject: any) => void;
+    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
     _mode: NodeMaterialModes;
 
     /** Gets the mode */
@@ -71,7 +75,7 @@ export class GlobalState {
         this.onPreviewCommandActivated.notifyObservers(true);
     }
 
-    customSave?: {label: string, action: (data: string) => Promise<void>};
+    customSave?: { label: string, action: (data: string) => Promise<void> };
 
     public constructor() {
         this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);

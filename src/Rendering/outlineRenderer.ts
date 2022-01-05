@@ -1,11 +1,11 @@
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { _InstancesBatch, Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
-import { Effect } from "../Materials/effect";
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
@@ -28,7 +28,7 @@ declare module "../scene" {
  * Gets the outline renderer associated with the scene
  * @returns a OutlineRenderer
  */
-Scene.prototype.getOutlineRenderer = function(): OutlineRenderer {
+Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {
     if (!this._outlineRenderer) {
         this._outlineRenderer = new OutlineRenderer(this);
     }
@@ -56,10 +56,10 @@ declare module "../Meshes/abstractMesh" {
 }
 
 Object.defineProperty(Mesh.prototype, "renderOutline", {
-    get: function(this: Mesh) {
+    get: function (this: Mesh) {
         return this._renderOutline;
     },
-    set: function(this: Mesh, value: boolean) {
+    set: function (this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
             this.getScene().getOutlineRenderer();
@@ -71,10 +71,10 @@ Object.defineProperty(Mesh.prototype, "renderOutline", {
 });
 
 Object.defineProperty(Mesh.prototype, "renderOverlay", {
-    get: function(this: Mesh) {
+    get: function (this: Mesh) {
         return this._renderOverlay;
     },
-    set: function(this: Mesh, value: boolean) {
+    set: function (this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
             this.getScene().getOutlineRenderer();
@@ -86,7 +86,7 @@ Object.defineProperty(Mesh.prototype, "renderOverlay", {
 });
 
 /**
- * This class is responsible to draw bothe outline/overlay of meshes.
+ * This class is responsible to draw the outline/overlay of meshes.
  * It should not be used directly but through the available method on mesh.
  */
 export class OutlineRenderer implements ISceneComponent {
@@ -105,14 +105,18 @@ export class OutlineRenderer implements ISceneComponent {
     public scene: Scene;
 
     /**
-     * Defines a zOffset to prevent zFighting between the overlay and the mesh.
+     * Defines a zOffset default Factor to prevent zFighting between the overlay and the mesh.
      */
     public zOffset = 1;
 
+    /**
+     * Defines a zOffset default Unit to prevent zFighting between the overlay and the mesh.
+     */
+    public zOffsetUnits = 4; // 4 to account for projection a bit by default
+
     private _engine: Engine;
-    private _effect: Effect;
-    private _cachedDefines: string;
     private _savedDepthWrite: boolean;
+    private _passIdForDrawWrapper: number[];
 
     /**
      * Instantiates a new outline renderer. (There could be only one per scene).
@@ -122,6 +126,10 @@ export class OutlineRenderer implements ISceneComponent {
         this.scene = scene;
         this._engine = scene.getEngine();
         this.scene._addComponent(this);
+        this._passIdForDrawWrapper = [];
+        for (let i = 0; i < 4; ++i) {
+            this._passIdForDrawWrapper[i] = this._engine.createRenderPassId(`Outline Renderer (${i})`);
+        }
     }
 
     /**
@@ -141,10 +149,12 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
-        // Nothing to do here.
+        for (let i = 0; i < this._passIdForDrawWrapper.length; ++i) {
+            this._engine.releaseRenderPassId(this._passIdForDrawWrapper[i]);
+        }
     }
 
     /**
@@ -152,14 +162,17 @@ export class OutlineRenderer implements ISceneComponent {
      * @param subMesh Defines the sumesh to render
      * @param batch Defines the batch of meshes in case of instances
      * @param useOverlay Defines if the rendering is for the overlay or the outline
+     * @param renderPassId Render pass id to use to render the mesh
      */
-    public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false): void {
+    public render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay: boolean = false, renderPassId?: number): void {
+        renderPassId = renderPassId ?? this._passIdForDrawWrapper[0];
+
         var scene = this.scene;
         var engine = scene.getEngine();
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || subMesh.getRenderingMesh().hasThinInstances);
 
-        if (!this.isReady(subMesh, hardwareInstancedRendering)) {
+        if (!this.isReady(subMesh, hardwareInstancedRendering, renderPassId)) {
             return;
         }
 
@@ -173,56 +186,77 @@ export class OutlineRenderer implements ISceneComponent {
             return;
         }
 
-        engine.enableEffect(this._effect);
+        const drawWrapper = subMesh._getDrawWrapper(renderPassId)!;
+        const effect = DrawWrapper.GetEffect(drawWrapper)!;
+
+        engine.enableEffect(drawWrapper);
 
         // Logarithmic depth
         if ((<any>material).useLogarithmicDepth) {
-            this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
         }
 
-        this._effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
-        this._effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
-        this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
+        effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
+        effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
+        effect.setMatrix("viewProjection", scene.getTransformMatrix());
+        effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
         // Bones
         if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-            this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+            effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+        }
+
+        if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+            renderingMesh.morphTargetManager._bind(effect);
         }
 
         // Morph targets
-        MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
+        MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
 
-        renderingMesh._bind(subMesh, this._effect, material.fillMode);
+        if (!hardwareInstancedRendering) {
+            renderingMesh._bind(subMesh, effect, material.fillMode);
+        }
 
         // Alpha test
         if (material && material.needAlphaTesting()) {
             var alphaTexture = material.getAlphaTestTexture();
             if (alphaTexture) {
-                this._effect.setTexture("diffuseSampler", alphaTexture);
-                this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                effect.setTexture("diffuseSampler", alphaTexture);
+                effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
             }
         }
 
+        // Clip plane
+        MaterialHelper.BindClipPlane(effect, scene);
+
         engine.setZOffset(-this.zOffset);
-        renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-            (isInstance, world) => { this._effect.setMatrix("world", world); });
+        engine.setZOffsetUnits(-this.zOffsetUnits);
+
+        renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+            (isInstance, world) => { effect.setMatrix("world", world); });
 
         engine.setZOffset(0);
+        engine.setZOffsetUnits(0);
     }
 
     /**
      * Returns whether or not the outline renderer is ready for a given submesh.
      * All the dependencies e.g. submeshes, texture, effect... mus be ready
-     * @param subMesh Defines the submesh to check readyness for
-     * @param useInstances Defines wheter wee are trying to render instances or not
+     * @param subMesh Defines the submesh to check readiness for
+     * @param useInstances Defines whether wee are trying to render instances or not
+     * @param renderPassId Render pass id to use to render the mesh
      * @returns true if ready otherwise false
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+    public isReady(subMesh: SubMesh, useInstances: boolean, renderPassId?: number): boolean {
+        renderPassId = renderPassId ?? this._passIdForDrawWrapper[0];
+
         var defines = [];
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
         var mesh = subMesh.getMesh();
         var material = subMesh.getMaterial();
+
+        const scene = mesh.getScene();
 
         if (material) {
             // Alpha test
@@ -266,6 +300,10 @@ export class OutlineRenderer implements ISceneComponent {
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
+
                 MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
@@ -274,24 +312,54 @@ export class OutlineRenderer implements ISceneComponent {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
-            if (subMesh.getRenderingMesh().hasInstances) {
+            if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
         }
 
-        // Get correct effect
-        var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-            this._effect = this.scene.getEngine().createEffect("outline",
-                attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant", "morphTargetInfluences"],
-                ["diffuseSampler"], join,
-                undefined, undefined, undefined,
-                { maxSimultaneousMorphTargets: numMorphInfluencers });
+        // Clip planes
+        if (scene.clipPlane) {
+            defines.push("#define CLIPPLANE");
         }
 
-        return this._effect.isReady();
+        if (scene.clipPlane2) {
+            defines.push("#define CLIPPLANE2");
+        }
+
+        if (scene.clipPlane3) {
+            defines.push("#define CLIPPLANE3");
+        }
+
+        if (scene.clipPlane4) {
+            defines.push("#define CLIPPLANE4");
+        }
+
+        if (scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+
+        if (scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
+        }
+
+        // Get correct effect
+        const drawWrapper = subMesh._getDrawWrapper(renderPassId, true)!;
+        const cachedDefines = drawWrapper.defines;
+        const join = defines.join("\n");
+
+        if (cachedDefines !== join) {
+            drawWrapper.setEffect(this.scene.getEngine().createEffect("outline",
+                attribs,
+                ["world", "mBones", "viewProjection", "diffuseMatrix", "offset", "color", "logarithmicDepthConstant",
+                    "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"],
+                ["diffuseSampler", "morphTargets"], join,
+                undefined, undefined, undefined,
+                { maxSimultaneousMorphTargets: numMorphInfluencers }),
+                join);
+        }
+
+        return drawWrapper.effect!.isReady();
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
@@ -299,7 +367,7 @@ export class OutlineRenderer implements ISceneComponent {
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
             var material = subMesh.getMaterial();
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.cacheStencilState();
                 // Draw only to stencil buffer for the original mesh
                 // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
@@ -310,7 +378,8 @@ export class OutlineRenderer implements ISceneComponent {
                 this._engine.setStencilFunction(Constants.ALWAYS);
                 this._engine.setStencilMask(OutlineRenderer._StencilReference);
                 this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
-                this.render(subMesh, batch, /* This sets offset to 0 */ true);
+                this._engine.stencilStateComposer.useStencilGlobalOnly = true;
+                this.render(subMesh, batch, /* This sets offset to 0 */ true, this._passIdForDrawWrapper[1]);
 
                 this._engine.setColorWrite(true);
                 this._engine.setStencilFunction(Constants.NOTEQUAL);
@@ -318,10 +387,11 @@ export class OutlineRenderer implements ISceneComponent {
 
             // Draw the outline using the above stencil if needed to avoid drawing within the mesh
             this._engine.setDepthWrite(false);
-            this.render(subMesh, batch);
+            this.render(subMesh, batch, false, this._passIdForDrawWrapper[0]);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
+                this._engine.stencilStateComposer.useStencilGlobalOnly = false;
                 this._engine.restoreStencilState();
             }
         }
@@ -333,7 +403,7 @@ export class OutlineRenderer implements ISceneComponent {
             var currentMode = this._engine.getAlphaMode();
             let alphaBlendState = this._engine.alphaState.alphaBlend;
             this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
-            this.render(subMesh, batch, true);
+            this.render(subMesh, batch, true, this._passIdForDrawWrapper[3]);
             this._engine.setAlphaMode(currentMode);
             this._engine.setDepthWrite(this._savedDepthWrite);
             this._engine.alphaState.alphaBlend = alphaBlendState;
@@ -343,7 +413,7 @@ export class OutlineRenderer implements ISceneComponent {
         if (mesh.renderOutline && this._savedDepthWrite) {
             this._engine.setDepthWrite(true);
             this._engine.setColorWrite(false);
-            this.render(subMesh, batch);
+            this.render(subMesh, batch, false, this._passIdForDrawWrapper[2]);
             this._engine.setColorWrite(true);
         }
     }

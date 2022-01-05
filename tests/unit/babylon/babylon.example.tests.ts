@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Example', function() {
+describe('Example', function () {
     /**
      * Sets the timeout of all the tests to 10 seconds.
      * Note the JavaScript function syntax in the describe callback.
@@ -12,12 +12,12 @@ describe('Example', function() {
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();

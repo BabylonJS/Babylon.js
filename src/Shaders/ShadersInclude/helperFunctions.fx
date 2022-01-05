@@ -1,11 +1,11 @@
 ﻿const float PI = 3.1415926535897932384626433832795;
+const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
 const float Epsilon = 0.0000001;
-
 #define saturate(x)         clamp(x, 0.0, 1.0)
 
 #define absEps(x)           abs(x) + Epsilon
@@ -113,7 +113,7 @@ vec4 toRGBD(vec3 color) {
     // Helps with png quantization.
     rgb = toGammaSpace(rgb);
 
-    return vec4(rgb, D); 
+    return vec4(clamp(rgb, 0., 1.), D); 
 }
 
 vec3 fromRGBD(vec4 rgbd) {
@@ -123,4 +123,20 @@ vec3 fromRGBD(vec4 rgbd) {
     // return rgbd.rgb * ((rgbdMaxRange / 255.0) / rgbd.a);
 
     return rgbd.rgb / rgbd.a;
+}
+
+vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cubePos ) {
+	// Find the ray intersection with box plane
+	vec3 invOrigVec = vec3(1.0,1.0,1.0) / origVec;
+	vec3 halfSize = cubeSize * 0.5;
+	vec3 intersecAtMaxPlane = (cubePos + halfSize - vertexPos) * invOrigVec;
+	vec3 intersecAtMinPlane = (cubePos - halfSize - vertexPos) * invOrigVec;
+	// Get the largest intersection values (we are not intersted in negative values)
+	vec3 largestIntersec = max(intersecAtMaxPlane, intersecAtMinPlane);
+	// Get the closest of all solutions
+	float distance = min(min(largestIntersec.x, largestIntersec.y), largestIntersec.z);
+	// Get the intersection position
+	vec3 intersectPositionWS = vertexPos + origVec * distance;
+	// Get corrected vector
+	return intersectPositionWS - cubePos;
 }

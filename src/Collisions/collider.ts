@@ -32,9 +32,9 @@ var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vect
 };
 
 var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number, found: boolean } =
-    (function() {
+    (function () {
         var result = { root: 0, found: false };
-        return function(a: number, b: number, c: number, maxR: number) {
+        return function (a: number, b: number, c: number, maxR: number) {
             result.root = 0; result.found = false;
             var determinant = b * b - 4.0 * a * c;
             if (determinant < 0) {
@@ -118,6 +118,8 @@ export class Collider {
     private _nearestDistance: number;
 
     private _collisionMask = -1;
+    private _velocitySquaredLength: number;
+    private _nearestDistanceSquared: number;
 
     public get collisionMask(): number {
         return this._collisionMask;
@@ -138,7 +140,14 @@ export class Collider {
     /** @hidden */
     public _initialize(source: Vector3, dir: Vector3, e: number): void {
         this._velocity = dir;
-        Vector3.NormalizeToRef(dir, this._normalizedVelocity);
+        this._velocitySquaredLength = this._velocity.lengthSquared();
+        const len = Math.sqrt(this._velocitySquaredLength);
+        if (len === 0 || len === 1.0) {
+            this._normalizedVelocity.copyFromFloats(dir._x, dir._y, dir._z);
+        }
+        else {
+            dir.scaleToRef(1.0 / len, this._normalizedVelocity);
+        }
         this._basePoint = source;
 
         source.multiplyToRef(this._radius, this._basePointWorld);
@@ -261,9 +270,7 @@ export class Collider {
         }
 
         if (!found) {
-            var velocitySquaredLength = this._velocity.lengthSquared();
-
-            var a = velocitySquaredLength;
+            var a = this._velocitySquaredLength;
 
             this._basePoint.subtractToRef(p1, this._tempVector);
             var b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
@@ -304,8 +311,8 @@ export class Collider {
             var edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             var edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -326,8 +333,8 @@ export class Collider {
             edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
@@ -347,8 +354,8 @@ export class Collider {
             edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-            b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -365,16 +372,22 @@ export class Collider {
         }
 
         if (found) {
-            var distToCollision = t * this._velocity.length();
+            var distToCollisionSquared = t * t * this._velocitySquaredLength;
 
-            if (!this.collisionFound || distToCollision < this._nearestDistance) {
-                if (!this.intersectionPoint) {
-                    this.intersectionPoint = this._collisionPoint.clone();
-                } else {
-                    this.intersectionPoint.copyFrom(this._collisionPoint);
+            if (!this.collisionFound || distToCollisionSquared < this._nearestDistanceSquared) {
+                // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
+                // onCollide observable are triggered if collideMesh is set
+                // this allow trigger volumes to be created.
+                if (hostMesh.collisionResponse) {
+                    if (!this.intersectionPoint) {
+                        this.intersectionPoint = this._collisionPoint.clone();
+                    } else {
+                        this.intersectionPoint.copyFrom(this._collisionPoint);
+                    }
+                    this._nearestDistanceSquared = distToCollisionSquared;
+                    this._nearestDistance = Math.sqrt(distToCollisionSquared);
+                    this.collisionFound = true;
                 }
-                this._nearestDistance = distToCollision;
-                this.collisionFound = true;
                 this.collidedMesh = hostMesh;
             }
         }
@@ -382,12 +395,22 @@ export class Collider {
 
     /** @hidden */
     public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void {
-        for (var i = indexStart; i < indexEnd; i += 3) {
-            var p1 = pts[indices[i] - decal];
-            var p2 = pts[indices[i + 1] - decal];
-            var p3 = pts[indices[i + 2] - decal];
+        if (!indices || indices.length === 0) {
+            for (let i = 0; i < pts.length; i += 3) {
+                const p1 = pts[i];
+                const p2 = pts[i + 1];
+                const p3 = pts[i + 2];
 
-            this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+            }
+        } else {
+            for (let i = indexStart; i < indexEnd; i += 3) {
+                const p1 = pts[indices[i] - decal];
+                const p2 = pts[indices[i + 1] - decal];
+                const p3 = pts[indices[i + 2] - decal];
+
+                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+            }
         }
     }
 

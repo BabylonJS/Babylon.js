@@ -1,7 +1,9 @@
 import { BaseSlider } from "./baseSlider";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../../measure';
+import { serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -9,10 +11,12 @@ import { Measure } from '../../measure';
 export class Slider extends BaseSlider {
     private _background = "black";
     private _borderColor = "white";
+    private _thumbColor = "";
     private _isThumbCircle = false;
     protected _displayValueBar = true;
 
     /** Gets or sets a boolean indicating if the value bar must be rendered */
+    @serialize()
     public get displayValueBar(): boolean {
         return this._displayValueBar;
     }
@@ -27,6 +31,7 @@ export class Slider extends BaseSlider {
     }
 
     /** Gets or sets border color */
+    @serialize()
     public get borderColor(): string {
         return this._borderColor;
     }
@@ -41,6 +46,7 @@ export class Slider extends BaseSlider {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -54,7 +60,23 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
+    /** Gets or sets thumb's color */
+    @serialize()
+    public get thumbColor(): string {
+        return this._thumbColor;
+    }
+
+    public set thumbColor(value: string) {
+        if (this._thumbColor === value) {
+            return;
+        }
+
+        this._thumbColor = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets a boolean indicating if the thumb should be round or square */
+    @serialize()
     public get isThumbCircle(): boolean {
         return this._isThumbCircle;
     }
@@ -80,7 +102,7 @@ export class Slider extends BaseSlider {
         return "Slider";
     }
 
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
@@ -193,6 +215,7 @@ export class Slider extends BaseSlider {
         }
 
         // Thumb
+        context.fillStyle = this._thumbColor || this.color;
         if (this.displayThumb) {
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
@@ -241,4 +264,4 @@ export class Slider extends BaseSlider {
         context.restore();
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Slider"] = Slider;
+RegisterClass("BABYLON.GUI.Slider", Slider);

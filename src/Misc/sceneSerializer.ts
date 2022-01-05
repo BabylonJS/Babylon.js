@@ -6,13 +6,10 @@ import { Material } from "../Materials/material";
 import { Scene } from "../scene";
 import { Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators";
+import { Texture } from "../Materials/Textures/texture";
 
 var serializedGeometries: Geometry[] = [];
 var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
-    if ((<any>serializedGeometries)[geometry.id]) {
-        return;
-    }
-
     if (geometry.doNotSerialize) {
         return;
     }
@@ -28,7 +25,7 @@ var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
     // Geometry
     var geometry = mesh._geometry;
     if (geometry) {
-        if (!mesh.getScene().getGeometryByID(geometry.id)) {
+        if (!mesh.getScene().getGeometryById(geometry.id)) {
             // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
             serializeGeometry(geometry, serializationScene.geometries);
         }
@@ -45,28 +42,33 @@ var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
 var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     //only works if the mesh is already loaded
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
+        const serializeMaterial = (material: Material) => {
+            serializationObject.materials = serializationObject.materials || [];
+            if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
+                serializationObject.materials.push(material.serialize());
+            }
+        };
+
         //serialize material
         if (mesh.material && !mesh.material.doNotSerialize) {
             if (mesh.material instanceof MultiMaterial) {
                 serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                serializationObject.materials = serializationObject.materials || [];
                 if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                     serializationObject.multiMaterials.push(mesh.material.serialize());
                     for (let submaterial of mesh.material.subMaterials) {
                         if (submaterial) {
-                            if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>submaterial).id))) {
-                                serializationObject.materials.push(submaterial.serialize());
-                            }
+                            serializeMaterial(submaterial);
                         }
                     }
                 }
             } else {
-                serializationObject.materials = serializationObject.materials || [];
-                if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
-                    serializationObject.materials.push(mesh.material.serialize());
-                }
+                serializeMaterial(mesh.material);
             }
         }
+        else if (!mesh.material) {
+            serializeMaterial(mesh.getScene().defaultMaterial);
+        }
+
         //serialize geometry
         var geometry = mesh._geometry;
         if (geometry) {
@@ -101,6 +103,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
  * Class used to serialize a scene into a string
  */
 export class SceneSerializer {
+
     /**
      * Clear cache used by a previous serialization
      */
@@ -110,11 +113,21 @@ export class SceneSerializer {
 
     /**
      * Serialize a scene into a JSON compatible object
+     * Note that if the current engine does not support synchronous texture reading (like WebGPU), you should use SerializeAsync instead
+     * as else you may not retrieve the proper base64 encoded texture data (when using the Texture.ForceSerializeBuffers flag)
      * @param scene defines the scene to serialize
      * @returns a JSON compatible object
      */
     public static Serialize(scene: Scene): any {
+        return SceneSerializer._Serialize(scene);
+    }
+
+    private static _Serialize(scene: Scene, checkSyncReadSupported = true): any {
         var serializationObject: any = {};
+
+        if (checkSyncReadSupported && !scene.getEngine()._features.supportSyncTextureRead && Texture.ForceSerializeBuffers) {
+            console.warn("The serialization object may not contain the proper base64 encoded texture data! You should use the SerializeAsync method instead.");
+        }
 
         SceneSerializer.ClearCache();
 
@@ -125,6 +138,7 @@ export class SceneSerializer {
         serializationObject.ambientColor = scene.ambientColor.asArray();
         serializationObject.gravity = scene.gravity.asArray();
         serializationObject.collisionsEnabled = scene.collisionsEnabled;
+        serializationObject.useRightHandedSystem = scene.useRightHandedSystem;
 
         // Fog
         if (scene.fogMode && scene.fogMode !== 0) {
@@ -296,6 +310,12 @@ export class SceneSerializer {
             serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
         }
 
+        // Post processes
+        serializationObject.postProcesses = [];
+        for (index = 0; index < scene.postProcesses.length; index++) {
+            serializationObject.postProcesses.push(scene.postProcesses[index].serialize());
+        }
+
         // Action Manager
         if (scene.actionManager) {
             serializationObject.actions = scene.actionManager.serialize("scene");
@@ -307,6 +327,45 @@ export class SceneSerializer {
         }
 
         return serializationObject;
+    }
+
+    /**
+     * Serialize a scene into a JSON compatible object
+     * @param scene defines the scene to serialize
+     * @returns a JSON promise compatible object
+     */
+    public static SerializeAsync(scene: Scene): Promise<any> {
+        const serializationObject = SceneSerializer._Serialize(scene, false);
+
+        const promises: Array<Promise<any>> = [];
+
+        this._CollectPromises(serializationObject, promises);
+
+        return Promise.all(promises).then(() => serializationObject);
+    }
+
+    private static _CollectPromises(obj: any, promises: Array<Promise<any>>): void {
+        if (Array.isArray(obj)) {
+            for (let i = 0; i < obj.length; ++i) {
+                const o = obj[i];
+                if (o instanceof Promise) {
+                    promises.push(o.then((res: any) => obj[i] = res));
+                } else if (o instanceof Object || Array.isArray(o)) {
+                    this._CollectPromises(o, promises);
+                }
+            }
+        } else if (obj instanceof Object) {
+            for (const name in obj) {
+                if (obj.hasOwnProperty(name)) {
+                    const o = obj[name];
+                    if (o instanceof Promise) {
+                        promises.push(o.then((res: any) => obj[name] = res));
+                    } else if (o instanceof Object || Array.isArray(o)) {
+                        this._CollectPromises(o, promises);
+                    }
+                }
+            }
+        }
     }
 
     /**

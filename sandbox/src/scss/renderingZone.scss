@@ -1,0 +1,26 @@
+#canvasZone {
+    display: block;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    width: 100%;
+    height: calc(100% - var(--footer-height));   
+
+    &.expanded {
+       height: 100%; 
+    }
+}
+
+#renderCanvas {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    touch-action: none;
+    -ms-touch-action: none;  
+    display: block;
+    border: 0;
+    outline: 0;
+}

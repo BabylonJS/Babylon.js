@@ -1,11 +1,11 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Vector3, Matrix, Quaternion } from '../../Maths/math.vector';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from './WebXRHitTestLegacy';
-import { Tools } from '../../Misc/tools';
-import { Nullable } from '../../types';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from "./WebXRHitTestLegacy";
+import { Tools } from "../../Misc/tools";
+import { Nullable } from "../../types";
 
 /**
  * Options used for hit testing (version 2)
@@ -21,6 +21,10 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      */
     enableTransientHitTest?: boolean;
     /**
+    * Override the default transient hit test profile (generic-touchscreen).
+    */
+    transientHitTestProfile?: string;
+    /**
      * Offset ray for the permanent hit test
      */
     offsetRay?: Vector3;
@@ -32,6 +36,11 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      * Instead of using viewer space for hit tests, use the reference space defined in the session manager
      */
     useReferenceSpace?: boolean;
+
+    /**
+     * Override the default entity type(s) of the hit-test result
+     */
+    entityTypes?: XRHitTestTrackableType[];
 }
 
 /**
@@ -80,21 +89,24 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             return;
         }
         const offsetRay = new XRRay(this.options.offsetRay || {});
-        const options: XRHitTestOptionsInit = {
+        const hitTestOptions: XRHitTestOptionsInit = {
             space: this.options.useReferenceSpace ? referenceSpace : this._xrSessionManager.viewerReferenceSpace,
-            offsetRay: offsetRay
+            offsetRay: offsetRay,
         };
-        if (!options.space) {
-            Tools.Warn('waiting for viewer reference space to initialize');
+        if (this.options.entityTypes) {
+            hitTestOptions.entityTypes = this.options.entityTypes;
+        }
+        if (!hitTestOptions.space) {
+            Tools.Warn("waiting for viewer reference space to initialize");
             return;
         }
-        this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
+        this._xrSessionManager.session.requestHitTestSource!(hitTestOptions).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
             }
             this._xrHitTestSource = hitTestSource;
         });
-    }
+    };
 
     /**
      * The module's name
@@ -115,6 +127,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     public autoCloneTransformation: boolean = false;
     /**
      * Triggered when new babylon (transformed) hit test results are available
+     * Note - this will be called when results come back from the device. It can be an empty array!!
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
     /**
@@ -127,13 +140,16 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param options options to use when constructing this feature
      */
-    constructor(_xrSessionManager: WebXRSessionManager,
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
         /**
          * options to use when constructing this feature
          */
-        public readonly options: IWebXRHitTestOptions = {}) {
+        public readonly options: IWebXRHitTestOptions = {}
+    ) {
         super(_xrSessionManager);
-        Tools.Warn('Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session');
+        this.xrNativeFeatureName = "hit-test";
+        Tools.Warn("Hit test is an experimental and unstable feature.");
     }
 
     /**
@@ -147,6 +163,11 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             return false;
         }
 
+        // Feature enabled, but not available
+        if (!this._xrSessionManager.session.requestHitTestSource) {
+            return false;
+        }
+
         if (!this.options.disablePermanentHitTest) {
             if (this._xrSessionManager.referenceSpace) {
                 this.initHitTestSource(this._xrSessionManager.referenceSpace);
@@ -155,12 +176,15 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         }
         if (this.options.enableTransientHitTest) {
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
-            this._xrSessionManager.session.requestHitTestSourceForTransientInput({
-                profile : 'generic-touchscreen',
-                offsetRay
-            }).then((hitSource) => {
-                this._transientXrHitTestSource = hitSource;
-            });
+            this._xrSessionManager.session
+                .requestHitTestSourceForTransientInput!({
+                    profile: this.options.transientHitTestProfile || "generic-touchscreen",
+                    offsetRay,
+                    entityTypes: this.options.entityTypes,
+                })
+                .then((hitSource) => {
+                    this._transientXrHitTestSource = hitSource;
+                });
         }
 
         return true;
@@ -204,30 +228,28 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
 
         if (this._xrHitTestSource) {
             const results = frame.getHitTestResults(this._xrHitTestSource);
-            if (results.length) {
-                this._processWebXRHitTestResult(results);
-            }
+            this._processWebXRHitTestResult(results);
         }
         if (this._transientXrHitTestSource) {
             let hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
 
             hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
-                if (resultsPerInputSource.results.length > 0) {
-                    this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
-                }
+                this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
             });
         }
     }
 
     private _processWebXRHitTestResult(hitTestResults: XRHitTestResult[], inputSource?: XRInputSource) {
-        const results : IWebXRHitResult[] = [];
+        const results: IWebXRHitResult[] = [];
         hitTestResults.forEach((hitTestResult) => {
             const pose = hitTestResult.getPose(this._xrSessionManager.referenceSpace);
             if (!pose) {
                 return;
             }
-            this._tmpPos.copyFrom(pose.transform.position as unknown as Vector3);
-            this._tmpQuat.copyFrom(pose.transform.orientation as unknown as Quaternion);
+            const pos = pose.transform.position;
+            const quat = pose.transform.orientation;
+            this._tmpPos.set(pos.x, pos.y, pos.z);
+            this._tmpQuat.set(quat.x, quat.y, quat.z, quat.w);
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMat);
             if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 this._tmpPos.z *= -1;
@@ -242,18 +264,21 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
                 transformationMatrix: this.autoCloneTransformation ? this._tmpMat.clone() : this._tmpMat,
                 inputSource: inputSource,
                 isTransient: !!inputSource,
-                xrHitResult: hitTestResult
+                xrHitResult: hitTestResult,
             };
             results.push(result);
         });
 
-        if (results.length) {
-            this.onHitTestResultObservable.notifyObservers(results);
-        }
+        this.onHitTestResultObservable.notifyObservers(results);
     }
 }
 
 //register the plugin versions
-WebXRFeaturesManager.AddWebXRFeature(WebXRHitTest.Name, (xrSessionManager, options) => {
-    return () => new WebXRHitTest(xrSessionManager, options);
-}, WebXRHitTest.Version, false);
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRHitTest.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRHitTest(xrSessionManager, options);
+    },
+    WebXRHitTest.Version,
+    false
+);

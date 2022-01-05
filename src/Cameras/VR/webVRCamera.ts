@@ -15,9 +15,8 @@ import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
 import { Logger } from '../../Misc/logger';
 import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/webVRRigMode";
+import { Tools } from '../../Misc/tools';
+import { setWebVRRigMode } from "../RigModes/webVRRigMode";
 
 // Side effect import to add webvr support to engine
 import "../../Engines/Extensions/engine.webVR";
@@ -146,7 +145,7 @@ export interface WebVROptions {
     defaultHeight?: number;
 
     /**
-     * If multiview should be used if availible (default: false)
+     * If multiview should be used if available (default: false)
      */
     useMultiview?: boolean;
 }
@@ -154,7 +153,7 @@ export interface WebVROptions {
 /**
  * This represents a WebVR camera.
  * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
- * @example http://doc.babylonjs.com/how_to/webvr_camera
+ * @example https://doc.babylonjs.com/how_to/webvr_camera
  */
 export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
@@ -330,6 +329,8 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         });
     }
 
+    protected _setRigMode = setWebVRRigMode.bind(null, this);
+
     /**
      * Gets the device distance from the ground in meters.
      * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
@@ -481,11 +482,10 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         }
     }
 
-    private _htmlElementAttached: Nullable<HTMLElement> = null;
     private _detachIfAttached = () => {
         var vrDisplay = this.getEngine().getVRDevice();
-        if (vrDisplay && !vrDisplay.isPresenting && this._htmlElementAttached) {
-            this.detachControl(this._htmlElementAttached);
+        if (vrDisplay && !vrDisplay.isPresenting) {
+            this.detachControl();
         }
     }
 
@@ -495,13 +495,12 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * within a user-interaction callback. Example:
      * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
      *
-     * @param element html element to attach the vrDevice to
      * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        super.attachControl(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        super.attachControl(noPreventDefault);
         this._attached = true;
-        this._htmlElementAttached = element;
 
         noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
@@ -517,15 +516,19 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     /**
-     * Detaches the camera from the html element and disables VR
-     *
-     * @param element html element to detach from
+     * Detach the current controls from the specified dom element.
      */
-    public detachControl(element: HTMLElement): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
 
-        super.detachControl(element);
+        super.detachControl();
         this._attached = false;
         this.getEngine().disableVR();
         window.removeEventListener('vrdisplaypresentchange', this._detachIfAttached);
@@ -791,7 +794,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new HemisphericLight("vrControllersLight", new Vector3(0, 1, 0), this.getScene());
                                 }
-                                let activateLightOnSubMeshes = function(mesh: AbstractMesh, light: HemisphericLight) {
+                                let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
                                     let children = mesh.getChildren();
                                     if (children && children.length !== 0) {
                                         children.forEach((mesh) => {

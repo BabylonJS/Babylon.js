@@ -9,6 +9,7 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Plane } from '../../Maths/math.plane';
+import { UniformBuffer } from "../uniformBuffer";
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
  * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -122,7 +123,6 @@ export class MirrorTexture extends RenderTargetTexture {
 
     private _transformMatrix = Matrix.Zero();
     private _mirrorMatrix = Matrix.Zero();
-    private _savedViewMatrix: Matrix;
 
     private _blurX: Nullable<BlurPostProcess>;
     private _blurY: Nullable<BlurPostProcess>;
@@ -130,6 +130,8 @@ export class MirrorTexture extends RenderTargetTexture {
     private _blurKernelX = 0;
     private _blurKernelY = 0;
     private _blurRatio = 1.0;
+    private _sceneUBO: UniformBuffer;
+    private _currentSceneUBO: UniformBuffer;
 
     /**
      * Instantiates a Mirror Texture.
@@ -153,17 +155,38 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this._updateGammaSpace();
         this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
-            this._updateGammaSpace;
+            this._updateGammaSpace();
         });
 
-        this.onBeforeRenderObservable.add(() => {
-            Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
-            this._savedViewMatrix = scene.getViewMatrix();
+        const engine = this.getScene()!.getEngine();
 
-            this._mirrorMatrix.multiplyToRef(this._savedViewMatrix, this._transformMatrix);
+        if (engine.supportsUniformBuffers) {
+            this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`);
+        }
+
+        this.onBeforeBindObservable.add(() => {
+            engine._debugPushGroup?.(`mirror generation for ${name}`, 1);
+        });
+
+        this.onAfterUnbindObservable.add(() => {
+            engine._debugPopGroup?.(1);
+        });
+
+        let saveClipPlane: Nullable<Plane>;
+
+        this.onBeforeRenderObservable.add(() => {
+            if (this._sceneUBO) {
+                this._currentSceneUBO = scene.getSceneUniformBuffer();
+                scene.setSceneUniformBuffer(this._sceneUBO);
+                scene.getSceneUniformBuffer().unbindEffect();
+            }
+
+            Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
+            this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
 
             scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
+            saveClipPlane = scene.clipPlane;
             scene.clipPlane = this.mirrorPlane;
 
             scene.getEngine().cullBackFaces = false;
@@ -172,11 +195,14 @@ export class MirrorTexture extends RenderTargetTexture {
         });
 
         this.onAfterRenderObservable.add(() => {
-            scene.setTransformMatrix(this._savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = true;
+            if (this._sceneUBO) {
+                scene.setSceneUniformBuffer(this._currentSceneUBO);
+            }
+            scene.updateTransformMatrix();
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
 
-            scene.clipPlane = null;
+            scene.clipPlane = saveClipPlane;
         });
     }
 
@@ -186,13 +212,13 @@ export class MirrorTexture extends RenderTargetTexture {
         if (this._blurKernelX && this._blurKernelY) {
             var engine = (<Scene>this.getScene()).getEngine();
 
-            var textureType = engine.getCaps().textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
+            var textureType = engine.getCaps().textureFloatRender && engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
 
             this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
             this._blurX.autoClear = false;
 
             if (this._blurRatio === 1 && this.samples < 2 && this._texture) {
-                this._blurX.inputTexture = this._texture;
+                this._blurX.inputTexture = this._renderTarget!;
             } else {
                 this._blurX.alwaysForcePOT = true;
             }
@@ -275,6 +301,7 @@ export class MirrorTexture extends RenderTargetTexture {
     public dispose() {
         super.dispose();
         this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
+        this._sceneUBO?.dispose();
     }
 }
 

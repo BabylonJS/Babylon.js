@@ -5,7 +5,7 @@
 precision highp float;
 
 // Constants
-uniform vec3 vEyePosition;
+uniform vec4 vEyePosition;
 uniform vec4 vDiffuseColor;
 
 #ifdef SPECULARTERM
@@ -38,7 +38,9 @@ varying vec4 vColor;
 // Samplers
 #ifdef BUMP
 varying vec2 vNormalUV;
-varying vec2 vNormalUV2;
+#ifdef BUMPSUPERIMPOSE
+    varying vec2 vNormalUV2;
+#endif
 uniform sampler2D normalSampler;
 uniform vec2 vNormalInfos;
 #endif
@@ -72,11 +74,17 @@ varying vec3 vPosition;
 // Fog
 #include<fogFragmentDeclaration>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
     #include<clipPlaneFragment>
 
-	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
+	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
@@ -242,7 +250,7 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 #include<logDepthFragment>
 #include<fogFragment>
 
-// Apply image processing if relevant. As this applies in linear space, 
+// Apply image processing if relevant. As this applies in linear space,
 // We first move from gamma to linear.
 #ifdef IMAGEPROCESSINGPOSTPROCESS
 	color.rgb = toLinearSpace(color.rgb);
@@ -250,6 +258,8 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
     color.rgb = toLinearSpace(color.rgb);
     color = applyImageProcessing(color);
 #endif
-	
+
 	gl_FragColor = color;
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

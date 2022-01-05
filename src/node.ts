@@ -6,9 +6,10 @@ import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
-import { _DevTools } from './Misc/devTools';
+import { _WarnImport } from './Misc/devTools';
 import { AbstractActionManager } from './Actions/abstractActionManager';
 import { IInspectable } from './Misc/iInspectable';
+import { AbstractScene } from "./abstractScene";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -21,13 +22,27 @@ declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
  */
 export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
 
+/** @hidden */
+class _InternalNodeDataInfo {
+    public _doNotSerialize = false;
+    public _isDisposed = false;
+    public _sceneRootNodesIndex = -1;
+    public _isEnabled = true;
+    public _isParentEnabled = true;
+    public _isReady = true;
+    public _onEnabledStateChangedObservable = new Observable<boolean>();
+    public _onClonedObservable = new Observable<Node>();
+}
+
 /**
  * Node is the basic class for all scene objects (Mesh, Light, Camera.)
  */
 export class Node implements IBehaviorAware<Node> {
+    protected _isDirty = false;
+
     /** @hidden */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
-        throw _DevTools.WarnImport("AnimationRange");
+        throw _WarnImport("AnimationRange");
     }
 
     private static _NodeConstructors: { [key: string]: any } = {};
@@ -58,6 +73,8 @@ export class Node implements IBehaviorAware<Node> {
 
         return constructorFunc(name, scene, options);
     }
+
+    private _nodeDataStorage = new _InternalNodeDataInfo();
 
     /**
      * Gets or sets the name of the node
@@ -100,12 +117,11 @@ export class Node implements IBehaviorAware<Node> {
      */
     public inspectableCustomProperties: IInspectable[];
 
-    private _doNotSerialize = false;
     /**
      * Gets or sets a boolean used to define if the node must be serialized
      */
     public get doNotSerialize() {
-        if (this._doNotSerialize) {
+        if (this._nodeDataStorage._doNotSerialize) {
             return true;
         }
 
@@ -117,11 +133,11 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     public set doNotSerialize(value: boolean) {
-        this._doNotSerialize = value;
+        this._nodeDataStorage._doNotSerialize = value;
     }
 
     /** @hidden */
-    public _isDisposed = false;
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      * Gets a list of Animations associated with the node
@@ -134,9 +150,6 @@ export class Node implements IBehaviorAware<Node> {
      */
     public onReady: Nullable<(node: Node) => void> = null;
 
-    private _isEnabled = true;
-    private _isParentEnabled = true;
-    private _isReady = true;
     /** @hidden */
     public _currentRenderId = -1;
     private _parentUpdateId = -1;
@@ -151,7 +164,9 @@ export class Node implements IBehaviorAware<Node> {
     public _cache: any = {};
 
     private _parentNode: Nullable<Node> = null;
-    private _children: Nullable<Node[]> = null;
+
+    /** @hidden */
+    protected _children: Nullable<Node[]> = null;
 
     /** @hidden */
     public _worldMatrix = Matrix.Identity();
@@ -160,15 +175,12 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _worldMatrixDeterminantIsDirty = true;
 
-    /** @hidden */
-    private _sceneRootNodesIndex = -1;
-
     /**
      * Gets a boolean indicating if the node has been disposed
      * @returns true if the node was disposed
      */
     public isDisposed(): boolean {
-        return this._isDisposed;
+        return this._nodeDataStorage._isDisposed;
     }
 
     /**
@@ -189,7 +201,7 @@ export class Node implements IBehaviorAware<Node> {
                 this._parentNode._children.splice(index, 1);
             }
 
-            if (!parent && !this._isDisposed) {
+            if (!parent && !this._nodeDataStorage._isDisposed) {
                 this._addToSceneRootNodes();
             }
         }
@@ -219,21 +231,21 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public _addToSceneRootNodes() {
-        if (this._sceneRootNodesIndex === -1) {
-            this._sceneRootNodesIndex = this._scene.rootNodes.length;
+        if (this._nodeDataStorage._sceneRootNodesIndex === -1) {
+            this._nodeDataStorage._sceneRootNodesIndex = this._scene.rootNodes.length;
             this._scene.rootNodes.push(this);
         }
     }
 
     /** @hidden */
     public _removeFromSceneRootNodes() {
-        if (this._sceneRootNodesIndex !== -1) {
+        if (this._nodeDataStorage._sceneRootNodesIndex !== -1) {
             const rootNodes = this._scene.rootNodes;
             const lastIdx = rootNodes.length - 1;
-            rootNodes[this._sceneRootNodesIndex] = rootNodes[lastIdx];
-            rootNodes[this._sceneRootNodesIndex]._sceneRootNodesIndex = this._sceneRootNodesIndex;
+            rootNodes[this._nodeDataStorage._sceneRootNodesIndex] = rootNodes[lastIdx];
+            rootNodes[this._nodeDataStorage._sceneRootNodesIndex]._nodeDataStorage._sceneRootNodesIndex = this._nodeDataStorage._sceneRootNodesIndex;
             this._scene.rootNodes.pop();
-            this._sceneRootNodesIndex = -1;
+            this._nodeDataStorage._sceneRootNodesIndex = -1;
         }
     }
 
@@ -254,7 +266,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Node" string
      */
     public getClassName(): string {
@@ -278,6 +290,20 @@ export class Node implements IBehaviorAware<Node> {
             this.onDisposeObservable.remove(this._onDisposeObserver);
         }
         this._onDisposeObserver = this.onDisposeObservable.add(callback);
+    }
+
+    /**
+     * An event triggered when the enabled state of the node changes
+     */
+     public get onEnabledStateChangedObservable(): Observable<boolean> {
+         return this._nodeDataStorage._onEnabledStateChangedObservable;
+     }
+
+    /**
+     * An event triggered when the node is cloned
+     */
+    public get onClonedObservable(): Observable<Node> {
+        return this._nodeDataStorage._onClonedObservable;
     }
 
     /**
@@ -314,7 +340,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Attach a behavior to the node
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @param behavior defines the behavior to attach
      * @param attachImmediately defines that the behavior must be attached even if the scene is still loading
      * @returns the current Node
@@ -342,7 +368,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Remove an attached behavior
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @param behavior defines the behavior to attach
      * @returns the current Node
      */
@@ -361,7 +387,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Gets the list of attached behaviors
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      */
     public get behaviors(): Behavior<Node>[] {
         return this._behaviors;
@@ -370,7 +396,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Gets an attached behavior by name
      * @param name defines the name of the behavior to look for
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Node>> {
@@ -491,7 +517,18 @@ export class Node implements IBehaviorAware<Node> {
      * @return true if the node is ready
      */
     public isReady(completeCheck = false): boolean {
-        return this._isReady;
+        return this._nodeDataStorage._isReady;
+    }
+
+    /**
+    * Flag the  node as dirty (Forcing it to update everything)
+    * @param property helps children apply precise "dirtyfication"
+    * @returns this node
+    */
+    public markAsDirty(property?: string): Node {
+        this._currentRenderId = Number.MAX_VALUE;
+        this._isDirty = true;
+        return this;
     }
 
     /**
@@ -502,19 +539,19 @@ export class Node implements IBehaviorAware<Node> {
      */
     public isEnabled(checkAncestors: boolean = true): boolean {
         if (checkAncestors === false) {
-            return this._isEnabled;
+            return this._nodeDataStorage._isEnabled;
         }
 
-        if (!this._isEnabled) {
+        if (!this._nodeDataStorage._isEnabled) {
             return false;
         }
 
-        return this._isParentEnabled;
+        return this._nodeDataStorage._isParentEnabled;
     }
 
     /** @hidden */
     protected _syncParentEnabledState() {
-        this._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
+        this._nodeDataStorage._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
         if (this._children) {
             this._children.forEach((c) => {
@@ -528,7 +565,12 @@ export class Node implements IBehaviorAware<Node> {
      * @param value defines the new enabled state
      */
     public setEnabled(value: boolean): void {
-        this._isEnabled = value;
+        if (this._nodeDataStorage._isEnabled === value) {
+            return;
+        }
+        this._nodeDataStorage._isEnabled = value;
+
+        this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
 
         this._syncParentEnabledState();
     }
@@ -575,6 +617,22 @@ export class Node implements IBehaviorAware<Node> {
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
      * @return all children nodes of all types
      */
+    public getDescendants<T extends Node>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
+
+    /**
+     * Will return all nodes that have this node as ascendant
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all children nodes of all types
+     */
+    public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
+
+    /**
+     * Will return all nodes that have this node as ascendant
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all children nodes of all types
+     */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
         var results = new Array<Node>();
 
@@ -582,6 +640,22 @@ export class Node implements IBehaviorAware<Node> {
 
         return results;
     }
+
+    /**
+     * Get all child-meshes of this node
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @returns an array of AbstractMesh
+     */
+    public getChildMeshes<T extends AbstractMesh>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
+
+    /**
+     * Get all child-meshes of this node
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: false)
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @returns an array of AbstractMesh
+     */
+    public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[];
 
     /**
      * Get all child-meshes of this node
@@ -603,25 +677,41 @@ export class Node implements IBehaviorAware<Node> {
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
      * @returns an array of Node
      */
+    public getChildren<T extends Node>(predicate?: (node: Node) => node is T, directDescendantsOnly?: boolean): T[];
+
+    /**
+     * Get all direct children of this node
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
+     * @returns an array of Node
+     */
+    public getChildren(predicate?: (node: Node) => boolean, directDescendantsOnly?: boolean): Node[];
+
+    /**
+     * Get all direct children of this node
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered (Default: true)
+     * @returns an array of Node
+     */
     public getChildren(predicate?: (node: Node) => boolean, directDescendantsOnly = true): Node[] {
         return this.getDescendants(directDescendantsOnly, predicate);
     }
 
     /** @hidden */
     public _setReady(state: boolean): void {
-        if (state === this._isReady) {
+        if (state === this._nodeDataStorage._isReady) {
             return;
         }
 
         if (!state) {
-            this._isReady = false;
+            this._nodeDataStorage._isReady = false;
             return;
         }
 
         if (this.onReady) {
             this.onReady(this);
         }
-        this._isReady = true;
+        this._nodeDataStorage._isReady = true;
     }
 
     /**
@@ -751,7 +841,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-        this._isDisposed = true;
+        this._nodeDataStorage._isDisposed = true;
 
         if (!doNotRecurse) {
             const nodes = this.getDescendants(true);
@@ -770,12 +860,17 @@ export class Node implements IBehaviorAware<Node> {
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
 
+        this.onEnabledStateChangedObservable.clear();
+        this.onClonedObservable.clear();
+
         // Behaviors
         for (var behavior of this._behaviors) {
             behavior.detach();
         }
 
         this._behaviors = [];
+
+        this.metadata = null;
     }
 
     /**

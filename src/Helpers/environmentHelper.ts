@@ -16,6 +16,8 @@ import { Constants } from "../Engines/constants";
 import "../Meshes/Builders/planeBuilder";
 import "../Meshes/Builders/boxBuilder";
 import { Plane } from '../Maths/math.plane';
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
 
 /**
  * Represents the different options available during the creation of
@@ -185,7 +187,7 @@ interface ISceneSize {
 }
 
 /**
- * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+ * The Environment helper class can be used to add a fully featured none expensive background to your scene.
  * It includes by default a skybox and a ground relying on the BackgroundMaterial.
  * It also helps with the default setup of your imageProcessing configuration.
  */
@@ -534,7 +536,7 @@ export class EnvironmentHelper {
      */
     private _setupGround(sceneSize: ISceneSize): void {
         if (!this._ground || this._ground.isDisposed()) {
-            this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
+            this._ground = CreatePlane("BackgroundPlane", { size: sceneSize.groundSize }, this._scene);
             this._ground.rotation.x = Math.PI / 2; // Face up by default.
             this._ground.parent = this._rootMesh;
             this._ground.onDisposeObservable.add(() => { this._ground = null; });
@@ -579,10 +581,10 @@ export class EnvironmentHelper {
             return;
         }
 
-        const diffuseTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
-        diffuseTexture.gammaSpace = false;
-        diffuseTexture.hasAlpha = true;
-        this._groundMaterial.diffuseTexture = diffuseTexture;
+        this._groundTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
+        this._groundTexture.gammaSpace = false;
+        this._groundTexture.hasAlpha = true;
+        this._groundMaterial.diffuseTexture = this._groundTexture;
     }
 
     /**
@@ -642,7 +644,7 @@ export class EnvironmentHelper {
      */
     private _setupSkybox(sceneSize: ISceneSize): void {
         if (!this._skybox || this._skybox.isDisposed()) {
-            this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, Mesh.BACKSIDE);
+            this._skybox = CreateBox("BackgroundSkybox", { size: sceneSize.skyboxSize, sideOrientation: Mesh.BACKSIDE }, this._scene);
             this._skybox.onDisposeObservable.add(() => { this._skybox = null; });
         }
         this._skybox.parent = this._rootMesh;

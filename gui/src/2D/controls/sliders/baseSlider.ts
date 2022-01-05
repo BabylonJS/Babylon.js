@@ -3,6 +3,8 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from "babylonjs/Misc/decorators";
 
 /**
  * Class used to create slider controls
@@ -18,7 +20,7 @@ export class BaseSlider extends Control {
     protected _displayThumb = true;
     private _step = 0;
 
-    private _lastPointerDownID = -1;
+    private _lastPointerDownId = -1;
 
     // Shared rendering info
     protected _effectiveBarOffset = 0;
@@ -34,6 +36,7 @@ export class BaseSlider extends Control {
     public onValueChangedObservable = new Observable<number>();
 
     /** Gets or sets a boolean indicating if the thumb must be rendered */
+    @serialize()
     public get displayThumb(): boolean {
         return this._displayThumb;
     }
@@ -48,6 +51,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets a step to apply to values (0 by default) */
+    @serialize()
     public get step(): number {
         return this._step;
     }
@@ -62,6 +66,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
+    @serialize()
     public get barOffset(): string | number {
         return this._barOffset.toString(this._host);
     }
@@ -82,6 +87,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets thumb width */
+    @serialize()
     public get thumbWidth(): string | number {
         return this._thumbWidth.toString(this._host);
     }
@@ -102,6 +108,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets minimum value */
+    @serialize()
     public get minimum(): number {
         return this._minimum;
     }
@@ -118,6 +125,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets maximum value */
+    @serialize()
     public get maximum(): number {
         return this._maximum;
     }
@@ -134,6 +142,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets current value */
+    @serialize()
     public get value(): number {
         return this._value;
     }
@@ -151,6 +160,7 @@ export class BaseSlider extends Control {
     }
 
     /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
+    @serialize()
     public get isVertical(): boolean {
         return this._isVertical;
     }
@@ -165,6 +175,7 @@ export class BaseSlider extends Control {
     }
 
     /** Gets or sets a value indicating if the thumb can go over main bar extends */
+    @serialize()
     public get isThumbClamped(): boolean {
         return this._isThumbClamped;
     }
@@ -290,34 +301,37 @@ export class BaseSlider extends Control {
             value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
 
-        const mult = (1 / this._step) | 0;
-        this.value = this._step ? ((value * mult) | 0) / mult : value;
+        this.value = this._step ? ((value / this._step) | 0) * this._step : value;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
+        }
+
+        if (this.isReadOnly) {
+            return true;
         }
 
         this._pointerIsDown = true;
 
         this._updateValueFromPointer(coordinates.x, coordinates.y);
         this._host._capturingControl[pointerId] = this;
-        this._lastPointerDownID = pointerId;
+        this._lastPointerDownId = pointerId;
         return true;
     }
 
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
-        if (pointerId != this._lastPointerDownID) {
+        if (pointerId != this._lastPointerDownId) {
             return;
         }
 
-        if (this._pointerIsDown) {
+        if (this._pointerIsDown && !this.isReadOnly) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
 
-        super._onPointerMove(target, coordinates, pointerId);
+        super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
@@ -326,4 +340,10 @@ export class BaseSlider extends Control {
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
+
+    public _onCanvasBlur(): void {
+        this._forcePointerUp();
+        super._onCanvasBlur();
+    }
+
 }

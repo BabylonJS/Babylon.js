@@ -28,11 +28,11 @@ declare module "../scene" {
 
         /**
          * Enables physics to the current scene
-         * @param gravity defines the scene's gravity for the physics engine
-         * @param plugin defines the physics engine to be used. defaults to OimoJS.
+         * @param gravity defines the scene's gravity for the physics engine. defaults to real earth gravity : (0, -9.81, 0)
+         * @param plugin defines the physics engine to be used. defaults to CannonJS.
          * @return a boolean indicating if the physics engine was initialized
          */
-        enablePhysics(gravity: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
+        enablePhysics(gravity?: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
 
         /**
          * Disables and disposes the physics engine associated with the scene
@@ -67,17 +67,17 @@ declare module "../scene" {
  * Gets the current physics engine
  * @returns a IPhysicsEngine or null if none attached
  */
-Scene.prototype.getPhysicsEngine = function(): Nullable<IPhysicsEngine> {
+Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
     return this._physicsEngine;
 };
 
 /**
  * Enables physics to the current scene
  * @param gravity defines the scene's gravity for the physics engine
- * @param plugin defines the physics engine to be used. defaults to OimoJS.
+ * @param plugin defines the physics engine to be used. defaults to CannonJS.
  * @return a boolean indicating if the physics engine was initialized
  */
-Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
+Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
     if (this._physicsEngine) {
         return true;
     }
@@ -102,7 +102,7 @@ Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plug
 /**
  * Disables and disposes the physics engine associated with the scene
  */
-Scene.prototype.disablePhysicsEngine = function(): void {
+Scene.prototype.disablePhysicsEngine = function (): void {
     if (!this._physicsEngine) {
         return;
     }
@@ -115,7 +115,7 @@ Scene.prototype.disablePhysicsEngine = function(): void {
  * Gets a boolean indicating if there is an active physics engine
  * @returns a boolean indicating if there is an active physics engine
  */
-Scene.prototype.isPhysicsEnabled = function(): boolean {
+Scene.prototype.isPhysicsEnabled = function (): boolean {
     return this._physicsEngine !== undefined;
 };
 
@@ -123,7 +123,7 @@ Scene.prototype.isPhysicsEnabled = function(): boolean {
  * Deletes a physics compound impostor
  * @param compound defines the compound to delete
  */
-Scene.prototype.deleteCompoundImpostor = function(compound: any): void {
+Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
     var mesh: AbstractMesh = compound.parts[0].mesh;
 
     if (mesh.physicsImpostor) {
@@ -133,7 +133,7 @@ Scene.prototype.deleteCompoundImpostor = function(compound: any): void {
 };
 
 /** @hidden */
-Scene.prototype._advancePhysicsEngineStep = function(step: number) {
+Scene.prototype._advancePhysicsEngineStep = function (step: number) {
     if (this._physicsEngine) {
         let subTime = this._physicsEngine.getSubTimeStep();
         if (subTime > 0) {
@@ -159,13 +159,13 @@ declare module "../Meshes/abstractMesh" {
 
         /**
          * Gets or sets impostor used for physic simulation
-         * @see http://doc.babylonjs.com/features/physics_engine
+         * @see https://doc.babylonjs.com/features/physics_engine
          */
         physicsImpostor: Nullable<PhysicsImpostor>;
 
         /**
          * Gets the current physics impostor
-         * @see http://doc.babylonjs.com/features/physics_engine
+         * @see https://doc.babylonjs.com/features/physics_engine
          * @returns a physics impostor or null
          */
         getPhysicsImpostor(): Nullable<PhysicsImpostor>;
@@ -174,7 +174,7 @@ declare module "../Meshes/abstractMesh" {
          * @param force defines the force to apply
          * @param contactPoint defines where to apply the force
          * @returns the current mesh
-         * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+         * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
          */
         applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh;
 
@@ -195,10 +195,10 @@ declare module "../Meshes/abstractMesh" {
 }
 
 Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
-    get: function(this: AbstractMesh) {
+    get: function (this: AbstractMesh) {
         return this._physicsImpostor;
     },
-    set: function(this: AbstractMesh, value: Nullable<PhysicsImpostor>) {
+    set: function (this: AbstractMesh, value: Nullable<PhysicsImpostor>) {
         if (this._physicsImpostor === value) {
             return;
         }
@@ -224,10 +224,10 @@ Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
 
 /**
  * Gets the current physics impostor
- * @see http://doc.babylonjs.com/features/physics_engine
+ * @see https://doc.babylonjs.com/features/physics_engine
  * @returns a physics impostor or null
  */
-AbstractMesh.prototype.getPhysicsImpostor = function(): Nullable<PhysicsImpostor> {
+AbstractMesh.prototype.getPhysicsImpostor = function (): Nullable<PhysicsImpostor> {
     return this.physicsImpostor;
 };
 
@@ -236,9 +236,9 @@ AbstractMesh.prototype.getPhysicsImpostor = function(): Nullable<PhysicsImpostor
  * @param force defines the force to apply
  * @param contactPoint defines where to apply the force
  * @returns the current mesh
- * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
-AbstractMesh.prototype.applyImpulse = function(force: Vector3, contactPoint: Vector3): AbstractMesh {
+AbstractMesh.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): AbstractMesh {
     if (!this.physicsImpostor) {
         return this;
     }
@@ -255,7 +255,7 @@ AbstractMesh.prototype.applyImpulse = function(force: Vector3, contactPoint: Vec
  * @returns the current mesh
  * @see https://www.babylonjs-playground.com/#0BS5U0#0
  */
-AbstractMesh.prototype.setPhysicsLinkWith = function(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
+AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
     if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
         return this;
     }
@@ -315,7 +315,7 @@ export class PhysicsEngineSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         this.scene.onBeforePhysicsObservable.clear();

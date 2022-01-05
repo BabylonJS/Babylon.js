@@ -154,7 +154,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Removes the internal pipeline assets and detatches the pipeline from the scene cameras
+     * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
      */
     public dispose(disableDepthRender: boolean = false): void {
         for (var i = 0; i < this._scene.cameras.length; i++) {
@@ -234,6 +234,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(), false,
             "#define SAMPLES " + numSamples + "\n#define SSAO");
 
+        this._ssaoPostProcess.externalTextureSamplerBinding = true;
         this._ssaoPostProcess.onApply = (effect: Effect) => {
             if (this._firstUpdate) {
                 effect.setArray3("sampleSphere", sampleSphere);

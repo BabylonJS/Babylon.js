@@ -1,6 +1,7 @@
 import { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
 import { PickingInfo } from "../Collisions/pickingInfo";
+import { IMouseEvent } from "./deviceInputEvents";
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -55,8 +56,8 @@ export class PointerInfoBase {
         /**
          * Defines the related dom event
          */
-        public event: PointerEvent | MouseWheelEvent) {
-    }
+        public event: IMouseEvent
+    ) { }
 }
 
 /**
@@ -65,9 +66,14 @@ export class PointerInfoBase {
  */
 export class PointerInfoPre extends PointerInfoBase {
     /**
-     * Ray from a pointer if availible (eg. 6dof controller)
+     * Ray from a pointer if available (eg. 6dof controller)
      */
     public ray: Nullable<Ray> = null;
+
+    /**
+     * Defines picking info coming from a near interaction (proximity instead of ray-based picking)
+     */
+    public nearInteractionPickingInfo: Nullable<PickingInfo>;
 
     /**
      * Defines the local position of the pointer on the canvas.
@@ -86,7 +92,7 @@ export class PointerInfoPre extends PointerInfoBase {
      * @param localX Defines the local x coordinates of the pointer when the event occured
      * @param localY Defines the local y coordinates of the pointer when the event occured
      */
-    constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number) {
+    constructor(type: number, event: IMouseEvent, localX: number, localY: number) {
         super(type, event);
         this.skipOnPointerObservable = false;
         this.localPosition = new Vector2(localX, localY);
@@ -104,12 +110,14 @@ export class PointerInfo extends PointerInfoBase {
      * @param event Defines the related dom event
      * @param pickInfo Defines the picking info associated to the info (if any)\
      */
-    constructor(type: number,
-        event: PointerEvent | MouseWheelEvent,
+    constructor(
+        type: number,
+        event: IMouseEvent,
         /**
          * Defines the picking info associated to the info (if any)\
          */
-        public pickInfo: Nullable<PickingInfo>) {
+        public pickInfo: Nullable<PickingInfo>
+    ) {
         super(type, event);
     }
 }

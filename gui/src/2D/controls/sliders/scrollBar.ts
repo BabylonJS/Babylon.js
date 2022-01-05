@@ -2,6 +2,9 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
 import { Control } from "../control";
 import { Measure } from "../../measure";
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -12,6 +15,7 @@ export class ScrollBar extends BaseSlider {
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /** Gets or sets border color */
+    @serialize()
     public get borderColor(): string {
         return this._borderColor;
     }
@@ -26,6 +30,7 @@ export class ScrollBar extends BaseSlider {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -62,7 +67,7 @@ export class ScrollBar extends BaseSlider {
         return thumbThickness;
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -139,9 +144,9 @@ export class ScrollBar extends BaseSlider {
         this._originY = y;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         this._first = true;
 
-        return super._onPointerDown(target, coordinates, pointerId, buttonIndex);
+        return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
 }

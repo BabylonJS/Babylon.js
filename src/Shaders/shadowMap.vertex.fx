@@ -6,15 +6,23 @@ attribute vec3 position;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 // Uniforms
-#include<instancesDeclaration>
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
+#endif
+
 #include<helperFunctions>
 
-uniform mat4 viewProjection;
+#include<__decl__shadowMapVertex>
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -27,24 +35,29 @@ attribute vec2 uv2;
 #endif
 #endif
 
-#include<shadowMapVertexDeclaration>
+#include<shadowMapVertexExtraDeclaration>
 
 #include<clipPlaneVertexDeclaration>
+
+
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void)
 {
 vec3 positionUpdated = position;
 #ifdef UV1
     vec2 uvUpdated = uv;
-#endif  
-#ifdef NORMAL	
+#endif
+#ifdef NORMAL
 	vec3 normalUpdated = normal;
 #endif
 
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 

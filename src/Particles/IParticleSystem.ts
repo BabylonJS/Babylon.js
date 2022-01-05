@@ -1,9 +1,7 @@
 import { Nullable } from "../types";
-import { Vector2, Vector3 } from "../Maths/math.vector";
+import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { Color3, Color4 } from '../Maths/math.color';
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Texture } from "../Materials/Textures/texture";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
@@ -11,6 +9,7 @@ import { Effect } from "../Materials/effect";
 import { Observable } from "../Misc/observable";
 
 declare type Animation = import("../Animations/animation").Animation;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * Interface representing a particle system in Babylon.js.
@@ -60,7 +59,7 @@ export interface IParticleSystem {
     /**
      * The texture used to render each particle. (this can be a spritesheet)
      */
-    particleTexture: Nullable<Texture>;
+    particleTexture: Nullable<BaseTexture>;
 
     /**
      * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
@@ -182,6 +181,10 @@ export interface IParticleSystem {
      */
     endSpriteCellID: number;
     /**
+     * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+     */
+    spriteCellLoop: boolean;
+    /**
      * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use
      */
     spriteCellWidth: number;
@@ -245,12 +248,20 @@ export interface IParticleSystem {
     disposeOnStop: boolean;
 
     /**
+     * If you want to launch only a few particles at once, that can be done, as well.
+     */
+    manualEmitCount: number;
+
+    /**
      * Specifies if the particles are updated in emitter local space or world space
      */
     isLocal: boolean;
 
     /** Snippet ID if the particle system was created from the snippet server */
     snippetId: string;
+
+    /** Gets or sets a matrix to use to compute projection */
+    defaultProjectionMatrix: Matrix;
 
     /**
      * Gets the maximum number of particles active at the same time.
@@ -281,13 +292,17 @@ export interface IParticleSystem {
     render(): number;
     /**
      * Dispose the particle system and frees its associated resources.
-     * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+     * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     dispose(disposeTexture?: boolean): void;
     /**
     * An event triggered when the system is disposed
     */
     onDisposeObservable: Observable<IParticleSystem>;
+    /**
+    * An event triggered when the system is stopped
+    */
+    onStoppedObservable: Observable<IParticleSystem>;
     /**
      * Clones the particle system.
      * @param name The name of the cloned object
@@ -406,19 +421,19 @@ export interface IParticleSystem {
     removeSizeGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of color gradients.
-     * You must use addColorGradient and removeColorGradient to udpate this list
+     * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
     getColorGradients(): Nullable<Array<ColorGradient>>;
     /**
      * Gets the current list of size gradients.
-     * You must use addSizeGradient and removeSizeGradient to udpate this list
+     * You must use addSizeGradient and removeSizeGradient to update this list
      * @returns the list of size gradients
      */
     getSizeGradients(): Nullable<Array<FactorGradient>>;
     /**
      * Gets the current list of angular speed gradients.
-     * You must use addAngularSpeedGradient and removeAngularSpeedGradient to udpate this list
+     * You must use addAngularSpeedGradient and removeAngularSpeedGradient to update this list
      * @returns the list of angular speed gradients
      */
     getAngularSpeedGradients(): Nullable<Array<FactorGradient>>;
@@ -438,7 +453,7 @@ export interface IParticleSystem {
     removeAngularSpeedGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of velocity gradients.
-     * You must use addVelocityGradient and removeVelocityGradient to udpate this list
+     * You must use addVelocityGradient and removeVelocityGradient to update this list
      * @returns the list of velocity gradients
      */
     getVelocityGradients(): Nullable<Array<FactorGradient>>;
@@ -458,7 +473,7 @@ export interface IParticleSystem {
     removeVelocityGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of limit velocity gradients.
-     * You must use addLimitVelocityGradient and removeLimitVelocityGradient to udpate this list
+     * You must use addLimitVelocityGradient and removeLimitVelocityGradient to update this list
      * @returns the list of limit velocity gradients
      */
     getLimitVelocityGradients(): Nullable<Array<FactorGradient>>;
@@ -492,7 +507,7 @@ export interface IParticleSystem {
     removeDragGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of drag gradients.
-     * You must use addDragGradient and removeDragGradient to udpate this list
+     * You must use addDragGradient and removeDragGradient to update this list
      * @returns the list of drag gradients
      */
     getDragGradients(): Nullable<Array<FactorGradient>>;
@@ -512,7 +527,7 @@ export interface IParticleSystem {
     removeEmitRateGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of emit rate gradients.
-     * You must use addEmitRateGradient and removeEmitRateGradient to udpate this list
+     * You must use addEmitRateGradient and removeEmitRateGradient to update this list
      * @returns the list of emit rate gradients
      */
     getEmitRateGradients(): Nullable<Array<FactorGradient>>;
@@ -533,7 +548,7 @@ export interface IParticleSystem {
     removeStartSizeGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of start size gradients.
-     * You must use addStartSizeGradient and removeStartSizeGradient to udpate this list
+     * You must use addStartSizeGradient and removeStartSizeGradient to update this list
      * @returns the list of start size gradients
      */
     getStartSizeGradients(): Nullable<Array<FactorGradient>>;
@@ -554,14 +569,14 @@ export interface IParticleSystem {
     removeLifeTimeGradient(gradient: number): IParticleSystem;
     /**
      * Gets the current list of life time gradients.
-     * You must use addLifeTimeGradient and removeLifeTimeGradient to udpate this list
+     * You must use addLifeTimeGradient and removeLifeTimeGradient to update this list
      * @returns the list of life time gradients
      */
     getLifeTimeGradients(): Nullable<Array<FactorGradient>>;
 
     /**
      * Gets the current list of color gradients.
-     * You must use addColorGradient and removeColorGradient to udpate this list
+     * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
     getColorGradients(): Nullable<Array<ColorGradient>>;
@@ -575,13 +590,13 @@ export interface IParticleSystem {
     addRampGradient(gradient: number, color: Color3): IParticleSystem;
     /**
      * Gets the current list of ramp gradients.
-     * You must use addRampGradient and removeRampGradient to udpate this list
+     * You must use addRampGradient and removeRampGradient to update this list
      * @returns the list of ramp gradients
      */
     getRampGradients(): Nullable<Array<Color3Gradient>>;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
-     * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     useRampGradients: boolean;
 
@@ -595,7 +610,7 @@ export interface IParticleSystem {
     addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
     /**
      * Gets the current list of color remap gradients.
-     * You must use addColorRemapGradient and removeColorRemapGradient to udpate this list
+     * You must use addColorRemapGradient and removeColorRemapGradient to update this list
      * @returns the list of color remap gradients
      */
     getColorRemapGradients(): Nullable<Array<FactorGradient>>;
@@ -610,7 +625,7 @@ export interface IParticleSystem {
     addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
     /**
      * Gets the current list of alpha remap gradients.
-     * You must use addAlphaRemapGradient and removeAlphaRemapGradient to udpate this list
+     * You must use addAlphaRemapGradient and removeAlphaRemapGradient to update this list
      * @returns the list of alpha remap gradients
      */
     getAlphaRemapGradients(): Nullable<Array<FactorGradient>>;
@@ -691,5 +706,5 @@ export interface IParticleSystem {
      * Get hosting scene
      * @returns the scene
      */
-    getScene(): Scene;
+    getScene(): Nullable<Scene>;
 }

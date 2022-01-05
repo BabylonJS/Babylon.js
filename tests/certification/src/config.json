@@ -1,0 +1,128 @@
+﻿{
+    "root": "http://localhost:1338/tests/certification/models",
+    "tests": [
+        {
+            "title": "AnalyticalCubes",
+            "model": "AnalyticalCubes/glTF/AnalyticalCubes.gltf",
+            "referenceImage": "AnalyticalCubes/rr-AnalyticalCubes.png"
+        },
+        {
+            "title": "AnalyticalGrayscale",
+            "model": "AnalyticalGrayscale/glTF/AnalyticalGrayscale.gltf",
+            "referenceImage": "AnalyticalGrayscale/rr-AnalyticalGrayscale.png"
+        },
+        {
+            "title": "AnalyticalSpheres (Neutral)",
+            "model": "AnalyticalSpheres/glTF/AnalyticalSpheres.gltf",
+            "referenceImage": "AnalyticalSpheres/rr-AnalyticalSpheres.png"
+        },
+        {
+            "title": "AnalyticalSpheres (Cannon)",
+            "model": "AnalyticalSpheres/glTF/AnalyticalSpheres.gltf",
+            "environment": "Cannon_Exterior.hdr",
+            "referenceImage": "AnalyticalSpheres/rr-AnalyticalSpheres-Cannon.png"
+        },
+        {
+            "title": "AnalyticalSpheres (Street)",
+            "model": "AnalyticalSpheres/glTF/AnalyticalSpheres.gltf",
+            "environment": "Wide_Street.hdr",
+            "referenceImage": "AnalyticalSpheres/rr-AnalyticalSpheres-Street.png"
+        },
+        {
+            "title": "AnalyticalSpheres (Studio)",
+            "model": "AnalyticalSpheres/glTF/AnalyticalSpheres.gltf",
+            "environment": "Colorful_Studio.hdr",
+            "referenceImage": "AnalyticalSpheres/rr-AnalyticalSpheres-Studio.png"
+        },
+        {
+            "title": "GreenChair (0)",
+            "model": "GreenChair/glTF/GreenChair.gltf",
+            "camera": 0,
+            "referenceImage": "GreenChair/rr-GreenChair-0.png"
+        },
+        {
+            "title": "GreenChair (1)",
+            "model": "GreenChair/glTF/GreenChair.gltf",
+            "camera": 1,
+            "referenceImage": "GreenChair/rr-GreenChair-1.png"
+        },
+        {
+            "title": "GreenChair (2)",
+            "model": "GreenChair/glTF/GreenChair.gltf",
+            "camera": 2,
+            "referenceImage": "GreenChair/rr-GreenChair-2.png"
+        },
+        {
+            "title": "Mixer (0)",
+            "model": "Mixer/glTF/Mixer.gltf",
+            "camera": 0,
+            "referenceImage": "Mixer/rr-Mixer-0.png"
+        },
+        {
+            "title": "Mixer (1)",
+            "model": "Mixer/glTF/Mixer.gltf",
+            "camera": 1,
+            "referenceImage": "Mixer/rr-Mixer-1.png"
+        },
+        {
+            "title": "Mixer (2)",
+            "model": "Mixer/glTF/Mixer.gltf",
+            "camera": 2,
+            "referenceImage": "Mixer/rr-Mixer-2.png"
+        },
+        {
+            "title": "Shoe (0)",
+            "model": "Shoe/glTF/Shoe.gltf",
+            "camera": 0,
+            "referenceImage": "Shoe/rr-Shoe-0.png"
+        },
+        {
+            "title": "Shoe (1)",
+            "model": "Shoe/glTF/Shoe.gltf",
+            "camera": 1,
+            "referenceImage": "Shoe/rr-Shoe-1.png"
+        },
+        {
+            "title": "Shoe (2)",
+            "model": "Shoe/glTF/Shoe.gltf",
+            "camera": 2,
+            "referenceImage": "Shoe/rr-Shoe-2.png"
+        },
+        {
+            "title": "TennisRacquet (0)",
+            "model": "TennisRacquet/glTF/TennisRacquet.gltf",
+            "camera": 0,
+            "referenceImage": "TennisRacquet/rr-TennisRacquet-0.png"
+        },
+        {
+            "title": "TennisRacquet (1)",
+            "model": "TennisRacquet/glTF/TennisRacquet.gltf",
+            "camera": 1,
+            "referenceImage": "TennisRacquet/rr-TennisRacquet-1.png"
+        },
+        {
+            "title": "TennisRacquet (2)",
+            "model": "TennisRacquet/glTF/TennisRacquet.gltf",
+            "camera": 2,
+            "referenceImage": "TennisRacquet/rr-TennisRacquet-2.png"
+        },
+        {
+            "title": "WickerChair (0)",
+            "model": "WickerChair/glTF/WickerChair.gltf",
+            "camera": 0,
+            "referenceImage": "WickerChair/rr-WickerChair-0.png"
+        },
+        {
+            "title": "WickerChair (1)",
+            "model": "WickerChair/glTF/WickerChair.gltf",
+            "camera": 1,
+            "referenceImage": "WickerChair/rr-WickerChair-1.png"
+        },
+        {
+            "title": "WickerChair (2)",
+            "model": "WickerChair/glTF/WickerChair.gltf",
+            "camera": 2,
+            "referenceImage": "WickerChair/rr-WickerChair-2.png"
+        }
+    ]
+}

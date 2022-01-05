@@ -7,7 +7,7 @@ import { Nullable } from "../types";
 /**
  * Abstract class used to decouple action Manager from scene and meshes.
  * Do not instantiate.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export abstract class AbstractActionManager implements IDisposable {
 
@@ -122,7 +122,7 @@ export abstract class AbstractActionManager implements IDisposable {
     /**
      * Does exist one action manager that handles actions of a given trigger
      * @param trigger defines the trigger to be tested
-     * @return a boolean indicating whether the trigger is handeled by at least one action manager
+     * @return a boolean indicating whether the trigger is handled by at least one action manager
     **/
     public static HasSpecificTrigger(trigger: number): boolean {
         for (var t in AbstractActionManager.Triggers) {

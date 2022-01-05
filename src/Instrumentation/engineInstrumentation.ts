@@ -3,15 +3,12 @@ import { PerfCounter } from "../Misc/perfCounter";
 import { Nullable } from "../types";
 import { IDisposable } from "../scene";
 import { Engine } from "../Engines/engine";
-import { _TimeToken } from "../Instrumentation/timeToken";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
- * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+ * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
  */
 export class EngineInstrumentation implements IDisposable {
     private _captureGPUFrameTime = false;
-    private _gpuFrameTimeToken: Nullable<_TimeToken>;
-    private _gpuFrameTime = new PerfCounter();
 
     private _captureShaderCompilationTime = false;
     private _shaderCompilationTime = new PerfCounter();
@@ -27,7 +24,7 @@ export class EngineInstrumentation implements IDisposable {
      * Gets the perf counter used for GPU frame time
      */
     public get gpuFrameTimeCounter(): PerfCounter {
-        return this._gpuFrameTime;
+        return this.engine.getGPUFrameTimeCounter();
     }
 
     /**
@@ -46,32 +43,7 @@ export class EngineInstrumentation implements IDisposable {
         }
 
         this._captureGPUFrameTime = value;
-
-        if (value) {
-            this._onBeginFrameObserver = this.engine.onBeginFrameObservable.add(() => {
-                if (!this._gpuFrameTimeToken) {
-                    this._gpuFrameTimeToken = this.engine.startTimeQuery();
-                }
-            });
-
-            this._onEndFrameObserver = this.engine.onEndFrameObservable.add(() => {
-                if (!this._gpuFrameTimeToken) {
-                    return;
-                }
-                let time = this.engine.endTimeQuery(this._gpuFrameTimeToken);
-
-                if (time > -1) {
-                    this._gpuFrameTimeToken = null;
-                    this._gpuFrameTime.fetchNewFrame();
-                    this._gpuFrameTime.addCount(time, true);
-                }
-            });
-        } else {
-            this.engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
-            this._onBeginFrameObserver = null;
-            this.engine.onEndFrameObservable.remove(this._onEndFrameObserver);
-            this._onEndFrameObserver = null;
-        }
+        this.engine.captureGPUFrameTime(value);
     }
 
     /**
@@ -118,7 +90,7 @@ export class EngineInstrumentation implements IDisposable {
     /**
      * Instantiates a new engine instrumentation.
      * This class can be used to get instrumentation data from a Babylon engine
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      * @param engine Defines the engine to instrument
      */
     public constructor(

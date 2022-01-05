@@ -27,7 +27,46 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },      
+        },               
+        {
+            "name": "Launch Node Material Editor (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/nodeEditor/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        }, 
+        {
+            "name": "Launch GUI Editor (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/guiEditor/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },     
+        {
+            "name": "Launch GUI Editor (Edge - Direct)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/guiEditor/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },   
         {
             "name": "Launch Viewer (Chrome)",
             "type": "chrome",
@@ -45,10 +84,37 @@
             "name": "Launch sandbox (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:1338/sandbox/index-local.html",
+            "url": "http://localhost:1338/sandbox/public/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch sandbox (Edge)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch sandbox (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
@@ -68,6 +134,20 @@
             ]
         },
         {
+            "name": "Launch playground (Chrome Canary)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeCanaryProfileForDebug",
+            "runtimeExecutable": "C:/Users/alexis/AppData/Local/Google/Chrome SxS/Application/Chrome.exe",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        { 
             "name": "Launch playground (Edge)",
             "type": "edge",
             "version": "dev",
@@ -76,6 +156,19 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },        
+        {
+            "name": "Launch playground (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
@@ -173,6 +266,21 @@
             ]
         },        
         {
+            "name": "Launch Local Dev (Chrome Canary)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/localDevWebGPU/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeCanaryProfileForDebug",
+            "runtimeExecutable": "C:/Users/alexis/AppData/Local/Google/Chrome SxS/Application/Chrome.exe",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis",
+                "--enable-unsafe-webgpu"
+            ]
+        },        
+        {
             "name": "Launch Local Dev (Edge)",
             "type": "edge",
             "version": "dev",
@@ -181,6 +289,19 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },   
+        {
+            "name": "Launch Local Dev (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/localDev/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
@@ -211,7 +332,7 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },        
+        },
         {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
@@ -224,7 +345,7 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },  
+        },
         {
             "name": "Launch Build Validation (Edge)",
             "type": "edge",
@@ -240,6 +361,33 @@
             ]
         },
         {
+            "name": "Launch Build Validation (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/validation/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch WebGPU Build Validation (Edge) - Direct",
+            "type": "edge",
+            "version": "canary",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/validation/?engine=webgpu",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis",
+                "--enable-unsafe-webgpu"
+            ]
+        },
+        {
             "name": "Launch memory checks (Chrome)",
             "type": "chrome",
             "request": "launch",
@@ -252,5 +400,44 @@
                 "--enable-unsafe-es3-apis"
             ]
         },
+        {
+            "name": "Launch reflector (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html?reflector=true",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch sandbox for 3D Commerce (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html?3dcommerce=true",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch 3D Commerce Viewer Certification (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/certification/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        }
     ]
 }

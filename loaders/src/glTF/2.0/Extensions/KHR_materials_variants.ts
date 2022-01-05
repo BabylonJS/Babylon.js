@@ -4,36 +4,25 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
+import { Node } from 'babylonjs/node';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
+import { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_variants";
 
-interface IKHRMaterialVariantsMapping {
-    tags: string[];
-    material: number;
+interface IVariantsMap {
+    [key: string]: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
 }
 
-interface IKHRMaterialVariants {
-    mapping: IKHRMaterialVariantsMapping[];
-}
-
-interface IKHRMaterialVariantsTop {
-    default?: string;
+interface IExtensionMetadata {
+    lastSelected: Nullable<string | Array<string>>;
+    original: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
+    variants: IVariantsMap;
 }
 
 /**
- * Interface for the mapping from variant tag name to a mesh and material.
- */
-interface VariantMapping {
-    mesh: AbstractMesh;
-    materialPromise: Promise<Nullable<Material>>;
-    material?: Material;
-}
-
-/**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
  */
 export class KHR_materials_variants implements IGLTFLoaderExtension {
     /**
@@ -48,12 +37,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /**
-     * The default variant name.
-     */
-    public defaultVariant: string | undefined;
-
-    private _tagsToMap: { [key: string]: VariantMapping[]; } = {};
+    private _variants?: Array<IKHRMaterialVariants_Variant>;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -63,90 +47,238 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /**
-     * Return a list of available variants for this asset.
-     * @returns {string[]}
+     * Gets the list of available variant names for this asset.
+     * @param rootMesh The glTF root mesh
+     * @returns the list of all the variant names for this model
      */
-    public getVariants(): string[] {
-        return Object.keys(this._tagsToMap);
-    }
-
-    /**
-     * Select a variant by providing a list of variant tag names.
-     *
-     * @param {(string | string[])} variantName
-     */
-    public selectVariant(variantName: string | string[]) {
-        if (variantName instanceof Array) {
-            variantName.forEach((name) => this.selectVariantTag(name));
-        } else {
-            this.selectVariantTag(variantName);
+    public static GetAvailableVariants(rootMesh: Mesh): string[] {
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            return [];
         }
+
+        return Object.keys(extensionMetadata.variants);
     }
 
     /**
-     * Select a variant by providing a single variant tag.
-     *
-     * @param {string} variantName
+     * Gets the list of available variant names for this asset.
+     * @param rootMesh The glTF root mesh
+     * @returns the list of all the variant names for this model
      */
-    public selectVariantTag(variantName: string) {
-        // If the name is valid, switch all meshes to use materials defined by the tags
-        const variantMappings = this._tagsToMap[variantName];
-        if (variantMappings === undefined) {
-            return;
+    public getAvailableVariants(rootMesh: Mesh): string[] {
+        return KHR_materials_variants.GetAvailableVariants(rootMesh);
+    }
+
+    /**
+     * Select a variant given a variant name or a list of variant names.
+     * @param rootMesh The glTF root mesh
+     * @param variantName The variant name(s) to select.
+     */
+    public static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void {
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            throw new Error(`Cannot select variant on a glTF mesh that does not have the ${NAME} extension`);
         }
-        variantMappings.forEach((mapping: VariantMapping) => {
-            if (mapping.material) {
-                mapping.mesh.material = mapping.material;
-                return;
+
+        const select = (variantName: string): void => {
+            const entries = extensionMetadata.variants[variantName];
+            if (entries) {
+                for (const entry of entries) {
+                    entry.mesh.material = entry.material;
+                }
             }
-            mapping.materialPromise.then((material) => {
-                mapping.mesh.material = material;
-            });
-        });
+        };
+
+        if (variantName instanceof Array) {
+            for (const name of variantName) {
+                select(name);
+            }
+        } else {
+            select(variantName);
+        }
+
+        extensionMetadata.lastSelected = variantName;
+    }
+
+    /**
+     * Select a variant given a variant name or a list of variant names.
+     * @param rootMesh The glTF root mesh
+     * @param variantName The variant name(s) to select.
+     */
+    public selectVariant(rootMesh: Mesh, variantName: string | string[]): void {
+        return KHR_materials_variants.SelectVariant(rootMesh, variantName);
+    }
+
+    /**
+     * Reset back to the original before selecting a variant.
+     * @param rootMesh The glTF root mesh
+     */
+    public static Reset(rootMesh: Mesh): void {
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            throw new Error(`Cannot reset on a glTF mesh that does not have the ${NAME} extension`);
+        }
+
+        for (const entry of extensionMetadata.original) {
+            entry.mesh.material = entry.material;
+        }
+
+        extensionMetadata.lastSelected = null;
+    }
+
+    /**
+     * Reset back to the original before selecting a variant.
+     * @param rootMesh The glTF root mesh
+     */
+    public reset(rootMesh: Mesh): void {
+        return KHR_materials_variants.Reset(rootMesh);
+    }
+
+    /**
+     * Gets the last selected variant name(s) or null if original.
+     * @param rootMesh The glTF root mesh
+     * @returns The selected variant name(s).
+     */
+    public static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            throw new Error(`Cannot get the last selected variant on a glTF mesh that does not have the ${NAME} extension`);
+        }
+
+        return extensionMetadata.lastSelected;
+    }
+
+    /**
+     * Gets the last selected variant name(s) or null if original.
+     * @param rootMesh The glTF root mesh
+     * @returns The selected variant name(s).
+     */
+    public getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
+        return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
+    }
+
+    private static _GetExtensionMetadata(rootMesh: Nullable<Mesh>): Nullable<IExtensionMetadata> {
+        return rootMesh?.metadata?.gltf?.[NAME] || null;
     }
 
     /** @hidden */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as IKHRMaterialVariantsTop;
-            this.defaultVariant = extension.default;
+            const extension = extensions[this.name] as IKHRMaterialVariants_Variants;
+            this._variants = extension.variants;
         }
     }
 
     /** @hidden */
     public _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
-            const assignMesh = (babylonMesh: AbstractMesh) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
                 assign(babylonMesh);
-                const babylonDrawMode = (GLTFLoader as any)._GetDrawMode(context, primitive.mode);
-                // For each mapping, look at the tags and make a new entry for them
-                extension.mapping.forEach((mapping: IKHRMaterialVariantsMapping) => {
-                    mapping.tags.forEach((tag: string, index: number) => {
-                        const tagMapping = this._tagsToMap[tag] || [];
-                        const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
-                        const meshEntry: VariantMapping = {
-                            mesh: babylonMesh,
-                            materialPromise: Promise.resolve(null)
-                        };
-                        if (babylonMesh instanceof Mesh) {
-                            meshEntry.materialPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh!, babylonDrawMode, (material) => {
-                                meshEntry.material = material;
-                            });
-                        }
-                        tagMapping.push(meshEntry);
-                        this._tagsToMap[tag] = tagMapping;
-                    });
-                });
-            };
-            this._loader._disableInstancedMesh++;
-            const promise = this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assignMesh);
-            this._loader._disableInstancedMesh--;
-            return promise;
+
+                if (babylonMesh instanceof Mesh) {
+                    const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
+
+                    const root = this._loader.rootBabylonMesh;
+                    const metadata = (root ? root.metadata = root.metadata || {} : {});
+                    const gltf = (metadata.gltf = metadata.gltf || {});
+                    const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
+
+                    // Store the original material.
+                    extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
+
+                    // For each mapping, look at the variants and make a new entry for them.
+                    for (let mappingIndex = 0; mappingIndex < extension.mappings.length; ++mappingIndex) {
+                        const mapping = extension.mappings[mappingIndex];
+                        const material = ArrayItem.Get(`${extensionContext}/mappings/${mappingIndex}/material`, this._loader.gltf.materials, mapping.material);
+                        promises.push(this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                            for (let mappingVariantIndex = 0; mappingVariantIndex < mapping.variants.length; ++mappingVariantIndex) {
+                                const variantIndex = mapping.variants[mappingVariantIndex];
+                                const variant = ArrayItem.Get(`/extensions/${NAME}/variants/${variantIndex}`, this._variants, variantIndex);
+                                extensionMetadata.variants[variant.name] = extensionMetadata.variants[variant.name] || [];
+                                extensionMetadata.variants[variant.name].push({
+                                    mesh: babylonMesh,
+                                    material: babylonMaterial
+                                });
+
+                                // Replace the target when original mesh is cloned
+                                babylonMesh.onClonedObservable.add((newOne: Node) => {
+                                    const newMesh = newOne as Mesh;
+                                    let metadata: Nullable<IExtensionMetadata> = null;
+                                    let newRoot: Nullable<Node> = newMesh;
+
+                                    // Find root to get medata
+                                    do {
+                                        newRoot = newRoot!.parent;
+                                        if (!newRoot) {
+                                            return;
+                                        }
+                                        metadata = KHR_materials_variants._GetExtensionMetadata(newRoot as Mesh);
+                                    }
+                                    while (metadata === null);
+
+                                    // Need to clone the metadata on the root (first time only)
+                                    if (root && metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
+                                        // Copy main metadata
+                                        newRoot.metadata = {};
+                                        for (var key in root.metadata) {
+                                            newRoot.metadata[key] = root.metadata[key];
+                                        }
+
+                                        // Copy the gltf metadata
+                                        newRoot.metadata.gltf = [];
+                                        for (var key in root.metadata.gltf) {
+                                            newRoot.metadata.gltf[key] = root.metadata.gltf[key];
+                                        }
+
+                                        // Duplicate the extension specific metadata
+                                        newRoot.metadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
+                                        for (var original of metadata.original) {
+                                            newRoot.metadata.gltf[NAME].original.push({
+                                                mesh: original.mesh,
+                                                material: original.material
+                                            });
+                                        }
+                                        for (var key in metadata.variants) {
+                                            if (metadata.variants.hasOwnProperty(key)) {
+                                                newRoot.metadata.gltf[NAME].variants[key] = [];
+                                                for (var variantEntry of metadata.variants[key]) {
+                                                    newRoot.metadata.gltf[NAME].variants[key].push({
+                                                        mesh: variantEntry.mesh,
+                                                        material: variantEntry.material
+                                                    });
+                                                }
+                                            }
+                                        }
+
+                                        metadata = newRoot.metadata.gltf[NAME];
+                                    }
+
+                                    // Relocate
+                                    for (var target of metadata!.original) {
+                                        if (target.mesh === babylonMesh) {
+                                            target.mesh = newMesh;
+                                        }
+                                    }
+                                    for (var target of metadata!.variants[variant.name]) {
+                                        if (target.mesh === babylonMesh) {
+                                            target.mesh = newMesh;
+                                        }
+                                    }
+                                });
+                            }
+                        }));
+                    }
+                }
+            }));
+            return Promise.all(promises).then(([babylonMesh]) => {
+                return babylonMesh;
+            });
         });
     }
 }

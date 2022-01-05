@@ -1,10 +1,10 @@
 import { Nullable, IndicesArray, FloatArray } from "../types";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Color4 } from '../Maths/math.color';
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
-import { DiscBuilder } from "../Meshes/Builders/discBuilder";
+import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
@@ -16,6 +16,7 @@ import { Material } from '../Materials/material';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { MultiMaterial } from '../Materials/multiMaterial';
 import { PickingInfo } from '../Collisions/pickingInfo';
+import { Tools } from '../Misc/tools';
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
@@ -24,7 +25,7 @@ import { PickingInfo } from '../Collisions/pickingInfo';
  * The SPS is also a particle system. It provides some methods to manage the particles.
  * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
  *
- * Full documentation here : http://doc.babylonjs.com/how_to/Solid_Particle_System
+ * Full documentation here : https://doc.babylonjs.com/how_to/Solid_Particle_System
  */
 export class SolidParticleSystem implements IDisposable {
     /**
@@ -53,12 +54,12 @@ export class SolidParticleSystem implements IDisposable {
      */
     public name: string;
     /**
-     * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+     * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are available.
      */
     public mesh: Mesh;
     /**
      * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-     * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#garbage-collector-concerns
+     * Please read : https://doc.babylonjs.com/how_to/Solid_Particle_System#garbage-collector-concerns
      */
     public vars: any = {};
     /**
@@ -70,7 +71,7 @@ export class SolidParticleSystem implements IDisposable {
      * This array is the first element of the pickedBySubMesh array : sps.pickBySubMesh[0].
      * It's not pertinent to use it when using a SPS with the support for MultiMaterial enabled.
      * Use the method SPS.pickedParticle(pickingInfo) instead.
-     * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
+     * Please read : https://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
      */
     public pickedParticles: { idx: number; faceId: number }[];
     /**
@@ -82,9 +83,9 @@ export class SolidParticleSystem implements IDisposable {
      * `idx` is the picked particle index in the `SPS.particles` array
      * `faceId` is the picked face index counted within this particle.
      * It's better to use the method SPS.pickedParticle(pickingInfo) rather than using directly this array.
-     * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
+     * Please read : https://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
      */
-    public pickedBySubMesh: { idx: number; faceId: number}[][];
+    public pickedBySubMesh: { idx: number; faceId: number }[][];
     /**
      * This array is populated when `enableDepthSort` is set to true.
      * Each element of this array is an instance of the class DepthSortedParticle.
@@ -97,7 +98,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public _bSphereOnly: boolean = false;
     /**
-     * A number to multiply the boundind sphere radius by in order to reduce it for instance. (Internal use only)
+     * A number to multiply the bounding sphere radius by in order to reduce it for instance. (Internal use only)
      * @hidden
      */
     public _bSphereRadiusFactor: number = 1.0;
@@ -158,12 +159,12 @@ export class SolidParticleSystem implements IDisposable {
      * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
      * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
      * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-     * * useModelMaterial (optional boolean, defaut false) : if the model materials must be used to create the SPS multimaterial. This enables the multimaterial supports of the SPS.
+     * * useModelMaterial (optional boolean, default false) : if the model materials must be used to create the SPS multimaterial. This enables the multimaterial supports of the SPS.
      * * enableMultiMaterial (optional boolean, default false) : if the solid particles can be given different materials.
      * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.
      * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
      * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-     * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+     * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the bounding sphere radius by in order to reduce it for instance.
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
     constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number; expandable?: boolean; useModelMaterial?: boolean; enableMultiMaterial?: boolean; }) {
@@ -210,7 +211,7 @@ export class SolidParticleSystem implements IDisposable {
             return this.mesh;
         }
         if (this.nbParticles === 0 && !this.mesh) {
-            var triangle = DiscBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
+            var triangle = CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
             this.addShape(triangle, 1);
             triangle.dispose();
         }
@@ -258,7 +259,7 @@ export class SolidParticleSystem implements IDisposable {
                 for (let i = 0; i < lind; i++) {
                     let f = i % 3;
                     if (f == 0) {
-                        const pickedData = {idx: part.idx, faceId: faceId};
+                        const pickedData = { idx: part.idx, faceId: faceId };
                         this.pickedParticles[faceId] = pickedData;
                         faceId++;
                     }
@@ -294,7 +295,7 @@ export class SolidParticleSystem implements IDisposable {
      * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
      * Thus the particles generated from `digest()` have their property `position` set yet.
      * @param mesh ( Mesh ) is the mesh to be digested
-     * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
+     * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overridden by the parameter `number` if any
      * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
      * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
      * {storage} (optional existing array) is an array where the particles will be stored for a further use instead of being inserted in the SPS.
@@ -365,9 +366,9 @@ export class SolidParticleSystem implements IDisposable {
             var idx: number = this.nbParticles;
             var shape: Vector3[] = this._posToShape(facetPos);
             var shapeUV: number[] = this._uvsToShapeUV(facetUV);
-            var shapeInd = Array.from(facetInd);
-            var shapeCol = Array.from(facetCol);
-            var shapeNor = Array.from(facetNor);
+            var shapeInd = Tools.Slice(facetInd);
+            var shapeCol = Tools.Slice(facetCol);
+            var shapeNor = Tools.Slice(facetNor);
 
             // compute the barycenter of the shape
             barycenter.copyFromFloats(0, 0, 0);
@@ -500,7 +501,7 @@ export class SolidParticleSystem implements IDisposable {
         const storeApart = (options && options.storage) ? true : false;
         copy.idx = idx;
         copy.idxInShape = idxInShape;
-        copy.shapeId = model.shapeID;
+        copy.shapeId = model.shapeId;
         if (this._useModelMaterial) {
             var materialId = model._material!.uniqueId;
             const materialIndexesById = this._materialIndexesById;
@@ -660,7 +661,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Adds some particles to the SPS from the model shape. Returns the shape id.
-     * Please read the doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#create-an-immutable-sps
+     * Please read the doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#create-an-immutable-sps
      * @param mesh is any Mesh object that will be used as a model for the solid particles.
      * @param nb (positive integer) the number of particles to be created from this model
      * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
@@ -675,9 +676,9 @@ export class SolidParticleSystem implements IDisposable {
         var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         this.recomputeNormals = (meshNor) ? false : true;
-        var indices = Array.from(meshInd);
-        var shapeNormals = Array.from(meshNor);
-        var shapeColors = (meshCol) ? Array.from(meshCol) : [];
+        var indices = Tools.SliceToArray<IndicesArray, number>(meshInd);
+        var shapeNormals = Tools.SliceToArray<number[] | Float32Array, number>(meshNor);
+        var shapeColors = (meshCol) ? Tools.SliceToArray<number[] | Float32Array, number>(meshCol) : [];
         var storage = (options && options.storage) ? options.storage : null;
         var bbInfo: Nullable<BoundingInfo> = null;
         if (this._particlesIntersect) {
@@ -837,7 +838,7 @@ export class SolidParticleSystem implements IDisposable {
             return this;
         }
         var idxInShape = 0;
-        var  currentShapeId = solidParticleArray[0].shapeId;
+        var currentShapeId = solidParticleArray[0].shapeId;
         const nb = solidParticleArray.length;
         for (var i = 0; i < nb; i++) {
             var sp = solidParticleArray[i];
@@ -849,7 +850,7 @@ export class SolidParticleSystem implements IDisposable {
             var meshNor = model._normals;
             var noNor = (meshNor) ? false : true;
             this.recomputeNormals = (noNor || this.recomputeNormals);
-            var bbInfo = sp._boundingInfo;
+            var bbInfo = sp.getBoundingInfo();
             var newPart = this._insertNewParticle(this.nbParticles, idxInShape, model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
             sp.copyToRef(newPart!);
             idxInShape++;
@@ -880,7 +881,7 @@ export class SolidParticleSystem implements IDisposable {
      * @options addShape() passed options
      * @hidden
      */
-    private _insertNewParticle(idx: number, i: number, modelShape: ModelShape, shape: Vector3[], meshInd: IndicesArray, meshUV: number[] | Float32Array, meshCol: number[] | Float32Array, meshNor: number[] | Float32Array, bbInfo: Nullable<BoundingInfo>, storage: Nullable<[]> , options: any): Nullable<SolidParticle> {
+    private _insertNewParticle(idx: number, i: number, modelShape: ModelShape, shape: Vector3[], meshInd: IndicesArray, meshUV: number[] | Float32Array, meshCol: number[] | Float32Array, meshNor: number[] | Float32Array, bbInfo: Nullable<BoundingInfo>, storage: Nullable<[]>, options: any): Nullable<SolidParticle> {
         var currentPos = this._positions.length;
         var currentInd = this._indices.length;
         var currentCopy = this._meshBuilder(this._index, currentInd, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options, modelShape);
@@ -1005,7 +1006,7 @@ export class SolidParticleSystem implements IDisposable {
         end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
         if (this._computeBoundingBox) {
             if (start != 0 || end != this.nbParticles - 1) { // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                const boundingInfo = this.mesh._boundingInfo;
+                const boundingInfo = this.mesh.getBoundingInfo();
                 if (boundingInfo) {
                     minimum.copyFrom(boundingInfo.minimum);
                     maximum.copyFrom(boundingInfo.maximum);
@@ -1131,7 +1132,7 @@ export class SolidParticleSystem implements IDisposable {
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
-                    const iu  = 2 * pt;
+                    const iu = 2 * pt;
                     const iv = iu + 1;
 
                     tmpVector.copyFrom(shape[pt]);
@@ -1224,7 +1225,7 @@ export class SolidParticleSystem implements IDisposable {
 
             // if the particle intersections must be computed : update the bbInfo
             if (this._particlesIntersect) {
-                const bInfo = particle._boundingInfo;
+                const bInfo = particle.getBoundingInfo();
                 const bBox = bInfo.boundingBox;
                 const bSphere = bInfo.boundingSphere;
                 const modelBoundingInfo = particle._modelBoundingInfo;
@@ -1273,12 +1274,27 @@ export class SolidParticleSystem implements IDisposable {
         // if the VBO must be updated
         if (update) {
             if (this._computeParticleColor) {
-                mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                const vb = mesh.getVertexBuffer(VertexBuffer.ColorKind);
+                if (vb && !mesh.isPickable) {
+                    vb.updateDirectly(colors32, 0);
+                } else {
+                    mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                }
             }
             if (this._computeParticleTexture) {
-                mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                const vb = mesh.getVertexBuffer(VertexBuffer.UVKind);
+                if (vb && !mesh.isPickable) {
+                    vb.updateDirectly(uvs32, 0);
+                } else {
+                    mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                }
             }
-            mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+            const vbp = mesh.getVertexBuffer(VertexBuffer.PositionKind);
+            if (vbp && !mesh.isPickable) {
+                vbp.updateDirectly(positions32, 0);
+            } else {
+                mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
+            }
             if (!mesh.areNormalsFrozen || mesh.isFacetDataEnabled) {
                 if (this._computeParticleVertex || mesh.isFacetDataEnabled) {
                     // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
@@ -1289,7 +1305,12 @@ export class SolidParticleSystem implements IDisposable {
                     }
                 }
                 if (!mesh.areNormalsFrozen) {
-                    mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
+                    const vb = mesh.getVertexBuffer(VertexBuffer.NormalKind);
+                    if (vb && !mesh.isPickable) {
+                        vb.updateDirectly(normals32, 0);
+                    } else {
+                        mesh.updateVerticesData(VertexBuffer.NormalKind, normals32, false, false);
+                    }
                 }
             }
             if (this._depthSort && this._depthSortParticles) {
@@ -1320,11 +1341,11 @@ export class SolidParticleSystem implements IDisposable {
             }
         }
         if (this._computeBoundingBox) {
-            if (mesh._boundingInfo) {
-                mesh._boundingInfo.reConstruct(minimum, maximum, mesh._worldMatrix);
+            if (mesh.hasBoundingInfo) {
+                mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
             }
             else {
-                mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
+                mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
         if (this._autoUpdateSubMeshes) {
@@ -1359,17 +1380,17 @@ export class SolidParticleSystem implements IDisposable {
         (<any>this._indicesByMaterial) = null;
         (<any>this._idxOfId) = null;
     }
-    /** Returns an object {idx: numbern faceId: number} for the picked particle from the passed pickingInfo object.
+    /** Returns an object {idx: number faceId: number} for the picked particle from the passed pickingInfo object.
      * idx is the particle index in the SPS
      * faceId is the picked face index counted within this particle.
      * Returns null if the pickInfo can't identify a picked particle.
      * @param pickingInfo (PickingInfo object)
      * @returns {idx: number, faceId: number} or null
      */
-    public pickedParticle(pickingInfo: PickingInfo): Nullable<{idx: number, faceId: number}> {
+    public pickedParticle(pickingInfo: PickingInfo): Nullable<{ idx: number, faceId: number }> {
         if (pickingInfo.hit) {
             const subMesh = pickingInfo.subMeshId;
-            const faceId = pickingInfo.faceId;
+            const faceId = pickingInfo.faceId - this.mesh.subMeshes[subMesh].indexStart / 3;
             const picked = this.pickedBySubMesh;
             if (picked[subMesh] && picked[subMesh][faceId]) {
                 return picked[subMesh][faceId];
@@ -1523,7 +1544,7 @@ export class SolidParticleSystem implements IDisposable {
                             pickedData.faceId = faceId;
                         }
                         else {
-                            this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = {idx: sortedPart.idx, faceId: faceId};
+                            this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = { idx: sortedPart.idx, faceId: faceId };
                         }
                         subMeshFaceId++;
                         faceId++;
@@ -1556,7 +1577,7 @@ export class SolidParticleSystem implements IDisposable {
      * @hidden
      */
     private _filterUniqueMaterialId(array: Material[]): Material[] {
-        var filtered = array.filter(function(value, index, self) {
+        var filtered = array.filter(function (value, index, self) {
             return self.indexOf(value) === index;
         });
         return filtered;
@@ -1572,8 +1593,8 @@ export class SolidParticleSystem implements IDisposable {
         return this._defaultMaterial;
     }
     /**
-     * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
+     * Visibility helper : Recomputes the visible size according to the mesh bounding box
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      * @returns the SPS.
      */
     public refreshVisibleSize(): SolidParticleSystem {
@@ -1587,16 +1608,16 @@ export class SolidParticleSystem implements IDisposable {
      * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
      * @param size the size (float) of the visibility box
      * note : this doesn't lock the SPS mesh bounding box.
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public setVisibilityBox(size: number): void {
         var vis = size / 2;
-        this.mesh._boundingInfo = new BoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
+        this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 
     /**
      * Gets whether the SPS as always visible or not
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public get isAlwaysVisible(): boolean {
         return this._alwaysVisible;
@@ -1604,7 +1625,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Sets the SPS as always visible or not
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public set isAlwaysVisible(val: boolean) {
         this._alwaysVisible = val;
@@ -1613,7 +1634,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public set isVisibilityBoxLocked(val: boolean) {
         this._isVisibilityBoxLocked = val;
@@ -1625,7 +1646,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
      */
     public get isVisibilityBoxLocked(): boolean {
         return this._isVisibilityBoxLocked;
@@ -1795,7 +1816,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * This function does nothing. It may be overwritten to set all the particle first values.
      * The SPS doesn't call this function, you may have to call it by your own.
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
      */
     public initParticles(): void {
     }
@@ -1803,7 +1824,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * This function does nothing. It may be overwritten to recycle a particle.
      * The SPS doesn't call this function, you may have to call it by your own.
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
      * @param particle The particle to recycle
      * @returns the recycled particle
      */
@@ -1814,7 +1835,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Updates a particle : this function should  be overwritten by the user.
      * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#particle-management
      * @example : just set a particle position or velocity and recycle conditions
      * @param particle The particle to update
      * @returns the updated particle
@@ -1829,7 +1850,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param particle the current particle
      * @param vertex the current vertex of the current particle : a SolidParticleVertex object
      * @param pt the index of the current vertex in the particle shape
-     * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
+     * doc : https://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
      * @example : just set a vertex particle position or color
      * @returns the sps
      */

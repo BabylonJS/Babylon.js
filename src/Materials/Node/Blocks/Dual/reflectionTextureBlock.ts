@@ -3,7 +3,7 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterial } from '../../nodeMaterial';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { ReflectionTextureBaseBlock } from './reflectionTextureBaseBlock';
@@ -28,9 +28,11 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
     }
@@ -93,24 +95,38 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
+     * Gets the rgba output component
+     */
+    public get rgba(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Gets the r output component
      */
     public get r(): NodeMaterialConnectionPoint {
-        return this._outputs[1];
+        return this._outputs[2];
     }
 
     /**
      * Gets the g output component
      */
     public get g(): NodeMaterialConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[3];
     }
 
     /**
      * Gets the b output component
      */
     public get b(): NodeMaterialConnectionPoint {
-        return this._outputs[3];
+        return this._outputs[4];
+    }
+
+    /**
+     * Gets the a output component
+     */
+    public get a(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
     }
 
     public autoConfigure(material: NodeMaterial) {
@@ -148,7 +164,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
 
         state.compilationString += this.handleFragmentSideCodeReflectionCoords(normalWUnit);
 
-        state.compilationString += this.handleFragmentSideCodeReflectionColor();
+        state.compilationString += this.handleFragmentSideCodeReflectionColor(undefined, "");
 
         state.compilationString += this.writeOutputs(state, this._reflectionColorName);
 
@@ -156,4 +172,4 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ReflectionTextureBlock"] = ReflectionTextureBlock;
+RegisterClass("BABYLON.ReflectionTextureBlock", ReflectionTextureBlock);

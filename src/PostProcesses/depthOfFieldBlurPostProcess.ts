@@ -8,6 +8,8 @@ import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
+import { RegisterClass } from '../Misc/typeStore';
+import { serialize } from '../Misc/decorators';
 
 /**
  * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
@@ -17,6 +19,20 @@ import { Constants } from "../Engines/constants";
  */
 export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
     /**
+     * The direction the blur should be applied
+     */
+    @serialize()
+    public direction: Vector2;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "DepthOfFieldBlurPostProcess" string
+     */
+    public getClassName(): string {
+        return "DepthOfFieldBlurPostProcess";
+    }
+
+    /**
      * Creates a new instance CircleOfConfusionPostProcess
      * @param name The name of the effect.
      * @param scene The scene the effect belongs to.
@@ -24,7 +40,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param kernel The size of the kernel used to blur.
      * @param options The required width/height ratio to downsize to before computing the render pass.
      * @param camera The camera to apply the render pass to.
-     * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring accross edges
+     * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring across edges
      * @param imageToBlur The image to apply the blur to (default: Current rendered frame)
      * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
      * @param engine The engine which the post process will be applied. (default: current engine)
@@ -32,8 +48,11 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(name: string, scene: Scene, direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, direction, kernel, options, camera, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Constants.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
+
+        this.direction = direction;
+        this.externalTextureSamplerBinding = !!imageToBlur;
 
         this.onApplyObservable.add((effect: Effect) => {
             if (imageToBlur != null) {
@@ -46,3 +65,5 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         });
     }
 }
+
+RegisterClass("BABYLON.DepthOfFieldBlurPostProcess", DepthOfFieldBlurPostProcess);

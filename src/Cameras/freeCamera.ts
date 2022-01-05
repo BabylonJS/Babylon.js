@@ -8,19 +8,20 @@ import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
+import { Tools } from '../Misc/tools';
 
 declare type Collider = import("../Collisions/collider").Collider;
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
  * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
- * @see http://doc.babylonjs.com/features/cameras#universal-camera
+ * @see https://doc.babylonjs.com/features/cameras#universal-camera
  */
 export class FreeCamera extends TargetCamera {
     /**
      * Define the collision ellipsoid of the camera.
      * This is helpful to simulate a camera body like the player body around the camera
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
      */
     @serializeAsVector3()
     public ellipsoid = new Vector3(0.5, 1, 0.5);
@@ -131,9 +132,9 @@ export class FreeCamera extends TargetCamera {
         }
     }
 
-     /**
-     * Gets or Set the list of keyboard keys used to control the downward move of the camera.
-     */
+    /**
+    * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+    */
     public get keysDownward(): number[] {
         var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
@@ -189,6 +190,44 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
+     */
+    public get keysRotateLeft(): number[] {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysRotateLeft;
+        }
+
+        return [];
+    }
+
+    public set keysRotateLeft(value: number[]) {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysRotateLeft = value;
+        }
+    }
+
+    /**
+     * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+     */
+    public get keysRotateRight(): number[] {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysRotateRight;
+        }
+
+        return [];
+    }
+
+    public set keysRotateRight(value: number[]) {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysRotateRight = value;
+        }
+    }
+
+    /**
      * Event raised when the camera collide with a mesh in the scene.
      */
     public onCollide: (collidedMesh: AbstractMesh) => void;
@@ -208,11 +247,11 @@ export class FreeCamera extends TargetCamera {
      * Instantiates a Free Camera.
      * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
      * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
-     * @see http://doc.babylonjs.com/features/cameras#universal-camera
+     * @see https://doc.babylonjs.com/features/cameras#universal-camera
      * @param name Define the name of the camera in the scene
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to
-     * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
+     * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
     constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
@@ -221,21 +260,42 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
-     * Attached controls to the current camera.
-     * @param element Defines the element the controls should be listened from
+     * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.inputs.attachElement(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void;
+    /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * BACK COMPAT SIGNATURE ONLY.
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean): void;
+    /**
+     * Attached controls to the current camera.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(ignored?: any, noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        this.inputs.attachElement(noPreventDefault);
     }
 
     /**
-     * Detach the current controls from the camera.
-     * The camera will stop reacting to inputs.
-     * @param element Defines the element to stop listening the inputs from
+     * Detach the current controls from the specified dom element.
      */
-    public detachControl(element: HTMLElement): void {
-        this.inputs.detachElement(element);
+    public detachControl(): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored: any): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
+        this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);
         this.cameraRotation = new Vector2(0, 0);

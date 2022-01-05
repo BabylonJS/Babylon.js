@@ -4,13 +4,11 @@
 <head>
     <title>Local Development</title>
 
-    <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
     <script src="../dist/preview%20release/cannon.js"></script>
     <script src="../dist/preview%20release/Oimo.js"></script>
     <script src="../dist/preview%20release/ammo.js"></script>
     <script src="../dist/preview%20release/recast.js"></script>
-    <script src="../dist/preview%20release/libktx.js"></script>
     <script src="../Tools/DevLoader/BabylonLoader.js"></script>
 
     <style>
@@ -88,6 +86,12 @@
     </div>
 
     <script>
+        function GetAbsoluteUrl(url) {
+            const a = document.createElement("a");
+            a.href = url;
+            return a.href;
+        }
+
         var canvas = document.createElement("canvas");
         //	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
         var divFps = document.getElementById("fps");
@@ -112,12 +116,25 @@
             .require(indexjs)
             .load(function() {
                 BABYLON.DracoCompression.Configuration.decoder = {
-                    wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
-                    wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
-                    fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
+                    wasmUrl: GetAbsoluteUrl("../dist/preview%20release/draco_wasm_wrapper_gltf.js"),
+                    wasmBinaryUrl: GetAbsoluteUrl("../dist/preview%20release/draco_decoder_gltf.wasm"),
+                    fallbackUrl: GetAbsoluteUrl("../dist/preview%20release/draco_decoder_gltf.js")
+                };
+                BABYLON.MeshooptCompression.Configuration.decoder = {
+                    url: GetAbsoluteUrl("../dist/preview%20release/meshopt_decoder.js");
                 };
                 BABYLON.GLTFValidation.Configuration = {
-                    url: "../dist/preview%20release/gltf_validator.js"
+                    url: GetAbsoluteUrl("../dist/preview%20release/gltf_validator.js")
+                };
+                BABYLON.KhronosTextureContainer2.URLConfig = {
+                    jsDecoderModule: GetAbsoluteUrl("../dist/preview%20release/babylon.ktx2Decoder.js"),
+                    wasmUASTCToASTC: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+                    wasmUASTCToBC7: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+                    wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+                    wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+                    jsMSCTranscoder: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+                    wasmMSCTranscoder: GetAbsoluteUrl("../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+                    wasmZSTDDecoder: GetAbsoluteUrl("../dist/preview%20release/zstddec.wasm"),
                 };
 
                 if (BABYLON.Engine.isSupported()) {

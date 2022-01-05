@@ -1,6 +1,7 @@
 ﻿// Attribute
 attribute vec3 position;
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -24,21 +25,31 @@ attribute vec2 uv2;
 
 varying float vDepthMetric;
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
+
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
 
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-	
-	vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
+
+    #ifdef USE_REVERSE_DEPTHBUFFER
+	    vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
+    #else
+	    vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
+    #endif
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1

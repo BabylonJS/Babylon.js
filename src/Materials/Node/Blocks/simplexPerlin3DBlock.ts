@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 /**
  * block used to Generate a Simplex Perlin 3d Noise Pattern
  */
@@ -128,4 +128,4 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SimplexPerlin3DBlock"] = SimplexPerlin3DBlock;
+RegisterClass("BABYLON.SimplexPerlin3DBlock", SimplexPerlin3DBlock);

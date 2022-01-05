@@ -102,7 +102,7 @@ interface VRDisplay extends EventTarget {
      * identically to how window.requestAnimationFrame acts. Content should
      * make no assumptions of frame rate or vsync behavior as the HMD runs
      * asynchronously from other displays and at differing refresh rates.
-     * @param callback Define the eaction to run next frame
+     * @param callback Define the action to run next frame
      * @returns the request handle it
      */
     requestAnimationFrame(callback: FrameRequestCallback): number;
@@ -210,3 +210,5 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
+
+declare var VRFrameData: any;

@@ -10,6 +10,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -50,11 +51,17 @@ varying vec4 vColor;
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
 
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 	#include<instancesVertex>
     #include<bonesVertex>
+    #include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 
@@ -91,9 +98,9 @@ void main(void)
 	vec3 worldBinormal = normalize(xbin * normalizedNormal.x + ybin * normalizedNormal.y + zbin * normalizedNormal.z);
    	vec3 worldTangent = normalize(xtan * normalizedNormal.x + ytan * normalizedNormal.y + ztan * normalizedNormal.z);
 	   
-	worldTangent = (world * vec4(worldTangent, 1.0)).xyz;
-    worldBinormal = (world * vec4(worldBinormal, 1.0)).xyz;
-	vec3 worldNormal = normalize(cross(worldTangent, worldBinormal));
+	worldTangent = (world * vec4(worldTangent, 0.0)).xyz;
+    worldBinormal = (world * vec4(worldBinormal, 0.0)).xyz;
+	vec3 worldNormal = (world * vec4(normalize(normal), 0.0)).xyz;
 
 	tangentSpace[0] = worldTangent;
     tangentSpace[1] = worldBinormal;
@@ -118,4 +125,6 @@ void main(void)
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

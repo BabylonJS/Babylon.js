@@ -20,9 +20,10 @@ declare module "../../Engines/thinEngine" {
          * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns the raw texture inside an InternalTexture
          */
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, type: number): InternalTexture;
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, type: number, creationFlags?: number): InternalTexture;
 
         /**
          * Update a raw texture
@@ -60,7 +61,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update a raw cube texture
-         * @param texture defines the texture to udpdate
+         * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
@@ -70,7 +71,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update a raw cube texture
-         * @param texture defines the texture to udpdate
+         * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
@@ -81,7 +82,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update a raw cube texture
-         * @param texture defines the texture to udpdate
+         * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
@@ -147,9 +148,10 @@ declare module "../../Engines/thinEngine" {
          * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compressed used (can be null)
          * @param textureType defines the compressed used (can be null)
+         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns a new raw 3D texture (stored in an InternalTexture)
          */
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number, creationFlags?: number): InternalTexture;
 
         /**
          * Update a raw 3D texture
@@ -183,9 +185,10 @@ declare module "../../Engines/thinEngine" {
          * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
          * @param compression defines the compressed used (can be null)
          * @param textureType defines the compressed used (can be null)
+         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          * @returns a new raw 2D array texture (stored in an InternalTexture)
          */
-        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number, creationFlags?: number): InternalTexture;
 
         /**
          * Update a raw 2D array texture
@@ -209,7 +212,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+ThinEngine.prototype.updateRawTexture = function (texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
     if (!texture) {
         return;
     }
@@ -248,7 +251,8 @@ ThinEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTextu
     texture.isReady = true;
 };
 
-ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+ThinEngine.prototype.createRawTexture = function (data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+    compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture {
     var texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -285,7 +289,7 @@ ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>
     return texture;
 };
 
-ThinEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
+ThinEngine.prototype.createRawCubeTexture = function (data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
     generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null): InternalTexture {
     var gl = this._gl;
@@ -357,11 +361,12 @@ ThinEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferV
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
     texture.generateMipMaps = generateMipMaps;
+    texture.samplingMode = samplingMode;
 
     return texture;
 };
 
-ThinEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
+ThinEngine.prototype.updateRawCubeTexture = function (texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
     texture._bufferViewArray = data;
     texture.format = format;
     texture.type = type;
@@ -410,7 +415,7 @@ ThinEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, d
     texture.isReady = true;
 };
 
-ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
+ThinEngine.prototype.createRawCubeTextureFromUrl = function (url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
     callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
     mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
     onLoad: Nullable<() => void> = null,
@@ -491,12 +496,18 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: 
 /** @hidden */
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
-    var rgbaData: any;
+    let rgbaData: any;
+    let val1 = 1;
     if (textureType === Constants.TEXTURETYPE_FLOAT) {
         rgbaData = new Float32Array(width * height * 4);
-    }
-    else {
+    } else if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
+        rgbaData = new Uint16Array(width * height * 4);
+        val1 = 15360; // 15360 is the encoding of 1 in half float
+    } else if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER) {
         rgbaData = new Uint32Array(width * height * 4);
+    }
+     else {
+        rgbaData = new Uint8Array(width * height * 4);
     }
 
     // Convert each pixel.
@@ -511,7 +522,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
             rgbaData[newIndex + 2] = rgbData[index + 2];
 
             // Add fully opaque alpha channel.
-            rgbaData[newIndex + 3] = 1;
+            rgbaData[newIndex + 3] = val1;
         }
     }
 
@@ -524,7 +535,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
  * @hidden
  */
 function _makeCreateRawTextureFunction(is3D: boolean) {
-    return function(this: ThinEngine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+    return function (this: ThinEngine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         var source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
         var texture = new InternalTexture(this, source);
@@ -582,7 +593,7 @@ ThinEngine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
  * @hidden
  */
 function _makeUpdateRawTextureFunction(is3D: boolean) {
-    return function(this: ThinEngine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    return function (this: ThinEngine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         var internalType = this._getWebGLTextureType(textureType);
         var internalFormat = this._getInternalFormat(format);

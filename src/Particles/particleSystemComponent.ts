@@ -50,7 +50,7 @@ declare module "../Engines/engine" {
          * @param uniformsNames defines a list of attribute names
          * @param samplers defines an array of string used to represent textures
          * @param defines defines the string containing the defines to use to compile the shaders
-         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+         * @param fallbacks defines the list of potential fallbacks to use if shader compilation fails
          * @param onCompiled defines a function to call when the effect creation is successful
          * @param onError defines a function to call when the effect creation has failed
          * @param particleSystem the particle system you want to create the effect for
@@ -61,7 +61,7 @@ declare module "../Engines/engine" {
     }
 }
 
-Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
+Engine.prototype.createEffectForParticles = function (fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
     onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: IParticleSystem): Effect {
 
     var attributesNamesOrOptions: Array<string> = [];
@@ -109,7 +109,7 @@ declare module "../Meshes/mesh" {
     }
 }
 
-Mesh.prototype.getEmittedParticleSystems = function(): IParticleSystem[] {
+Mesh.prototype.getEmittedParticleSystems = function (): IParticleSystem[] {
     var results = new Array<IParticleSystem>();
     for (var index = 0; index < this.getScene().particleSystems.length; index++) {
         var particleSystem = this.getScene().particleSystems[index];
@@ -120,7 +120,7 @@ Mesh.prototype.getEmittedParticleSystems = function(): IParticleSystem[] {
     return results;
 };
 
-Mesh.prototype.getHierarchyEmittedParticleSystems = function(): IParticleSystem[] {
+Mesh.prototype.getHierarchyEmittedParticleSystems = function (): IParticleSystem[] {
     var results = new Array<IParticleSystem>();
     var descendants = this.getDescendants();
     descendants.push(this);

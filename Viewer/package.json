@@ -29,11 +29,10 @@
         "base64-image-loader": "^1.2.1",
         "base64-inline-loader": "^1.1.1",
         "deepmerge": "~2.1.1",
-        "handlebars": "^4.5.1",
+        "handlebars": "^4.7.6",
         "html-loader": "^0.5.5",
         "json-loader": "^0.5.7",
         "ts-loader": "^4.4.0",
-        "uglifyjs-webpack-plugin": "^1.2.2",
         "webpack": "^4.29.3",
         "webpack-cli": "^3.3.9",
         "webpack-dev-server": "^3.1.14"

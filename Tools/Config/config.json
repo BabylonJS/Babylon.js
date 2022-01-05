@@ -36,7 +36,8 @@
             "BABYLON"
         ],
         "typedocJSON": "../../.temp/babylon.typedoc.json",
-        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json",
+        "sharedUiComponentsSrc": "sharedUiComponents"
     },
     "modules": [
         "core",
@@ -47,7 +48,8 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor"
+        "nodeEditor",
+        "guiEditor"
     ],
     "es6modules": [
         "core",
@@ -59,7 +61,13 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor"
+        "nodeEditor",
+        "guiEditor"
+    ],
+    "apps": [
+        "playground",
+        "sandbox",
+        "ktx2Decoder"
     ],
     "lintModules": [
         "core",
@@ -120,6 +128,7 @@
                             "namespace": "BABYLON.Debug"
                         }
                     ],
+                    "namedExportPathsToExclude": "Buffers/buffer",
                     "hiddenConsts": [
                         "Debug"
                     ]
@@ -143,7 +152,8 @@
             "es6": {
                 "packageName": "@babylonjs/core",
                 "readme": "readme-es6.md",
-                "license": "license.md"
+                "license": "license.md",
+                "type": "module"
             }
         }
     },
@@ -245,7 +255,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/materials",
-                "readme": "dist/preview release/materialsLibrary/readme-es6.md"
+                "readme": "dist/preview release/materialsLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -282,7 +293,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/post-processes",
-                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md"
+                "readme": "dist/preview release/postProcessesLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -359,7 +371,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/procedural-textures",
-                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md"
+                "readme": "dist/preview release/proceduralTexturesLibrary/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -430,7 +443,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/loaders",
-                "readme": "dist/preview release/loaders/readme-es6.md"
+                "readme": "dist/preview release/loaders/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -488,7 +502,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/serializers",
-                "readme": "dist/preview release/serializers/readme-es6.md"
+                "readme": "dist/preview release/serializers/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -512,12 +527,14 @@
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON",
                         "babylonjs-serializers": "BABYLON"
-                    }
+                    },
+                    "namedExportPathsToExclude": "3D/materials/fluent/fluentMaterial"
                 }
             },
             "es6": {
                 "packageName": "@babylonjs/gui",
-                "readme": "dist/preview release/gui/readme-es6.md"
+                "readme": "dist/preview release/gui/readme-es6.md",
+                "type": "module"
             }
         }
     },
@@ -538,6 +555,7 @@
                 "re-resizable",
                 "glTF"
             ],
+            "sharedUiComponents": "src/sharedUiComponents/",
             "umd": {
                 "packageName": "babylonjs-inspector",
                 "webpackRoot": "INSPECTOR",
@@ -601,6 +619,7 @@
                 "glTF",
                 "file-saver"
             ],
+            "sharedUiComponents": "src/sharedUiComponents/",
             "umd": {
                 "packageName": "babylonjs-node-editor",
                 "webpackRoot": "NODEEDITOR",
@@ -634,6 +653,89 @@
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
             }
+        }
+    },
+    "guiEditor": {
+        "libraries": [
+            {
+                "output": "babylon.guiEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./guiEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "dagre",
+                "re-resizable",
+                "glTF",
+                "file-saver"
+            ],
+            "sharedUiComponents": "src/sharedUiComponents/",
+            "umd": {
+                "packageName": "babylonjs-gui-editor",
+                "webpackRoot": "GUIEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.guiEditor.module.d.ts",
+                    "moduleName": "GUIEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/gui-editor",
+                "readme": "dist/preview release/guiEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.guiEditor.max.js",
+                    "babylon.guiEditor.max.js.map",
+                    "babylon.guiEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.guiEditor.module.d.ts",
+                "index": "babylon.guiEditor.max.js"
+            }
+        }
+    },
+    "ktx2Decoder": {
+        "tempFileName": "babylon.ktx2Decoder.js",
+        "distFile": "/dist/preview release/babylon.ktx2Decoder.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../dist/preview release/",
+            "mainFolder": "./ktx2Decoder/"
+        }
+    },
+    "playground": {
+        "distFile": "/Playground/dist/babylon.playground.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../Playground/dist/",
+            "mainFolder": "./Playground/"
+        }
+    },
+    "sandbox": {
+        "distFile": "/sandbox/public/dist/babylon.sandbox.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../sandbox/public/dist/",
+            "mainFolder": "./sandbox/"
         }
     },
     "viewer": {

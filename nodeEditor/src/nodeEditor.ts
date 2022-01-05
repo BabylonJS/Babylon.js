@@ -2,8 +2,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
-import { Popup } from "../src/sharedComponents/popup"
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { Popup } from "../src/sharedComponents/popup";
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
 import { PreviewType } from './components/preview/previewType';
@@ -13,10 +13,10 @@ import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialMo
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
-    nodeMaterial: NodeMaterial,
-    hostElement?: HTMLElement,
-    customSave?: {label: string, action: (data: string) => Promise<void>};
-    customLoadObservable?: Observable<any>
+    nodeMaterial: NodeMaterial;
+    hostElement?: HTMLElement;
+    customSave?: { label: string, action: (data: string) => Promise<void> };
+    customLoadObservable?: Observable<any>;
 }
 
 /**
@@ -38,18 +38,18 @@ export class NodeEditor {
         }
 
         let hostElement = options.hostElement;
-        
+
         if (!hostElement) {
             hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
         }
-        
+
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial;
         globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
-        globalState.hostWindow =  hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState
@@ -58,14 +58,19 @@ export class NodeEditor {
         ReactDOM.render(graphEditor, hostElement);
 
         if (options.customLoadObservable) {
-            options.customLoadObservable.add(data => {
+            options.customLoadObservable.add((data) => {
                 SerializationTools.Deserialize(data, globalState);
+                globalState.mode = options.nodeMaterial.mode;
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
-            })
+            });
         }
 
         this._CurrentState = globalState;
+
+        globalState.hostWindow.addEventListener('beforeunload', () => {
+            globalState.onPopupClosedObservable.notifyObservers();
+        });
 
         // Close the popup window when the page is refreshed or scene is disposed
         var popupWindow = (Popup as any)["node-editor"];
@@ -74,7 +79,7 @@ export class NodeEditor {
                 if (popupWindow) {
                     popupWindow.close();
                 }
-            })
+            });
             window.onbeforeunload = () => {
                 var popupWindow = (Popup as any)["node-editor"];
                 if (popupWindow) {
@@ -84,10 +89,9 @@ export class NodeEditor {
             };
         }
         window.addEventListener('beforeunload', () => {
-            if(DataStorage.ReadNumber("PreviewType", PreviewType.Box) === PreviewType.Custom){
+            if (DataStorage.ReadNumber("PreviewType", PreviewType.Box) === PreviewType.Custom) {
                 DataStorage.WriteNumber("PreviewType", globalState.mode === NodeMaterialModes.Material ? PreviewType.Box : PreviewType.Bubbles);
             }
         });
     }
 }
-

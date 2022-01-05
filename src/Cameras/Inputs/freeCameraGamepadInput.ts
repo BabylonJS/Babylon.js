@@ -8,7 +8,7 @@ import { Gamepad } from "../../Gamepads/gamepad";
 
 /**
  * Manage the gamepad inputs to control a free camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     /**
@@ -35,6 +35,12 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     @serialize()
     public gamepadMoveSensibility = 40;
 
+    /**
+     * Defines the minimum value at which any analog stick input is ignored.
+     * Note: This value should only be a value between 0 and 1.
+     */
+    public deadzoneDelta = 0.1;
+
     private _yAxisScale = 1.0;
 
     /**
@@ -58,10 +64,8 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(): void {
         let manager = this.camera.getScene().gamepadManager;
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type !== Gamepad.POSE_ENABLED) {
@@ -78,14 +82,24 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             }
         });
 
+        // check if there are already other controllers connected
         this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
+        // if no xbox controller was found, but there are gamepad controllers, take the first one
+        if (!this.gamepad && manager.gamepads.length) {
+            this.gamepad = manager.gamepads[0];
+        }
     }
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
         this.gamepad = null;
@@ -99,19 +113,16 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
         if (this.gamepad && this.gamepad.leftStick) {
             var camera = this.camera;
             var LSValues = this.gamepad.leftStick;
-            var normalizedLX = LSValues.x / this.gamepadMoveSensibility;
-            var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
-            LSValues.x = Math.abs(normalizedLX) > 0.005 ? 0 + normalizedLX : 0;
-            LSValues.y = Math.abs(normalizedLY) > 0.005 ? 0 + normalizedLY : 0;
+            if (this.gamepadMoveSensibility !== 0) {
+                LSValues.x = (Math.abs(LSValues.x) > this.deadzoneDelta) ? LSValues.x / this.gamepadMoveSensibility : 0;
+                LSValues.y = (Math.abs(LSValues.y) > this.deadzoneDelta) ? LSValues.y / this.gamepadMoveSensibility : 0;
+            }
 
             var RSValues = this.gamepad.rightStick;
-            if (RSValues) {
-                var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = (RSValues.y / this.gamepadAngularSensibility) * this._yAxisScale;
-                RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
-                RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-            }
-            else {
+            if (RSValues && this.gamepadAngularSensibility !== 0) {
+                RSValues.x = (Math.abs(RSValues.x) > this.deadzoneDelta) ? RSValues.x / this.gamepadAngularSensibility : 0;
+                RSValues.y = ((Math.abs(RSValues.y) > this.deadzoneDelta) ? RSValues.y / this.gamepadAngularSensibility : 0) * this._yAxisScale;
+            } else {
                 RSValues = { x: 0, y: 0 };
             }
 
@@ -132,7 +143,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

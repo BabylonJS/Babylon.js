@@ -11,9 +11,13 @@ jobs:
 - job: WhatsNewUpdate
   displayName: '1. What s New Update'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -29,9 +33,13 @@ jobs:
 - job: DocumentationCheck
   displayName: '2. Documentation Check'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -44,9 +52,13 @@ jobs:
 - job: Linting
   displayName: '3. Linting'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -59,9 +71,13 @@ jobs:
 - job: Build
   displayName: '4. Build and Unit Tests'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -82,9 +98,13 @@ jobs:
 - job: TestsWebGL1
   displayName: '5. Validation Tests WebGL1'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -109,9 +129,13 @@ jobs:
 - job: TestsWebGL2
   displayName: '6. Validation Tests WebGL2'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -143,9 +167,13 @@ jobs:
 - job: ModuleTests
   displayName: '7. Module Tests'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:
@@ -157,7 +185,7 @@ jobs:
   - script: 'gulp tests-modules'
     workingDirectory: Tools/Gulp
     displayName: 'Tests modules'
-  - script: 'sudo gulp localdev-es6 --max-old-space-size=8192'
+  - script: 'gulp localdev-es6 --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Npm link ES6'
   - script: 'gulp tests-es6Modules --max-old-space-size=8192'
@@ -177,9 +205,13 @@ jobs:
 - job: ViewerTests
   displayName: '8. Viewer Tests'
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'Ubuntu-latest'
     demands: npm
   steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Ensure node version'
   - task: Npm@1
     displayName: 'npm install'
     inputs:

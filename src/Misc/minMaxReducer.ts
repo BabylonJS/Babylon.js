@@ -7,6 +7,7 @@ import { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
 import { Observable } from "./observable";
+import { ThinEngine } from "../Engines/thinEngine";
 
 import "../Shaders/minmaxRedux.fragment";
 
@@ -29,6 +30,7 @@ export class MinMaxReducer {
     protected _postProcessManager: PostProcessManager;
     protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
     protected _forceFullscreenViewport = true;
+    protected _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * Creates a min/max reducer
@@ -37,6 +39,10 @@ export class MinMaxReducer {
     constructor(camera: Camera) {
         this._camera = camera;
         this._postProcessManager = new PostProcessManager(camera.getScene());
+
+        this._onContextRestoredObserver = camera.getEngine().onContextRestoredObservable.add(() => {
+            this._postProcessManager._rebuild();
+        });
     }
 
     /**
@@ -97,7 +103,7 @@ export class MinMaxReducer {
         reductionInitial.onApply = ((w: number, h: number) => {
             return (effect: Effect) => {
                 effect.setTexture('sourceTexture', this._sourceTexture);
-                effect.setFloatArray2('texSize', new Float32Array([w, h]));
+                effect.setFloat2('texSize', w, h);
             };
         })(w, h);
 
@@ -134,9 +140,9 @@ export class MinMaxReducer {
             reduction.onApply = ((w: number, h: number) => {
                 return (effect: Effect) => {
                     if (w == 1 || h == 1) {
-                        effect.setIntArray2('texSize', new Int32Array([w, h]));
+                        effect.setInt2('texSize', w, h);
                     } else {
-                        effect.setFloatArray2('texSize', new Float32Array([w, h]));
+                        effect.setFloat2('texSize', w, h);
                     }
                 };
             })(w, h);
@@ -148,9 +154,9 @@ export class MinMaxReducer {
             if (w == 1 && h == 1) {
                 let func = (w: number, h: number, reduction: PostProcess) => {
                     let buffer = new Float32Array(4 * w * h),
-                        minmax = { min: 0, max: 0};
+                        minmax = { min: 0, max: 0 };
                     return () => {
-                        scene.getEngine()._readTexturePixels(reduction.inputTexture, w, h, -1, 0, buffer);
+                        scene.getEngine()._readTexturePixels(reduction.inputTexture.texture!, w, h, -1, 0, buffer, false);
                         minmax.min = buffer[0];
                         minmax.max = buffer[1];
                         this.onAfterReductionPerformed.notifyObservers(minmax);
@@ -187,7 +193,7 @@ export class MinMaxReducer {
     /**
      * Activates the reduction computation.
      * When activated, the observers registered in onAfterReductionPerformed are
-     * called after the compuation is performed
+     * called after the computation is performed
      */
     public activate(): void {
         if (this._onAfterUnbindObserver || !this._sourceTexture) {
@@ -195,9 +201,12 @@ export class MinMaxReducer {
         }
 
         this._onAfterUnbindObserver = this._sourceTexture.onAfterUnbindObservable.add(() => {
+            const engine = this._camera.getScene().getEngine();
+            engine._debugPushGroup?.(`min max reduction`, 1);
             this._reductionSteps![0].activate(this._camera);
             this._postProcessManager.directRender(this._reductionSteps!, this._reductionSteps![0].inputTexture, this._forceFullscreenViewport);
-            this._camera.getScene().getEngine().unBindFramebuffer(this._reductionSteps![0].inputTexture, false);
+            engine.unBindFramebuffer(this._reductionSteps![0].inputTexture, false);
+            engine._debugPopGroup?.(1);
         });
 
         this._activated = true;
@@ -223,6 +232,11 @@ export class MinMaxReducer {
     public dispose(disposeAll = true): void {
         if (disposeAll) {
             this.onAfterReductionPerformed.clear();
+
+            if (this._onContextRestoredObserver) {
+                this._camera.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+                this._onContextRestoredObserver = null;
+            }
         }
 
         this.deactivate();

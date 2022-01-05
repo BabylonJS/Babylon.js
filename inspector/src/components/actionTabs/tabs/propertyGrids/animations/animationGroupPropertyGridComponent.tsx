@@ -6,27 +6,30 @@ import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Scene } from "babylonjs/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
-import { TextLineComponent } from "../../../lines/textLineComponent";
-import { SliderLineComponent } from "../../../lines/sliderLineComponent";
-import { LockObject } from "../lockObject";
-import { GlobalState } from '../../../../globalState';
-import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { GlobalState } from "../../../../globalState";
+import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { Context } from "./curveEditor/context";
+import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 
 interface IAnimationGroupGridComponentProps {
     globalState: GlobalState;
-    animationGroup: AnimationGroup,
-    scene: Scene,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    animationGroup: AnimationGroup;
+    scene: Scene;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-export class AnimationGroupGridComponent extends React.Component<IAnimationGroupGridComponentProps, { playButtonText: string, currentFrame: number }> {
+export class AnimationGroupGridComponent extends React.Component<IAnimationGroupGridComponentProps, { playButtonText: string; currentFrame: number }> {
     private _onAnimationGroupPlayObserver: Nullable<Observer<AnimationGroup>>;
     private _onAnimationGroupPauseObserver: Nullable<Observer<AnimationGroup>>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private timelineRef: React.RefObject<SliderLineComponent>;
+    private _animationCurveEditorContext: Context;
 
     constructor(props: IAnimationGroupGridComponentProps) {
         super(props);
@@ -44,7 +47,6 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     }
 
     disconnect(animationGroup: AnimationGroup) {
-
         if (this._onAnimationGroupPlayObserver) {
             animationGroup.onAnimationGroupPlayObservable.remove(this._onAnimationGroupPlayObserver);
             this._onAnimationGroupPlayObserver = null;
@@ -105,7 +107,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
             animationGroup.pause();
         } else {
             this.setState({ playButtonText: "Pause" });
-            this.props.scene.animationGroups.forEach(grp => grp.pause());
+            this.props.scene.animationGroups.forEach((grp) => grp.pause());
             animationGroup.play(true);
         }
     }
@@ -127,21 +129,53 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     render() {
         const animationGroup = this.props.animationGroup;
 
-        const playButtonText = animationGroup.isPlaying ? "Pause" : "Play"
+        const playButtonText = animationGroup.isPlaying ? "Pause" : "Play";
+
+        if (!this._animationCurveEditorContext) {
+            this._animationCurveEditorContext = new Context();
+            this._animationCurveEditorContext.title = animationGroup.name || "";
+            this._animationCurveEditorContext.animations = animationGroup.targetedAnimations;
+            this._animationCurveEditorContext.scene = this.props.scene;
+            this._animationCurveEditorContext.useTargetAnimations = true;
+            this._animationCurveEditorContext.rootAnimationGroup = animationGroup;
+        }
 
         return (
-            <div className="pane">                
-                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+            <div className="pane">
+                <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={animationGroup.getClassName()} />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={animationGroup} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Name"
+                        target={animationGroup}
+                        propertyName="name"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="CONTROLS">
+                <LineContainerComponent title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
-                    <SliderLineComponent label="Speed ratio" minimum={0} maximum={10} step={0.1} target={animationGroup} propertyName="speedRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent ref={this.timelineRef} label="Current frame" minimum={animationGroup.from} maximum={animationGroup.to} step={(animationGroup.to - animationGroup.from) / 1000.0} directValue={this.state.currentFrame} onInput={value => this.onCurrentFrameChange(value)} />
+                    <SliderLineComponent
+                        label="Speed ratio"
+                        minimum={0}
+                        maximum={10}
+                        step={0.1}
+                        target={animationGroup}
+                        propertyName="speedRatio"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        ref={this.timelineRef}
+                        label="Current frame"
+                        minimum={animationGroup.from}
+                        maximum={animationGroup.to}
+                        step={(animationGroup.to - animationGroup.from) / 1000.0}
+                        directValue={this.state.currentFrame}
+                        onInput={(value) => this.onCurrentFrameChange(value)}
+                    />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="INFOS">
+                <LineContainerComponent title="INFOS">
                     <TextLineComponent label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
+                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />
                     <TextLineComponent label="From" value={animationGroup.from.toFixed(2)} />
                     <TextLineComponent label="To" value={animationGroup.to.toFixed(2)} />
                     <TextLineComponent label="Unique ID" value={animationGroup.uniqueId.toString()} />

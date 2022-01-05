@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Effect } from '../../../effect';
 import { NodeMaterial } from '../../nodeMaterial';
 import { Mesh } from '../../../../Meshes/mesh';
@@ -60,7 +60,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         const engine = this._scene.getEngine();
 
-        effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderWidth());
+        effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderHeight());
     }
 
     protected writeOutputs(state: NodeMaterialBuildState, varName: string): string {
@@ -95,4 +95,4 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ScreenSizeBlock"] = ScreenSizeBlock;
+RegisterClass("BABYLON.ScreenSizeBlock", ScreenSizeBlock);

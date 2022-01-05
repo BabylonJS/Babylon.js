@@ -104,7 +104,7 @@ export class CheckboxGroup extends SelectorGroup {
         button.background = "#CCCCCC";
         button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 
-        button.onIsCheckedChangedObservable.add(function(state) {
+        button.onIsCheckedChangedObservable.add(function (state) {
             func(state);
         });
 
@@ -166,7 +166,7 @@ export class RadioGroup extends SelectorGroup {
         button.group = this.name;
         button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 
-        button.onIsCheckedChangedObservable.add(function(state) {
+        button.onIsCheckedChangedObservable.add(function (state) {
             if (state) {
                 func(nb);
             }
@@ -236,7 +236,7 @@ export class SliderGroup extends SelectorGroup {
         button.left = "4px";
         button.paddingBottom = "4px";
 
-        button.onValueChangedObservable.add(function(value) {
+        button.onValueChangedObservable.add(function (value) {
             (<TextBlock>button.parent!.children[0]).text = button.parent!.children[0].name + ": " + onValueChange(value) + " " + button.name;
             func(value);
         });
@@ -278,7 +278,7 @@ export class SliderGroup extends SelectorGroup {
 }
 
 /** Class used to hold the controls for the checkboxes, radio buttons and sliders
- * @see http://doc.babylonjs.com/how_to/selector
+ * @see https://doc.babylonjs.com/how_to/selector
 */
 export class SelectionPanel extends Rectangle {
     private _panel: StackPanel;
@@ -323,6 +323,11 @@ export class SelectionPanel extends Rectangle {
 
     protected _getTypeName(): string {
         return "SelectionPanel";
+    }
+
+    /** Gets the (stack) panel of the SelectionPanel  */
+    public get panel(): StackPanel {
+        return this._panel;
     }
 
     /** Gets or sets the headerColor */

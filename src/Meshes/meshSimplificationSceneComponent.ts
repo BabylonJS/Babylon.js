@@ -10,13 +10,13 @@ declare module "../scene" {
 
         /**
          * Gets or sets the simplification queue attached to the scene
-         * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+         * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
          */
         simplificationQueue: SimplificationQueue;
     }
 }
 Object.defineProperty(Scene.prototype, "simplificationQueue", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         if (!this._simplificationQueue) {
             this._simplificationQueue = new SimplificationQueue();
             let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
@@ -27,7 +27,7 @@ Object.defineProperty(Scene.prototype, "simplificationQueue", {
         }
         return this._simplificationQueue;
     },
-    set: function(this: Scene, value: SimplificationQueue) {
+    set: function (this: Scene, value: SimplificationQueue) {
         this._simplificationQueue = value;
     },
     enumerable: true,
@@ -49,7 +49,7 @@ declare module "../Meshes/mesh" {
     }
 }
 
-Mesh.prototype.simplify = function(settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
+Mesh.prototype.simplify = function (settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
     this.getScene().simplificationQueue.addTask({
         settings: settings,
         parallelProcessing: parallelProcessing,
@@ -99,7 +99,7 @@ export class SimplicationQueueSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         // Nothing to do for this component

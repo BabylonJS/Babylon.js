@@ -50,7 +50,7 @@ export interface IVector2Like {
  * @hidden
  */
 export interface IMatrixLike {
-    toArray(): DeepImmutable<Float32Array>;
+    toArray(): DeepImmutable<Float32Array | Array<number>>;
     updateFlag: int;
 }
 

@@ -15,12 +15,14 @@ import { Node } from "../node";
 export class Animatable {
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
+    private _manualJumpDelay: Nullable<number> = null;
     private _runtimeAnimations = new Array<RuntimeAnimation>();
     private _paused = false;
     private _scene: Scene;
     private _speedRatio = 1;
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
+    private _frameToSyncFromJump: Nullable<number> = 0;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -138,10 +140,10 @@ export class Animatable {
     /**
      * Synchronize and normalize current Animatable with a source Animatable
      * This is useful when using animation weights and when animations are not of the same length
-     * @param root defines the root Animatable to synchronize with
+     * @param root defines the root Animatable to synchronize with (null to stop synchronizing)
      * @returns the current Animatable
      */
-    public syncWith(root: Animatable): Animatable {
+    public syncWith(root: Nullable<Animatable>): Animatable {
         this._syncRoot = root;
 
         if (root) {
@@ -187,7 +189,7 @@ export class Animatable {
 
     /**
      * Gets the source animation for a specific property
-     * @param property defines the propertyu to look for
+     * @param property defines the property to look for
      * @returns null or the source animation for the given property
      */
     public getAnimationByTargetProperty(property: string): Nullable<Animation> {
@@ -204,7 +206,7 @@ export class Animatable {
 
     /**
      * Gets the runtime animation for a specific property
-     * @param property defines the propertyu to look for
+     * @param property defines the property to look for
      * @returns null or the runtime animation for the given property
      */
     public getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation> {
@@ -235,7 +237,7 @@ export class Animatable {
 
     /**
      * Allows the animatable to blend with current running animations
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
      * @param blendingSpeed defines the blending speed to use
      */
     public enableBlending(blendingSpeed: number): void {
@@ -249,7 +251,7 @@ export class Animatable {
 
     /**
      * Disable animation blending
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
      */
     public disableBlending(): void {
         var runtimeAnimations = this._runtimeAnimations;
@@ -268,12 +270,9 @@ export class Animatable {
 
         if (runtimeAnimations[0]) {
             var fps = runtimeAnimations[0].animation.framePerSecond;
-            var currentFrame = runtimeAnimations[0].currentFrame;
-            var delay = this.speedRatio === 0 ? 0 : ((frame - currentFrame) / fps * 1000) / this.speedRatio;
-            if (this._localDelayOffset === null) {
-                this._localDelayOffset = 0;
-            }
-            this._localDelayOffset -= delay;
+            this._frameToSyncFromJump = this._frameToSyncFromJump ?? runtimeAnimations[0].currentFrame;
+            var delay = this.speedRatio === 0 ? 0 : ((frame - this._frameToSyncFromJump) / fps * 1000) / this.speedRatio;
+            this._manualJumpDelay = -delay;
         }
 
         for (var index = 0; index < runtimeAnimations.length; index++) {
@@ -357,7 +356,7 @@ export class Animatable {
 
     /**
      * Wait asynchronously for the animation to end
-     * @returns a promise which will be fullfilled when the animation ends
+     * @returns a promise which will be fulfilled when the animation ends
      */
     public waitAsync(): Promise<Animatable> {
         return new Promise((resolve, reject) => {
@@ -383,6 +382,12 @@ export class Animatable {
         } else if (this._pausedDelay !== null) {
             this._localDelayOffset += delay - this._pausedDelay;
             this._pausedDelay = null;
+        }
+
+        if (this._manualJumpDelay !== null) {
+            this._localDelayOffset += this._manualJumpDelay;
+            this._manualJumpDelay = null;
+            this._frameToSyncFromJump = null;
         }
 
         if (this._weight === 0) { // We consider that an animation with a weight === 0 is "actively" paused
@@ -570,7 +575,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype._animate = function(): void {
+Scene.prototype._animate = function (): void {
     if (!this.animationsEnabled) {
         return;
     }
@@ -607,7 +612,7 @@ Scene.prototype._animate = function(): void {
     this._processLateAnimationBindings();
 };
 
-Scene.prototype.beginWeightedAnimation = function(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
+Scene.prototype.beginWeightedAnimation = function (target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
     onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive = false): Animatable {
 
     let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop, isAdditive);
@@ -616,7 +621,7 @@ Scene.prototype.beginWeightedAnimation = function(target: any, from: number, to:
     return returnedAnimatable;
 };
 
-Scene.prototype.beginAnimation = function(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
+Scene.prototype.beginAnimation = function (target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
     onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
     targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive = false): Animatable {
 
@@ -651,7 +656,7 @@ Scene.prototype.beginAnimation = function(target: any, from: number, to: number,
     return animatable;
 };
 
-Scene.prototype.beginHierarchyAnimation = function(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
+Scene.prototype.beginHierarchyAnimation = function (target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
     onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
     targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive = false): Animatable[] {
 
@@ -666,13 +671,17 @@ Scene.prototype.beginHierarchyAnimation = function(target: any, directDescendant
     return result;
 };
 
-Scene.prototype.beginDirectAnimation = function(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive = false): Animatable {
+Scene.prototype.beginDirectAnimation = function (target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive = false): Animatable {
     if (speedRatio === undefined) {
         speedRatio = 1.0;
     }
 
     if (from > to && speedRatio > 0) {
         speedRatio *= -1;
+    } else if (to > from && speedRatio < 0) {
+        var temp = to;
+        to = from;
+        from = temp;
     }
 
     var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
@@ -680,7 +689,7 @@ Scene.prototype.beginDirectAnimation = function(target: any, animations: Animati
     return animatable;
 };
 
-Scene.prototype.beginDirectHierarchyAnimation = function(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive = false): Animatable[] {
+Scene.prototype.beginDirectHierarchyAnimation = function (target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive = false): Animatable[] {
     let children = target.getDescendants(directDescendantsOnly);
 
     let result = [];
@@ -692,7 +701,7 @@ Scene.prototype.beginDirectHierarchyAnimation = function(target: Node, directDes
     return result;
 };
 
-Scene.prototype.getAnimatableByTarget = function(target: any): Nullable<Animatable> {
+Scene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
     for (var index = 0; index < this._activeAnimatables.length; index++) {
         if (this._activeAnimatables[index].target === target) {
             return this._activeAnimatables[index];
@@ -702,7 +711,7 @@ Scene.prototype.getAnimatableByTarget = function(target: any): Nullable<Animatab
     return null;
 };
 
-Scene.prototype.getAllAnimatablesByTarget = function(target: any): Array<Animatable> {
+Scene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
     let result = [];
     for (var index = 0; index < this._activeAnimatables.length; index++) {
         if (this._activeAnimatables[index].target === target) {
@@ -719,7 +728,7 @@ Scene.prototype.getAllAnimatablesByTarget = function(target: any): Array<Animata
  * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
  * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
  */
-Scene.prototype.stopAnimation = function(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
+Scene.prototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
     var animatables = this.getAllAnimatablesByTarget(target);
 
     for (var animatable of animatables) {
@@ -730,7 +739,7 @@ Scene.prototype.stopAnimation = function(target: any, animationName?: string, ta
 /**
  * Stops and removes all animations that have been applied to the scene
  */
-Scene.prototype.stopAllAnimations = function(): void {
+Scene.prototype.stopAllAnimations = function (): void {
     if (this._activeAnimatables) {
         for (let i = 0; i < this._activeAnimatables.length; i++) {
             this._activeAnimatables[i].stop();
@@ -743,7 +752,7 @@ Scene.prototype.stopAllAnimations = function(): void {
     }
 };
 
-Scene.prototype._registerTargetForLateAnimationBinding = function(runtimeAnimation: RuntimeAnimation, originalValue: any): void {
+Scene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimation: RuntimeAnimation, originalValue: any): void {
     let target = runtimeAnimation.target;
     this._registeredForLateAnimationBindings.pushNoDuplicate(target);
 
@@ -770,7 +779,7 @@ Scene.prototype._registerTargetForLateAnimationBinding = function(runtimeAnimati
     }
 };
 
-Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
+Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
     totalWeight: number,
     totalAdditiveWeight: number,
     animations: RuntimeAnimation[],
@@ -860,7 +869,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     return workValue;
 };
 
-Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
+Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: {
     totalWeight: number,
     totalAdditiveWeight: number,
     animations: RuntimeAnimation[],
@@ -948,7 +957,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     return cumulativeQuaternion!;
 };
 
-Scene.prototype._processLateAnimationBindings = function(): void {
+Scene.prototype._processLateAnimationBindings = function (): void {
     if (!this._registeredForLateAnimationBindings.length) {
         return;
     }
@@ -1054,7 +1063,7 @@ declare module "../Bones/bone" {
     }
 }
 
-Bone.prototype.copyAnimationRange = function(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio: Nullable<Vector3> = null): boolean {
+Bone.prototype.copyAnimationRange = function (source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio: Nullable<Vector3> = null): boolean {
     // all animation may be coming from a library skeleton, so may need to create animation
     if (this.animations.length === 0) {
         this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));

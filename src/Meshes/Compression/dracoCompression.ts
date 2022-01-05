@@ -46,52 +46,51 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
             throw new Error(status.error_msg());
         }
 
-        const numPoints = geometry.num_points();
-
         if (type === decoderModule.TRIANGULAR_MESH) {
             const numFaces = geometry.num_faces();
-            const faceIndices = new decoderModule.DracoInt32Array();
+            const numIndices = numFaces * 3;
+            const byteLength = numIndices * 4;
+
+            const ptr = decoderModule._malloc(byteLength);
             try {
-                const indices = new Uint32Array(numFaces * 3);
-                for (let i = 0; i < numFaces; i++) {
-                    decoder.GetFaceFromMesh(geometry, i, faceIndices);
-                    const offset = i * 3;
-                    indices[offset + 0] = faceIndices.GetValue(0);
-                    indices[offset + 1] = faceIndices.GetValue(1);
-                    indices[offset + 2] = faceIndices.GetValue(2);
-                }
+                decoder.GetTrianglesUInt32Array(geometry, byteLength, ptr);
+                const indices = new Uint32Array(numIndices);
+                indices.set(new Uint32Array(decoderModule.HEAPF32.buffer, ptr, numIndices));
                 onIndicesData(indices);
             }
             finally {
-                decoderModule.destroy(faceIndices);
+                decoderModule._free(ptr);
             }
         }
 
         const processAttribute = (kind: string, attribute: any) => {
-            const dracoData = new decoderModule.DracoFloat32Array();
+            var numComponents = attribute.num_components();
+            var numPoints = geometry.num_points();
+            var numValues = numPoints * numComponents;
+            var byteLength = numValues * Float32Array.BYTES_PER_ELEMENT;
+
+            var ptr = decoderModule._malloc(byteLength);
             try {
-                decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
-                const numComponents = attribute.num_components();
+                decoder.GetAttributeDataArrayForAllPoints(geometry, attribute, decoderModule.DT_FLOAT32, byteLength, ptr);
+                const values = new Float32Array(decoderModule.HEAPF32.buffer, ptr, numValues);
                 if (kind === "color" && numComponents === 3) {
                     const babylonData = new Float32Array(numPoints * 4);
                     for (let i = 0, j = 0; i < babylonData.length; i += 4, j += numComponents) {
-                        babylonData[i + 0] = dracoData.GetValue(j + 0);
-                        babylonData[i + 1] = dracoData.GetValue(j + 1);
-                        babylonData[i + 2] = dracoData.GetValue(j + 2);
+                        babylonData[i + 0] = values[j + 0];
+                        babylonData[i + 1] = values[j + 1];
+                        babylonData[i + 2] = values[j + 2];
                         babylonData[i + 3] = 1;
                     }
                     onAttributeData(kind, babylonData);
                 }
                 else {
-                    const babylonData = new Float32Array(numPoints * numComponents);
-                    for (let i = 0; i < babylonData.length; i++) {
-                        babylonData[i] = dracoData.GetValue(i);
-                    }
+                    const babylonData = new Float32Array(numValues);
+                    babylonData.set(new Float32Array(decoderModule.HEAPF32.buffer, ptr, numValues));
                     onAttributeData(kind, babylonData);
                 }
             }
             finally {
-                decoderModule.destroy(dracoData);
+                decoderModule._free(ptr);
             }
         };
 
@@ -165,14 +164,6 @@ function worker(): void {
     };
 }
 
-function getAbsoluteUrl<T>(url: T): T | string {
-    if (typeof document !== "object" || typeof url !== "string") {
-        return url;
-    }
-
-    return Tools.GetAbsoluteUrl(url);
-}
-
 /**
  * Configuration for Draco compression
  */
@@ -222,7 +213,7 @@ export interface IDracoCompressionConfiguration {
  *     };
  * ```
  *
- * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support Webssembly or only support the JavaScript version.
+ * Draco has two versions, one for WebAssembly and one for JavaScript. The decoder configuration can be set to only support WebAssembly or only support the JavaScript version.
  * Decoding will automatically fallback to the JavaScript version if WebAssembly version is not configured or if WebAssembly is not supported by the browser.
  * Use `DracoCompression.DecoderAvailable` to determine if the decoder configuration is available for the current context.
  *
@@ -295,10 +286,10 @@ export class DracoCompression implements IDisposable {
 
         const decoderInfo: { url: string | undefined, wasmBinaryPromise: Promise<ArrayBuffer | string | undefined> } =
             (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") ? {
-                url: decoder.wasmUrl,
-                wasmBinaryPromise: Tools.LoadFileAsync(getAbsoluteUrl(decoder.wasmBinaryUrl))
+                url: Tools.GetAbsoluteUrl(decoder.wasmUrl),
+                wasmBinaryPromise: Tools.LoadFileAsync(Tools.GetAbsoluteUrl(decoder.wasmBinaryUrl))
             } : {
-                url: decoder.fallbackUrl,
+                url: Tools.GetAbsoluteUrl(decoder.fallbackUrl!),
                 wasmBinaryPromise: Promise.resolve(undefined)
             };
 
@@ -330,7 +321,7 @@ export class DracoCompression implements IDisposable {
                         worker.postMessage({
                             id: "init",
                             decoder: {
-                                url: getAbsoluteUrl(decoderInfo.url),
+                                url: decoderInfo.url,
                                 wasmBinary: decoderWasmBinary,
                             }
                         });

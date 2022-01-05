@@ -1,7 +1,7 @@
-import { StringTools } from './stringTools';
+import { EndsWith } from './stringTools';
 import { Logger } from './logger';
 
-var cloneValue = (source: any, destinationObject: any) => {
+const cloneValue = (source: any, destinationObject: any) => {
     if (!source) {
         return null;
     }
@@ -18,6 +18,20 @@ var cloneValue = (source: any, destinationObject: any) => {
     return null;
 };
 
+function getAllPropertyNames(obj: any): string[] {
+    const props: string[] = [];
+
+    do {
+        Object.getOwnPropertyNames(obj).forEach(function (prop) {
+            if (props.indexOf(prop) === -1) {
+                props.push(prop);
+            }
+        });
+    } while (obj = Object.getPrototypeOf(obj));
+
+    return props;
+}
+
 /**
  * Class containing a set of static utilities functions for deep copy.
  */
@@ -30,13 +44,14 @@ export class DeepCopier {
      * @param mustCopyList defines a list of properties to copy (even if they start with _)
      */
     public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
-        for (var prop in source) {
+        const proerties = getAllPropertyNames(source);
+        for (var prop of proerties) {
 
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
                 continue;
             }
 
-            if (StringTools.EndsWith(prop, "Observable")) {
+            if (EndsWith(prop, "Observable")) {
                 continue;
             }
 

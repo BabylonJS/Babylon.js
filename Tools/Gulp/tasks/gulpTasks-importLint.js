@@ -23,7 +23,7 @@ var buildShaders = function(settings) {
  * ImportLint all typescript files from the src directory.
  */
 var importLintLibrary = function(settings) {
-    const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/ShadersInclude/**'], { restore: false });
+    const fxFilter = filter(['**', '!**/*.fragment.ts', '!**/*.vertex.ts', '!**/*.compute.ts', '!**/ShadersInclude/**'], { restore: false });
     return gulp.src(settings.computed.tsGlob)
         .pipe(fxFilter)
         .pipe(validateImports({
@@ -36,7 +36,7 @@ var importLintLibrary = function(settings) {
 /**
  * Dynamic module linting for library (mat, post processes, ...).
  */
-var lintLibrary = function(settings) {
+var lintLibrary = function(name, settings) {
     var tasks = [];
 
     var shaders = function() { return buildShaders(settings); };
@@ -44,7 +44,8 @@ var lintLibrary = function(settings) {
 
     tasks.push(shaders, lint);
 
-    return gulp.series.apply(this, tasks);
+    tasks.map(t => t.displayName = name + "-importLint:" + t.name);
+    return gulp.series(...tasks);
 };
 
 /**
@@ -52,12 +53,12 @@ var lintLibrary = function(settings) {
  */
 config.modules.map(function(module) {
     const settings = config[module];
-    gulp.task(module + "-importLint", lintLibrary(settings));
+    gulp.task(module + "-importLint", lintLibrary(module, settings));
 });
 
 
 /**
- * Full Librairies importLint.
+ * Full Libraries importLint.
  */
 gulp.task("typescript-libraries-importLint",
     gulp.series(config.modules.map((module) => {

@@ -1,18 +1,18 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Animation', function() {
+describe('Babylon Animation', function () {
     let subject: BABYLON.Engine;
 
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
@@ -22,7 +22,7 @@ describe('Babylon Animation', function() {
     /**
      * Create a new engine subject before each test.
      */
-    beforeEach(function() {
+    beforeEach(function () {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -41,7 +41,7 @@ describe('Babylon Animation', function() {
     describe('#Animation', () => {
         it('one key', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox("box", 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             scene.createDefaultCamera();
             const animation = new BABYLON.Animation("anim", "position.x", 1, BABYLON.Animation.ANIMATIONTYPE_FLOAT);
             animation.setKeys([{ frame: 0, value: 1 }]);

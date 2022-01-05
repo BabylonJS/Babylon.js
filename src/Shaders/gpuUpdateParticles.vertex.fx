@@ -161,7 +161,7 @@ uniform sampler2D noiseSampler;
 #endif
 
 #ifdef ANIMATESHEET
-uniform vec3 cellInfos;
+uniform vec4 cellInfos;
 #endif
 
 
@@ -255,10 +255,10 @@ void main() {
     newPosition = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
-      newDirection = direction1 + (direction2 - direction1) * randoms3;
+      newDirection = normalize(direction1 + (direction2 - direction1) * randoms3);
     #else
       // Direction
-      newDirection = newPosition + directionRandomizer * randoms3;
+      newDirection = normalize(newPosition + directionRandomizer * randoms3);
     #endif
 #elif defined(CYLINDEREMITTER)
     vec3 randoms2 = getRandomVec3(seed.y);
@@ -277,8 +277,8 @@ void main() {
       newDirection = direction1 + (direction2 - direction1) * randoms3;
     #else
       // Direction
-      angle = angle + ((randoms3.x-0.5) * PI);
-      newDirection = vec3(cos(angle), randoms3.y-0.5, sin(angle));
+      angle = angle + ((randoms3.x-0.5) * PI) * directionRandomizer;
+      newDirection = vec3(cos(angle), (randoms3.y-0.5) * directionRandomizer, sin(angle));
       newDirection = normalize(newDirection);
     #endif
 #elif defined(CONEEMITTER)
@@ -445,7 +445,13 @@ void main() {
     float cellStartOffset = 0.;
 #endif    
 
-    float ratio = clamp(mod(cellStartOffset + cellInfos.z * offsetAge, life) / life, 0., 1.0);
+    float ratio = 0.;
+    if (cellInfos.w == 1.0) {
+        ratio = clamp(mod(cellStartOffset + cellInfos.z * offsetAge, life) / life, 0., 1.0);
+    }
+    else {
+        ratio = clamp(cellStartOffset + cellInfos.z * offsetAge / life, 0., 1.0);
+    }
 
     outCellIndex = float(int(cellInfos.x + ratio * dist));
 #endif

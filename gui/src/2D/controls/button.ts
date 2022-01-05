@@ -5,7 +5,9 @@ import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to create 2D buttons
@@ -89,7 +91,7 @@ export class Button extends Rectangle {
 
     // While being a container, the button behaves like a control.
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -113,18 +115,18 @@ export class Button extends Rectangle {
             }
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerEnter(target: Control): boolean {
-        if (!super._onPointerEnter(target)) {
+    public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
+        if (!super._onPointerEnter(target, pi)) {
             return false;
         }
 
-        if (this.pointerEnterAnimation) {
+        if (!this.isReadOnly && this.pointerEnterAnimation) {
             this.pointerEnterAnimation();
         }
 
@@ -132,21 +134,21 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control, force = false): void {
-        if (this.pointerOutAnimation) {
+    public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
+        if (!this.isReadOnly && this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
 
-        super._onPointerOut(target, force);
+        super._onPointerOut(target, pi, force);
     }
 
     /** @hidden */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
 
-        if (this.pointerDownAnimation) {
+        if (!this.isReadOnly && this.pointerDownAnimation) {
             this.pointerDownAnimation();
         }
 
@@ -154,12 +156,40 @@ export class Button extends Rectangle {
     }
 
     /** @hidden */
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
-        if (this.pointerUpAnimation) {
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
+        if (!this.isReadOnly && this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
 
-        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+        super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick, pi);
+    }
+
+    /**
+    * Serializes the current button
+    * @param serializationObject defines the JSON serialized object
+    */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+
+        if (this._textBlock) {
+            serializationObject.textBlockName = this._textBlock.name;
+        }
+        if (this._image) {
+            serializationObject.imageName = this._image.name;
+        }
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+
+        if (serializedObject.textBlockName) {
+            this._textBlock = this.getChildByName(serializedObject.textBlockName) as Nullable<TextBlock>;
+        }
+
+        if (serializedObject.imageName) {
+            this._image = this.getChildByName(serializedObject.imageName) as Nullable<Image>;
+        }
     }
 
     // Statics
@@ -171,7 +201,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding text
         var textBlock = new TextBlock(name + "_button", text);
@@ -201,7 +231,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageOnlyButton(name: string, imageUrl: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding image
         var iconImage = new Image(name + "_icon", imageUrl);
@@ -222,7 +252,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateSimpleButton(name: string, text: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding text
         var textBlock = new TextBlock(name + "_button", text);
@@ -244,7 +274,7 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
-        var result = new Button(name);
+        var result = new this(name);
 
         // Adding image
         var iconImage = new Image(name + "_icon", imageUrl);
@@ -264,4 +294,4 @@ export class Button extends Rectangle {
         return result;
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Button"] = Button;
+RegisterClass("BABYLON.GUI.Button", Button);

@@ -1,5 +1,5 @@
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { StringTools } from '../../Misc/stringTools';
+import { StartsWith } from '../../Misc/stringTools';
 
 /** @hidden */
 export class ShaderCodeNode {
@@ -20,32 +20,43 @@ export class ShaderCodeNode {
             if (processor) {
                 // This must be done before other replacements to avoid mistakenly changing something that was already changed.
                 if (processor.lineProcessor) {
-                    value = processor.lineProcessor(value, options.isFragment);
+                    value = processor.lineProcessor(value, options.isFragment, options.processingContext);
                 }
 
-                if (processor.attributeProcessor && StringTools.StartsWith(this.line, "attribute")) {
-                    value = processor.attributeProcessor(this.line);
-                } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
-                    value = processor.varyingProcessor(this.line, options.isFragment);
-                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform")) {
-                    let regex = /uniform (.+) (.+)/;
+                if (processor.attributeProcessor && StartsWith(this.line, "attribute")) {
+                    value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
+                } else if (processor.varyingProcessor && StartsWith(this.line, "varying")) {
+                    value = processor.varyingProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                } else if (processor.uniformProcessor && processor.uniformRegexp && processor.uniformRegexp.test(this.line)) {
+                    if (!options.lookForClosingBracketForUniformBuffer) {
+                        value = processor.uniformProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                    }
+                } else if (processor.uniformBufferProcessor && processor.uniformBufferRegexp && processor.uniformBufferRegexp.test(this.line)) {
+                    if (!options.lookForClosingBracketForUniformBuffer) {
+                        value = processor.uniformBufferProcessor(this.line, options.isFragment, options.processingContext);
+                        options.lookForClosingBracketForUniformBuffer = true;
+                    }
+                } else if (processor.textureProcessor && processor.textureRegexp && processor.textureRegexp.test(this.line)) {
+                    value = processor.textureProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
+                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
+                    let regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
                     if (regex.test(this.line)) { // uniform
                         if (processor.uniformProcessor) {
-                            value = processor.uniformProcessor(this.line, options.isFragment);
+                            value = processor.uniformProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                         }
                     } else { // Uniform buffer
                         if (processor.uniformBufferProcessor) {
-                            value = processor.uniformBufferProcessor(this.line, options.isFragment);
+                            value = processor.uniformBufferProcessor(this.line, options.isFragment, options.processingContext);
                             options.lookForClosingBracketForUniformBuffer = true;
                         }
                     }
                 }
 
-                if (processor.endOfUniformBufferProcessor) {
-                    if (options.lookForClosingBracketForUniformBuffer && this.line.indexOf("}") !== -1) {
-                        options.lookForClosingBracketForUniformBuffer = false;
-                        value = processor.endOfUniformBufferProcessor(this.line, options.isFragment);
+                if (options.lookForClosingBracketForUniformBuffer && this.line.indexOf("}") !== -1) {
+                    options.lookForClosingBracketForUniformBuffer = false;
+                    if (processor.endOfUniformBufferProcessor) {
+                        value = processor.endOfUniformBufferProcessor(this.line, options.isFragment, options.processingContext);
                     }
                 }
             }

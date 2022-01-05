@@ -1,6 +1,7 @@
 ﻿// Attributes
 attribute vec4 position;
-attribute vec4 options;
+attribute vec2 options;
+attribute vec2 offsets;
 attribute vec2 inverts;
 attribute vec4 cellInfo;
 attribute vec4 color;
@@ -15,13 +16,19 @@ varying vec4 vColor;
 
 #include<fogVertexDeclaration>
 
-void main(void) {	
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
+void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+	
 	vec3 viewPos = (view * vec4(position.xyz, 1.0)).xyz; 
 	vec2 cornerPos;
 	
 	float angle = position.w;
 	vec2 size = vec2(options.x, options.y);
-	vec2 offset = options.zw;
+	vec2 offset = offsets.xy;
 
 	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
 
@@ -50,4 +57,6 @@ void main(void) {
 #ifdef FOG
 	vFogDistance = viewPos;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

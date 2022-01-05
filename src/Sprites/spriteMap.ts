@@ -13,55 +13,56 @@ import { Effect } from "../Materials/effect";
 import "../Meshes/Builders/planeBuilder";
 import "../Shaders/spriteMap.fragment";
 import "../Shaders/spriteMap.vertex";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 
 /**
  * Defines the basic options interface of a SpriteMap
  */
-export interface ISpriteMapOptions{
+export interface ISpriteMapOptions {
 
     /**
-	 * Vector2 of the number of cells in the grid.
-	 */
+     * Vector2 of the number of cells in the grid.
+     */
     stageSize?: Vector2;
 
     /**
-	 * Vector2 of the size of the output plane in World Units.
-	 */
+     * Vector2 of the size of the output plane in World Units.
+     */
     outputSize?: Vector2;
 
     /**
-	 * Vector3 of the position of the output plane in World Units.
-	 */
+     * Vector3 of the position of the output plane in World Units.
+     */
     outputPosition?: Vector3;
 
     /**
-	 * Vector3 of the rotation of the output plane.
-	 */
+     * Vector3 of the rotation of the output plane.
+     */
     outputRotation?: Vector3;
 
     /**
-	 * number of layers that the system will reserve in resources.
-	 */
+     * number of layers that the system will reserve in resources.
+     */
     layerCount?: number;
 
     /**
-	 * number of max animation frames a single cell will reserve in resources.
-	 */
+     * number of max animation frames a single cell will reserve in resources.
+     */
     maxAnimationFrames?: number;
 
     /**
-	 * number cell index of the base tile when the system compiles.
-	 */
+     * number cell index of the base tile when the system compiles.
+     */
     baseTile?: number;
 
     /**
-	* boolean flip the sprite after its been repositioned by the framing data.
-	*/
+    * boolean flip the sprite after its been repositioned by the framing data.
+    */
     flipU?: boolean;
 
     /**
-	 * Vector3 scalar of the global RGB values of the SpriteMap.
-	 */
+     * Vector3 scalar of the global RGB values of the SpriteMap.
+     */
     colorMultiply?: Vector3;
 
 }
@@ -72,23 +73,23 @@ export interface ISpriteMapOptions{
 export interface ISpriteMap extends IDisposable {
 
     /**
-	 * String name of the SpriteMap.
-	 */
+     * String name of the SpriteMap.
+     */
     name: string;
 
     /**
-	 * The JSON Array file from a https://www.codeandweb.com/texturepacker export.  Or similar structure.
-	 */
+     * The JSON Array file from a https://www.codeandweb.com/texturepacker export.  Or similar structure.
+     */
     atlasJSON: ISpriteJSONAtlas;
 
     /**
-	 * Texture of the SpriteMap.
-	 */
+     * Texture of the SpriteMap.
+     */
     spriteSheet: Texture;
 
     /**
-	 * The parameters to initialize the SpriteMap with.
-	 */
+     * The parameters to initialize the SpriteMap with.
+     */
     options: ISpriteMapOptions;
 
 }
@@ -181,7 +182,7 @@ export class SpriteMap implements ISpriteMap {
      * @param options a basic deployment configuration
      * @param scene The Scene that the map is deployed on
      */
-    constructor(name : string, atlasJSON: ISpriteJSONAtlas, spriteSheet: Texture, options: ISpriteMapOptions, scene : Scene) {
+    constructor(name: string, atlasJSON: ISpriteJSONAtlas, spriteSheet: Texture, options: ISpriteMapOptions, scene: Scene) {
 
         this.name = name;
         this.sprites = [];
@@ -226,7 +227,7 @@ export class SpriteMap implements ISpriteMap {
         let shaderString: string = Effect.ShadersStore["spriteMapPixelShader"];
 
         let layerSampleString: string;
-        if (this._scene.getEngine().webGLVersion === 1) {
+        if (!scene.getEngine()._features.supportSwitchCaseInShader) {
             layerSampleString = "";
             for (let i = 0; i < options.layerCount; i++) {
                 layerSampleString += `if (${i} == i) { frameID = texture2D(tileMaps[${i}], (tileID + 0.5) / stageSize, 0.).x; }`;
@@ -241,7 +242,7 @@ export class SpriteMap implements ISpriteMap {
             layerSampleString += "}";
         }
 
-        Effect.ShadersStore["spriteMap" + this.name + "PixelShader"] = shaderString.replace("#define LAYER_ID_SWITCH",  layerSampleString);
+        Effect.ShadersStore["spriteMap" + this.name + "PixelShader"] = shaderString.replace("#define LAYER_ID_SWITCH", layerSampleString);
 
         this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
             vertex: "spriteMap",
@@ -263,7 +264,7 @@ export class SpriteMap implements ISpriteMap {
                 "flipU"
             ],
             samplers: [
-            "spriteSheet", "frameMap", "tileMaps", "animationMap"
+                "spriteSheet", "frameMap", "tileMaps", "animationMap"
             ],
             needAlphaBlending: true
         });
@@ -287,7 +288,7 @@ export class SpriteMap implements ISpriteMap {
                 }
             }
             if (tickSave < 100) {
-                setTimeout(() => {tickSave++; bindSpriteTexture(); }, 100);
+                setTimeout(() => { tickSave++; bindSpriteTexture(); }, 100);
             }
         };
 
@@ -299,9 +300,11 @@ export class SpriteMap implements ISpriteMap {
         this._material.setTexture("animationMap", this._animationMap);
         this._material.setFloat("time", this._time);
 
-        this._output = Mesh.CreatePlane(name + ":output", 1, scene, true);
+        this._output = CreatePlane(name + ":output", { size: 1, updatable: true }, scene);
         this._output.scaling.x = options.outputSize.x;
         this._output.scaling.y = options.outputSize.y;
+        this.position = options.outputPosition;
+        this.rotation = options.outputRotation;
 
         let obfunction = () => {
             this._time += this._scene.getEngine().getDeltaTime();
@@ -334,7 +337,7 @@ export class SpriteMap implements ISpriteMap {
             if (mesh !== out) {
                 return false;
             }
-          return true;
+            return true;
         });
 
         if (((!pickinfo) || !pickinfo.hit) || !pickinfo.getTextureCoordinates) {
@@ -346,7 +349,7 @@ export class SpriteMap implements ISpriteMap {
             return coords;
         }
 
-        return 	new Vector2(-1, -1);
+        return new Vector2(-1, -1);
     }
 
     /**
@@ -391,20 +394,20 @@ export class SpriteMap implements ISpriteMap {
             data[i * 4 + (this.spriteCount * 8)] = ss.w;
             data[i * 4 + 1 + (this.spriteCount * 8)] = ss.h;
             data[i * 4 + 2 + (this.spriteCount * 8)] = r;
-            data[i * 4 + 3 + (this.spriteCount * 8)] = t ;
+            data[i * 4 + 3 + (this.spriteCount * 8)] = t;
         }
 
         let floatArray = new Float32Array(data);
 
         let t = RawTexture.CreateRGBATexture(
-        floatArray,
-        this.spriteCount,
-        4,
-        this._scene,
-        false,
-        false,
-        Texture.NEAREST_NEAREST,
-        Engine.TEXTURETYPE_FLOAT
+            floatArray,
+            this.spriteCount,
+            4,
+            this._scene,
+            false,
+            false,
+            Texture.NEAREST_NEAREST,
+            Engine.TEXTURETYPE_FLOAT
         );
 
         return t;
@@ -439,14 +442,14 @@ export class SpriteMap implements ISpriteMap {
 
         let floatArray = new Float32Array(data);
         let t = RawTexture.CreateRGBATexture(
-        floatArray,
-        _tx,
-        _ty,
-        this._scene,
-        false,
-        false,
-        Texture.NEAREST_NEAREST,
-        Engine.TEXTURETYPE_FLOAT
+            floatArray,
+            _tx,
+            _ty,
+            this._scene,
+            false,
+            false,
+            Texture.NEAREST_NEAREST,
+            Engine.TEXTURETYPE_FLOAT
         );
 
         return t;
@@ -458,7 +461,7 @@ export class SpriteMap implements ISpriteMap {
     * @param pos is the iVector2 Coordinates of the Tile
     * @param tile The SpriteIndex of the new Tile
     */
-    public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[] , tile: number = 0): void {
+    public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[], tile: number = 0): void {
 
         let buffer: Nullable<ArrayBufferView>;
         buffer = this._tileMaps[_layer]!._texture!._bufferView;
@@ -512,14 +515,14 @@ export class SpriteMap implements ISpriteMap {
         }
 
         let t = RawTexture.CreateRGBATexture(
-        floatArray,
-        this.spriteCount,
-        (this.options.maxAnimationFrames || 4),
-        this._scene,
-        false,
-        false,
-        Texture.NEAREST_NEAREST,
-        Engine.TEXTURETYPE_FLOAT
+            floatArray,
+            this.spriteCount,
+            (this.options.maxAnimationFrames || 4),
+            this._scene,
+            false,
+            false,
+            Texture.NEAREST_NEAREST,
+            Engine.TEXTURETYPE_FLOAT
         );
 
         return t;
@@ -540,8 +543,8 @@ export class SpriteMap implements ISpriteMap {
             return;
         }
         buffer[id] = toCell;
-        buffer[id + 1 ] = time;
-        buffer[id + 2 ] = speed;
+        buffer[id + 1] = time;
+        buffer[id + 2] = speed;
         let t = this._createTileAnimationBuffer(buffer);
         this._animationMap.dispose();
         this._animationMap = t;
@@ -554,7 +557,7 @@ export class SpriteMap implements ISpriteMap {
     public saveTileMaps(): void {
         let maps = "";
         for (var i = 0; i < this._tileMaps.length; i++) {
-            if (i > 0) {maps += "\n\r"; }
+            if (i > 0) { maps += "\n\r"; }
 
             maps += this._tileMaps[i]!._texture!._bufferView!.toString();
         }
@@ -570,14 +573,13 @@ export class SpriteMap implements ISpriteMap {
     * Imports the .tilemaps file
     * @param url of the .tilemaps file
     */
-    public loadTileMaps(url : string) : void {
+    public loadTileMaps(url: string): void {
         let xhr = new XMLHttpRequest();
         xhr.open("GET", url);
 
-        let _lc =  this.options!.layerCount || 0;
+        let _lc = this.options!.layerCount || 0;
 
-        xhr.onload = () =>
-        {
+        xhr.onload = () => {
             let data = xhr.response.split("\n\r");
             for (let i = 0; i < _lc; i++) {
                 let d = (data[i].split(",")).map(Number);

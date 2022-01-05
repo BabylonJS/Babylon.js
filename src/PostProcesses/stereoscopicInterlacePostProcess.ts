@@ -15,9 +15,17 @@ export class StereoscopicInterlacePostProcessI extends PostProcess {
     private _passedProcess: Nullable<PostProcess>;
 
     /**
+     * Gets a string identifying the name of the class
+     * @returns "StereoscopicInterlacePostProcessI" string
+     */
+    public getClassName(): string {
+        return "StereoscopicInterlacePostProcessI";
+    }
+
+    /**
      * Initializes a StereoscopicInterlacePostProcessI
      * @param name The name of the effect.
-     * @param rigCameras The rig cameras to be appled to the post process
+     * @param rigCameras The rig cameras to be applied to the post process
      * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
      * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
      * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
@@ -47,10 +55,18 @@ export class StereoscopicInterlacePostProcess extends PostProcess {
     private _passedProcess: Nullable<PostProcess>;
 
     /**
+     * Gets a string identifying the name of the class
+     * @returns "StereoscopicInterlacePostProcess" string
+     */
+    public getClassName(): string {
+        return "StereoscopicInterlacePostProcess";
+    }
+
+    /**
      * Initializes a StereoscopicInterlacePostProcess
      * @param name The name of the effect.
-     * @param rigCameras The rig cameras to be appled to the post process
-     * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+     * @param rigCameras The rig cameras to be applied to the post process
+     * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
      * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)

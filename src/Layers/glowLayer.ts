@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -16,9 +16,10 @@ import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
+import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -35,7 +36,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getGlowLayerByName = function(name: string): Nullable<GlowLayer> {
+AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
     for (var index = 0; index < this.effectLayers.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
             return (<any>this.effectLayers[index]) as GlowLayer;
@@ -57,7 +58,7 @@ export interface IGlowLayerOptions {
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independant blur.
+     * Enforces a fixed size texture to ensure resize independent blur.
      */
     mainTextureFixedSize?: number;
 
@@ -72,7 +73,7 @@ export interface IGlowLayerOptions {
     camera: Nullable<Camera>;
 
     /**
-     * Enable MSAA by chosing the number of samples.
+     * Enable MSAA by choosing the number of samples.
      */
     mainTextureSamples?: number;
 
@@ -80,6 +81,16 @@ export interface IGlowLayerOptions {
      * The rendering group to draw the layer in.
      */
     renderingGroupId: number;
+
+    /**
+     * Forces the merge step to be done in ldr (clamp values > 1)
+     */
+    ldrMerge?: boolean;
+
+    /**
+     * Defines the blend mode used by the merge
+     */
+     alphaBlendingMode?: number;
 }
 
 /**
@@ -182,12 +193,14 @@ export class GlowLayer extends EffectLayer {
             camera: null,
             mainTextureSamples: 1,
             renderingGroupId: -1,
+            ldrMerge: false,
+            alphaBlendingMode: Constants.ALPHA_ADD,
             ...options,
         };
 
         // Initialize the layer
         this._init({
-            alphaBlendingMode: Constants.ALPHA_ADD,
+            alphaBlendingMode: this._options.alphaBlendingMode,
             camera: this._options.camera,
             mainTextureFixedSize: this._options.mainTextureFixedSize,
             mainTextureRatio: this._options.mainTextureRatio,
@@ -208,13 +221,17 @@ export class GlowLayer extends EffectLayer {
      * to the main canvas at the end of the scene rendering.
      */
     protected _createMergeEffect(): Effect {
+        let defines = "#define EMISSIVE \n";
+        if (this._options.ldrMerge) {
+            defines += "#define LDR \n";
+        }
+
         // Effect
         return this._engine.createEffect("glowMapMerge",
             [VertexBuffer.PositionKind],
             ["offset"],
             ["textureSampler", "textureSampler2"],
-            "#define EMISSIVE \n");
-
+            defines);
     }
 
     /**
@@ -276,6 +293,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess1.width = blurTextureWidth;
         this._horizontalBlurPostprocess1.height = blurTextureHeight;
+        this._horizontalBlurPostprocess1.externalTextureSamplerBinding = true;
         this._horizontalBlurPostprocess1.onApplyObservable.add((effect) => {
             effect.setTexture("textureSampler", this._mainTexture);
         });
@@ -293,6 +311,7 @@ export class GlowLayer extends EffectLayer {
             null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
         this._horizontalBlurPostprocess2.width = blurTextureWidth2;
         this._horizontalBlurPostprocess2.height = blurTextureHeight2;
+        this._horizontalBlurPostprocess2.externalTextureSamplerBinding = true;
         this._horizontalBlurPostprocess2.onApplyObservable.add((effect) => {
             effect.setTexture("textureSampler", this._blurTexture1);
         });
@@ -309,14 +328,14 @@ export class GlowLayer extends EffectLayer {
 
         this._mainTexture.samples = this._options.mainTextureSamples!;
         this._mainTexture.onAfterUnbindObservable.add(() => {
-            let internalTexture = this._blurTexture1.getInternalTexture();
+            let internalTexture = this._blurTexture1.renderTarget;
             if (internalTexture) {
                 this._scene.postProcessManager.directRender(
                     this._postProcesses1,
                     internalTexture,
                     true);
 
-                let internalTexture2 = this._blurTexture2.getInternalTexture();
+                let internalTexture2 = this._blurTexture2.renderTarget;
                 if (internalTexture2) {
                     this._scene.postProcessManager.directRender(
                         this._postProcesses2,
@@ -334,7 +353,7 @@ export class GlowLayer extends EffectLayer {
     /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
-     * @param useInstances specify wether or not to use instances to render the mesh
+     * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
      * @return true if ready otherwise, false
      */
@@ -351,7 +370,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
@@ -414,6 +433,8 @@ export class GlowLayer extends EffectLayer {
             this.customEmissiveColorSelector(mesh, subMesh, material, this._emissiveTextureAndColor.color);
         } else {
             if ((<any>material).emissiveColor) {
+                const emissiveIntensity = (<PBRMaterial>material).emissiveIntensity ?? 1;
+                textureLevel *= emissiveIntensity;
                 this._emissiveTextureAndColor.color.set(
                     (<any>material).emissiveColor.r * textureLevel,
                     (<any>material).emissiveColor.g * textureLevel,
@@ -528,7 +549,13 @@ export class GlowLayer extends EffectLayer {
      * @param mesh The mesh for which we need to use its material
      */
     public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
+        mesh.resetDrawCache(this._mainTexture.renderPassId);
+
         this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
+
+        mesh.onDisposeObservable.add(() => {
+            this._disposeMesh(mesh as Mesh);
+        });
     }
 
     /**
@@ -541,6 +568,7 @@ export class GlowLayer extends EffectLayer {
             this._meshesUsingTheirOwnMaterials.splice(index, 1);
             index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
         }
+        mesh.resetDrawCache(this._mainTexture.renderPassId);
     }
 
     /**
@@ -577,7 +605,7 @@ export class GlowLayer extends EffectLayer {
 
         if (this._includedOnlyMeshes.length) {
             for (index = 0; index < this._includedOnlyMeshes.length; index++) {
-                var mesh = this._scene.getMeshByUniqueID(this._includedOnlyMeshes[index]);
+                var mesh = this._scene.getMeshByUniqueId(this._includedOnlyMeshes[index]);
                 if (mesh) {
                     serializationObject.includedMeshes.push(mesh.id);
                 }
@@ -589,7 +617,7 @@ export class GlowLayer extends EffectLayer {
 
         if (this._excludedMeshes.length) {
             for (index = 0; index < this._excludedMeshes.length; index++) {
-                var mesh = this._scene.getMeshByUniqueID(this._excludedMeshes[index]);
+                var mesh = this._scene.getMeshByUniqueId(this._excludedMeshes[index]);
                 if (mesh) {
                     serializationObject.excludedMeshes.push(mesh.id);
                 }
@@ -612,7 +640,7 @@ export class GlowLayer extends EffectLayer {
 
         // Excluded meshes
         for (index = 0; index < parsedGlowLayer.excludedMeshes.length; index++) {
-            var mesh = scene.getMeshByID(parsedGlowLayer.excludedMeshes[index]);
+            var mesh = scene.getMeshById(parsedGlowLayer.excludedMeshes[index]);
             if (mesh) {
                 gl.addExcludedMesh(<Mesh>mesh);
             }
@@ -620,7 +648,7 @@ export class GlowLayer extends EffectLayer {
 
         // Included meshes
         for (index = 0; index < parsedGlowLayer.includedMeshes.length; index++) {
-            var mesh = scene.getMeshByID(parsedGlowLayer.includedMeshes[index]);
+            var mesh = scene.getMeshById(parsedGlowLayer.includedMeshes[index]);
             if (mesh) {
                 gl.addIncludedOnlyMesh(<Mesh>mesh);
             }
@@ -630,4 +658,4 @@ export class GlowLayer extends EffectLayer {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GlowLayer"] = GlowLayer;
+RegisterClass("BABYLON.GlowLayer", GlowLayer);

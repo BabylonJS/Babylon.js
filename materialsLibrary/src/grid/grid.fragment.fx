@@ -5,6 +5,8 @@
 
 precision highp float;
 
+uniform float visibility;
+
 uniform vec3 mainColor;
 uniform vec3 lineColor;
 uniform vec4 gridControl;
@@ -23,7 +25,7 @@ uniform sampler2D opacitySampler;
 uniform vec2 vOpacityInfos;
 #endif
 
-float getVisibility(float position) {
+float getDynamicVisibility(float position) {
     // Major grid line every Frequency defined in material.
     float majorGridFrequency = gridControl.y;
     if (floor(position + 0.5) == floor(position / majorGridFrequency + 0.5) * majorGridFrequency)
@@ -56,8 +58,8 @@ float contributionOnAxis(float position) {
     float result = isPointOnLine(position, differentialLength);
 
     // Add dynamic visibility.
-    float visibility = getVisibility(position);
-    result *= visibility;
+    float dynamicVisibility = getDynamicVisibility(position);
+    result *= dynamicVisibility;
     
     // Anisotropic filtering.
     float anisotropicAttenuation = getAnisotropicAttenuation(differentialLength);
@@ -71,8 +73,13 @@ float normalImpactOnAxis(float x) {
     return normalImpact;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
-    
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
     vec3 gridPos = (vPosition + gridOffset.xyz) / gridRatio;
@@ -88,9 +95,14 @@ void main(void) {
     y *= normalImpactOnAxis(normal.y);
     z *= normalImpactOnAxis(normal.z);
     
-    // Create the grid value by combining axis.
+#ifdef MAX_LINE    
+    // Create the grid value from the max axis.
+    float grid = clamp(max(max(x, y), z), 0., 1.);
+#else
+    // Create the grid value by combining axes.
     float grid = clamp(x + y + z, 0., 1.);
-    
+#endif
+
     // Create the color.
     vec3 color = mix(mainColor, lineColor, grid);
 
@@ -108,7 +120,7 @@ void main(void) {
 #endif    
 
     // Apply the color.
-    gl_FragColor = vec4(color.rgb, opacity);
+    gl_FragColor = vec4(color.rgb, opacity * visibility);
 
 #ifdef TRANSPARENT
     #ifdef PREMULTIPLYALPHA
@@ -116,4 +128,8 @@ void main(void) {
     #endif
 #else    
 #endif
+
+#include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

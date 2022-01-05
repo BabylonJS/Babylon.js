@@ -61,7 +61,7 @@ export class MeshButton3D extends Button3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         this._currentMesh.getChildMeshes().forEach((mesh) => {
-            mesh.metadata = this;
+            this._injectGUI3DReservedDataStore(mesh).control = this;
         });
         return this._currentMesh;
     }

@@ -183,8 +183,7 @@ export class KhronosTextureContainer {
      * @returns true if the data is a KTX file or false otherwise
      */
     public static IsValid(data: ArrayBufferView): boolean {
-        if (data.byteLength >= 12)
-        {
+        if (data.byteLength >= 12) {
             // '«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
             const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
             if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x31 &&

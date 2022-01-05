@@ -6,6 +6,7 @@ var cp = require('child_process');
 var path = require("path");
 var concat = require('gulp-concat');
 var minimist = require("minimist");
+var symlinkDir = require('symlink-dir');
 
 // Gulp Helpers
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
@@ -147,7 +148,8 @@ var processDTSFiles = function(libraries, settings, cb) {
             moduleName: commandLineOptions.moduleName || settings.build.umd.packageName,
             entryPoint: library.entry,
             externals: settings.build.umd.processDeclaration.classMap,
-            hiddenConsts: settings.build.umd.processDeclaration.hiddenConsts
+            hiddenConsts: settings.build.umd.processDeclaration.hiddenConsts,
+            namedExportPathsToExclude: settings.build.umd.processDeclaration.namedExportPathsToExclude
         });
 
         // Convert Module to Namespace for globals
@@ -164,12 +166,30 @@ var processDTSFiles = function(libraries, settings, cb) {
 }
 
 /**
- * Dynamic module creation In Serie for WebPack leaks.
+ * Generate our required symlinked for the shared components.
  */
-function buildExternalLibraries(settings, fast) {
+var generateSharedUiComponents = function(settings, done) {
+    if (!settings.build.sharedUiComponents) {
+        done();
+        return;
+    }
+
+    var sharedUiComponents = config.computed.sharedUiComponentsSrcPath;
+    var umdSharedUiComponents = path.resolve(settings.computed.mainDirectory, settings.build.sharedUiComponents);
+
+    symlinkDir(sharedUiComponents, umdSharedUiComponents).then(() => {
+        done();
+    });
+};
+
+/**
+ * Dynamic module creation in series for WebPack leaks.
+ */
+function buildExternalLibraries(name, settings, fast) {
     // Creates the required tasks.
     var tasks = [];
 
+    var sharedUiComponents = function(cb) { return generateSharedUiComponents(settings, cb); };
     var cleanup = function() { return cleanShaders(settings); };
     var shaders = function() { return buildShaders(settings); };
     var buildMin = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, true) };
@@ -177,18 +197,19 @@ function buildExternalLibraries(settings, fast) {
 
     var buildAMDDTS = function(cb) { return buildAMDDTSFiles(settings.libraries, settings, cb) };
     var processDTS = function(cb) { return processDTSFiles(settings.libraries, settings, cb) };
-    var appendLoseDTS = [function() { return appendLoseDTSFiles(settings, true) }];
+    var appendLoseDTS = [function appendLoseDTS() { return appendLoseDTSFiles(settings, true) }];
     if (!commandLineOptions.noNamespace) {
-        appendLoseDTS.push(function() { return appendLoseDTSFiles(settings, false) });
+        appendLoseDTS.push(function appendLoseDTSNoModule() { return appendLoseDTSFiles(settings, false) });
     }
 
     if (fast) {
-        tasks.push(buildMax);
+        tasks.push(sharedUiComponents, buildMax);
     } else {
-        tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
+        tasks.push(sharedUiComponents, cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
     }
 
-    return gulp.series.apply(this, tasks);
+    tasks.map(t => t.displayName = name + ":" + t.name);
+    return gulp.series(...tasks);
 }
 
 /**
@@ -196,7 +217,7 @@ function buildExternalLibraries(settings, fast) {
  */
 config.modules.map(function(module) {
     const settings = config[module];
-    gulp.task(module, buildExternalLibraries(settings));
+    gulp.task(module, buildExternalLibraries(module, settings));
 });
 
 /**
@@ -209,7 +230,7 @@ gulp.task("typescript", gulp.series("core"));
  * Build the releasable files.
  * Back Compat Only, now name core as it is a lib
  */
-gulp.task("core-workers", buildExternalLibraries(config["core"], true));
+gulp.task("core-workers", buildExternalLibraries("core", config["core"], true));
 
 /**
  * Build all libs.

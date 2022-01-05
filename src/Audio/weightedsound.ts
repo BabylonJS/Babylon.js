@@ -55,7 +55,7 @@ export class WeightedSound {
     }
 
     /**
-     * The size of cone in degress for a directional sound in which there will be no attenuation.
+     * The size of cone in degrees for a directional sound in which there will be no attenuation.
      */
     public set directionalConeInnerAngle(value: number) {
         if (value !== this._coneInnerAngle) {

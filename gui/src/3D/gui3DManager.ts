@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { Material } from "babylonjs/Materials/material";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -14,7 +14,7 @@ import { Control3D } from "./controls/control3D";
 
 /**
  * Class used to manage 3D user interface
- * @see http://doc.babylonjs.com/how_to/gui3d
+ * @see https://doc.babylonjs.com/how_to/gui3d
  */
 export class GUI3DManager implements IDisposable {
     private _scene: Scene;
@@ -23,6 +23,7 @@ export class GUI3DManager implements IDisposable {
     private _rootContainer: Container3D;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
+    private _customControlScaling = 1.0;
     /** @hidden */
     public _lastPickedControl: Control3D;
     /** @hidden */
@@ -30,14 +31,24 @@ export class GUI3DManager implements IDisposable {
     /** @hidden */
     public _lastControlDown: { [pointerId: number]: Control3D } = {};
 
+    protected static MRTK_REALISTIC_SCALING: number = 0.032;
+
     /**
      * Observable raised when the point picked by the pointer events changed
      */
     public onPickedPointChangedObservable = new Observable<Nullable<Vector3>>();
 
+    /**
+     * Observable raised when a picking happens
+     */
+    public onPickingObservable = new Observable<Nullable<AbstractMesh>>();
+
     // Shared resources
     /** @hidden */
     public _sharedMaterials: { [key: string]: Material } = {};
+
+    /** @hidden */
+    public _touchSharedMaterials: { [key: string]: Material } = {};
 
     /** Gets the hosting scene */
     public get scene(): Scene {
@@ -47,6 +58,37 @@ export class GUI3DManager implements IDisposable {
     /** Gets associated utility layer */
     public get utilityLayer(): Nullable<UtilityLayerRenderer> {
         return this._utilityLayer;
+    }
+
+    /** Gets the scaling for all UI elements owned by this manager */
+    public get controlScaling() {
+        return this._customControlScaling;
+    }
+
+    /** Sets the scaling adjustment for all UI elements owned by this manager */
+    public set controlScaling(newScale: number) {
+        if (this._customControlScaling !== newScale && newScale > 0) {
+            let scaleRatio = newScale / this._customControlScaling;
+            this._customControlScaling = newScale;
+
+            this._rootContainer.children.forEach((control: Control3D) => {
+                control.scaling.scaleInPlace(scaleRatio);
+
+                if (newScale !== 1) {
+                    control._isScaledByManager = true;
+                }
+            });
+        }
+    }
+
+    /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+    public get useRealisticScaling() {
+        return this.controlScaling === GUI3DManager.MRTK_REALISTIC_SCALING;
+    }
+
+    /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+    public set useRealisticScaling(newValue: boolean) {
+        this.controlScaling = newValue ? GUI3DManager.MRTK_REALISTIC_SCALING : 1;
     }
 
     /**
@@ -61,11 +103,11 @@ export class GUI3DManager implements IDisposable {
             this.dispose();
         });
 
-        this._utilityLayer = new UtilityLayerRenderer(this._scene);
+        this._utilityLayer = UtilityLayerRenderer._CreateDefaultUtilityLayerFromScene(this._scene);
         this._utilityLayer.onlyCheckPointerDownEvents = false;
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.mainSceneTrackerPredicate = (mesh: Nullable<AbstractMesh>) => {
-            return mesh && mesh.metadata && mesh.metadata._node;
+            return mesh && mesh.reservedDataStore?.GUI3D?.control?._node;
         };
 
         // Root
@@ -110,24 +152,27 @@ export class GUI3DManager implements IDisposable {
             return false;
         }
 
-        let pointerEvent = <PointerEvent>(pi.event);
+        let pointerEvent = <PointerEvent>pi.event;
 
         let pointerId = pointerEvent.pointerId || 0;
         let buttonIndex = pointerEvent.button;
 
         let pickingInfo = pi.pickInfo;
+        if (pickingInfo) {
+            this.onPickingObservable.notifyObservers(pickingInfo.pickedMesh);
+        }
+
         if (!pickingInfo || !pickingInfo.hit) {
             this._handlePointerOut(pointerId, pi.type === PointerEventTypes.POINTERUP);
             return false;
         }
 
-        let control = <Control3D>(pickingInfo.pickedMesh!.metadata);
         if (pickingInfo.pickedPoint) {
             this.onPickedPointChangedObservable.notifyObservers(pickingInfo.pickedPoint);
         }
 
-        if (!control._processObservables(pi.type, pickingInfo.pickedPoint!, pointerId, buttonIndex)) {
-
+        const control = <Control3D>pickingInfo.pickedMesh!.reservedDataStore?.GUI3D?.control;
+        if (!!control && !control._processObservables(pi.type, pickingInfo.pickedPoint!, pickingInfo.originMesh?.position || null, pointerId, buttonIndex)) {
             if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
                     this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
@@ -174,6 +219,10 @@ export class GUI3DManager implements IDisposable {
      */
     public addControl(control: Control3D): GUI3DManager {
         this._rootContainer.addControl(control);
+        if (this._customControlScaling !== 1) {
+            control.scaling.scaleInPlace(this._customControlScaling);
+            control._isScaledByManager = true;
+        }
         return this;
     }
 
@@ -184,6 +233,10 @@ export class GUI3DManager implements IDisposable {
      */
     public removeControl(control: Control3D): GUI3DManager {
         this._rootContainer.removeControl(control);
+        if (control._isScaledByManager) {
+            control.scaling.scaleInPlace(1 / this._customControlScaling);
+            control._isScaledByManager = false;
+        }
         return this;
     }
 
@@ -203,12 +256,23 @@ export class GUI3DManager implements IDisposable {
 
         this._sharedMaterials = {};
 
+        for (var materialName in this._touchSharedMaterials) {
+            if (!this._touchSharedMaterials.hasOwnProperty(materialName)) {
+                continue;
+            }
+
+            this._touchSharedMaterials[materialName].dispose();
+        }
+
+        this._touchSharedMaterials = {};
+
         if (this._pointerOutObserver && this._utilityLayer) {
             this._utilityLayer.onPointerOutObservable.remove(this._pointerOutObserver);
             this._pointerOutObserver = null;
         }
 
         this.onPickedPointChangedObservable.clear();
+        this.onPickingObservable.clear();
 
         let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
 

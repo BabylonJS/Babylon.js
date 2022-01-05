@@ -8,7 +8,7 @@ import { NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
 import { BaseTexture } from '../../../Textures/baseTexture';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 
@@ -46,7 +46,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this._isUnique = true;
+        this._isUnique = false;
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
 
@@ -200,7 +200,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
-        if (this.texture) {
+        if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();
         }
 
@@ -220,4 +220,4 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ParticleTextureBlock"] = ParticleTextureBlock;
+RegisterClass("BABYLON.ParticleTextureBlock", ParticleTextureBlock);

@@ -1,4 +1,4 @@
-import * as Serializers from "../OBJ";
+import * as Serializers from "../OBJ/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../OBJ";
+export * from "../OBJ/index";

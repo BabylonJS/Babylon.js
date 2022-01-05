@@ -1,2 +1,0 @@
-# Redirect microsoft controllers if ID was not found on the server
-/microsoft/*/:controller.glb   /microsoft/default/:controller.glb   200

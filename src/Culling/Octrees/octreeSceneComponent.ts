@@ -20,13 +20,13 @@ declare module "../../scene" {
 
         /**
          * Gets the octree used to boost mesh selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
          */
         selectionOctree: Octree<AbstractMesh>;
 
         /**
          * Creates or updates the octree used to boost selection (picking)
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
          * @param maxCapacity defines the maximum capacity per leaf
          * @param maxDepth defines the maximum depth of the octree
          * @returns an octree of AbstractMesh
@@ -35,7 +35,7 @@ declare module "../../scene" {
     }
 }
 
-Scene.prototype.createOrUpdateSelectionOctree = function(maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
+Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity = 64, maxDepth = 2): Octree<AbstractMesh> {
     let component = this._getComponent(SceneComponentConstants.NAME_OCTREE);
     if (!component) {
         component = new OctreeSceneComponent(this);
@@ -55,7 +55,7 @@ Scene.prototype.createOrUpdateSelectionOctree = function(maxCapacity = 64, maxDe
 };
 
 Object.defineProperty(Scene.prototype, "selectionOctree", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         return this._selectionOctree;
     },
     enumerable: true,
@@ -77,7 +77,7 @@ declare module "../../Meshes/abstractMesh" {
          * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
          * @returns the new octree
          * @see https://www.babylonjs-playground.com/#NA4OQ#12
-         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
          */
         createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
     }
@@ -90,9 +90,9 @@ declare module "../../Meshes/abstractMesh" {
  * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
  * @returns the new octree
  * @see https://www.babylonjs-playground.com/#NA4OQ#12
- * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+ * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
  */
-AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function(maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
+AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function (maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
     const scene = this.getScene();
     let component = scene._getComponent(SceneComponentConstants.NAME_OCTREE);
     if (!component) {
@@ -239,7 +239,7 @@ export class OctreeSceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         // Nothing to do here.

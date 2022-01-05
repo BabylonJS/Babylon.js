@@ -5,6 +5,9 @@ uniform sampler2D textureSampler;
 // Parameters
 uniform vec2 screenSize;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec4 colorDepth = vec4(0.0);

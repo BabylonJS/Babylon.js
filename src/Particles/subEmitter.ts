@@ -1,9 +1,10 @@
 import { Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
+import { ThinEngine } from '../Engines/thinEngine';
+import { GetClass } from '../Misc/typeStore';
 
 declare type Scene = import("../scene").Scene;
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ParticleSystem = import("../Particles/particleSystem").ParticleSystem;
 
 /**
@@ -37,6 +38,7 @@ export class SubEmitter {
      * How much of the attached particles speed should be added to the sub emitted particle (default: 0)
      */
     public inheritedVelocityAmount = 0;
+
     /**
      * Creates a sub emitter
      * @param particleSystem the particle system to be used by the sub emitter
@@ -49,15 +51,10 @@ export class SubEmitter {
     ) {
         // Create mesh as emitter to support rotation
         if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
-            particleSystem.emitter = new AbstractMesh("SubemitterSystemEmitter", particleSystem.getScene());
+            const internalClass = GetClass("BABYLON.AbstractMesh");
+            particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
+            particleSystem._disposeEmitterOnDispose = true;
         }
-
-        // Automatically dispose of subemitter when system is disposed
-        particleSystem.onDisposeObservable.add(() => {
-            if (particleSystem.emitter && (<AbstractMesh>particleSystem.emitter).dispose) {
-                (<AbstractMesh>particleSystem.emitter).dispose();
-            }
-        });
     }
     /**
      * Clones the sub emitter
@@ -70,11 +67,12 @@ export class SubEmitter {
             emitter = new Vector3();
         } else if (emitter instanceof Vector3) {
             emitter = emitter.clone();
-        } else if (emitter instanceof AbstractMesh) {
-            emitter = new Mesh("", emitter.getScene());
-            emitter.isVisible = false;
+        } else if (emitter.getClassName().indexOf("Mesh") !== -1) {
+            const internalClass = GetClass("BABYLON.Mesh");
+            emitter = new internalClass("", emitter.getScene());
+            (emitter! as any).isVisible = false;
         }
-        var clone = new SubEmitter(this.particleSystem.clone("", emitter));
+        var clone = new SubEmitter(this.particleSystem.clone(this.particleSystem.name, emitter));
 
         // Clone properties
         clone.particleSystem.name += "Clone";
@@ -89,34 +87,35 @@ export class SubEmitter {
 
     /**
      * Serialize current object to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the serialized object
      */
-    public serialize(): any {
+    public serialize(serializeTexture: boolean = false): any {
         let serializationObject: any = {};
 
         serializationObject.type = this.type;
         serializationObject.inheritDirection = this.inheritDirection;
         serializationObject.inheritedVelocityAmount = this.inheritedVelocityAmount;
-        serializationObject.particleSystem = this.particleSystem.serialize();
+        serializationObject.particleSystem = this.particleSystem.serialize(serializeTexture);
 
         return serializationObject;
     }
 
     /** @hidden */
-    public static _ParseParticleSystem(system: any, scene: Scene, rootUrl: string): ParticleSystem {
-        throw _DevTools.WarnImport("ParseParticle");
+    public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
+        throw _WarnImport("ParseParticle");
     }
 
     /**
      * Creates a new SubEmitter from a serialized JSON version
      * @param serializationObject defines the JSON object to read from
-     * @param scene defines the hosting scene
+     * @param sceneOrEngine defines the hosting scene or the hosting engine
      * @param rootUrl defines the rootUrl for data loading
      * @returns a new SubEmitter
      */
-    public static Parse(serializationObject: any, scene: Scene, rootUrl: string): SubEmitter {
+    public static Parse(serializationObject: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): SubEmitter {
         let system = serializationObject.particleSystem;
-        let subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, scene, rootUrl));
+        let subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, sceneOrEngine, rootUrl, true));
         subEmitter.type = serializationObject.type;
         subEmitter.inheritDirection = serializationObject.inheritDirection;
         subEmitter.inheritedVelocityAmount = serializationObject.inheritedVelocityAmount;

@@ -127,7 +127,6 @@ $line-padding-left: 2px;
 
         .panes {
             grid-row: 2;
-
             display: grid;
             grid-template-rows: 100%;
 
@@ -138,6 +137,140 @@ $line-padding-left: 2px;
                 color: white;
                 margin: 15px 5px 0px 5px;
                                 
+            }
+
+            .gradient-step {
+                display: grid;
+                grid-template-rows: 100%;
+                grid-template-columns: 20px 30px 40px auto 20px 30px;
+                padding-top: 5px;
+                padding-left: 5px;
+                padding-bottom: 5px;    
+                align-items: center;
+        
+                .step {
+                    grid-row: 1;
+                    grid-column: 1;
+                }
+
+                .color1 {
+                    height: 100%;
+                }
+
+                .color2{
+                    height: 100%;
+                    padding-left: 5px;
+                }
+                    
+                .factor1 {
+                    grid-row: 1;
+                    grid-column: 2;
+                    cursor: pointer;
+                }
+
+                .factor2 {
+                    padding-left: 5px;
+                    grid-row: 1;
+                    grid-column: 3;
+                    cursor: pointer;
+
+                    .grayed {
+                        background: gray;
+                        border-color: gray;
+                    }
+                }
+
+                .numeric-input {
+                    width: calc(100% - 5px);
+                }
+
+                .icon{
+                    cursor: pointer;
+                }
+        
+                .step-value {       
+                    margin-left: 5px;     
+                    grid-row: 1;
+                    grid-column: 3;
+                    text-align: right;
+                    margin-right: 5px;
+                }
+        
+                .step-slider {            
+                    grid-row: 1;
+                    grid-column: 4;
+                    display: grid;
+                    justify-content: stretch;
+                    align-content: center;
+                    margin-right: 12px;
+        
+                    input {
+                        width: 100%;
+                    }
+                    .range:hover {
+                        opacity: 1;
+                    }
+
+                    .range {
+                        -webkit-appearance: none;
+                        height: 6px;
+                        background: #d3d3d3;
+                        border-radius: 5px;
+                        outline: none;
+                        opacity: 0.7;
+                        -webkit-transition: .2s;
+                        transition: opacity .2s;
+                    }
+                    .range::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: rgb(51, 122, 183);
+                        cursor: pointer;
+                    }
+                    
+                    .range::-moz-range-thumb {
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: rgb(51, 122, 183);
+                        cursor: pointer;
+                    }
+                }
+               
+                .gradient-copy {            
+                    grid-row: 1;
+                    grid-column: 5;
+                    display: grid;
+                    align-content: center;
+                    justify-content: center;
+         
+                    .img {
+                        height: 20px;
+                        width: 20px;
+                    }
+                    .img:hover {
+                        cursor: pointer;
+                    }
+        
+                }
+                .gradient-delete {            
+                    grid-row: 1;
+                    grid-column: 6;
+                    display: grid;
+                    align-content: center;
+                    justify-content: center;
+                    .img {
+                        height: 20px;
+                        width: 20px;
+                    }
+                    .img:hover {
+                        cursor: pointer;
+                    }
+        
+                }
             }
 
             .pane {
@@ -494,6 +627,7 @@ $line-padding-left: 2px;
                         margin: 5px 10px 5px 10px;
                         color:white;
                         padding: 4px 5px;
+                        font-size: 13px;
                         opacity: 0.9;
                         cursor: pointer;
                         text-align: center;
@@ -607,6 +741,8 @@ $line-padding-left: 2px;
                             grid-column: 1;
                             display: flex;
                             align-items: center;
+                            white-space: nowrap;
+                            overflow: hidden;
                         }
 
                         .vector {
@@ -615,6 +751,7 @@ $line-padding-left: 2px;
                             align-items: center;
                             text-align: right;
                             opacity: 0.8;
+                            padding-left: 5px;
                         }
 
                         .expand {
@@ -800,7 +937,10 @@ $line-padding-left: 2px;
                         width: 256px;
                         margin-top: 5px;
                         margin-bottom: 5px;
-                        border: 2px solid rgba(255, 255, 255, 0.4);
+                        border: 1px solid white;
+                        background-size: 32px 32px;
+                        background-color: white;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Cpath fill='rgba(1.0,1.0,1.0,0.3)' fill-rule='evenodd' d='M0 0h1v1H0V0zm1 1h1v1H1V1z'/%3E%3C/svg%3E");
                     }
                 }
 
@@ -835,10 +975,11 @@ $line-padding-left: 2px;
                 }
 
                 .sliderLine {
-                    padding-left: 2px;
+                    padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-rows: 100%;
+                    grid-template-columns: 1fr 50px auto;
 
                     .label {
                         grid-column: 1;
@@ -846,16 +987,45 @@ $line-padding-left: 2px;
                         align-items: center;
                     }
 
+                    .withMargins {
+                        margin-left: 5px;
+                    }
+
+                    .floatLine {
+                        padding-left: $line-padding-left;
+                    
+                        .short {
+                            grid-column: 1; 
+                            display: flex;
+                            align-items: center;
+                            
+                            input {
+                                width: 35px;
+                            }
+                            
+                            input::-webkit-outer-spin-button,
+                            input::-webkit-inner-spin-button {
+                              -webkit-appearance: none;
+                              margin: 0;
+                            }
+                
+                            input[type=number] {
+                                -moz-appearance: textfield;
+                            }
+                        }
+                    }  
+
                     .slider {
-                        grid-column: 2;
+                        grid-column: 3;
+                        grid-row: 1;
                         margin-right: 5px;
-                        
+                        width: 90%;
                         display: flex;
-                        align-items: center;
+                        align-items: center;            
 
                         .range {
                             -webkit-appearance: none;
-                            width: 120px;
+                            width: 100%;
                             height: 6px;
                             background: #d3d3d3;
                             border-radius: 5px;

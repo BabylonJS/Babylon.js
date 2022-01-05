@@ -1,6 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
+import { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -17,17 +18,20 @@ declare module "../../Engines/thinEngine" {
         /**
          * Update the content of a dynamic texture
          * @param texture defines the texture to update
-         * @param canvas defines the canvas containing the source
+         * @param source defines the source containing the data
          * @param invertY defines if data must be stored with Y axis inverted
          * @param premulAlpha defines if alpha is stored as premultiplied
          * @param format defines the format of the data
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+         * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
          */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>,
+            source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas,
+            invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean, allowGPUOptimization?: boolean): void;
     }
 }
 
-ThinEngine.prototype.createDynamicTexture = function(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
+ThinEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
     var texture = new InternalTexture(this, InternalTextureSource.Dynamic);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -51,24 +55,46 @@ ThinEngine.prototype.createDynamicTexture = function(width: number, height: numb
     return texture;
 };
 
-ThinEngine.prototype.updateDynamicTexture = function(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture: boolean = false): void {
+ThinEngine.prototype.updateDynamicTexture = function (texture: Nullable<InternalTexture>,
+    source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
+    invertY?: boolean,
+    premulAlpha: boolean = false,
+    format?: number,
+    forceBindTexture: boolean = false,
+    allowGPUOptimization: boolean = false,
+    ): void {
     if (!texture) {
         return;
     }
 
-    this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true, forceBindTexture);
-    this._unpackFlipY(invertY);
+    const gl = this._gl;
+    const target = gl.TEXTURE_2D;
+
+    const wasPreviouslyBound = this._bindTextureDirectly(target, texture, true, forceBindTexture);
+
+    this._unpackFlipY(invertY === undefined ? texture.invertY : invertY);
+
     if (premulAlpha) {
-        this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
     }
-    let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
-    this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, internalFormat, this._gl.UNSIGNED_BYTE, canvas);
+
+    const textureType = this._getWebGLTextureType(texture.type);
+    const glformat = this._getInternalFormat(format ? format : texture.format);
+    const internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, glformat);
+
+    gl.texImage2D(target, 0, internalFormat, glformat, textureType, source as TexImageSource);
+
     if (texture.generateMipMaps) {
-        this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        gl.generateMipmap(target);
     }
-    this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+
+    if (!wasPreviouslyBound) {
+        this._bindTextureDirectly(target, null);
+    }
+
     if (premulAlpha) {
-        this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
     }
+
     texture.isReady = true;
 };

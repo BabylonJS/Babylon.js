@@ -12,6 +12,14 @@ import "../Shaders/highlights.fragment";
  */
 export class HighlightsPostProcess extends PostProcess {
     /**
+     * Gets a string identifying the name of the class
+     * @returns "HighlightsPostProcess" string
+     */
+    public getClassName(): string {
+        return "HighlightsPostProcess";
+    }
+
+    /**
      * Extracts highlights from the image
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses
      * @param name The name of the effect.

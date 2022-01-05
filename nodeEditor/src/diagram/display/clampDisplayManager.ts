@@ -19,7 +19,7 @@ export class ClampDisplayManager implements IDisplayManager {
         return "#4086BB";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         const clampBlock = block as ClampBlock;
 
         contentArea.classList.add("clamp-block");

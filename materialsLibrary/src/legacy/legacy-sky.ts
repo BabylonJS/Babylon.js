@@ -1,4 +1,4 @@
-import * as MatLib from "../sky";
+import * as MatLib from "../sky/index";
 
 /**
  * This is the entry point for the UMD module.
@@ -11,4 +11,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../sky";
+export * from "../sky/index";

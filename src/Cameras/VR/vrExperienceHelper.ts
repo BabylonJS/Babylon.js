@@ -28,17 +28,15 @@ import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingP
 import { SineEase, EasingFunction, CircleEase } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
 import { VRCameraMetrics } from '../../Cameras/VR/vrCameraMetrics';
-
-import "../../Meshes/Builders/groundBuilder";
-import "../../Meshes/Builders/torusBuilder";
-import "../../Meshes/Builders/cylinderBuilder";
-
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
 import { Axis } from '../../Maths/math.axis';
 import { WebXRSessionManager } from '../../XR/webXRSessionManager';
 import { WebXRDefaultExperience } from '../../XR/webXRDefaultExperience';
 import { WebXRState } from '../../XR/webXRTypes';
+import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
+import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
+import { CreateGround } from "../../Meshes/Builders/groundBuilder";
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -141,7 +139,12 @@ class VRExperienceHelperGazer implements IDisposable {
 
         // Gaze tracker
         if (!gazeTrackerToClone) {
-            this._gazeTracker = Mesh.CreateTorus("gazeTracker", 0.0035, 0.0025, 20, scene, false);
+            this._gazeTracker = CreateTorus("gazeTracker", {
+                diameter: 0.0035,
+                thickness: 0.0025,
+                tessellation: 20,
+                updatable: false
+            }, scene);
             this._gazeTracker.bakeCurrentTransformIntoVertices();
             this._gazeTracker.isPickable = false;
             this._gazeTracker.isVisible = false;
@@ -206,7 +209,14 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
     constructor(public webVRController: WebVRController, scene: Scene, gazeTrackerToClone: Mesh) {
         super(scene, gazeTrackerToClone);
         // Laser pointer
-        this._laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.004, 0.0002, 20, 1, scene, false);
+        this._laserPointer = CreateCylinder("laserPointer", {
+            updatable: false,
+            height: 1,
+            diameterTop: 0.004,
+            diameterBottom: 0.0002,
+            tessellation: 20,
+            subdivisions: 1,
+        }, scene);
         var laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
         laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
         laserPointerMaterial.alpha = 0.6;
@@ -322,7 +332,7 @@ export class OnAfterEnteringVRObservableEvent {
 
 /**
  * Helps to quickly add VR support to an existing scene.
- * See http://doc.babylonjs.com/how_to/webvr_helper
+ * See https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
  */
 export class VRExperienceHelper {
     private _scene: Scene;
@@ -474,12 +484,12 @@ export class VRExperienceHelper {
     private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /**
-     * To be optionaly changed by user to define custom ray selection
+     * To be optionally changed by user to define custom ray selection
      */
     public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
     /**
-     * To be optionaly changed by user to define custom selection logic (after ray selection)
+     * To be optionally changed by user to define custom selection logic (after ray selection)
      */
     public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
 
@@ -516,7 +526,7 @@ export class VRExperienceHelper {
     /**
      * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
      * when set bakeCurrentTransformIntoVertices will be called on the mesh.
-     * See http://doc.babylonjs.com/resources/baking_transformations
+     * See https://doc.babylonjs.com/resources/baking_transformations
      */
     public get gazeTrackerMesh(): Mesh {
         return this._cameraGazer._gazeTracker;
@@ -716,14 +726,15 @@ export class VRExperienceHelper {
     constructor(scene: Scene,
         /** Options to modify the vr experience helper's behavior. */
         public webVROptions: VRExperienceHelperOptions = {}) {
+        Logger.Warn('WebVR is deprecated. Please avoid using this experience helper and use the WebXR experience helper instead');
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
 
         // check for VR support:
 
         const vrSupported = 'getVRDisplays' in navigator;
-        // no VR support? force XR
-        if (!vrSupported) {
+        // no VR support? force XR but only when it is not set because web vr can work without the getVRDisplays
+        if (!vrSupported && webVROptions.useXR === undefined) {
             webVROptions.useXR = true;
         }
 
@@ -787,7 +798,7 @@ export class VRExperienceHelper {
 
             this._scene.activeCamera = this._deviceOrientationCamera;
             if (this._inputElement) {
-                this._scene.activeCamera.attachControl(this._inputElement);
+                this._scene.activeCamera.attachControl();
             }
         } else {
             this._existingCamera = this._scene.activeCamera;
@@ -1180,7 +1191,7 @@ export class VRExperienceHelper {
         }
 
         if (this._scene.activeCamera && this._inputElement) {
-            this._scene.activeCamera.attachControl(this._inputElement);
+            this._scene.activeCamera.attachControl();
         }
 
         if (this._interactionsEnabled) {
@@ -1248,7 +1259,7 @@ export class VRExperienceHelper {
                 this._existingCamera.position = this._position;
                 this._scene.activeCamera = this._existingCamera;
                 if (this._inputElement) {
-                    this._scene.activeCamera.attachControl(this._inputElement);
+                    this._scene.activeCamera.attachControl();
                 }
 
                 // Restore angular sensibility
@@ -1760,7 +1771,7 @@ export class VRExperienceHelper {
     }
 
     private _createTeleportationCircles() {
-        this._teleportationTarget = Mesh.CreateGround("teleportationTarget", 2, 2, 2, this._scene);
+        this._teleportationTarget = CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, this._scene);
         this._teleportationTarget.isPickable = false;
 
         var length = 512;
@@ -1786,7 +1797,12 @@ export class VRExperienceHelper {
         teleportationCircleMaterial.diffuseTexture = dynamicTexture;
         this._teleportationTarget.material = teleportationCircleMaterial;
 
-        var torus = Mesh.CreateTorus("torusTeleportation", 0.75, 0.1, 25, this._scene, false);
+        var torus = CreateTorus("torusTeleportation", {
+            diameter: 0.75,
+            thickness: 0.1,
+            tessellation: 25,
+            updatable: false
+        }, this._scene);
         torus.isPickable = false;
         torus.parent = this._teleportationTarget;
 
@@ -2093,10 +2109,6 @@ export class VRExperienceHelper {
         var hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
 
         if (hit) {
-            // Populate the controllers mesh that can be used for drag/drop
-            if ((<any>gazer)._laserPointer) {
-                hit.originMesh = (<any>gazer)._laserPointer.parent;
-            }
             this._scene.simulatePointerMove(hit, { pointerId: gazer._id });
         }
         gazer._currentHit = hit;

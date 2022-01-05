@@ -2,23 +2,19 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-
-class ListLineOption {
-    public label: string;
-    public value: number | string;
-}
+import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
 
 interface IOptionsLineComponentProps {
-    label: string,
-    target: any,
-    className?: string,
-    propertyName?: string,
-    options: ListLineOption[],
-    noDirectUpdate?: boolean,
-    onSelect?: (value: number | string) => void,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>,
-    valuesAreStrings?: boolean
-    defaultIfNull?: number,
+    label: string;
+    target: any;
+    className?: string;
+    propertyName?: string;
+    options: IInspectableOptions[];
+    noDirectUpdate?: boolean;
+    onSelect?: (value: number | string) => void;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    valuesAreStrings?: boolean;
+    defaultIfNull?: number;
     getSelection?: (target: any) => number;
 }
 
@@ -29,7 +25,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         if (props.getSelection) {
             return props.getSelection(props.target);
         }
-        return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+        return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     }
 
     constructor(props: IOptionsLineComponentProps) {
@@ -65,7 +61,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             object: this.props.target,
             property: this.props.propertyName!,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -89,19 +85,18 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     render() {
         return (
             <div className="listLine">
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
-
                 </div>
                 <div className={"options" + (this.props.className ? " " + this.props.className : "")}>
-                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
-                        {
-                            this.props.options.map(option => {
-                                return (
-                                    <option key={option.label} value={option.value}>{option.label}</option>
-                                )
-                            })
-                        }
+                    <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
+                        {this.props.options.map((option) => {
+                            return (
+                                <option key={option.label} value={option.value} title={option.label}>
+                                    {option.label}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
             </div>

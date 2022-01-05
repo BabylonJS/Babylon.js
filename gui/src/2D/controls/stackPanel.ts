@@ -3,7 +3,10 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { serialize } from 'babylonjs/Misc/decorators';
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
  * Class used to create a 2D stack panel container
@@ -13,13 +16,16 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
+    private _spacing = 0;
 
     /**
-     * Gets or sets a boolean indicating that layou warnings should be ignored
+     * Gets or sets a boolean indicating that layout warnings should be ignored
      */
+    @serialize()
     public ignoreLayoutWarnings = false;
 
     /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
+    @serialize()
     public get isVertical(): boolean {
         return this._isVertical;
     }
@@ -34,9 +40,27 @@ export class StackPanel extends Container {
     }
 
     /**
+     * Gets or sets the spacing (in pixels) between each child.
+     */
+     @serialize()
+     public get spacing(): number {
+         return this._spacing;
+     }
+
+     public set spacing(value: number) {
+         if (this._spacing === value) {
+             return;
+         }
+
+         this._spacing = value;
+         this._markAsDirty();
+     }
+
+    /**
      * Gets or sets panel width.
      * This value should not be set when in horizontal mode as it will be computed automatically
      */
+    @serialize()
     public set width(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualWidth = true;
@@ -59,6 +83,7 @@ export class StackPanel extends Container {
      * Gets or sets panel height.
      * This value should not be set when in vertical mode as it will be computed automatically
      */
+    @serialize()
     public set height(value: string | number) {
         if (!this._doNotTrackManualChanges) {
             this._manualHeight = true;
@@ -90,7 +115,7 @@ export class StackPanel extends Container {
     }
 
     /** @hidden */
-    protected _preMeasure(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         for (var child of this._children) {
             if (this._isVertical) {
                 child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -102,7 +127,7 @@ export class StackPanel extends Container {
         super._preMeasure(parentMeasure, context);
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(parentMeasure);
@@ -120,9 +145,11 @@ export class StackPanel extends Container {
     }
 
     protected _postMeasure(): void {
-        var stackWidth = 0;
-        var stackHeight = 0;
-        for (var child of this._children) {
+        let stackWidth = 0;
+        let stackHeight = 0;
+        const childrenCount = this._children.length;
+        for (let index = 0; index < childrenCount; index++) {
+            const child = this._children[index];
             if (!child.isVisible || child.notRenderable) {
                 continue;
             }
@@ -139,7 +166,7 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }
                 } else {
-                    stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
+                    stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             } else {
                 if (child.left !== stackWidth + "px") {
@@ -153,10 +180,13 @@ export class StackPanel extends Container {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
                 } else {
-                    stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
+                    stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
             }
         }
+
+        stackWidth += this._paddingLeftInPixels + this._paddingRightInPixels;
+        stackHeight += this._paddingTopInPixels + this._paddingBottomInPixels;
 
         this._doNotTrackManualChanges = true;
 
@@ -193,5 +223,24 @@ export class StackPanel extends Container {
 
         super._postMeasure();
     }
+
+    /**
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        serializationObject.manualWidth = this._manualWidth;
+        serializationObject.manualHeight = this._manualHeight;
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        this._manualWidth = serializedObject.manualWidth;
+        this._manualHeight = serializedObject.manualHeight;
+
+        super._parseFromContent(serializedObject, host);
+    }
+
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;
+RegisterClass("BABYLON.GUI.StackPanel", StackPanel);

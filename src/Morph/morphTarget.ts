@@ -4,16 +4,16 @@ import { Nullable, FloatArray } from "../types";
 import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { GetClass } from '../Misc/typeStore';
 
 declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Defines a target to use with MorphTargetManager
- * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
  */
 export class MorphTarget implements IAnimatable {
     /**
@@ -52,7 +52,7 @@ export class MorphTarget implements IAnimatable {
         var previous = this._influence;
         this._influence = influence;
 
-        if (this.onInfluenceChanged.hasObservers) {
+        if (this.onInfluenceChanged.hasObservers()) {
             this.onInfluenceChanged.notifyObservers(previous === 0 || influence === 0);
         }
     }
@@ -301,7 +301,7 @@ export class MorphTarget implements IAnimatable {
         if (serializationObject.animations) {
             for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
                 var parsedAnimation = serializationObject.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     result.animations.push(internalClass.Parse(parsedAnimation));
                 }

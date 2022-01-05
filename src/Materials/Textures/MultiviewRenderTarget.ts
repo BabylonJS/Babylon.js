@@ -1,11 +1,10 @@
 import { RenderTargetTexture } from '../Textures/renderTargetTexture';
 import { Scene } from '../../scene';
-import { InternalTextureSource } from '../Textures/internalTexture';
 import { Constants } from '../../Engines/constants';
 
 /**
  * Renders to multiple views with a single draw call
- * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+ * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
  */
 export class MultiviewRenderTarget extends RenderTargetTexture {
     /**
@@ -14,11 +13,11 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param size the size of the render target (used for each view)
      */
     constructor(scene: Scene, size: number | { width: number, height: number } | { ratio: number } = 512) {
-        super("multiview rtt", size, scene, false, true, InternalTextureSource.Unknown, false, undefined, false, false, true, undefined, true);
-        var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
-        internalTexture.isMultiview = true;
-        internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-        this._texture = internalTexture;
+        super("multiview rtt", size, scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT, false, undefined, false, false, true, undefined, true);
+        var rtWrapper = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
+        this._texture = rtWrapper.texture!;
+        this._texture.isMultiview = true;
+        this._texture.format = Constants.TEXTUREFORMAT_RGBA;
         this.samples = this._getEngine()!.getCaps().maxSamples || this.samples;
     }
 
@@ -27,10 +26,10 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
      * @param faceIndex the face index, if its a cube texture
      */
     public _bindFrameBuffer(faceIndex: number = 0) {
-        if (!this._texture) {
+        if (!this._renderTarget) {
             return;
         }
-        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._texture);
+        this.getScene()!.getEngine().bindMultiviewFramebuffer(this._renderTarget);
     }
 
     /**

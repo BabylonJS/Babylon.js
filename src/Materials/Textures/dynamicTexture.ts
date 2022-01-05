@@ -5,16 +5,16 @@ import { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
-import { CanvasGenerator } from '../../Misc/canvasGenerator';
+import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 /**
  * A class extending Texture allowing drawing on a texture
- * @see http://doc.babylonjs.com/how_to/dynamictexture
+ * @see https://doc.babylonjs.com/divingDeeper/materials/using/dynamicTexture
  */
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
-    private _canvas: HTMLCanvasElement | OffscreenCanvas;
-    private _context: CanvasRenderingContext2D;
+    private _canvas: ICanvas;
+    private _context: ICanvasRenderingContext;
 
     /**
      * Creates a DynamicTexture
@@ -24,10 +24,11 @@ export class DynamicTexture extends Texture {
      * @param generateMipMaps defines the use of MinMaps or not (default is false)
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
      * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading
      */
 
-    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA) {
-        super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
+    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA, invertY?: boolean) {
+        super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -44,7 +45,7 @@ export class DynamicTexture extends Texture {
             this._canvas = options;
             this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
         } else {
-            this._canvas = CanvasGenerator.CreateCanvas(1, 1);
+            this._canvas = engine.createCanvas(1, 1);
 
             if (options.width || options.width === 0) {
                 this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
@@ -55,9 +56,13 @@ export class DynamicTexture extends Texture {
 
         var textureSize = this.getSize();
 
-        this._canvas.width = textureSize.width;
-        this._canvas.height = textureSize.height;
-        this._context = <CanvasRenderingContext2D>this._canvas.getContext("2d");
+        if (this._canvas.width !== textureSize.width) {
+            this._canvas.width = textureSize.width;
+        }
+        if (this._canvas.height !== textureSize.height) {
+            this._canvas.height = textureSize.height;
+        }
+        this._context = this._canvas.getContext("2d");
     }
 
     /**
@@ -115,7 +120,7 @@ export class DynamicTexture extends Texture {
      * Gets the context of the canvas used by the texture
      * @returns the canvas context of the dynamic texture
      */
-    public getContext(): CanvasRenderingContext2D {
+    public getContext(): ICanvasRenderingContext {
         return this._context;
     }
 
@@ -131,9 +136,10 @@ export class DynamicTexture extends Texture {
      * Updates the texture
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
+     * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
      */
-    public update(invertY?: boolean, premulAlpha = false): void {
-        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
+    public update(invertY?: boolean, premulAlpha = false, allowGPUOptimization = false): void {
+        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined, undefined, allowGPUOptimization);
     }
 
     /**
@@ -208,14 +214,18 @@ export class DynamicTexture extends Texture {
         }
 
         const serializationObject = super.serialize();
-        if ((this._canvas as HTMLCanvasElement).toDataURL) {
-            serializationObject.base64String = (this._canvas as HTMLCanvasElement).toDataURL();
+        if (this._IsCanvasElement(this._canvas)) {
+            serializationObject.base64String = this._canvas.toDataURL();
         }
 
         serializationObject.invertY = this._invertY;
         serializationObject.samplingMode = this.samplingMode;
 
         return serializationObject;
+    }
+
+    private _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas | ICanvas): canvas is HTMLCanvasElement {
+        return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 
     /** @hidden */

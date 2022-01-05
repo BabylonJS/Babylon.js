@@ -11,11 +11,12 @@ import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from '../Misc/typeStore';
-import { _DevTools } from '../Misc/devTools';
+import { GetClass } from '../Misc/typeStore';
+import { _WarnImport } from '../Misc/devTools';
 import { Viewport } from '../Maths/math.viewport';
 import { Frustum } from '../Maths/math.frustum';
 import { Plane } from '../Maths/math.plane';
+import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -25,12 +26,12 @@ declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * This is the base class of all the camera used in the application.
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class Camera extends Node {
     /** @hidden */
     public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
-        throw _DevTools.WarnImport("UniversalCamera");
+        throw _WarnImport("UniversalCamera");
     }
 
     /**
@@ -38,61 +39,61 @@ export class Camera extends Node {
      * It helps recreating a feeling of perspective and better appreciate depth.
      * This is the best way to simulate real life cameras.
      */
-    public static readonly PERSPECTIVE_CAMERA = 0;
+    public static readonly PERSPECTIVE_CAMERA = Constants.PERSPECTIVE_CAMERA;
     /**
      * This helps creating camera with an orthographic mode.
      * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
      */
-    public static readonly ORTHOGRAPHIC_CAMERA = 1;
+    public static readonly ORTHOGRAPHIC_CAMERA = Constants.ORTHOGRAPHIC_CAMERA;
 
     /**
      * This is the default FOV mode for perspective cameras.
      * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
      */
-    public static readonly FOVMODE_VERTICAL_FIXED = 0;
+    public static readonly FOVMODE_VERTICAL_FIXED = Constants.FOVMODE_VERTICAL_FIXED;
     /**
      * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
      */
-    public static readonly FOVMODE_HORIZONTAL_FIXED = 1;
+    public static readonly FOVMODE_HORIZONTAL_FIXED = Constants.FOVMODE_HORIZONTAL_FIXED;
 
     /**
-     * This specifies ther is no need for a camera rig.
+     * This specifies there is no need for a camera rig.
      * Basically only one eye is rendered corresponding to the camera.
      */
-    public static readonly RIG_MODE_NONE = 0;
+    public static readonly RIG_MODE_NONE = Constants.RIG_MODE_NONE;
     /**
      * Simulates a camera Rig with one blue eye and one red eye.
      * This can be use with 3d blue and red glasses.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
+    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = Constants.RIG_MODE_STEREOSCOPIC_ANAGLYPH;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a parallel target.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = Constants.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = Constants.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     /**
      * Defines that both eyes of the camera will be rendered over under each other.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = Constants.RIG_MODE_STEREOSCOPIC_OVERUNDER;
     /**
      * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = Constants.RIG_MODE_STEREOSCOPIC_INTERLACED;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
-    public static readonly RIG_MODE_VR = 20;
+    public static readonly RIG_MODE_VR = Constants.RIG_MODE_VR;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
      */
-    public static readonly RIG_MODE_WEBVR = 21;
+    public static readonly RIG_MODE_WEBVR = Constants.RIG_MODE_WEBVR;
     /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
      */
-    public static readonly RIG_MODE_CUSTOM = 22;
+    public static readonly RIG_MODE_CUSTOM = Constants.RIG_MODE_CUSTOM;
 
     /**
      * Defines if by default attaching controls should prevent the default javascript event to continue.
@@ -119,12 +120,45 @@ export class Camera extends Node {
         this._position = newPosition;
     }
 
+    @serializeAsVector3("upVector")
+    protected _upVector = Vector3.Up();
+
     /**
      * The vector the camera should consider as up.
      * (default is Vector3(0, 1, 0) aka Vector3.Up())
      */
-    @serializeAsVector3()
-    public upVector = Vector3.Up();
+    public set upVector(vec: Vector3) {
+        this._upVector = vec;
+    }
+
+    public get upVector() {
+        return this._upVector;
+    }
+
+    /**
+     * The screen area in scene units squared
+     */
+    public get screenArea(): number {
+        let x = 0;
+        let y = 0;
+        if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+            if (this.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
+                y = this.minZ * 2 * Math.tan(this.fov / 2);
+                x = this.getEngine().getAspectRatio(this) * y;
+            } else {
+                x = this.minZ * 2 * Math.tan(this.fov / 2);
+                y = x / this.getEngine().getAspectRatio(this);
+            }
+        } else {
+            const halfWidth = this.getEngine().getRenderWidth() / 2.0;
+            const halfHeight = this.getEngine().getRenderHeight() / 2.0;
+
+            x = (this.orthoRight ?? halfWidth) - (this.orthoLeft ?? -halfWidth);
+            y = (this.orthoTop ?? halfHeight) - (this.orthoBottom ?? -halfHeight);
+        }
+
+        return x * y;
+    }
 
     /**
      * Define the current limit on the left side for an orthographic camera
@@ -159,6 +193,14 @@ export class Camera extends Node {
      */
     @serialize()
     public fov = 0.8;
+
+    /**
+     * Projection plane tilt around the X axis (horizontal), set in Radians. (default is 0)
+     * Can be used to make vertical lines in world space actually vertical on the screen.
+     * See https://forum.babylonjs.com/t/add-vertical-shift-to-3ds-max-exporter-babylon-cameras/17480
+     */
+    @serialize()
+    public projectionPlaneTilt = 0;
 
     /**
      * Define the minimum distance the camera can see from.
@@ -236,10 +278,10 @@ export class Camera extends Node {
 
     /**
      * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
-     * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
+     * This is pretty helpful if you wish to make a camera render to a texture you could reuse somewhere
      * else in the scene. (Eg. security camera)
      *
-     * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corrisponding to an HMD)
+     * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corresponding to an HMD)
      */
     public customRenderTargets = new Array<RenderTargetTexture>();
     /**
@@ -277,6 +319,11 @@ export class Camera extends Node {
      */
     public rigParent?: Camera;
 
+    /**
+     * Render pass id used by the camera to render into the main framebuffer
+     */
+    public renderPassId: number;
+
     /** @hidden */
     public _cameraRigParams: any;
     /** @hidden */
@@ -307,11 +354,12 @@ export class Camera extends Node {
     private _refreshFrustumPlanes = true;
     private _storedFov: number;
     private _stateStored: boolean;
+    private _absoluteRotation: Quaternion = Quaternion.Identity();
 
     /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
-     * @see http://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the position of the camera
      * @param scene Defines the scene the camera belongs too
@@ -327,6 +375,7 @@ export class Camera extends Node {
         }
 
         this.position = position;
+        this.renderPassId = this.getScene().getEngine().createRenderPassId(`Camera ${name}`);
     }
 
     /**
@@ -393,6 +442,15 @@ export class Camera extends Node {
         if (fullDetails) {
         }
         return ret;
+    }
+
+    /**
+     * Automatically tilts the projection plane, using `projectionPlaneTilt`, to correct the perspective effect on vertical lines.
+     */
+    public applyVerticalCorrection() {
+        const rot = this.absoluteRotation.toEulerAngles();
+
+        this.projectionPlaneTilt = this._scene.useRightHandedSystem ? -rot.x : rot.x;
     }
 
     /**
@@ -499,7 +557,8 @@ export class Camera extends Node {
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             check = this._cache.fov === this.fov
                 && this._cache.fovMode === this.fovMode
-                && this._cache.aspectRatio === engine.getAspectRatio(this);
+                && this._cache.aspectRatio === engine.getAspectRatio(this)
+                && this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         }
         else {
             check = this._cache.orthoLeft === this.orthoLeft
@@ -515,17 +574,38 @@ export class Camera extends Node {
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void;
+    /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * BACK COMPAT SIGNATURE ONLY.
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean): void;
+    /**
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(ignored?: any, noPreventDefault?: boolean): void {
     }
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: HTMLElement): void {
+    public detachControl(): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored: any): void;
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
     }
 
     /**
@@ -556,7 +636,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Internal, gets the first post proces.
+     * Internal, gets the first post process.
      * @returns the first post process to be run on this camera.
      */
     public _getFirstPostProcess(): Nullable<PostProcess> {
@@ -598,7 +678,7 @@ export class Camera extends Node {
 
     /**
      * Attach a post process to the camera.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
      * @param postProcess The post process to attach to the camera
      * @param insertAt The position of the post process in case several of them are in use in the scene
      * @returns the position the post process has been inserted at
@@ -617,12 +697,18 @@ export class Camera extends Node {
             this._postProcesses.splice(insertAt, 0, postProcess);
         }
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         return this._postProcesses.indexOf(postProcess);
     }
 
     /**
      * Detach a post process to the camera.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
      * @param postProcess The post process to detach from the camera
      */
     public detachPostProcess(postProcess: PostProcess): void {
@@ -630,6 +716,12 @@ export class Camera extends Node {
         if (idx !== -1) {
             this._postProcesses[idx] = null;
         }
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
     }
 
@@ -729,25 +821,29 @@ export class Camera extends Node {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
             this._cache.aspectRatio = engine.getAspectRatio(this);
+            this._cache.projectionPlaneTilt = this.projectionPlaneTilt;
 
             if (this.minZ <= 0) {
                 this.minZ = 0.1;
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean) => void;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number, reverseDepthBufferMode: boolean) => void;
             if (scene.useRightHandedSystem) {
-                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseRHToRef : Matrix.PerspectiveFovRHToRef;
+                getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
-                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseLHToRef : Matrix.PerspectiveFovLHToRef;
+                getProjectionMatrix = Matrix.PerspectiveFovLHToRef;
             }
 
             getProjectionMatrix(this.fov,
                 engine.getAspectRatio(this),
-                this.minZ,
-                this.maxZ,
+                reverseDepth ? this.maxZ : this.minZ,
+                reverseDepth ? this.minZ : this.maxZ,
                 this._projectionMatrix,
-                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
+                engine.isNDCHalfZRange,
+                this.projectionPlaneTilt,
+                engine.useReverseDepthBuffer);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
@@ -758,7 +854,8 @@ export class Camera extends Node {
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
+                    this._projectionMatrix,
+                    engine.isNDCHalfZRange);
             } else {
                 Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
@@ -766,7 +863,8 @@ export class Camera extends Node {
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
-                    this._projectionMatrix);
+                    this._projectionMatrix,
+                    engine.isNDCHalfZRange);
             }
 
             this._cache.orthoLeft = this.orthoLeft;
@@ -831,7 +929,7 @@ export class Camera extends Node {
 
     /**
      * Checks if a cullable object (mesh...) is in the camera frustum
-     * Unlike isInFrustum this cheks the full bounding box
+     * Unlike isInFrustum this checks the full bounding box
      * @param target The object to check
      * @returns true if the object is in frustum otherwise false
      */
@@ -844,12 +942,24 @@ export class Camera extends Node {
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
-        throw _DevTools.WarnImport("Ray");
+        throw _WarnImport("Ray");
+    }
+
+    /**
+     * Gets a ray in the forward direction from the camera.
+     * @param refRay the ray to (re)use when setting the values
+     * @param length Defines the length of the ray to create
+     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param origin Defines the start point of the ray which defaults to the camera position
+     * @returns the forward ray
+     */
+    public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
+        throw _WarnImport("Ray");
     }
 
     /**
@@ -881,6 +991,14 @@ export class Camera extends Node {
             }
         }
 
+        if (this._parentContainer) {
+            const index = this._parentContainer.cameras.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.cameras.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         // Postprocesses
         if (this._rigPostProcess) {
             this._rigPostProcess.dispose(this);
@@ -909,6 +1027,8 @@ export class Camera extends Node {
 
         // Active Meshes
         this._activeMeshes.dispose();
+
+        this.getScene().getEngine().releaseRenderPassId(this.renderPassId);
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
@@ -1011,51 +1131,19 @@ export class Camera extends Node {
             }
         }
 
-        switch (this.cameraRigMode) {
-            case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-                Camera._setStereoscopicAnaglyphRigMode(this);
-                break;
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-            case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-                    Camera._setStereoscopicRigMode(this);
-                break;
-            case Camera.RIG_MODE_VR:
-                Camera._setVRRigMode(this, rigParams);
-                break;
-            case Camera.RIG_MODE_WEBVR:
-                Camera._setWebVRRigMode(this, rigParams);
-                break;
-        }
+        this._setRigMode(rigParams);
 
         this._cascadePostProcessesToRigCams();
         this.update();
     }
 
-    /** @hidden */
-    public static _setStereoscopicRigMode(camera: Camera) {
-        throw "Import Cameras/RigModes/stereoscopicRigMode before using stereoscopic rig mode";
-    }
-
-    /** @hidden */
-    public static _setStereoscopicAnaglyphRigMode(camera: Camera) {
-        throw "Import Cameras/RigModes/stereoscopicAnaglyphRigMode before using stereoscopic anaglyph rig mode";
-    }
-
-    /** @hidden */
-    public static _setVRRigMode(camera: Camera, rigParams: any) {
-        throw "Import Cameras/RigModes/vrRigMode before using VR rig mode";
-    }
-
-    /** @hidden */
-    public static _setWebVRRigMode(camera: Camera, rigParams: any) {
-        throw "Import Cameras/RigModes/WebVRRigMode before using Web VR rig mode";
+    protected _setRigMode(rigParams: any) {
+        // no-op
     }
 
     /** @hidden */
     public _getVRProjectionMatrix(): Matrix {
-        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix);
+        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix, true, this.getEngine().isNDCHalfZRange);
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
     }
@@ -1129,18 +1217,19 @@ export class Camera extends Node {
     }
 
     /**
-     * Serialiaze the camera setup to a json represention
+     * Serialiaze the camera setup to a json representation
      * @returns the JSON representation
      */
     public serialize(): any {
         var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.uniqueId = this.uniqueId;
 
         // Type
         serializationObject.type = this.getClassName();
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.id;
+            serializationObject.parentId = this.parent.uniqueId;
         }
 
         if (this.inputs) {
@@ -1149,6 +1238,8 @@ export class Camera extends Node {
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
         serializationObject.ranges = this.serializeAnimationRanges();
+
+        serializationObject.isEnabled = this.isEnabled();
 
         return serializationObject;
     }
@@ -1159,7 +1250,12 @@ export class Camera extends Node {
      * @returns the cloned camera
      */
     public clone(name: string): Camera {
-        return SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        const camera = SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        camera.name = name;
+
+        this.onClonedObservable.notifyObservers(camera);
+
+        return camera;
     }
 
     /**
@@ -1179,11 +1275,9 @@ export class Camera extends Node {
      * Returns the current camera absolute rotation
      */
     public get absoluteRotation(): Quaternion {
-        var result = Quaternion.Zero();
+        this.getWorldMatrix().decompose(undefined, this._absoluteRotation);
 
-        this.getWorldMatrix().decompose(undefined, result);
-
-        return result;
+        return this._absoluteRotation;
     }
 
     /**
@@ -1202,7 +1296,7 @@ export class Camera extends Node {
      * @param scene The scene the result will construct the camera in
      * @param interaxial_distance In case of stereoscopic setup, the distance between both eyes
      * @param isStereoscopicSideBySide In case of stereoscopic setup, should the sereo be side b side
-     * @returns a factory method to construc the camera
+     * @returns a factory method to construct the camera
      */
     static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
         let constructorFunc = Node.Construct(type, name, scene, {
@@ -1239,7 +1333,7 @@ export class Camera extends Node {
         var camera = SerializationHelper.Parse(construct, parsedCamera, scene);
 
         // Parent
-        if (parsedCamera.parentId) {
+        if (parsedCamera.parentId !== undefined) {
             camera._waitingParentId = parsedCamera.parentId;
         }
 
@@ -1248,6 +1342,10 @@ export class Camera extends Node {
             camera.inputs.parse(parsedCamera);
 
             camera._setupInputs();
+        }
+
+        if (parsedCamera.upVector) {
+            camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
         }
 
         if ((<any>camera).setPosition) { // need to force position
@@ -1272,7 +1370,7 @@ export class Camera extends Node {
         if (parsedCamera.animations) {
             for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
                 var parsedAnimation = parsedCamera.animations[animationIndex];
-                const internalClass = _TypeStore.GetClass("BABYLON.Animation");
+                const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     camera.animations.push(internalClass.Parse(parsedAnimation));
                 }
@@ -1282,6 +1380,11 @@ export class Camera extends Node {
 
         if (parsedCamera.autoAnimate) {
             scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
+        }
+
+        // Check if isEnabled is defined to be back compatible with prior serialized versions.
+        if (parsedCamera.isEnabled !== undefined) {
+            camera.setEnabled(parsedCamera.isEnabled);
         }
 
         return camera;

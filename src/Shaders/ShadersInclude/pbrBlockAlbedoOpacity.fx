@@ -6,14 +6,18 @@ struct albedoOpacityOutParams
 
 #define pbr_inline
 void albedoOpacityBlock(
-    const in vec4 vAlbedoColor,
+    in vec4 vAlbedoColor,
 #ifdef ALBEDO
-    const in vec4 albedoTexture,
-    const in vec2 albedoInfos,
+    in vec4 albedoTexture,
+    in vec2 albedoInfos,
 #endif
 #ifdef OPACITY
-    const in vec4 opacityMap,
-    const in vec2 vOpacityInfos,
+    in vec4 opacityMap,
+    in vec2 vOpacityInfos,
+#endif
+#ifdef DETAIL
+    in vec4 detailColor,
+    in vec4 vDetailInfos,
 #endif
     out albedoOpacityOutParams outParams
 )
@@ -38,6 +42,11 @@ void albedoOpacityBlock(
 
     #ifdef VERTEXCOLOR
         surfaceAlbedo *= vColor.rgb;
+    #endif
+
+    #ifdef DETAIL
+        float detailAlbedo = 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+        surfaceAlbedo.rgb = surfaceAlbedo.rgb * detailAlbedo * detailAlbedo; // should be pow(detailAlbedo, 2.2) but detailAlbedo² is close enough and cheaper to compute
     #endif
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO

@@ -1,0 +1,8 @@
+{
+    "extends": "../tsconfigRules",
+    "compilerOptions": {
+        "baseUrl": "./src/",
+        "rootDir": "./src/",
+        "paths": {}
+    }
+}

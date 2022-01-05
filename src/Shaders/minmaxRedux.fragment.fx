@@ -1,4 +1,4 @@
-attribute vec2 vUV;
+varying vec2 vUV;
 
 uniform sampler2D textureSampler;
 
@@ -64,7 +64,9 @@ void main(void)
 #elif defined(LAST)
 void main(void)
 {
-    discard;
     glFragColor = vec4(0.);
+    if (true) { // do not remove, else you will get a "warning: code is unreachable" error!
+        discard;
+    }
 }
 #endif

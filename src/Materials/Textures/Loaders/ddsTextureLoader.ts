@@ -4,14 +4,14 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { DDSTools, DDSInfo } from "../../../Misc/dds";
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 /**
  * Implementation of the DDS Texture Loader.
  * @hidden
  */
 export class _DDSTextureLoader implements IInternalTextureLoader {
     /**
-     * Defines wether the loader supports cascade loading the different faces.
+     * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = true;
 
@@ -21,7 +21,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return StringTools.EndsWith(extension, ".dds");
+        return EndsWith(extension, ".dds");
     }
 
     /**
@@ -76,7 +76,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
                 engine.generateMipMapsForCubemap(texture, false);
             }
         }
-        engine._setCubeMapTextureParams(loadMipmap);
+        engine._setCubeMapTextureParams(texture, loadMipmap);
         texture.isReady = true;
         texture.onLoadedObservable.notifyObservers(texture);
         texture.onLoadedObservable.clear();

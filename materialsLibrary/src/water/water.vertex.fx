@@ -16,6 +16,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -61,6 +62,7 @@ uniform float time;
 uniform float windForce;
 uniform float waveHeight;
 uniform float waveSpeed;
+uniform float waveCount;
 
 // Water varyings
 varying vec3 vPosition;
@@ -69,10 +71,16 @@ varying vec3 vReflectionMapTexCoord;
 
 
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
     #include<instancesVertex>
     #include<bonesVertex>
+    #include<bakedVertexAnimation>
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
@@ -125,9 +133,11 @@ void main(void) {
 	gl_PointSize = pointSize;
 #endif
 
+	float finalWaveCount = 1.0 / (waveCount * 0.5);
+
 	vec3 p = position;
-	float newY = (sin(((p.x / 0.05) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
-			   + (cos(((p.z / 0.05) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
+	float newY = (sin(((p.x / finalWaveCount) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
+			   + (cos(((p.z / finalWaveCount) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
 	p.y += abs(newY);
 	
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
@@ -150,4 +160,5 @@ void main(void) {
 
 #include<logDepthVertex>
 
+#define CUSTOM_VERTEX_MAIN_END
 }

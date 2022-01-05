@@ -1,10 +1,10 @@
 import { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
 import { Vector3, Vector2 } from "../Maths/math.vector";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { IGetSetVerticesData, VertexData } from "../Meshes/mesh.vertexData";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -13,8 +13,9 @@ import { BoundingInfo } from "../Culling/boundingInfo";
 import { Constants } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
-import { DataBuffer } from './dataBuffer';
-import { extractMinAndMax } from '../Maths/math.functions';
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { extractMinAndMax } from "../Maths/math.functions";
+import { AbstractScene } from "../abstractScene";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -50,11 +51,13 @@ export class Geometry implements IGetSetVerticesData {
     private _meshes: Mesh[];
     private _totalVertices = 0;
     /** @hidden */
+    public _loadedUniqueId: string;
+    /** @hidden */
     public _indices: IndicesArray;
     /** @hidden */
-    public _vertexBuffers: { [key: string]: VertexBuffer; };
+    public _vertexBuffers: { [key: string]: VertexBuffer };
     private _isDisposed = false;
-    private _extend: { minimum: Vector3, maximum: Vector3 };
+    private _extend: { minimum: Vector3; maximum: Vector3 };
     private _boundingBias: Vector2;
     /** @hidden */
     public _delayInfo: Array<string>;
@@ -66,12 +69,16 @@ export class Geometry implements IGetSetVerticesData {
     public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
     /** @hidden */
     public _softwareSkinningFrameId: number;
-    private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
+    private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject };
     private _updatable: boolean;
 
     // Cache
     /** @hidden */
     public _positions: Nullable<Vector3[]>;
+    private _positionsCache: Vector3[] = [];
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
      *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
@@ -86,8 +93,7 @@ export class Geometry implements IGetSetVerticesData {
     public set boundingBias(value: Vector2) {
         if (this._boundingBias) {
             this._boundingBias.copyFrom(value);
-        }
-        else {
+        } else {
             this._boundingBias = value.clone();
         }
 
@@ -113,6 +119,12 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
+     * If set to true (false by default), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
+     */
+    public useBoundingInfoFromGeometry = false;
+
+    /**
      * Creates a new geometry
      * @param id defines the unique ID
      * @param scene defines the hosting scene
@@ -134,8 +146,7 @@ export class Geometry implements IGetSetVerticesData {
         // vertexData
         if (vertexData) {
             this.setAllVerticesData(vertexData, updatable);
-        }
-        else {
+        } else {
             this._totalVertices = 0;
             this._indices = [];
         }
@@ -154,7 +165,7 @@ export class Geometry implements IGetSetVerticesData {
     /**
      * Gets the current extend of the geometry
      */
-    public get extend(): { minimum: Vector3, maximum: Vector3 } {
+    public get extend(): { minimum: Vector3; maximum: Vector3 } {
         return this._extend;
     }
 
@@ -203,7 +214,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // Index buffer
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
         }
 
         // Vertex buffers
@@ -231,6 +242,10 @@ export class Geometry implements IGetSetVerticesData {
      * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
      */
     public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
+        if (updatable && Array.isArray(data)) {
+            // to avoid converting to Float32Array at each draw call in engine.updateDynamicVertexBuffer, we make the conversion a single time here
+            data = new Float32Array(data);
+        }
         var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
         this.setVerticesBuffer(buffer);
     }
@@ -244,20 +259,31 @@ export class Geometry implements IGetSetVerticesData {
             this._vertexBuffers[kind].dispose();
             delete this._vertexBuffers[kind];
         }
+
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
+        }
     }
 
     /**
      * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
      * @param buffer defines the vertex buffer to use
      * @param totalVertices defines the total number of vertices for position kind (could be null)
+     * @param disposeExistingBuffer disposes the existing buffer, if any (default: true)
      */
-    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null): void {
+    public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null, disposeExistingBuffer = true): void {
         var kind = buffer.getKind();
-        if (this._vertexBuffers[kind]) {
+        if (this._vertexBuffers[kind] && disposeExistingBuffer) {
             this._vertexBuffers[kind].dispose();
         }
 
+        if (buffer._buffer) {
+            buffer._buffer._increaseReferences();
+        }
+
         this._vertexBuffers[kind] = buffer;
+        var meshes = this._meshes;
+        var numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
             var data = <FloatArray>buffer.getData();
@@ -265,30 +291,23 @@ export class Geometry implements IGetSetVerticesData {
                 this._totalVertices = totalVertices;
             } else {
                 if (data != null) {
-                    this._totalVertices = data.length / (buffer.byteStride / 4);
+                    this._totalVertices = data.length / (buffer.type === VertexBuffer.BYTE ? buffer.byteStride : buffer.byteStride / 4);
                 }
             }
 
             this._updateExtend(data);
             this._resetPointsArrayCache();
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
+                mesh.synchronizeInstances();
             }
         }
 
         this.notifyUpdate(kind);
-
-        if (this._vertexArrayObjects) {
-            this._disposeVertexArrayObjects();
-            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
-        }
     }
 
     /**
@@ -343,11 +362,10 @@ export class Geometry implements IGetSetVerticesData {
         if (updateExtends) {
             var meshes = this._meshes;
             for (const mesh of meshes) {
-                if (mesh._boundingInfo) {
-                    mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum);
-                }
-                else {
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                if (mesh.hasBoundingInfo) {
+                    mesh.getBoundingInfo().reConstruct(this._extend.minimum, this._extend.maximum);
+                } else {
+                    mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
                 }
 
                 const subMeshes = mesh.subMeshes;
@@ -359,7 +377,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void {
+    public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>, overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }, overrideVertexArrayObjects?: { [key: string]: WebGLVertexArrayObject }): void {
         if (!effect) {
             return;
         }
@@ -373,17 +391,19 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
-            this._engine.bindBuffers(vbs, indexToBind, effect);
+        if (indexToBind != this._indexBuffer || (!this._vertexArrayObjects && !overrideVertexArrayObjects)) {
+            this._engine.bindBuffers(vbs, indexToBind, effect, overrideVertexBuffers);
             return;
         }
 
+        var vaos = overrideVertexArrayObjects ? overrideVertexArrayObjects : this._vertexArrayObjects;
+
         // Using VAO
-        if (!this._vertexArrayObjects[effect.key]) {
-            this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect);
+        if (!vaos[effect.key]) {
+            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, overrideVertexBuffers);
         }
 
-        this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
+        this._engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
     }
 
     /**
@@ -411,47 +431,7 @@ export class Geometry implements IGetSetVerticesData {
             return null;
         }
 
-        let data = vertexBuffer.getData();
-        if (!data) {
-            return null;
-        }
-
-        const tightlyPackedByteStride = vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
-        const count = this._totalVertices * vertexBuffer.getSize();
-
-        if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== tightlyPackedByteStride) {
-            const copy: number[] = [];
-            vertexBuffer.forEach(count, (value) => copy.push(value));
-            return copy;
-        }
-
-        if (!((data instanceof Array) || (data instanceof Float32Array)) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
-            if (data instanceof Array) {
-                const offset = vertexBuffer.byteOffset / 4;
-                return Tools.Slice(data, offset, offset + count);
-            }
-            else if (data instanceof ArrayBuffer) {
-                return new Float32Array(data, vertexBuffer.byteOffset, count);
-            }
-            else {
-                const offset = data.byteOffset + vertexBuffer.byteOffset;
-                if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-                    let result = new Float32Array(count);
-                    let source = new Float32Array(data.buffer, offset, count);
-
-                    result.set(source);
-
-                    return result;
-                }
-                return new Float32Array(data.buffer, offset, count);
-            }
-        }
-
-        if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
-            return Tools.Slice(data);
-        }
-
-        return data;
+        return vertexBuffer.getFloatData(this._totalVertices, forceCopy || (copyWhenShared && this._meshes.length !== 1));
     }
 
     /**
@@ -485,7 +465,7 @@ export class Geometry implements IGetSetVerticesData {
      * Returns all vertex buffers
      * @return an object holding all vertex buffers indexed by kind
      */
-    public getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer; }> {
+    public getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer }> {
         if (!this.isReady()) {
             return null;
         }
@@ -566,20 +546,20 @@ export class Geometry implements IGetSetVerticesData {
             this._engine._releaseBuffer(this._indexBuffer);
         }
 
-        this._disposeVertexArrayObjects();
-
         this._indices = indices;
         this._indexBufferIsUpdatable = updatable;
         if (this._meshes.length !== 0 && this._indices) {
             this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
         }
 
-        if (totalVertices != undefined) { // including null and undefined
+        if (totalVertices != undefined) {
+            // including null and undefined
             this._totalVertices = totalVertices;
         }
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
+            mesh.synchronizeInstances();
         }
 
         this.notifyUpdate();
@@ -610,12 +590,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            var len = orig.length;
-            var copy = [];
-            for (var i = 0; i < len; i++) {
-                copy.push(orig[i]);
-            }
-            return copy;
+            return Tools.Slice(orig);
         }
     }
 
@@ -657,6 +632,10 @@ export class Geometry implements IGetSetVerticesData {
 
         meshes.splice(index, 1);
 
+        if (this._vertexArrayObjects) {
+            mesh._invalidateInstanceVertexArrayObject();
+        }
+
         mesh._geometry = null;
 
         if (meshes.length === 0 && shouldDispose) {
@@ -678,10 +657,15 @@ export class Geometry implements IGetSetVerticesData {
             previousGeometry.releaseForMesh(mesh);
         }
 
+        if (this._vertexArrayObjects) {
+            mesh._invalidateInstanceVertexArrayObject();
+        }
+
         var meshes = this._meshes;
 
         // must be done before setting vertexBuffers because of mesh._createGlobalSubMesh()
         mesh._geometry = this;
+        mesh._internalAbstractMeshDataInfo._positions = null;
 
         this._scene.pushGeometry(this);
 
@@ -689,18 +673,24 @@ export class Geometry implements IGetSetVerticesData {
 
         if (this.isReady()) {
             this._applyToMesh(mesh);
-        }
-        else {
-            mesh._boundingInfo = this._boundingInfo;
+        } else if (this._boundingInfo) {
+            mesh.setBoundingInfo(this._boundingInfo);
         }
     }
 
     private _updateExtend(data: Nullable<FloatArray> = null) {
-        if (!data) {
-            data = this.getVerticesData(VertexBuffer.PositionKind)!;
-        }
+        if (this.useBoundingInfoFromGeometry && this._boundingInfo) {
+            this._extend = {
+                minimum: this._boundingInfo.minimum.clone(),
+                maximum: this._boundingInfo.maximum.clone(),
+            };
+        } else {
+            if (!data) {
+                data = this.getVerticesData(VertexBuffer.PositionKind)!;
+            }
 
-        this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+            this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+        }
     }
 
     private _applyToMesh(mesh: Mesh): void {
@@ -711,16 +701,12 @@ export class Geometry implements IGetSetVerticesData {
             if (numOfMeshes === 1) {
                 this._vertexBuffers[kind].create();
             }
-            var buffer = this._vertexBuffers[kind].getBuffer();
-            if (buffer) {
-                buffer.references = numOfMeshes;
-            }
 
             if (kind === VertexBuffer.PositionKind) {
                 if (!this._extend) {
                     this._updateExtend();
                 }
-                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
                 mesh._createGlobalSubMesh(false);
 
@@ -731,10 +717,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices);
-        }
-        if (this._indexBuffer) {
-            this._indexBuffer.references = numOfMeshes;
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
         }
 
         // morphTargets
@@ -747,6 +730,10 @@ export class Geometry implements IGetSetVerticesData {
     private notifyUpdate(kind?: string) {
         if (this.onGeometryUpdated) {
             this.onGeometryUpdated(this, kind);
+        }
+
+        if (this._vertexArrayObjects) {
+            this._disposeVertexArrayObjects();
         }
 
         for (var mesh of this._meshes) {
@@ -782,35 +769,39 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         scene._addPendingData(this);
-        scene._loadFile(this.delayLoadingFile, (data) => {
-            if (!this._delayLoadingFunction) {
-                return;
-            }
+        scene._loadFile(
+            this.delayLoadingFile,
+            (data) => {
+                if (!this._delayLoadingFunction) {
+                    return;
+                }
 
-            this._delayLoadingFunction(JSON.parse(data as string), this);
+                this._delayLoadingFunction(JSON.parse(data as string), this);
 
-            this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-            this._delayInfo = [];
+                this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+                this._delayInfo = [];
 
-            scene._removePendingData(this);
+                scene._removePendingData(this);
 
-            var meshes = this._meshes;
-            var numOfMeshes = meshes.length;
-            for (var index = 0; index < numOfMeshes; index++) {
-                this._applyToMesh(meshes[index]);
-            }
+                var meshes = this._meshes;
+                var numOfMeshes = meshes.length;
+                for (var index = 0; index < numOfMeshes; index++) {
+                    this._applyToMesh(meshes[index]);
+                }
 
-            if (onLoaded) {
-                onLoaded();
-            }
-        }, undefined, true);
+                if (onLoaded) {
+                    onLoaded();
+                }
+            },
+            undefined,
+            true
+        );
     }
 
     /**
      * Invert the geometry to move from a right handed system to a left handed one.
      */
     public toLeftHanded(): void {
-
         // Flip faces
         let tIndices = this.getIndices(false);
         if (tIndices != null && tIndices.length > 0) {
@@ -859,11 +850,18 @@ export class Geometry implements IGetSetVerticesData {
             return false;
         }
 
-        this._positions = [];
-
-        for (var index = 0; index < data.length; index += 3) {
-            this._positions.push(Vector3.FromArray(data, index));
+        for (let index = this._positionsCache.length * 3, arrayIdx = this._positionsCache.length; index < data.length; index += 3, ++arrayIdx) {
+            this._positionsCache[arrayIdx] = Vector3.FromArray(data, index);
         }
+
+        for (let index = 0, arrayIdx = 0; index < data.length; index += 3, ++arrayIdx) {
+            this._positionsCache[arrayIdx].set(data[0 + index], data[1 + index], data[2 + index]);
+        }
+
+        // just in case the number of positions was reduced, splice the array
+        this._positionsCache.length = data.length / 3;
+
+        this._positions = this._positionsCache;
 
         return true;
     }
@@ -881,7 +879,13 @@ export class Geometry implements IGetSetVerticesData {
             for (var kind in this._vertexArrayObjects) {
                 this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
-            this._vertexArrayObjects = {};
+            this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
+
+            var meshes = this._meshes;
+            var numOfMeshes = meshes.length;
+            for (var index = 0; index < numOfMeshes; index++) {
+                meshes[index]._invalidateInstanceVertexArrayObject();
+            }
         }
     }
 
@@ -919,6 +923,14 @@ export class Geometry implements IGetSetVerticesData {
         this._boundingInfo = null;
 
         this._scene.removeGeometry(this);
+        if (this._parentContainer) {
+            const index = this._parentContainer.geometries.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.geometries.splice(index, 1);
+            }
+            this._parentContainer = null;
+        }
+
         this._isDisposed = true;
     }
 
@@ -988,6 +1000,7 @@ export class Geometry implements IGetSetVerticesData {
         var serializationObject: any = {};
 
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
         serializationObject.updatable = this._updatable;
 
         if (Tags && Tags.HasTags(this)) {
@@ -1006,7 +1019,25 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Serialize all vertices data into a JSON oject
+     * Release any memory retained by the cached data on the Geometry.
+     *
+     * Call this function to reduce memory footprint of the mesh.
+     * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
+     */
+    public clearCachedData(): void {
+        this._indices = [];
+        this._resetPointsArrayCache();
+
+        for (const vbName in this._vertexBuffers) {
+            if (!this._vertexBuffers.hasOwnProperty(vbName)) {
+                continue;
+            }
+            this._vertexBuffers[vbName]._buffer._data = null;
+        }
+    }
+
+    /**
+     * Serialize all vertices data into a JSON object
      * @returns a JSON representation of the current geometry data
      */
     public serializeVerticeData(): any {
@@ -1027,9 +1058,9 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-            serializationObject.tangets = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
+            serializationObject.tangents = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
-                serializationObject.tangets._updatable = true;
+                serializationObject.tangents._updatable = true;
             }
         }
 
@@ -1131,19 +1162,29 @@ export class Geometry implements IGetSetVerticesData {
         return Tools.RandomId();
     }
 
+    private static _GetGeometryByLoadedUniqueId(uniqueId: string, scene: Scene) {
+        for (var index = 0; index < scene.geometries.length; index++) {
+            if (scene.geometries[index]._loadedUniqueId === uniqueId) {
+                return scene.geometries[index];
+            }
+        }
+
+        return null;
+    }
+
     /** @hidden */
     public static _ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
         var scene = mesh.getScene();
 
         // Geometry
+        var geometryUniqueId = parsedGeometry.geometryUniqueId;
         var geometryId = parsedGeometry.geometryId;
-        if (geometryId) {
-            var geometry = scene.getGeometryByID(geometryId);
+        if (geometryUniqueId || geometryId) {
+            var geometry = geometryUniqueId ? this._GetGeometryByLoadedUniqueId(geometryUniqueId, scene) : scene.getGeometryById(geometryId);
             if (geometry) {
                 geometry.applyToMesh(mesh);
             }
         } else if (parsedGeometry instanceof ArrayBuffer) {
-
             var binaryInfo = mesh._binaryInfo;
 
             if (binaryInfo.positionsAttrDesc && binaryInfo.positionsAttrDesc.count > 0) {
@@ -1201,12 +1242,25 @@ export class Geometry implements IGetSetVerticesData {
                 var floatIndices = [];
                 for (var i = 0; i < matricesIndicesData.length; i++) {
                     var index = matricesIndicesData[i];
-                    floatIndices.push(index & 0x000000FF);
-                    floatIndices.push((index & 0x0000FF00) >> 8);
-                    floatIndices.push((index & 0x00FF0000) >> 16);
-                    floatIndices.push(index >> 24);
+                    floatIndices.push(index & 0x000000ff);
+                    floatIndices.push((index & 0x0000ff00) >> 8);
+                    floatIndices.push((index & 0x00ff0000) >> 16);
+                    floatIndices.push((index >> 24) & 0xff); // & 0xFF to convert to v + 256 if v < 0
                 }
                 mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, false);
+            }
+
+            if (binaryInfo.matricesIndicesExtraAttrDesc && binaryInfo.matricesIndicesExtraAttrDesc.count > 0) {
+                var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesExtraAttrDesc.offset, binaryInfo.matricesIndicesExtraAttrDesc.count);
+                var floatIndices = [];
+                for (var i = 0; i < matricesIndicesData.length; i++) {
+                    var index = matricesIndicesData[i];
+                    floatIndices.push(index & 0x000000ff);
+                    floatIndices.push((index & 0x0000ff00) >> 8);
+                    floatIndices.push((index & 0x00ff0000) >> 16);
+                    floatIndices.push((index >> 24) & 0xff); // & 0xFF to convert to v + 256 if v < 0
+                }
+                mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
             }
 
             if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
@@ -1224,11 +1278,11 @@ export class Geometry implements IGetSetVerticesData {
 
                 mesh.subMeshes = [];
                 for (var i = 0; i < binaryInfo.subMeshesAttrDesc.count; i++) {
-                    var materialIndex = subMeshesData[(i * 5) + 0];
-                    var verticesStart = subMeshesData[(i * 5) + 1];
-                    var verticesCount = subMeshesData[(i * 5) + 2];
-                    var indexStart = subMeshesData[(i * 5) + 3];
-                    var indexCount = subMeshesData[(i * 5) + 4];
+                    var materialIndex = subMeshesData[i * 5 + 0];
+                    var verticesStart = subMeshesData[i * 5 + 1];
+                    var verticesCount = subMeshesData[i * 5 + 2];
+                    var indexStart = subMeshesData[i * 5 + 3];
+                    var indexCount = subMeshesData[i * 5 + 4];
 
                     SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, <AbstractMesh>mesh);
                 }
@@ -1277,10 +1331,10 @@ export class Geometry implements IGetSetVerticesData {
                     for (var i = 0; i < parsedGeometry.matricesIndices.length; i++) {
                         var matricesIndex = parsedGeometry.matricesIndices[i];
 
-                        floatIndices.push(matricesIndex & 0x000000FF);
-                        floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
-                        floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                        floatIndices.push(matricesIndex & 0x000000ff);
+                        floatIndices.push((matricesIndex & 0x0000ff00) >> 8);
+                        floatIndices.push((matricesIndex & 0x00ff0000) >> 16);
+                        floatIndices.push((matricesIndex >> 24) & 0xff); // & 0xFF to convert to v + 256 if v < 0
                     }
 
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, parsedGeometry.matricesIndices._updatable);
@@ -1297,10 +1351,10 @@ export class Geometry implements IGetSetVerticesData {
                     for (var i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
                         var matricesIndex = parsedGeometry.matricesIndicesExtra[i];
 
-                        floatIndices.push(matricesIndex & 0x000000FF);
-                        floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
-                        floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                        floatIndices.push(matricesIndex & 0x000000ff);
+                        floatIndices.push((matricesIndex & 0x0000ff00) >> 8);
+                        floatIndices.push((matricesIndex & 0x00ff0000) >> 16);
+                        floatIndices.push((matricesIndex >> 24) & 0xff); // & 0xFF to convert to v + 256 if v < 0
                     }
 
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
@@ -1335,7 +1389,7 @@ export class Geometry implements IGetSetVerticesData {
         // Flat shading
         if (mesh._shouldGenerateFlatShading) {
             mesh.convertToFlatShadedMesh();
-            delete mesh._shouldGenerateFlatShading;
+            mesh._shouldGenerateFlatShading = false;
         }
 
         // Update
@@ -1351,7 +1405,7 @@ export class Geometry implements IGetSetVerticesData {
         }
         let noInfluenceBoneIndex = 0.0;
         if (parsedGeometry.skeletonId > -1) {
-            let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+            let skeleton = mesh.getScene().getLastSkeletonById(parsedGeometry.skeletonId);
 
             if (!skeleton) {
                 return;
@@ -1360,8 +1414,8 @@ export class Geometry implements IGetSetVerticesData {
         } else {
             return;
         }
-        let matricesIndices = (<FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesKind));
-        let matricesIndicesExtra = (<FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
+        let matricesIndices = <FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+        let matricesIndicesExtra = <FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
         let matricesWeights = parsedGeometry.matricesWeights;
         let matricesWeightsExtra = parsedGeometry.matricesWeightsExtra;
         let influencers = parsedGeometry.numBoneInfluencer;
@@ -1386,7 +1440,7 @@ export class Geometry implements IGetSetVerticesData {
                     }
                 }
             }
-            if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
+            if (firstZeroWeight < 0 || firstZeroWeight > influencers - 1) {
                 firstZeroWeight = influencers - 1;
             }
             if (weight > epsilon) {
@@ -1424,11 +1478,8 @@ export class Geometry implements IGetSetVerticesData {
      * @returns the new geometry object
      */
     public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
-        if (scene.getGeometryByID(parsedVertexData.id)) {
-            return null; // null since geometry could be something else than a box...
-        }
-
         var geometry = new Geometry(parsedVertexData.id, scene, undefined, parsedVertexData.updatable);
+        geometry._loadedUniqueId = parsedVertexData.uniqueId;
 
         if (Tags) {
             Tags.AddTagsTo(geometry, parsedVertexData.tags);

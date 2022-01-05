@@ -1,8 +1,11 @@
 import { Constants } from "../Engines/constants";
+import { IStencilState } from "./IStencilState";
+
 /**
  * @hidden
  **/
-export class StencilState {
+export class StencilState implements IStencilState {
+
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
     public static readonly ALWAYS = Constants.ALWAYS;
     /** Passed to stencilOperation to specify that stencil value must be kept */
@@ -10,184 +13,92 @@ export class StencilState {
     /** Passed to stencilOperation to specify that stencil value must be replaced */
     public static readonly REPLACE = Constants.REPLACE;
 
-    private _isStencilTestDirty = false;
-    private _isStencilMaskDirty = false;
-    private _isStencilFuncDirty = false;
-    private _isStencilOpDirty = false;
-
-    private _stencilTest: boolean;
-
-    private _stencilMask: number;
-
-    private _stencilFunc: number;
-    private _stencilFuncRef: number;
-    private _stencilFuncMask: number;
-
-    private _stencilOpStencilFail: number;
-    private _stencilOpDepthFail: number;
-    private _stencilOpStencilDepthPass: number;
-
-    public get isDirty(): boolean {
-        return this._isStencilTestDirty || this._isStencilMaskDirty || this._isStencilFuncDirty || this._isStencilOpDirty;
-    }
-
-    public get stencilFunc(): number {
-        return this._stencilFunc;
-    }
-
-    public set stencilFunc(value: number) {
-        if (this._stencilFunc === value) {
-            return;
-        }
-
-        this._stencilFunc = value;
-        this._isStencilFuncDirty = true;
-    }
-
-    public get stencilFuncRef(): number {
-        return this._stencilFuncRef;
-    }
-
-    public set stencilFuncRef(value: number) {
-        if (this._stencilFuncRef === value) {
-            return;
-        }
-
-        this._stencilFuncRef = value;
-        this._isStencilFuncDirty = true;
-    }
-
-    public get stencilFuncMask(): number {
-        return this._stencilFuncMask;
-    }
-
-    public set stencilFuncMask(value: number) {
-        if (this._stencilFuncMask === value) {
-            return;
-        }
-
-        this._stencilFuncMask = value;
-        this._isStencilFuncDirty = true;
-    }
-
-    public get stencilOpStencilFail(): number {
-        return this._stencilOpStencilFail;
-    }
-
-    public set stencilOpStencilFail(value: number) {
-        if (this._stencilOpStencilFail === value) {
-            return;
-        }
-
-        this._stencilOpStencilFail = value;
-        this._isStencilOpDirty = true;
-    }
-
-    public get stencilOpDepthFail(): number {
-        return this._stencilOpDepthFail;
-    }
-
-    public set stencilOpDepthFail(value: number) {
-        if (this._stencilOpDepthFail === value) {
-            return;
-        }
-
-        this._stencilOpDepthFail = value;
-        this._isStencilOpDirty = true;
-    }
-
-    public get stencilOpStencilDepthPass(): number {
-        return this._stencilOpStencilDepthPass;
-    }
-
-    public set stencilOpStencilDepthPass(value: number) {
-        if (this._stencilOpStencilDepthPass === value) {
-            return;
-        }
-
-        this._stencilOpStencilDepthPass = value;
-        this._isStencilOpDirty = true;
-    }
-
-    public get stencilMask(): number {
-        return this._stencilMask;
-    }
-
-    public set stencilMask(value: number) {
-        if (this._stencilMask === value) {
-            return;
-        }
-
-        this._stencilMask = value;
-        this._isStencilMaskDirty = true;
-    }
-
-    public get stencilTest(): boolean {
-        return this._stencilTest;
-    }
-
-    public set stencilTest(value: boolean) {
-        if (this._stencilTest === value) {
-            return;
-        }
-
-        this._stencilTest = value;
-        this._isStencilTestDirty = true;
-    }
-
     public constructor() {
         this.reset();
     }
 
     public reset() {
-        this._stencilTest = false;
-        this._stencilMask = 0xFF;
+        this.enabled = false;
+        this.mask = 0xFF;
 
-        this._stencilFunc = StencilState.ALWAYS;
-        this._stencilFuncRef = 1;
-        this._stencilFuncMask = 0xFF;
+        this.func = StencilState.ALWAYS;
+        this.funcRef = 1;
+        this.funcMask = 0xFF;
 
-        this._stencilOpStencilFail = StencilState.KEEP;
-        this._stencilOpDepthFail = StencilState.KEEP;
-        this._stencilOpStencilDepthPass = StencilState.REPLACE;
-
-        this._isStencilTestDirty = true;
-        this._isStencilMaskDirty = true;
-        this._isStencilFuncDirty = true;
-        this._isStencilOpDirty = true;
+        this.opStencilFail = StencilState.KEEP;
+        this.opDepthFail = StencilState.KEEP;
+        this.opStencilDepthPass = StencilState.REPLACE;
     }
 
-    public apply(gl: WebGLRenderingContext) {
-        if (!this.isDirty) {
-            return;
-        }
+    public func: number;
+    public get stencilFunc(): number {
+        return this.func;
+    }
 
-        // Stencil test
-        if (this._isStencilTestDirty) {
-            if (this.stencilTest) {
-                gl.enable(gl.STENCIL_TEST);
-            } else {
-                gl.disable(gl.STENCIL_TEST);
-            }
-            this._isStencilTestDirty = false;
-        }
+    public set stencilFunc(value: number) {
+        this.func = value;
+    }
 
-        // Stencil mask
-        if (this._isStencilMaskDirty) {
-            gl.stencilMask(this.stencilMask);
-            this._isStencilMaskDirty = false;
-        }
+    public funcRef: number;
+    public get stencilFuncRef(): number {
+        return this.funcRef;
+    }
 
-        // Stencil func
-        if (this._isStencilFuncDirty) {
-            gl.stencilFunc(this.stencilFunc, this.stencilFuncRef, this.stencilFuncMask);
-            this._isStencilFuncDirty = false;
-        }
+    public set stencilFuncRef(value: number) {
+        this.funcRef = value;
+    }
 
-        // Stencil op
-        if (this._isStencilOpDirty) {
-            gl.stencilOp(this.stencilOpStencilFail, this.stencilOpDepthFail, this.stencilOpStencilDepthPass);
-            this._isStencilOpDirty = false;
-        }
+    public funcMask: number;
+    public get stencilFuncMask(): number {
+        return this.funcMask;
+    }
+
+    public set stencilFuncMask(value: number) {
+        this.funcMask = value;
+    }
+
+    public opStencilFail: number;
+    public get stencilOpStencilFail(): number {
+        return this.opStencilFail;
+    }
+
+    public set stencilOpStencilFail(value: number) {
+        this.opStencilFail = value;
+    }
+
+    public opDepthFail: number;
+    public get stencilOpDepthFail(): number {
+        return this.opDepthFail;
+    }
+
+    public set stencilOpDepthFail(value: number) {
+        this.opDepthFail = value;
+    }
+
+    public opStencilDepthPass: number;
+    public get stencilOpStencilDepthPass(): number {
+        return this.opStencilDepthPass;
+    }
+
+    public set stencilOpStencilDepthPass(value: number) {
+        this.opStencilDepthPass = value;
+    }
+
+    public mask: number;
+    public get stencilMask(): number {
+        return this.mask;
+    }
+
+    public set stencilMask(value: number) {
+        this.mask = value;
+    }
+
+    public enabled: boolean;
+    public get stencilTest(): boolean {
+        return this.enabled;
+    }
+
+    public set stencilTest(value: boolean) {
+        this.enabled = value;
     }
 }

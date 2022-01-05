@@ -8,7 +8,7 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 
 /**
  * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
- * @see http://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+ * @see https://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
  */
 export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     /**
@@ -99,7 +99,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
      * Initializes the behavior.
      */
     public init(): void {
-        // Do notihng
+        // Do nothing
     }
 
     /**
@@ -158,6 +158,14 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
 
         this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
         this._attachedCamera = null;
+    }
+
+    /**
+     * Force-reset the last interaction time
+     * @param customTime an optional time that will be used instead of the current last interaction time. For example `Date.now()`
+     */
+    public resetLastInteractionTime(customTime?: number): void {
+        this._lastInteractionTime = customTime ?? PrecisionDate.Now;
     }
 
     /**

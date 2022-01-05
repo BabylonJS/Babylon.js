@@ -1,5 +1,5 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
-import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
+import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
@@ -7,7 +7,7 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 
 /**
  * The Physically based material of BJS.
@@ -62,7 +62,7 @@ export class PBRMaterial extends PBRBaseMaterial {
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
-     * either through harmonics for rough material or through the refelction for shiny ones.
+     * either through harmonics for rough material or through the reflection for shiny ones.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -191,17 +191,36 @@ export class PBRMaterial extends PBRBaseMaterial {
     public metallicReflectanceColor = Color3.White();
 
     /**
-     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-     * This is multiply against the scalar values defined in the material.
+     * Specifies that only the A channel from metallicReflectanceTexture should be used.
+     * If false, both RGB and A channels will be used
      */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useOnlyMetallicFromMetallicReflectanceTexture = false;
+
+    /**
+    * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+    * This is multiplied against the scalar values defined in the material.
+    * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+    */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public metallicReflectanceTexture: Nullable<BaseTexture>;
 
     /**
-     * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-     * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+     * Defines to store reflectanceColor in RGB
+     * This is multiplied against the scalar values defined in the material.
+     * If both reflectanceTexture and metallicReflectanceTexture textures are provided and useOnlyMetallicFromMetallicReflectanceTexture
+     * is false, metallicReflectanceTexture takes priority and reflectanceTexture is not used
      */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public reflectanceTexture: Nullable<BaseTexture>;
+
+    /**
+    * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+    * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+    */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public microSurfaceTexture: BaseTexture;
@@ -304,7 +323,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+     * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
     public get linkRefractionWithTransparency(): boolean {
@@ -346,8 +365,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     public alphaCutOff = 0.4;
 
     /**
-     * Specifies that the material will keep the specular highlights over a transparent surface (only the most limunous ones).
-     * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+     * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -404,8 +423,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     public useAutoMicroSurfaceFromReflectivityMap = false;
 
     /**
-     * BJS is using an harcoded light falloff based on a manually sets up range.
-     * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+     * BJS is using an hardcoded light falloff based on a manually sets up range.
+     * In PBR, one way to represents the falloff is to use the inverse squared root algorithm.
      * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
      */
     @serialize()
@@ -414,8 +433,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * BJS is using an harcoded light falloff based on a manually sets up range.
-     * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+     * BJS is using an hardcoded light falloff based on a manually sets up range.
+     * In PBR, one way to represents the falloff is to use the inverse squared root algorithm.
      * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
      */
     public set usePhysicalLightFalloff(value: boolean) {
@@ -460,8 +479,8 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
-     * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -561,7 +580,6 @@ export class PBRMaterial extends PBRBaseMaterial {
      * * LEGACY Default None correlated https://assets.babylonjs.com/environments/uncorrelatedBRDF_RGBD.png
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
-    @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public environmentBRDFTexture: Nullable<BaseTexture> = null;
 
@@ -624,39 +642,39 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Gets wether the color curves effect is enabled.
+     * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
         return this.imageProcessingConfiguration.colorCurvesEnabled;
     }
     /**
-     * Sets wether the color curves effect is enabled.
+     * Sets whether the color curves effect is enabled.
      */
     public set cameraColorCurvesEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorCurvesEnabled = value;
     }
 
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public get cameraColorGradingEnabled(): boolean {
         return this.imageProcessingConfiguration.colorGradingEnabled;
     }
     /**
-     * Gets wether the color grading effect is enabled.
+     * Gets whether the color grading effect is enabled.
      */
     public set cameraColorGradingEnabled(value: boolean) {
         this.imageProcessingConfiguration.colorGradingEnabled = value;
     }
 
     /**
-     * Gets wether tonemapping is enabled or not.
+     * Gets whether tonemapping is enabled or not.
      */
     public get cameraToneMappingEnabled(): boolean {
         return this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
-     * Sets wether tonemapping is enabled or not
+     * Sets whether tonemapping is enabled or not
      */
     public set cameraToneMappingEnabled(value: boolean) {
         this._imageProcessingConfiguration.toneMappingEnabled = value;
@@ -707,7 +725,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -716,7 +734,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         return this._imageProcessingConfiguration.colorCurves;
     }
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -734,7 +752,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene);
 
-        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
     }
 
     /**
@@ -754,6 +772,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         clone.id = name;
         clone.name = name;
 
+        this.stencil.copyTo(clone.stencil);
         this.clearCoat.copyTo(clone.clearCoat);
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
@@ -771,6 +790,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         var serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRMaterial";
 
+        serializationObject.stencil = this.stencil.serialize();
         serializationObject.clearCoat = this.clearCoat.serialize();
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();
@@ -790,6 +810,9 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
         const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
+        if (source.stencil) {
+            material.stencil.parse(source.stencil, scene, rootUrl);
+        }
         if (source.clearCoat) {
             material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }
@@ -809,4 +832,4 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRMaterial"] = PBRMaterial;
+RegisterClass("BABYLON.PBRMaterial", PBRMaterial);

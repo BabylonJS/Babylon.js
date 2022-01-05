@@ -22,7 +22,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     private _ownerNode: Nullable<Mesh> = null;
 
     /**
-     * Instatiates the FadeInOutBehavior
+     * Instantiates the FadeInOutBehavior
      */
     constructor() {
     }

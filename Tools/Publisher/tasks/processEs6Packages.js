@@ -17,6 +17,11 @@ const modules = config.modules.concat(config.viewerModules);
  */
 function processEs6Packages(version) {
     config.es6modules.forEach(moduleName => {
+        if (moduleName === "sandbox") {
+            // Do not publish apps
+            return;
+        }
+
         let module = config[moduleName];
         let es6Config = module.build.es6;
 
@@ -64,6 +69,9 @@ function processEs6Packages(version) {
         umdPackageJson.module = es6Config.index || "index.js";
         umdPackageJson.esnext = es6Config.index || "index.js";
         umdPackageJson.typings = es6Config.typings || "index.d.ts";
+        if (es6Config.type) {
+            umdPackageJson.type = es6Config.type;
+        }
 
         if (es6Config.packagesFiles) {
             umdPackageJson.files = es6Config.packagesFiles;

@@ -6,20 +6,21 @@ import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Light } from "../Lights/light";
+import { Constants } from "../Engines/constants";
+import { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { ThinMaterialHelper } from './thinMaterialHelper';
 
 /**
- * "Static Class" containing the most commonly used helper while dealing with material for
- * rendering purpose.
+ * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
  *
  * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
  *
@@ -28,27 +29,17 @@ import { EffectFallbacks } from './effectFallbacks';
 export class MaterialHelper {
 
     /**
-     * Bind the current view position to an effect.
-     * @param effect The effect to be bound
-     * @param scene The scene the eyes position is used from
-     * @param variableName name of the shader variable that will hold the eye position
+     * Binds the scene's uniform buffer to the effect.
+     * @param effect defines the effect to bind to the scene uniform buffer
+     * @param sceneUbo defines the uniform buffer storing scene data
      */
-    public static BindEyePosition(effect: Effect, scene: Scene, variableName = "vEyePosition"): void {
-        if (scene._forcedViewPosition) {
-            effect.setVector3(variableName, scene._forcedViewPosition);
-            return;
-        }
-        var globalPosition = scene.activeCamera!.globalPosition;
-        if (!globalPosition) {
-            // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
-            globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
-        }
-        effect.setVector3(variableName, scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
+    public static BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
+        sceneUbo.bindToEffect(effect, "Scene");
     }
 
     /**
      * Helps preparing the defines values about the UVs in used in the effect.
-     * UVs are shared as much as we can accross channels in the shaders.
+     * UVs are shared as much as we can across channels in the shaders.
      * @param texture The texture we are preparing the UVs for
      * @param defines The defines to update
      * @param key The channel key "diffuse", "specular"... used in the shader
@@ -58,20 +49,16 @@ export class MaterialHelper {
         defines[key] = true;
         if (texture.getTextureMatrix().isIdentityAs3x2()) {
             defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
-            if (texture.coordinatesIndex === 0) {
-                defines["MAINUV1"] = true;
-            } else {
-                defines["MAINUV2"] = true;
-            }
+            defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
         } else {
             defines[key + "DIRECTUV"] = 0;
         }
     }
 
     /**
-     * Binds a texture matrix value to its corrsponding uniform
+     * Binds a texture matrix value to its corresponding uniform
      * @param texture The texture to bind the matrix for
-     * @param uniformBuffer The uniform buffer receivin the data
+     * @param uniformBuffer The uniform buffer receiving the data
      * @param key The channel key "diffuse", "specular"... used in the shader
      */
     public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
@@ -202,6 +189,12 @@ export class MaterialHelper {
             } else {
                 defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
                 defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+
+                const prePassRenderer = mesh.getScene().prePassRenderer;
+                if (prePassRenderer && prePassRenderer.enabled) {
+                    const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
+                    defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+                }
             }
         } else {
             defines["NUM_BONE_INFLUENCERS"] = 0;
@@ -222,6 +215,8 @@ export class MaterialHelper {
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
             defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
             defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+
+            defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
         } else {
             defines["MORPHTARGETS_UV"] = false;
             defines["MORPHTARGETS_TANGENT"] = false;
@@ -232,6 +227,16 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines for baked vertex animation
+     * @param mesh The mesh containing the geometry data we will draw
+     * @param defines The defines to update
+     */
+     public static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {
+        const manager = (<Mesh>mesh).bakedVertexAnimationManager;
+        defines["BAKED_VERTEX_ANIMATION_TEXTURE"] = manager && manager.isEnabled ? true : false;
+    }
+
+    /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
@@ -239,9 +244,10 @@ export class MaterialHelper {
      * @param useBones Precise whether bones should be used or not (override mesh info)
      * @param useMorphTargets Precise whether morph targets should be used or not (override mesh info)
      * @param useVertexAlpha Precise whether vertex alpha should be used or not (override mesh info)
+     * @param useBakedVertexAnimation Precise whether baked vertex animation should be used or not (override mesh info)
      * @returns false if defines are considered not dirty and have not been checked
      */
-    public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true): boolean {
+    public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true, useBakedVertexAnimation = true): boolean {
         if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
             return false;
         }
@@ -255,12 +261,8 @@ export class MaterialHelper {
             defines["TANGENT"] = true;
         }
 
-        if (defines._needUVs) {
-            defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
-            defines["UV2"] = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
-        } else {
-            defines["UV1"] = false;
-            defines["UV2"] = false;
+        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
         }
 
         if (useVertexColor) {
@@ -275,6 +277,10 @@ export class MaterialHelper {
 
         if (useMorphTargets) {
             this.PrepareDefinesForMorphTargets(mesh, defines);
+        }
+
+        if (useBakedVertexAnimation) {
+            this.PrepareDefinesForBakedVertexAnimation(mesh, defines);
         }
 
         return true;
@@ -292,6 +298,101 @@ export class MaterialHelper {
             if (defines.MULTIVIEW != previousMultiview) {
                 defines.markAsUnprocessed();
             }
+        }
+    }
+
+    /**
+     * Prepares the defines related to order independant transparency
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     * @param needAlphaBlending Determines if the material needs alpha blending
+     */
+    public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
+        const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
+        const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;
+
+        defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
+        defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS = !scene.getEngine().getCaps().textureFloatLinearFiltering;
+
+        if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY || previousDefine16Bits !== defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS) {
+            defines.markAsUnprocessed();
+        }
+    }
+
+    /**
+     * Prepares the defines related to the prepass
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
+     */
+    public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
+        const previousPrePass = defines.PREPASS;
+
+        if (!defines._arePrePassDirty) {
+            return;
+        }
+
+        const texturesList = [
+            {
+                type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+                define: "PREPASS_POSITION",
+                index: "PREPASS_POSITION_INDEX",
+            },
+            {
+                type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+                define: "PREPASS_VELOCITY",
+                index: "PREPASS_VELOCITY_INDEX",
+            },
+            {
+                type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+                define: "PREPASS_REFLECTIVITY",
+                index: "PREPASS_REFLECTIVITY_INDEX",
+            },
+            {
+                type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+                define: "PREPASS_IRRADIANCE",
+                index: "PREPASS_IRRADIANCE_INDEX",
+            },
+            {
+                type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+                define: "PREPASS_ALBEDO_SQRT",
+                index: "PREPASS_ALBEDO_SQRT_INDEX",
+            },
+            {
+                type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+                define: "PREPASS_DEPTH",
+                index: "PREPASS_DEPTH_INDEX",
+            },
+            {
+                type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+                define: "PREPASS_NORMAL",
+                index: "PREPASS_NORMAL_INDEX",
+            }];
+
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
+            defines.PREPASS = true;
+            defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+
+            for (let i = 0; i < texturesList.length; i++) {
+                const index = scene.prePassRenderer.getIndex(texturesList[i].type);
+                if (index !== -1) {
+                    defines[texturesList[i].define] = true;
+                    defines[texturesList[i].index] = index;
+                } else {
+                    defines[texturesList[i].define] = false;
+                }
+            }
+
+        } else {
+            defines.PREPASS = false;
+            for (let i = 0; i < texturesList.length; i++) {
+                defines[texturesList[i].define] = false;
+            }
+        }
+
+        if (defines.PREPASS != previousPrePass) {
+            defines.markAsUnprocessed();
+            defines.markAsImageProcessingDirty();
         }
     }
 
@@ -361,6 +462,7 @@ export class MaterialHelper {
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
         defines["SHADOWESM" + lightIndex] = false;
+        defines["SHADOWCLOSEESM" + lightIndex] = false;
         defines["SHADOWCUBE" + lightIndex] = false;
         defines["SHADOWLOWQUALITY" + lightIndex] = false;
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
@@ -394,7 +496,7 @@ export class MaterialHelper {
      * @param mesh The mesh the effect is compiling for
      * @param defines The defines to update
      * @param specularSupported Specifies whether specular is supported or not (override lights data)
-     * @param maxSimultaneousLights Specfies how manuy lights can be added to the effect at max
+     * @param maxSimultaneousLights Specifies how manuy lights can be added to the effect at max
      * @param disableLighting Specifies whether the lighting is disabled (override scene and light)
      * @returns true if normals will be required for the rest of the effect
      */
@@ -445,6 +547,7 @@ export class MaterialHelper {
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
                 defines["SHADOWESM" + index] = false;
+                defines["SHADOWCLOSEESM" + index] = false;
                 defines["SHADOWCUBE" + index] = false;
                 defines["SHADOWLOWQUALITY" + index] = false;
                 defines["SHADOWMEDIUMQUALITY" + index] = false;
@@ -476,8 +579,17 @@ export class MaterialHelper {
      * @param samplersList The sampler list
      * @param projectedLightTexture defines if projected texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
+     * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
-    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null) {
+    public static PrepareUniformsAndSamplersForLight(lightIndex: number, uniformsList: string[], samplersList: string[], projectedLightTexture?: any, uniformBuffersList: Nullable<string[]> = null, updateOnlyBuffersList = false) {
+        if (uniformBuffersList) {
+            uniformBuffersList.push("Light" + lightIndex);
+        }
+
+        if (updateOnlyBuffersList) {
+            return;
+        }
+
         uniformsList.push(
             "vLightData" + lightIndex,
             "vLightDiffuse" + lightIndex,
@@ -489,10 +601,6 @@ export class MaterialHelper {
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
         );
-
-        if (uniformBuffersList) {
-            uniformBuffersList.push("Light" + lightIndex);
-        }
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
@@ -516,10 +624,10 @@ export class MaterialHelper {
 
     /**
      * Prepares the uniforms and samplers list to be used in the effect
-     * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the liist and extra information
+     * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the list and extra information
      * @param samplersList The sampler list
      * @param defines The defines helping in the list generation
-     * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
+     * @param maxSimultaneousLights The maximum number of simultaneous light allowed in the effect
      */
     public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
         let uniformsList: string[];
@@ -548,6 +656,13 @@ export class MaterialHelper {
 
         if (defines["NUM_MORPH_INFLUENCERS"]) {
             uniformsList.push("morphTargetInfluences");
+        }
+
+        if (defines["BAKED_VERTEX_ANIMATION_TEXTURE"]) {
+            uniformsList.push("bakedVertexAnimationSettings");
+            uniformsList.push("bakedVertexAnimationTextureSizeInverted");
+            uniformsList.push("bakedVertexAnimationTime");
+            samplersList.push("bakedVertexAnimationTexture");
         }
     }
 
@@ -591,6 +706,10 @@ export class MaterialHelper {
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
                 }
+
+                if (defines["SHADOWCLOSEESM" + lightIndex]) {
+                    fallbacks.addFallback(rank, "SHADOWCLOSEESM" + lightIndex);
+                }
             }
         }
         return lightFallbackRank++;
@@ -620,6 +739,9 @@ export class MaterialHelper {
         if (influencers > 0 && EngineStore.LastCreatedEngine) {
             var maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
             var manager = (<Mesh>mesh).morphTargetManager;
+            if (manager?.isUsingTextureForTargets) {
+                return;
+            }
             var normal = manager && manager.supportsNormals && defines["NORMAL"];
             var tangent = manager && manager.supportsTangents && defines["TANGENT"];
             var uv = manager && manager.supportsUVs && defines["UV1"];
@@ -646,11 +768,25 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the list of attributes required for baked vertex animations according to the effect defines.
+     * @param attribs The current list of supported attribs
+     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param defines The current Defines of the effect
+     */
+    public static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {
+        const enabled = defines["BAKED_VERTEX_ANIMATION_TEXTURE"] && defines["INSTANCES"];
+
+        if (enabled) {
+            attribs.push("bakedVertexAnimationSettingsInstanced");
+        }
+    }
+
+    /**
      * Prepares the list of attributes required for bones according to the effect defines.
      * @param attribs The current list of supported attribs
      * @param mesh The mesh to prepare the bones attributes for
      * @param defines The current Defines of the effect
-     * @param fallbacks The current efffect fallback strategy
+     * @param fallbacks The current effect fallback strategy
      */
     public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void {
         if (defines["NUM_BONE_INFLUENCERS"] > 0) {
@@ -672,19 +808,26 @@ export class MaterialHelper {
      */
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
-            this.PushAttributesForInstances(attribs);
+            this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
         }
     }
 
     /**
      * Add the list of attributes required for instances to the attribs array.
      * @param attribs The current list of supported attribs
+     * @param needsPreviousMatrices If the shader needs previous matrices
      */
-    public static PushAttributesForInstances(attribs: string[]): void {
+    public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {
         attribs.push("world0");
         attribs.push("world1");
         attribs.push("world2");
         attribs.push("world3");
+        if (needsPreviousMatrices) {
+            attribs.push("previousWorld0");
+            attribs.push("previousWorld1");
+            attribs.push("previousWorld2");
+            attribs.push("previousWorld3");
+        }
     }
 
     /**
@@ -704,10 +847,10 @@ export class MaterialHelper {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
-        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
     }
 
     /**
@@ -717,15 +860,14 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
         }
     }
 
@@ -755,8 +897,9 @@ export class MaterialHelper {
      * Binds the bones information from the mesh to the effect.
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
+     * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
      */
-    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
+    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {
         if (!effect || !mesh) {
             return;
         }
@@ -776,9 +919,23 @@ export class MaterialHelper {
 
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
+                    if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                        if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
+                        }
+                        effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        MaterialHelper._CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
+                    }
                 }
             }
         }
+    }
+
+    // Copies the bones transformation matrices into the target array and returns the target's reference
+    private static _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
+        target.set(source);
+
+        return target;
     }
 
     /**
@@ -802,8 +959,12 @@ export class MaterialHelper {
      * @param scene The scene we are willing to render with logarithmic scale for
      */
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-        if (defines["LOGARITHMICDEPTH"]) {
-            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log((<Camera>scene.activeCamera).maxZ + 1.0) / Math.LN2));
+        if (!defines || defines["LOGARITHMICDEPTH"]) {
+            const camera = <Camera>scene.activeCamera;
+            if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+                Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
+            }
+            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
         }
     }
 
@@ -813,29 +974,6 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      */
     public static BindClipPlane(effect: Effect, scene: Scene): void {
-        if (scene.clipPlane) {
-            let clipPlane = scene.clipPlane;
-            effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane2) {
-            let clipPlane = scene.clipPlane2;
-            effect.setFloat4("vClipPlane2", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane3) {
-            let clipPlane = scene.clipPlane3;
-            effect.setFloat4("vClipPlane3", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane4) {
-            let clipPlane = scene.clipPlane4;
-            effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane5) {
-            let clipPlane = scene.clipPlane5;
-            effect.setFloat4("vClipPlane5", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane6) {
-            let clipPlane = scene.clipPlane6;
-            effect.setFloat4("vClipPlane6", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
+        ThinMaterialHelper.BindClipPlane(effect, scene);
     }
 }

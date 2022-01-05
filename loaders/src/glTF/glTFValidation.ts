@@ -89,8 +89,7 @@ export class GLTFValidation {
      * @param getExternalResource The callback to get external resources for the glTF validator
      * @returns A promise that resolves with the glTF validation results once complete
      */
-    public static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults>
-    {
+    public static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults> {
         if (typeof Worker === "function") {
             return new Promise((resolve, reject) => {
                 const workerContent = `${validateAsync}(${workerFunc})()`;
@@ -131,7 +130,7 @@ export class GLTFValidation {
                 worker.addEventListener("error", onError);
                 worker.addEventListener("message", onMessage);
 
-                worker.postMessage({ id: "init", url: Tools.GetAbsoluteUrl(this.Configuration.url) });
+                worker.postMessage({ id: "init", url: this.Configuration.url });
                 worker.postMessage({ id: "validate", data: data, rootUrl: rootUrl, fileName: fileName });
             });
         }

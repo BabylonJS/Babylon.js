@@ -2,7 +2,7 @@ import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./perlinNoiseProceduralTexture.fragment";
 
@@ -24,7 +24,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
     }
 
     public updateShaderUniforms() {
-        this.setFloat("size", this.getRenderSize());
+        this.setFloat("size", this.getRenderSize() as number);
 
         let scene = this.getScene();
 
@@ -74,4 +74,4 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PerlinNoiseProceduralTexture"] = PerlinNoiseProceduralTexture;
+RegisterClass("BABYLON.PerlinNoiseProceduralTexture", PerlinNoiseProceduralTexture);

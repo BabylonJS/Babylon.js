@@ -6,6 +6,7 @@ attribute vec4 color;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<clipPlaneVertexDeclaration>
 
@@ -15,16 +16,23 @@ attribute vec4 color;
 uniform mat4 viewProjection;
 #ifdef MULTIVIEW
 	uniform mat4 viewProjectionR;
-#endif 
+#endif
 
 // Output
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
     vec4 worldPos = finalWorld * vec4(position, 1.0);
 
 #ifdef MULTIVIEW
@@ -43,4 +51,6 @@ void main(void) {
 	// Vertex color
 	vColor = color;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

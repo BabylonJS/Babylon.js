@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
-import { PointerInfoPre, PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
 import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
 import { Camera } from "babylonjs/Cameras/camera";
@@ -16,46 +16,37 @@ import { Scene } from "babylonjs/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
+import { IFocusableControl } from "./controls/focusableControl";
 import { Style } from "./style";
 import { Measure } from "./measure";
-import { Constants } from 'babylonjs/Engines/constants';
-import { Viewport } from 'babylonjs/Maths/math.viewport';
-import { Color3 } from 'babylonjs/Maths/math.color';
+import { Constants } from "babylonjs/Engines/constants";
+import { Viewport } from "babylonjs/Maths/math.viewport";
+import { Color3 } from "babylonjs/Maths/math.color";
+import { WebRequest } from "babylonjs/Misc/webRequest";
+import { IPointerEvent, IWheelEvent } from "babylonjs/Events/deviceInputEvents";
+
 /**
-* Interface used to define a control that can receive focus
-*/
-export interface IFocusableControl {
-    /**
-     * Function called when the control receives the focus
-     */
-    onFocus(): void;
-    /**
-     * Function called when the control loses the focus
-     */
-    onBlur(): void;
-    /**
-     * Function called to let the control handle keyboard events
-     * @param evt defines the current keyboard event
-     */
-    processKeyboard(evt: KeyboardEvent): void;
-    /**
-    * Function called to get the list of controls that should not steal the focus from this control
-    * @returns an array of controls
-    */
-    keepsFocusWith(): Nullable<Control[]>;
-}
-/**
-* Class used to create texture to support 2D GUI elements
-* @see http://doc.babylonjs.com/how_to/gui
-*/
+ * Class used to create texture to support 2D GUI elements
+ * @see https://doc.babylonjs.com/how_to/gui
+ */
 export class AdvancedDynamicTexture extends DynamicTexture {
+    /** Define the Uurl to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
+    public static AllowGPUOptimizations = true;
+
+    /** Snippet ID if the content was created from the snippet server */
+    public snippetId: string;
+
     private _isDirty = false;
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
-    private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
+    private _canvasPointerOutObserver: Nullable<Observer<IPointerEvent>>;
+    private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
     /** @hidden */
     public _rootContainer = new Container("root");
@@ -101,42 +92,46 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-    * Define type to string to ensure compatibility across browsers
-    * Safari doesn't support DataTransfer constructor
-    */
+     * Define type to string to ensure compatibility across browsers
+     * Safari doesn't support DataTransfer constructor
+     */
     private _clipboardData: string = "";
     /**
-    * Observable event triggered each time an clipboard event is received from the rendering canvas
-    */
+     * Observable event triggered each time an clipboard event is received from the rendering canvas
+     */
     public onClipboardObservable = new Observable<ClipboardInfo>();
     /**
-    * Observable event triggered each time a pointer down is intercepted by a control
-    */
+     * Observable event triggered each time a pointer down is intercepted by a control
+     */
     public onControlPickedObservable = new Observable<Control>();
     /**
-    * Observable event triggered before layout is evaluated
-    */
+     * Observable event triggered before layout is evaluated
+     */
     public onBeginLayoutObservable = new Observable<AdvancedDynamicTexture>();
     /**
-    * Observable event triggered after the layout was evaluated
-    */
+     * Observable event triggered after the layout was evaluated
+     */
     public onEndLayoutObservable = new Observable<AdvancedDynamicTexture>();
     /**
-    * Observable event triggered before the texture is rendered
-    */
+     * Observable event triggered before the texture is rendered
+     */
     public onBeginRenderObservable = new Observable<AdvancedDynamicTexture>();
     /**
-    * Observable event triggered after the texture was rendered
-    */
+     * Observable event triggered after the texture was rendered
+     */
     public onEndRenderObservable = new Observable<AdvancedDynamicTexture>();
     /**
-    * Gets or sets a boolean defining if alpha is stored as premultiplied
-    */
+     * Gets or sets a boolean defining if alpha is stored as premultiplied
+     */
     public premulAlpha = false;
     /**
-    * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
-    * Useful when you want more antialiasing
-    */
+     * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+     */
+    public applyYInversionOnUpdate = true;
+    /**
+     * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+     * Useful when you want more antialiasing
+     */
     public get renderScale(): number {
         return this._renderScale;
     }
@@ -159,10 +154,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.markAsDirty();
     }
     /**
-    * Gets or sets the ideal width used to design controls.
-    * The GUI will then rescale everything accordingly
-    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
-    */
+     * Gets or sets the ideal width used to design controls.
+     * The GUI will then rescale everything accordingly
+     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     */
     public get idealWidth(): number {
         return this._idealWidth;
     }
@@ -175,10 +170,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._markAllAsDirty();
     }
     /**
-    * Gets or sets the ideal height used to design controls.
-    * The GUI will then rescale everything accordingly
-    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
-    */
+     * Gets or sets the ideal height used to design controls.
+     * The GUI will then rescale everything accordingly
+     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     */
     public get idealHeight(): number {
         return this._idealHeight;
     }
@@ -191,9 +186,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._markAllAsDirty();
     }
     /**
-    * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
-    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
-    */
+     * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     */
     public get useSmallestIdeal(): boolean {
         return this._useSmallestIdeal;
     }
@@ -206,9 +201,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._markAllAsDirty();
     }
     /**
-    * Gets or sets a boolean indicating if adaptive scaling must be used
-    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
-    */
+     * Gets or sets a boolean indicating if adaptive scaling must be used
+     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     */
     public get renderAtIdealSize(): boolean {
         return this._renderAtIdealSize;
     }
@@ -222,29 +217,31 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /**
      * Gets the ratio used when in "ideal mode"
-    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      * */
     public get idealRatio(): number {
         var rwidth: number = 0;
         var rheight: number = 0;
 
         if (this._idealWidth) {
-            rwidth = (this.getSize().width) / this._idealWidth;
+            rwidth = this.getSize().width / this._idealWidth;
         }
 
         if (this._idealHeight) {
-            rheight = (this.getSize().height) / this._idealHeight;
+            rheight = this.getSize().height / this._idealHeight;
         }
 
         if (this._useSmallestIdeal && this._idealWidth && this._idealHeight) {
             return window.innerWidth < window.innerHeight ? rwidth : rheight;
         }
 
-        if (this._idealWidth) { // horizontal
+        if (this._idealWidth) {
+            // horizontal
             return rwidth;
         }
 
-        if (this._idealHeight) { // vertical
+        if (this._idealHeight) {
+            // vertical
             return rheight;
         }
 
@@ -252,37 +249,60 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-    * Gets the underlying layer used to render the texture when in fullscreen mode
-    */
+     * Gets the underlying layer used to render the texture when in fullscreen mode
+     */
     public get layer(): Nullable<Layer> {
         return this._layerToDispose;
     }
     /**
-    * Gets the root container control
-    */
+     * Gets the root container control
+     */
     public get rootContainer(): Container {
         return this._rootContainer;
     }
     /**
-    * Returns an array containing the root container.
-    * This is mostly used to let the Inspector introspects the ADT
-    * @returns an array containing the rootContainer
-    */
+     * Returns an array containing the root container.
+     * This is mostly used to let the Inspector introspects the ADT
+     * @returns an array containing the rootContainer
+     */
     public getChildren(): Array<Container> {
         return [this._rootContainer];
     }
     /**
-    * Will return all controls that are inside this texture
-    * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-    * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-    * @return all child controls
-    */
+     * Will return all controls that are inside this texture
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @return all child controls
+     */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
     }
+
     /**
-    * Gets or sets the current focused control
-    */
+     * Will return all controls with the given type name
+     * @param typeName defines the type name to search for
+     * @returns an array of all controls found
+     */
+    public getControlsByType(typeName: string): Control[] {
+        return this._rootContainer.getDescendants(false, (control) => control.typeName === typeName);
+    }
+
+    /**
+     * Will return the first control with the given name
+     * @param name defines the name to search for
+     * @return the first control found or null
+     */
+    public getControlByName(name: string): Nullable<Control> {
+        return this._getControlByKey("name", name);
+    }
+
+    private _getControlByKey(key: string, value: any): Nullable<Control> {
+        return this._rootContainer.getDescendants().find((control) => control[key as keyof Control] === value) || null;
+    }
+
+    /**
+     * Gets or sets the current focused control
+     */
     public get focusedControl(): Nullable<IFocusableControl> {
         return this._focusedControl;
     }
@@ -299,13 +319,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._focusedControl = control;
     }
     /**
-    * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
-    */
+     * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+     */
     public get isForeground(): boolean {
         if (!this.layer) {
             return true;
         }
-        return (!this.layer.isBackground);
+        return !this.layer.isBackground;
     }
     public set isForeground(value: boolean) {
         if (!this.layer) {
@@ -317,8 +337,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.layer.isBackground = !value;
     }
     /**
-    * Gets or set information about clipboardData
-    */
+     * Gets or set information about clipboardData
+     */
     public get clipboardData(): string {
         return this._clipboardData;
     }
@@ -326,21 +346,23 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._clipboardData = value;
     }
     /**
-   * Creates a new AdvancedDynamicTexture
-   * @param name defines the name of the texture
-   * @param width defines the width of the texture
-   * @param height defines the height of the texture
-   * @param scene defines the hosting scene
-   * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-   * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-   */
-    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA);
+     * Creates a new AdvancedDynamicTexture
+     * @param name defines the name of the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param scene defines the hosting scene
+     * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
+     * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     */
+    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
+        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
         }
-        this._rootElement = scene.getEngine()!.getInputElement()!;
+        this.applyYInversionOnUpdate = invertY;
+        this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
@@ -360,17 +382,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._texture.isReady = true;
     }
     /**
-    * Get the current class name of the texture useful for serialization or dynamic coding.
-    * @returns "AdvancedDynamicTexture"
-    */
+     * Get the current class name of the texture useful for serialization or dynamic coding.
+     * @returns "AdvancedDynamicTexture"
+     */
     public getClassName(): string {
         return "AdvancedDynamicTexture";
     }
     /**
-    * Function used to execute a function on all controls
-    * @param func defines the function to execute
-    * @param container defines the container where controls belong. If null the root container will be used
-    */
+     * Function used to execute a function on all controls
+     * @param func defines the function to execute
+     * @param container defines the container where controls belong. If null the root container will be used
+     */
     public executeOnAllControls(func: (control: Control) => void, container?: Container) {
         if (!container) {
             container = this._rootContainer;
@@ -378,7 +400,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         func(container);
         for (var child of container.children) {
             if ((<any>child).children) {
-                this.executeOnAllControls(func, (<Container>child));
+                this.executeOnAllControls(func, <Container>child);
                 continue;
             }
             func(child);
@@ -424,40 +446,83 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
     /**
-    * Marks the texture as dirty forcing a complete update
-    */
+     * Marks the texture as dirty forcing a complete update
+     */
     public markAsDirty() {
         this._isDirty = true;
     }
     /**
-    * Helper function used to create a new style
-    * @returns a new style
-    * @see http://doc.babylonjs.com/how_to/gui#styles
-    */
+     * Helper function used to create a new style
+     * @returns a new style
+     * @see https://doc.babylonjs.com/how_to/gui#styles
+     */
     public createStyle(): Style {
         return new Style(this);
     }
     /**
-    * Adds a new control to the root container
-    * @param control defines the control to add
-    * @returns the current texture
-    */
+     * Adds a new control to the root container
+     * @param control defines the control to add
+     * @returns the current texture
+     */
     public addControl(control: Control): AdvancedDynamicTexture {
         this._rootContainer.addControl(control);
         return this;
     }
     /**
-    * Removes a control from the root container
-    * @param control defines the control to remove
-    * @returns the current texture
-    */
+     * Removes a control from the root container
+     * @param control defines the control to remove
+     * @returns the current texture
+     */
     public removeControl(control: Control): AdvancedDynamicTexture {
         this._rootContainer.removeControl(control);
         return this;
     }
     /**
-    * Release all resources
-    */
+     * Moves overlapped controls towards a position where it is not overlapping anymore.
+     * Please note that this method alters linkOffsetXInPixels and linkOffsetYInPixels.
+     * @param overlapGroup the overlap group which will be processed or undefined to process all overlap groups
+     * @param deltaStep the step size (speed) to reach the target non overlapping position (default 0.1)
+     * @param repelFactor how much is the control repelled by other controls
+     */
+    public moveToNonOverlappedPosition(overlapGroup?: number | Control[], deltaStep = 1, repelFactor = 1) {
+        let controlsForGroup: Control[];
+        if (Array.isArray(overlapGroup)) {
+            controlsForGroup = overlapGroup;
+        } else {
+            const descendants = this.getDescendants(true);
+            // get only the controls with an overlapGroup property set
+            // if the overlapGroup parameter is set, filter the controls and get only the controls belonging to that overlapGroup
+            controlsForGroup = overlapGroup === undefined ? descendants.filter((c) => c.overlapGroup !== undefined) : descendants.filter((c) => c.overlapGroup === overlapGroup);
+        }
+
+        controlsForGroup.forEach((control1) => {
+            let velocity = Vector2.Zero();
+            const center = new Vector2(control1.centerX, control1.centerY);
+
+            controlsForGroup.forEach((control2) => {
+                if (control1 !== control2 && AdvancedDynamicTexture._Overlaps(control1, control2)) {
+                    // if the two controls overlaps get a direction vector from one control's center to another control's center
+                    const diff = center.subtract(new Vector2(control2.centerX, control2.centerY));
+                    const diffLength = diff.length();
+
+                    if (diffLength > 0) {
+                        // calculate the velocity
+                        velocity = velocity.add(diff.normalize().scale(repelFactor / diffLength));
+                    }
+                }
+            });
+
+            if (velocity.length() > 0) {
+                // move the control along the direction vector away from the overlapping control
+                velocity = velocity.normalize().scale(deltaStep * (control1.overlapDeltaMultiplier ?? 1));
+                control1.linkOffsetXInPixels += velocity.x;
+                control1.linkOffsetYInPixels += velocity.y;
+            }
+        });
+    }
+    /**
+     * Release all resources
+     */
     public dispose(): void {
         let scene = this.getScene();
         if (!scene) {
@@ -479,6 +544,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         if (this._canvasPointerOutObserver) {
             scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
+        }
+        if (this._canvasBlurObserver) {
+            scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
         }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
@@ -524,26 +592,48 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
     }
     /** @hidden */
-    public _getGlobalViewport(scene: Scene): Viewport {
-        var engine = scene.getEngine();
-        return this._fullscreenViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    public _getGlobalViewport(): Viewport {
+        var size = this.getSize();
+        const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
+
+        const targetX = Math.round(globalViewPort.width * (1 / this.rootContainer.scaleX));
+        const targetY = Math.round(globalViewPort.height * (1 / this.rootContainer.scaleY));
+
+        globalViewPort.x += (globalViewPort.width - targetX) / 2;
+        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+
+        globalViewPort.width = targetX;
+        globalViewPort.height = targetY;
+
+        return globalViewPort;
     }
     /**
-    * Get screen coordinates for a vector3
-    * @param position defines the position to project
-    * @param worldMatrix defines the world matrix to use
-    * @returns the projected position
-    */
+     * Get screen coordinates for a vector3
+     * @param position defines the position to project
+     * @param worldMatrix defines the world matrix to use
+     * @returns the projected position
+     */
     public getProjectedPosition(position: Vector3, worldMatrix: Matrix): Vector2 {
+        const result = this.getProjectedPositionWithZ(position, worldMatrix);
+        return new Vector2(result.x, result.y);
+    }
+
+    /**
+     * Get screen coordinates for a vector3
+     * @param position defines the position to project
+     * @param worldMatrix defines the world matrix to use
+     * @returns the projected position with Z
+     */
+    public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
         var scene = this.getScene();
         if (!scene) {
-            return Vector2.Zero();
+            return Vector3.Zero();
         }
-        var globalViewport = this._getGlobalViewport(scene);
+        var globalViewport = this._getGlobalViewport();
         var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
-        projectedPosition.scaleInPlace(this.renderScale);
-        return new Vector2(projectedPosition.x, projectedPosition.y);
+        return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
+
     private _checkUpdate(camera: Camera): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
@@ -555,12 +645,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
-            var globalViewport = this._getGlobalViewport(scene);
+            var globalViewport = this._getGlobalViewport();
             for (let control of this._linkedControls) {
                 if (!control.isVisible) {
                     continue;
                 }
-                let mesh = control._linkedMesh;
+                let mesh = control._linkedMesh as AbstractMesh;
                 if (!mesh || mesh.isDisposed()) {
                     Tools.SetImmediate(() => {
                         control.linkWithMesh(null);
@@ -574,8 +664,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     continue;
                 }
                 control.notRenderable = false;
-                // Account for RenderScale.
-                projectedPosition.scaleInPlace(this.renderScale);
+
                 control._moveToProjectedPosition(projectedPosition);
             }
         }
@@ -584,7 +673,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this._isDirty = false;
         this._render();
-        this.update(true, this.premulAlpha);
+        this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
@@ -639,7 +728,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     }
-    private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
+    private _doPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -648,27 +737,32 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         var textureSize = this.getSize();
         if (this._isFullscreen) {
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            let viewport = camera!.viewport;
+            if (!camera) {
+                return;
+            }
+            let viewport = camera.viewport;
             x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
-            this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
+            this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
 
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
-            this._changeCursor("");
+        if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (!scene.doNotHandleCursors) {
+                this._changeCursor("");
+            }
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
                     delete this._lastControlOver[pointerId];
                 }
             }
         }
 
-        if (!this._cursorChanged) {
+        if (!this._cursorChanged && !scene.doNotHandleCursors) {
             this._changeCursor("");
         }
         this._manageFocus();
@@ -692,7 +786,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** Attach to all scene events required to support pointer events */
     public attach(): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
@@ -700,25 +794,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         let tempViewport = new Viewport(0, 0, 0, 0);
 
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
-            if (scene!.isPointerCaptured((<PointerEvent>(pi.event)).pointerId)) {
+            if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
                 return;
             }
-            if (pi.type !== PointerEventTypes.POINTERMOVE
-                && pi.type !== PointerEventTypes.POINTERUP
-                && pi.type !== PointerEventTypes.POINTERDOWN
-                && pi.type !== PointerEventTypes.POINTERWHEEL) {
-                return;
-            }
-            if (!scene) {
+            if (
+                pi.type !== PointerEventTypes.POINTERMOVE &&
+                pi.type !== PointerEventTypes.POINTERUP &&
+                pi.type !== PointerEventTypes.POINTERDOWN &&
+                pi.type !== PointerEventTypes.POINTERWHEEL
+            ) {
                 return;
             }
 
-            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as PointerEvent).pointerId) {
-                this._defaultMousePointerId = (pi.event as PointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
+                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
-            let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            let engine = scene.getEngine();
+            const camera = scene.cameraToUseForPointers || scene.activeCamera;
+            const engine = scene.getEngine();
+            const originalCameraToUseForPointers = scene.cameraToUseForPointers;
 
             if (!camera) {
                 tempViewport.x = 0;
@@ -726,46 +820,73 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 tempViewport.width = engine.getRenderWidth();
                 tempViewport.height = engine.getRenderHeight();
             } else {
-                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                if (camera.rigCameras.length) {
+                    // rig camera - we need to find the camera to use for this event
+                    let rigViewport = new Viewport(0, 0, 1, 1);
+                    camera.rigCameras.forEach((rigCamera) => {
+                        // generate the viewport of this camera
+                        rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
+                        let x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport.x;
+                        let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
+                        // check if the pointer is in the camera's viewport
+                        if (x < 0 || y < 0 || x > rigViewport.width || y > rigViewport.height) {
+                            // out of viewport - don't use this camera
+                            return;
+                        }
+                        // set the camera to use for pointers until this pointer loop is over
+                        scene.cameraToUseForPointers = rigCamera;
+                        // set the viewport
+                        tempViewport.x = rigViewport.x;
+                        tempViewport.y = rigViewport.y;
+                        tempViewport.width = rigViewport.width;
+                        tempViewport.height = rigViewport.height;
+                    });
+                } else {
+                    camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                }
             }
 
             let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
-            let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            let pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             }
+            // if overridden by a rig camera - reset back to the original value
+            scene.cameraToUseForPointers = originalCameraToUseForPointers;
         });
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     }
+
     /** @hidden */
     private onClipboardCopy = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
-    }
+    };
     /** @hidden */
     private onClipboardCut = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
-    }
+    };
     /** @hidden */
     private onClipboardPaste = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
-    }
+    };
     /**
-    * Register the clipboard Events onto the canvas
-    */
+     * Register the clipboard Events onto the canvas
+     */
     public registerClipboardEvents(): void {
         self.addEventListener("copy", this.onClipboardCopy, false);
         self.addEventListener("cut", this.onClipboardCut, false);
@@ -780,28 +901,44 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         self.removeEventListener("paste", this.onClipboardPaste);
     }
     /**
-    * Connect the texture to a hosting mesh to enable interactions
-    * @param mesh defines the mesh to attach to
-    * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
-    */
+     * Connect the texture to a hosting mesh to enable interactions
+     * @param mesh defines the mesh to attach to
+     * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+     */
     public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
         var scene = this.getScene();
         if (!scene) {
             return;
         }
         this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
-            if (pi.type !== PointerEventTypes.POINTERMOVE
-                && pi.type !== PointerEventTypes.POINTERUP
-                && pi.type !== PointerEventTypes.POINTERDOWN) {
+            if (
+                pi.type !== PointerEventTypes.POINTERMOVE &&
+                pi.type !== PointerEventTypes.POINTERUP &&
+                pi.type !== PointerEventTypes.POINTERDOWN &&
+                pi.type !== PointerEventTypes.POINTERWHEEL
+            ) {
                 return;
             }
 
-            var pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
+            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
+                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            }
+
+            var pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     let size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
+                    this._doPicking(
+                        uv.x * size.width,
+                        (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height,
+                        pi,
+                        pi.type,
+                        pointerId,
+                        pi.event.button,
+                        (<IWheelEvent>pi.event).deltaX,
+                        (<IWheelEvent>pi.event).deltaY
+                    );
                 }
             } else if (pi.type === PointerEventTypes.POINTERUP) {
                 if (this._lastControlDown[pointerId]) {
@@ -831,18 +968,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
             } else if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], true);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi, true);
                 }
                 delete this._lastControlOver[pointerId];
             }
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     }
     /**
-    * Move the focus to a specific control
-    * @param control defines the control which will receive the focus
-    */
+     * Move the focus to a specific control
+     * @param control defines the control which will receive the focus
+     */
     public moveFocusToControl(control: IFocusableControl): void {
         this.focusedControl = control;
         this._lastPickedControl = <any>control;
@@ -856,7 +994,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         // Focus management
         if (this._focusedControl) {
-            if (this._focusedControl !== (<any>this._lastPickedControl)) {
+            if (this._focusedControl !== <any>this._lastPickedControl) {
                 if (this._lastPickedControl.isFocusInvisible) {
                     return;
                 }
@@ -867,7 +1005,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _attachToOnPointerOut(scene: Scene): void {
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
             if (this._lastControlOver[pointerEvent.pointerId]) {
-                this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
+                this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId], null);
             }
             delete this._lastControlOver[pointerEvent.pointerId];
             if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
@@ -876,7 +1014,130 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
     }
+    private _attachToOnBlur(scene: Scene): void {
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add((pointerEvent) => {
+            Object.entries(this._lastControlDown).forEach(([key, value]) => {
+                value._onCanvasBlur();
+            });
+            this.focusedControl = null;
+            this._lastControlDown = {};
+        });
+    }
+
+    /**
+     * Serializes the entire GUI system
+     * @returns an object with the JSON serialized data
+     */
+    public serializeContent(): any {
+        const size = this.getSize();
+        let serializationObject = {
+            root: {},
+            width: size.width,
+            height: size.height,
+        };
+
+        this._rootContainer.serialize(serializationObject.root);
+
+        return serializationObject;
+    }
+
+    /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     */
+    public parseContent(serializedObject: any, scaleToSize?: boolean) {
+        this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+        if (scaleToSize) {
+            const width = serializedObject.width;
+            const height = serializedObject.height;
+            if (typeof width === "number" && typeof height === "number" && width >= 0 && height >= 0) {
+                this.scaleTo(width, height);
+            }
+        }
+    }
+
+    /**
+     * Recreate the content of the ADT from a snippet saved by the GUI editor
+     * @param snippetId defines the snippet to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @returns a promise that will resolve on success
+     */
+    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.gui);
+
+                        this.parseContent(serializationObject, scaleToSize);
+                        this.snippetId = snippetId;
+
+                        resolve();
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
+
+    /**
+     * Recreate the content of the ADT from a url json
+     * @param url defines the url to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @returns a promise that will resolve on success
+     */
+    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void> {
+        if (url === "") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var gui = request.responseText;
+                        let serializationObject = JSON.parse(gui);
+                        this.parseContent(serializationObject, scaleToSize);
+
+                        resolve();
+                    } else {
+                        reject("Unable to load");
+                    }
+                }
+            });
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
     // Statics
+    /**
+     * Compares two rectangle based controls for pixel overlap
+     * @param control1 The first control to compare
+     * @param control2 The second control to compare
+     * @returns true if overlaps, otherwise false
+     */
+    private static _Overlaps(control1: Control, control2: Control) {
+        return !(
+            control1.centerX > control2.centerX + control2.widthInPixels ||
+            control1.centerX + control1.widthInPixels < control2.centerX ||
+            control1.centerY + control1.heightInPixels < control2.centerY ||
+            control1.centerY > control2.centerY + control2.heightInPixels
+        );
+    }
+
     /**
      * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
      * @param mesh defines the mesh which will receive the texture
@@ -884,10 +1145,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false): AdvancedDynamicTexture {
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
+    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false, invertY?: boolean): AdvancedDynamicTexture {
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
         var material = new StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
@@ -904,25 +1166,49 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }
+
     /**
-    * Creates a new AdvancedDynamicTexture in fullscreen mode.
-    * In this mode the texture will rely on a layer for its rendering.
-    * This allows it to be treated like any other layer.
-    * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
-    * LayerMask is set through advancedTexture.layer.layerMask
-    * @param name defines name for the texture
-    * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-    * @param scene defines the hsoting scene
-    * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
-    * @returns a new AdvancedDynamicTexture
-    */
-    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
+     * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
+     * @param mesh defines the mesh which will receive the texture
+     * @param width defines the texture width (1024 by default)
+     * @param height defines the texture height (1024 by default)
+     * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    }
+    /**
+     * Creates a new AdvancedDynamicTexture in fullscreen mode.
+     * In this mode the texture will rely on a layer for its rendering.
+     * This allows it to be treated like any other layer.
+     * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
+     * LayerMask is set through advancedTexture.layer.layerMask
+     * @param name defines name for the texture
+     * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
+     * @param scene defines the hosting scene
+     * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+     * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
+     * @returns a new AdvancedDynamicTexture
+     */
+    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE, adaptiveScaling: boolean = false): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
-        var layer = new Layer(name + "_layer", null, scene, !foreground);
+        const resultScene = result.getScene();
+        var layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+
+        if (adaptiveScaling && resultScene) {
+            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            result._rootContainer.scaleX = newScale;
+            result._rootContainer.scaleY = newScale;
+        }
+
         // Attach
         result.attach();
         return result;

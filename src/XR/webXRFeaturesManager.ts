@@ -1,5 +1,6 @@
-import { WebXRSessionManager } from './webXRSessionManager';
-import { IDisposable } from '../scene';
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { IDisposable } from "../scene";
+import { Tools } from "../Misc/tools";
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -29,6 +30,34 @@ export interface IWebXRFeature extends IDisposable {
      * @returns true if successful.
      */
     detach(): boolean;
+
+    /**
+     * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
+     * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+     *
+     * @returns whether or not the feature is compatible in this environment
+     */
+    isCompatible(): boolean;
+
+    /**
+     * Was this feature disposed;
+     */
+    isDisposed: boolean;
+
+    /**
+     * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
+     */
+    xrNativeFeatureName?: string;
+
+    /**
+     * A list of (Babylon WebXR) features this feature depends on
+     */
+    dependsOn?: string[];
+
+    /**
+     * If this feature requires to extend the XRSessionInit object, this function will return the partial XR session init object
+     */
+    getXRSessionInitExtension?: () => Promise<Partial<XRSessionInit>>;
 }
 
 /**
@@ -38,37 +67,81 @@ export class WebXRFeatureName {
     /**
      * The name of the anchor system feature
      */
-    public static ANCHOR_SYSTEM = "xr-anchor-system";
+    public static readonly ANCHOR_SYSTEM = "xr-anchor-system";
     /**
      * The name of the background remover feature
      */
-    public static BACKGROUND_REMOVER = "xr-background-remover";
+    public static readonly BACKGROUND_REMOVER = "xr-background-remover";
     /**
      * The name of the hit test feature
      */
-    public static HIT_TEST = "xr-hit-test";
+    public static readonly HIT_TEST = "xr-hit-test";
+    /**
+     * The name of the mesh detection feature
+     */
+    public static readonly MESH_DETECTION = "xr-mesh-detection";
     /**
      * physics impostors for xr controllers feature
      */
-    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
+    public static readonly PHYSICS_CONTROLLERS = "xr-physics-controller";
     /**
      * The name of the plane detection feature
      */
-    public static PLANE_DETECTION = "xr-plane-detection";
+    public static readonly PLANE_DETECTION = "xr-plane-detection";
     /**
      * The name of the pointer selection feature
      */
-    public static POINTER_SELECTION = "xr-controller-pointer-selection";
+    public static readonly POINTER_SELECTION = "xr-controller-pointer-selection";
     /**
      * The name of the teleportation feature
      */
-    public static TELEPORTATION = "xr-controller-teleportation";
+    public static readonly TELEPORTATION = "xr-controller-teleportation";
+    /**
+     * The name of the feature points feature.
+     */
+    public static readonly FEATURE_POINTS = "xr-feature-points";
+    /**
+     * The name of the hand tracking feature.
+     */
+    public static readonly HAND_TRACKING = "xr-hand-tracking";
+    /**
+     * The name of the image tracking feature
+     */
+    public static readonly IMAGE_TRACKING = "xr-image-tracking";
+    /**
+     * The name of the near interaction feature
+     */
+    public static readonly NEAR_INTERACTION = "xr-near-interaction";
+    /**
+     * The name of the DOM overlay feature
+     */
+    public static readonly DOM_OVERLAY = "xr-dom-overlay";
+    /**
+     * The name of the movement feature
+     */
+    public static readonly MOVEMENT = "xr-controller-movement";
+    /**
+     * The name of the light estimation feature
+     */
+    public static readonly LIGHT_ESTIMATION = "xr-light-estimation";
+    /**
+     * The name of the eye tracking feature
+     */
+    public static readonly EYE_TRACKING = "xr-eye-tracking";
+    /**
+     * The name of the walking locomotion feature
+     */
+    public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion";
+    /**
+     * The name of the composition layers feature
+     */
+    public static readonly LAYERS = "xr-layers";
 }
 
 /**
  * Defining the constructor of a feature. Used to register the modules.
  */
-export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
+export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => () => IWebXRFeature;
 
 /**
  * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
@@ -82,16 +155,25 @@ export class WebXRFeaturesManager implements IDisposable {
             stable: number;
             latest: number;
             [version: number]: WebXRFeatureConstructor;
-        }
+        };
     } = {};
 
     private _features: {
         [name: string]: {
-            featureImplementation: IWebXRFeature,
-            version: number,
-            enabled: boolean
-        }
+            featureImplementation: IWebXRFeature;
+            version: number;
+            enabled: boolean;
+            required: boolean;
+        };
     } = {};
+
+    /**
+     * The key is the feature to check and the value is the feature that conflicts.
+     */
+    private static readonly _ConflictingFeatures: { [key: string]: string } = {
+        [WebXRFeatureName.TELEPORTATION]: WebXRFeatureName.MOVEMENT,
+        [WebXRFeatureName.MOVEMENT]: WebXRFeatureName.TELEPORTATION,
+    };
 
     /**
      * constructs a new features manages.
@@ -150,11 +232,11 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param options optional options provided to the module.
      * @returns a function that, when called, will return a new instance of this feature
      */
-    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature) {
+    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): () => IWebXRFeature {
         const constructorFunction = this._AvailableFeatures[featureName][version];
         if (!constructorFunction) {
             // throw an error? return nothing?
-            throw new Error('feature not found');
+            throw new Error("feature not found");
         }
 
         return constructorFunction(xrSessionManager, options);
@@ -226,12 +308,13 @@ export class WebXRFeaturesManager implements IDisposable {
      * @returns true if disable was successful
      */
     public disableFeature(featureName: string | { Name: string }): boolean {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+        const name = typeof featureName === "string" ? featureName : featureName.Name;
         const feature = this._features[name];
         if (feature && feature.enabled) {
             feature.enabled = false;
             this.detachFeature(name);
             feature.featureImplementation.dispose();
+            delete this._features[name];
             return true;
         }
         return false;
@@ -243,7 +326,6 @@ export class WebXRFeaturesManager implements IDisposable {
     public dispose(): void {
         this.getEnabledFeatures().forEach((feature) => {
             this.disableFeature(feature);
-            this._features[feature].featureImplementation.dispose();
         });
     }
 
@@ -255,18 +337,19 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param version optional version to load. if not provided the latest version will be enabled
      * @param moduleOptions options provided to the module. Ses the module documentation / constructor
      * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
-     * @returns a new constructed feature or throws an error if feature not found.
+     * @param required is this feature required to the app. If set to true the session init will fail if the feature is not available.
+     * @returns a new constructed feature or throws an error if feature not found or conflicts with another enabled feature.
      */
-    public enableFeature(featureName: string | { Name: string }, version: number | string = 'latest', moduleOptions: any = {}, attachIfPossible: boolean = true): IWebXRFeature {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+    public enableFeature(featureName: string | { Name: string }, version: number | string = "latest", moduleOptions: any = {}, attachIfPossible: boolean = true, required: boolean = true): IWebXRFeature {
+        const name = typeof featureName === "string" ? featureName : featureName.Name;
         let versionToLoad = 0;
-        if (typeof version === 'string') {
+        if (typeof version === "string") {
             if (!version) {
                 throw new Error(`Error in provided version - ${name} (${version})`);
             }
-            if (version === 'stable') {
+            if (version === "stable") {
                 versionToLoad = WebXRFeaturesManager.GetStableVersionOfFeature(name);
-            } else if (version === 'latest') {
+            } else if (version === "latest") {
                 versionToLoad = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
             } else {
                 // try loading the number the string represents
@@ -278,6 +361,13 @@ export class WebXRFeaturesManager implements IDisposable {
         } else {
             versionToLoad = version;
         }
+
+        // check if there is a feature conflict
+        const conflictingFeature = WebXRFeaturesManager._ConflictingFeatures[name];
+        if (conflictingFeature !== undefined && this.getEnabledFeatures().indexOf(conflictingFeature) !== -1) {
+            throw new Error(`Feature ${name} cannot be enabled while ${conflictingFeature} is enabled.`);
+        }
+
         // check if already initialized
         const feature = this._features[name];
         const constructFunction = WebXRFeaturesManager.ConstructFeature(name, versionToLoad, this._xrSessionManager, moduleOptions);
@@ -291,24 +381,41 @@ export class WebXRFeaturesManager implements IDisposable {
             this.disableFeature(name);
         }
 
-        this._features[name] = {
-            featureImplementation: constructFunction(),
-            enabled: true,
-            version: versionToLoad
-        };
-
-        if (attachIfPossible) {
-            // if session started already, request and enable
-            if (this._xrSessionManager.session && !feature.featureImplementation.attached) {
-                // enable feature
-                this.attachFeature(name);
+        const constructed = constructFunction();
+        if (constructed.dependsOn) {
+            const dependentsFound = constructed.dependsOn.every((featureName) => !!this._features[featureName]);
+            if (!dependentsFound) {
+                throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
             }
-        } else {
-            // disable auto-attach when session starts
-            this._features[name].featureImplementation.disableAutoAttach = true;
         }
+        if (constructed.isCompatible()) {
+            this._features[name] = {
+                featureImplementation: constructed,
+                enabled: true,
+                version: versionToLoad,
+                required,
+            };
 
-        return this._features[name].featureImplementation;
+            if (attachIfPossible) {
+                // if session started already, request and enable
+                if (this._xrSessionManager.session && !this._features[name].featureImplementation.attached) {
+                    // enable feature
+                    this.attachFeature(name);
+                }
+            } else {
+                // disable auto-attach when session starts
+                this._features[name].featureImplementation.disableAutoAttach = true;
+            }
+
+            return this._features[name].featureImplementation;
+        } else {
+            if (required) {
+                throw new Error("required feature not compatible");
+            } else {
+                Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                return constructed;
+            }
+        }
     }
 
     /**
@@ -326,5 +433,42 @@ export class WebXRFeaturesManager implements IDisposable {
      */
     public getEnabledFeatures() {
         return Object.keys(this._features);
+    }
+
+    /**
+     * This function will extend the session creation configuration object with enabled features.
+     * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
+     * according to the defined "required" variable, provided during enableFeature call
+     * @param xrSessionInit the xr Session init object to extend
+     *
+     * @returns an extended XRSessionInit object
+     */
+    public async _extendXRSessionInitObject(xrSessionInit: XRSessionInit): Promise<XRSessionInit> {
+        const enabledFeatures = this.getEnabledFeatures();
+        for (const featureName of enabledFeatures) {
+            const feature = this._features[featureName];
+            const nativeName = feature.featureImplementation.xrNativeFeatureName;
+            if (nativeName) {
+                if (feature.required) {
+                    xrSessionInit.requiredFeatures = xrSessionInit.requiredFeatures || [];
+                    if (xrSessionInit.requiredFeatures.indexOf(nativeName) === -1) {
+                        xrSessionInit.requiredFeatures.push(nativeName);
+                    }
+                } else {
+                    xrSessionInit.optionalFeatures = xrSessionInit.optionalFeatures || [];
+                    if (xrSessionInit.optionalFeatures.indexOf(nativeName) === -1) {
+                        xrSessionInit.optionalFeatures.push(nativeName);
+                    }
+                }
+            }
+            if (feature.featureImplementation.getXRSessionInitExtension) {
+                const extended = await feature.featureImplementation.getXRSessionInitExtension();
+                xrSessionInit = {
+                    ...xrSessionInit,
+                    ...extended,
+                };
+            }
+        }
+        return xrSessionInit;
     }
 }

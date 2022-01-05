@@ -1,6 +1,6 @@
 /**
  * Defines an array and its length.
- * It can be helpfull to group result from both Arrays and smart arrays in one structure.
+ * It can be helpful to group result from both Arrays and smart arrays in one structure.
  */
 export interface ISmartArrayLike<T> {
     /**
@@ -178,7 +178,7 @@ export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
 
     /**
      * Concats the active data with a given array.
-     * This ensures no dupplicate will be present in the result.
+     * This ensures no duplicate will be present in the result.
      * @param array defines the data to concatenate with.
      */
     public concatWithNoDuplicate(array: any): void {

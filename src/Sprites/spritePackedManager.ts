@@ -4,10 +4,10 @@ import { Texture } from "../Materials/Textures/texture";
 
 /**
  * Class used to manage multiple sprites of different sizes on the same spritesheet
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
 
-export class SpritePackedManager extends SpriteManager{
+export class SpritePackedManager extends SpriteManager {
 
     /**
      * Creates a new sprite manager from a packed sprite sheet
@@ -17,7 +17,7 @@ export class SpritePackedManager extends SpriteManager{
      * @param scene defines the hosting scene
      * @param spriteJSON null otherwise a JSON object defining sprite sheet data
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
-     * @param samplingMode defines the smapling mode to use with spritesheet
+     * @param samplingMode defines the sampling mode to use with spritesheet
      * @param fromPacked set to true; do not alter
      */
 

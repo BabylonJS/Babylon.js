@@ -1,15 +1,16 @@
 import { Scene } from "./scene";
-import { AbstractMesh } from "./Meshes/abstractMesh";
-import { SubMesh, } from "./Meshes/subMesh";
-import { _InstancesBatch } from "./Meshes/mesh";
 import { SmartArrayNoDuplicate } from "./Misc/smartArray";
 import { Nullable } from "./types";
-import { Camera } from "./Cameras/camera";
-import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
+import { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
+declare type Effect = import("./Materials/effect").Effect;
+declare type Camera = import("./Cameras/camera").Camera;
+declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
+declare type SubMesh = import("./Meshes/subMesh").SubMesh;
+declare type RenderTargetTexture = import("./Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -24,9 +25,12 @@ export class SceneComponentConstants {
     public static readonly NAME_GAMEPAD = "Gamepad";
     public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
     public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
+    public static readonly NAME_PREPASSRENDERER = "PrePassRenderer";
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
+    public static readonly NAME_DEPTHPEELINGRENDERER = "DepthPeelingRenderer";
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
     public static readonly NAME_SPRITE = "Sprite";
+    public static readonly NAME_SUBSURFACE = "SubSurface";
     public static readonly NAME_OUTLINERENDERER = "Outline";
     public static readonly NAME_PROCEDURALTEXTURE = "ProceduralTexture";
     public static readonly NAME_SHADOWGENERATOR = "ShadowGenerator";
@@ -40,18 +44,22 @@ export class SceneComponentConstants {
 
     public static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER = 0;
 
-    public static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER = 0;
+    public static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER = 0;
 
     public static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER = 1;
 
-    public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
-    public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
+    public static readonly STEP_BEFORECAMERADRAW_PREPASS = 0;
+    public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 1;
+    public static readonly STEP_BEFORECAMERADRAW_LAYER = 2;
 
-    public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
+    public static readonly STEP_BEFORERENDERTARGETDRAW_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 1;
 
-    public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 0;
+    public static readonly STEP_BEFORERENDERINGMESH_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERINGMESH_OUTLINE = 1;
 
-    public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 0;
+    public static readonly STEP_AFTERRENDERINGMESH_PREPASS = 0;
+    public static readonly STEP_AFTERRENDERINGMESH_OUTLINE = 1;
 
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_EFFECTLAYER_DRAW = 0;
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER = 1;
@@ -61,12 +69,14 @@ export class SceneComponentConstants {
 
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
 
-    public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 0;
+    public static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS = 0;
+    public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 1;
 
-    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 0;
-    public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
-    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 2;
-    public static readonly STEP_AFTERCAMERADRAW_LAYER = 3;
+    public static readonly STEP_AFTERCAMERADRAW_PREPASS = 0;
+    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER = 1;
+    public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 2;
+    public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
+    public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
 
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
@@ -76,6 +86,9 @@ export class SceneComponentConstants {
     public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
+
+    public static readonly STEP_BEFORECLEARSTAGE_PREPASS = 0;
+    public static readonly STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS = 0;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
@@ -153,9 +166,9 @@ export type MeshStageAction = (mesh: AbstractMesh, hardwareInstancedRendering: b
 export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
 
 /**
- * Strong typing of a Active Mesh related stage step action
+ * Strong typing of a pre active Mesh related stage step action
  */
-export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
+export type PreActiveMeshStageAction = (mesh: AbstractMesh) => void;
 
 /**
  * Strong typing of a Camera related stage step action
@@ -170,7 +183,7 @@ export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
 /**
  * Strong typing of a Render Target related stage step action
  */
-export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
+export type RenderTargetStageAction = (renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) => void;
 
 /**
  * Strong typing of a RenderingGroup related stage step action
@@ -180,7 +193,7 @@ export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 /**
  * Strong typing of a Mesh Render related stage step action
  */
-export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: any, effect: Nullable<Effect>) => void;
 
 /**
  * Strong typing of a simple stage step action
@@ -195,12 +208,12 @@ export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<Ren
 /**
  * Strong typing of a pointer move action.
  */
-export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
+export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>) => Nullable<PickingInfo>;
 
 /**
  * Strong typing of a pointer up/down action.
  */
-export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
+export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
 
 /**
  * Representation of a stage in the scene (Basically a list of ordered steps)

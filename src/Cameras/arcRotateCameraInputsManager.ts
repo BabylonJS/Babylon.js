@@ -7,7 +7,7 @@ import { CameraInputsManager } from "../Cameras/cameraInputsManager";
 /**
  * Default Inputs manager for the ArcRotateCamera.
  * It groups all the default supported inputs for ease of use.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateCamera> {
     /**

@@ -27,19 +27,19 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
                 <div className="link-value" title={this.props.value} onClick={() => this.onLink()}>
                     {this.props.value || "no name"}
                 </div>
-            )
+            );
         }
         return (
             <div className="value" title={this.props.value} style={{ color: this.props.color ? this.props.color : "" }}>
                 {this.props.value || "no name"}
             </div>
-        )
+        );
     }
 
     render() {
         return (
             <div className={this.props.underline ? "textLine underline" : "textLine"}>
-                <div className="label">
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 {this.renderContent()}

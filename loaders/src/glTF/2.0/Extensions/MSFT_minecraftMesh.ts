@@ -21,7 +21,7 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     }
 
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {

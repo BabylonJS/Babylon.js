@@ -8,6 +8,7 @@ import { TargetCamera } from "./targetCamera";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
+import { Tools } from '../Misc/tools';
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -19,7 +20,7 @@ export class FlyCamera extends TargetCamera {
     /**
      * Define the collision ellipsoid of the camera.
      * This is helpful for simulating a camera body, like a player's body.
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
      */
     @serializeAsVector3()
     public ellipsoid = new Vector3(1, 1, 1);
@@ -263,7 +264,7 @@ export class FlyCamera extends TargetCamera {
      * @param name Define the name of the camera in the scene.
      * @param position Define the starting position of the camera in the scene.
      * @param scene Define the scene the camera belongs to.
-     * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active, if no other camera has been defined as active.
+     * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active, if no other camera has been defined as active.
     */
     constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
@@ -272,21 +273,26 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-     * Attach a control to the HTML DOM element.
-     * @param element Defines the element that listens to the input events.
-     * @param noPreventDefault Defines whether events caught by the controls should call preventdefault(). https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
+     * Attach the input controls to a specific dom element to get the input from.
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.inputs.attachElement(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void;
+    /**
+     * Attached controls to the current camera.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     */
+    public attachControl(ignored: any, noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        this.inputs.attachElement(noPreventDefault);
     }
 
     /**
      * Detach a control from the HTML DOM element.
      * The camera will stop reacting to that input.
-     * @param element Defines the element that listens to the input events.
      */
-    public detachControl(element: HTMLElement): void {
-        this.inputs.detachElement(element);
+    public detachControl(): void {
+        this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);
     }

@@ -6,13 +6,14 @@ import { Scalar } from "../Maths/math.scalar";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
 import { AnimationRange } from './animationRange';
 import { AnimationEvent } from './animationEvent';
 import { Node } from "../node";
 import { IAnimatable } from './animatable.interface';
 import { Size } from '../Maths/math.size';
+import { WebRequest } from '../Misc/webRequest';
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
@@ -33,6 +34,8 @@ export class _IAnimationState {
  * Class used to store any kind of animation
  */
 export class Animation {
+    private static _UniqueIdGenerator = 0;
+
     /**
      * Use matrix interpolation instead of using direct key value when animating matrices
      */
@@ -42,6 +45,17 @@ export class Animation {
      * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
      */
     public static AllowMatrixDecomposeForInterpolation = true;
+
+    /**
+     * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
+     */
+    public uniqueId: number;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the animation was created from the snippet server */
+    public snippetId: string;
 
     /**
      * Stores the key frames of the animation
@@ -140,7 +154,7 @@ export class Animation {
     /**
      * Create and start an animation on a node
      * @param name defines the name of the global animation that will be run on all nodes
-     * @param node defines the root node where the animation will take place
+     * @param target defines the target where the animation will take place
      * @param targetProperty defines property to animate
      * @param framePerSecond defines the number of frame per second yo use
      * @param totalFrame defines the number of frames in total
@@ -149,11 +163,12 @@ export class Animation {
      * @param loopMode defines which loop mode you want to use (off by default)
      * @param easingFunction defines the easing function to use (linear by default)
      * @param onAnimationEnd defines the callback to call when animation end
+     * @param scene defines the hosting scene
      * @returns the animatable created for this animation
      */
-    public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
+    public static CreateAndStartAnimation(name: string, target: any, targetProperty: string,
         framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
+        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void, scene?: Scene): Nullable<Animatable> {
 
         var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
@@ -161,7 +176,15 @@ export class Animation {
             return null;
         }
 
-        return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        if (target.getScene) {
+            scene = target.getScene();
+        }
+
+        if (!scene) {
+            return null;
+        }
+
+        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
     }
 
     /**
@@ -479,7 +502,7 @@ export class Animation {
      */
     public get hasRunningRuntimeAnimations(): boolean {
         for (var runtimeAnimation of this._runtimeAnimations) {
-            if (!runtimeAnimation.isStopped) {
+            if (!runtimeAnimation.isStopped()) {
                 return true;
             }
         }
@@ -512,6 +535,7 @@ export class Animation {
         this.targetPropertyPath = targetProperty.split(".");
         this.dataType = dataType;
         this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
+        this.uniqueId = Animation._UniqueIdGenerator++;
     }
 
     // Methods
@@ -546,6 +570,7 @@ export class Animation {
      */
     public addEvent(event: AnimationEvent): void {
         this._events.push(event);
+        this._events.sort((a, b) => a.frame - b.frame);
     }
 
     /**
@@ -652,7 +677,7 @@ export class Animation {
      * Sets the easing function of the animation
      * @param easingFunction A custom mathematical formula for animation
      */
-    public setEasingFunction(easingFunction: EasingFunction): void {
+    public setEasingFunction(easingFunction: IEasingFunction): void {
         this._easingFunction = easingFunction;
     }
 
@@ -705,7 +730,7 @@ export class Animation {
     }
 
     /**
-     * Interpolates a Vector3 linearl
+     * Interpolates a Vector3 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
      * @param gradient Scalar amount to interpolate
@@ -775,6 +800,19 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color3 cubically
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+    public color3InterpolateFunctionWithTangents(startValue: Color3, outTangent: Color3, endValue: Color3, inTangent: Color3, gradient: number): Color3 {
+        return Color3.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }
+
+    /**
      * Interpolates a Color4 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
@@ -786,6 +824,19 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color4 cubically
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+     public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
+        return Color4.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }
+
+    /**
      * @hidden Internal use only
      */
     public _getKeyValue(value: any): any {
@@ -794,6 +845,19 @@ export class Animation {
         }
 
         return value;
+    }
+
+    /**
+     * Evaluate the animation value at a given frame
+     * @param currentFrame defines the frame where we want to evaluate the animation
+     * @returns the animation value
+     */
+    public evaluate(currentFrame: number) {
+        return this._interpolate(currentFrame, {
+            key: 0,
+            repeatCount: 0,
+            loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT
+        });
     }
 
     /**
@@ -817,18 +881,21 @@ export class Animation {
             }
         }
 
-        for (var key = startKeyIndex; key < keys.length; key++) {
+        for (var key = startKeyIndex; key < keys.length - 1; key++) {
             var endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {
                 state.key = key;
                 var startKey = keys[key];
                 var startValue = this._getKeyValue(startKey.value);
-                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
-                    return startValue;
-                }
-
                 var endValue = this._getKeyValue(endKey.value);
+                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
+                    if (endKey.frame > currentFrame) {
+                        return startValue;
+                    } else {
+                        return endValue;
+                    }
+                }
 
                 var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
                 var frameDelta = endKey.frame - startKey.frame;
@@ -897,21 +964,23 @@ export class Animation {
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
+                        var color3Value = useTangent ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient);
+                                return color3Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                                return color3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Color4
                     case Animation.ANIMATIONTYPE_COLOR4:
+                        var color4Value = useTangent ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color4InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.color4InterpolateFunction(startValue, endValue, gradient);
+                                return color4Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color4InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                                return color4Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
@@ -1021,6 +1090,24 @@ export class Animation {
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     key.values = [animationKey.value];
+                    if (animationKey.inTangent !== undefined) {
+                        key.values.push(animationKey.inTangent);
+                    }
+                    if (animationKey.outTangent !== undefined) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.outTangent);
+                    }
+                    if (animationKey.interpolation !== undefined) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        if (animationKey.outTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.interpolation);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_QUATERNION:
                 case Animation.ANIMATIONTYPE_MATRIX:
@@ -1028,6 +1115,24 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_COLOR3:
                 case Animation.ANIMATIONTYPE_COLOR4:
                     key.values = animationKey.value.asArray();
+                    if (animationKey.inTangent != undefined) {
+                        key.values.push(animationKey.inTangent.asArray());
+                    }
+                    if (animationKey.outTangent != undefined) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.outTangent.asArray());
+                    }
+                    if (animationKey.interpolation !== undefined) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        if (animationKey.outTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.interpolation);
+                    }
                     break;
             }
 
@@ -1134,17 +1239,21 @@ export class Animation {
 
         for (index = 0; index < parsedAnimation.keys.length; index++) {
             var key = parsedAnimation.keys[index];
-            var inTangent: any;
-            var outTangent: any;
+            let inTangent: any = undefined;
+            let outTangent: any = undefined;
+            let interpolation: any = undefined;
 
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     data = key.values[0];
-                    if (key.values.length >= 1) {
+                    if (key.values.length >= 2) {
                         inTangent = key.values[1];
                     }
-                    if (key.values.length >= 2) {
+                    if (key.values.length >= 3) {
                         outTangent = key.values[2];
+                    }
+                    if (key.values.length >= 4) {
+                        interpolation = key.values[3];
                     }
                     break;
                 case Animation.ANIMATIONTYPE_QUATERNION:
@@ -1161,19 +1270,52 @@ export class Animation {
                             outTangent = _outTangent;
                         }
                     }
+                    if (key.values.length >= 13) {
+                        interpolation = key.values[12];
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_MATRIX:
                     data = Matrix.FromArray(key.values);
+                    if (key.values.length >= 17) {
+                        interpolation = key.values[16];
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     data = Color3.FromArray(key.values);
+                    if (key.values[3]) {
+                        inTangent = Color3.FromArray(key.values[3]);
+                    }
+                    if (key.values[4]) {
+                        outTangent = Color3.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        interpolation = key.values[5];
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
                     data = Color4.FromArray(key.values);
+                    if (key.values[4]) {
+                        inTangent = Color4.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        outTangent = Color4.FromArray(key.values[5]);
+                    }
+                    if (key.values[6]) {
+                        interpolation = Color4.FromArray(key.values[6]);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:
                     data = Vector3.FromArray(key.values);
+                    if (key.values[3]) {
+                        inTangent = Vector3.FromArray(key.values[3]);
+                    }
+                    if (key.values[4]) {
+                        outTangent = Vector3.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        interpolation = key.values[5];
+                    }
                     break;
             }
 
@@ -1186,6 +1328,9 @@ export class Animation {
             }
             if (outTangent != undefined) {
                 keyData.outTangent = outTangent;
+            }
+            if (interpolation != undefined) {
+                keyData.interpolation = interpolation;
             }
             keys.push(keyData);
         }
@@ -1210,7 +1355,94 @@ export class Animation {
     public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
         SerializationHelper.AppendSerializedAnimations(source, destination);
     }
+
+    /**
+     * Creates a new animation or an array of animations from a snippet saved in a remote file
+     * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @returns a promise that will resolve to the new animation or an array of animations
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        if (serializationObject.animations) {
+                            serializationObject = serializationObject.animations;
+                        }
+
+                        if (serializationObject.length) {
+                            let output = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject) {
+                                output.push(this.Parse(serializedAnimation));
+                            }
+
+                            resolve(output);
+                        } else {
+                            let output = this.Parse(serializationObject);
+
+                            if (name) {
+                                output.name = name;
+                            }
+
+                            resolve(output);
+                        }
+                    } else {
+                        reject("Unable to load the animation");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates an animation or an array of animations from a snippet saved by the Inspector
+     * @param snippetId defines the snippet to load
+     * @returns a promise that will resolve to the new animation or a new array of animations
+     */
+    public static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+
+                        if (snippet.animations) {
+                            let serializationObject = JSON.parse(snippet.animations);
+                            let outputs = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject.animations) {
+                                let output = this.Parse(serializedAnimation);
+                                output.snippetId = snippetId;
+                                outputs.push(output);
+                            }
+
+                            resolve(outputs);
+                        } else {
+                            let serializationObject = JSON.parse(snippet.animation);
+                            let output = this.Parse(serializationObject);
+
+                            output.snippetId = snippetId;
+
+                            resolve(output);
+                        }
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
+    }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Animation"] = Animation;
+RegisterClass("BABYLON.Animation", Animation);
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

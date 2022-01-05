@@ -1,6 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Epsilon } from 'babylonjs/Maths/math.constants';
 import { Camera } from "babylonjs/Cameras/camera";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 
@@ -25,7 +26,7 @@ export class MultiLinePoint {
     private _meshObserver: Nullable<Observer<Camera>>;
 
     /** @hidden */
-    public _point: Vector2;
+    public _point: Vector3;
 
     /**
      * Creates a new MultiLinePoint
@@ -37,7 +38,7 @@ export class MultiLinePoint {
         this._x = new ValueAndUnit(0);
         this._y = new ValueAndUnit(0);
 
-        this._point = new Vector2(0, 0);
+        this._point = new Vector3(0, 0, 0);
     }
 
     /** Gets or sets x coordinate */
@@ -125,21 +126,21 @@ export class MultiLinePoint {
     }
 
     /**
-     * Gets a translation vector
+     * Gets a translation vector with Z component
      * @returns the translation vector
      */
-    public translate(): Vector2 {
+    public translate(): Vector3 {
         this._point = this._translatePoint();
 
         return this._point;
     }
 
-    private _translatePoint(): Vector2 {
+    private _translatePoint(): Vector3 {
         if (this._mesh != null) {
-            return this._multiLine._host.getProjectedPosition(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
+            return this._multiLine._host.getProjectedPositionWithZ(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
         }
         else if (this._control != null) {
-            return new Vector2(this._control.centerX, this._control.centerY);
+            return new Vector3(this._control.centerX, this._control.centerY, 1. - Epsilon);
         }
         else {
             var host: any = this._multiLine._host as any;
@@ -147,7 +148,7 @@ export class MultiLinePoint {
             var xValue: number = this._x.getValueInPixel(host, Number(host._canvas.width));
             var yValue: number = this._y.getValueInPixel(host, Number(host._canvas.height));
 
-            return new Vector2(xValue, yValue);
+            return new Vector3(xValue, yValue, 1. - Epsilon);
         }
     }
 

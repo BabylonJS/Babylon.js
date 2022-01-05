@@ -21,7 +21,7 @@ export interface ISoundTrackOptions {
 /**
  * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
  * It will be also used in a future release to apply effects on a specific track.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
  */
 export class SoundTrack {
     /**
@@ -41,7 +41,7 @@ export class SoundTrack {
 
     /**
      * Creates a new sound track.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
      * @param scene Define the scene the sound track belongs to
      * @param options
      */
@@ -57,7 +57,7 @@ export class SoundTrack {
     }
 
     private _initializeSoundTrackAudioGraph() {
-        if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
+        if (Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
             this._outputAudioNode = Engine.audioEngine.audioContext.createGain();
             this._outputAudioNode.connect(Engine.audioEngine.masterGain);
 
@@ -89,22 +89,22 @@ export class SoundTrack {
 
     /**
      * Adds a sound to this sound track
-     * @param sound define the cound to add
+     * @param sound define the sound to add
      * @ignoreNaming
      */
-    public AddSound(sound: Sound): void {
+    public addSound(sound: Sound): void {
         if (!this._isInitialized) {
             this._initializeSoundTrackAudioGraph();
         }
-        if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
+        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             sound.connectToSoundTrackAudioNode(this._outputAudioNode);
         }
         if (sound.soundTrackId) {
             if (sound.soundTrackId === -1) {
-                this._scene.mainSoundTrack.RemoveSound(sound);
+                this._scene.mainSoundTrack.removeSound(sound);
             }
             else if (this._scene.soundTracks) {
-                this._scene.soundTracks[sound.soundTrackId].RemoveSound(sound);
+                this._scene.soundTracks[sound.soundTrackId].removeSound(sound);
             }
         }
 
@@ -114,10 +114,10 @@ export class SoundTrack {
 
     /**
      * Removes a sound to this sound track
-     * @param sound define the cound to remove
+     * @param sound define the sound to remove
      * @ignoreNaming
      */
-    public RemoveSound(sound: Sound): void {
+    public removeSound(sound: Sound): void {
         var index = this.soundCollection.indexOf(sound);
         if (index !== -1) {
             this.soundCollection.splice(index, 1);
@@ -129,7 +129,7 @@ export class SoundTrack {
      * @param newVolume Define the new volume of the sound track
      */
     public setVolume(newVolume: number): void {
-        if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
+        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             this._outputAudioNode.gain.value = newVolume;
         }
     }
@@ -137,10 +137,10 @@ export class SoundTrack {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF(): void {
-        if (Engine.audioEngine.canUseWebAudio) {
+        if (Engine.audioEngine?.canUseWebAudio) {
             for (var i = 0; i < this.soundCollection.length; i++) {
                 this.soundCollection[i].switchPanningModelToHRTF();
             }
@@ -150,10 +150,10 @@ export class SoundTrack {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower(): void {
-        if (Engine.audioEngine.canUseWebAudio) {
+        if (Engine.audioEngine?.canUseWebAudio) {
             for (var i = 0; i < this.soundCollection.length; i++) {
                 this.soundCollection[i].switchPanningModelToEqualPower();
             }
@@ -162,8 +162,8 @@ export class SoundTrack {
 
     /**
      * Connect the sound track to an audio analyser allowing some amazing
-     * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * synchronization between the sounds/music and your visualization (VuMeter for instance).
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */
     public connectToAnalyser(analyser: Analyser): void {
@@ -171,7 +171,7 @@ export class SoundTrack {
             this._connectedAnalyser.stopDebugCanvas();
         }
         this._connectedAnalyser = analyser;
-        if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
+        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             this._outputAudioNode.disconnect();
             this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, Engine.audioEngine.masterGain);
         }

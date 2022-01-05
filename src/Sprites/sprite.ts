@@ -5,31 +5,19 @@ import { ISpriteManager, SpriteManager } from "./spriteManager";
 import { Color4 } from '../Maths/math.color';
 import { Observable } from '../Misc/observable';
 import { IAnimatable } from '../Animations/animatable.interface';
+import { ThinSprite } from './thinSprite';
+
 declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Class used to represent a sprite
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
-export class Sprite implements IAnimatable {
+export class Sprite extends ThinSprite implements IAnimatable {
     /** Gets or sets the current world position */
     public position: Vector3;
     /** Gets or sets the main color */
-    public color = new Color4(1.0, 1.0, 1.0, 1.0);
-    /** Gets or sets the width */
-    public width = 1.0;
-    /** Gets or sets the height */
-    public height = 1.0;
-    /** Gets or sets rotation angle */
-    public angle = 0;
-    /** Gets or sets the cell index in the sprite sheet */
-    public cellIndex: number;
-    /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
-    public cellRef: string;
-    /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-    public invertU = false;
-    /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-    public invertV = false;
+    public color: Color4;
     /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
     public disposeWhenFinishedAnimating: boolean;
     /** Gets the list of attached animations */
@@ -39,38 +27,18 @@ export class Sprite implements IAnimatable {
     /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
     public useAlphaForPicking = false;
 
-    /** @hidden */
-    public _xOffset: number;
-    /** @hidden */
-    public _yOffset: number;
-    /** @hidden */
-    public _xSize: number;
-    /** @hidden */
-    public _ySize: number;
-
     /**
      * Gets or sets the associated action manager
      */
     public actionManager: Nullable<ActionManager>;
 
     /**
-    * An event triggered when the control has been disposed
-    */
-   public onDisposeObservable = new Observable<Sprite>();
-
-    private _animationStarted = false;
-    private _loopAnimation = false;
-    private _fromIndex = 0;
-    private _toIndex = 0;
-    private _delay = 0;
-    private _direction = 1;
-    private _manager: ISpriteManager;
-    private _time = 0;
-    private _onAnimationEnd: Nullable<() => void> = null;
-    /**
-     * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
+     * An event triggered when the control has been disposed
      */
-    public isVisible = true;
+    public onDisposeObservable = new Observable<Sprite>();
+
+    private _manager: ISpriteManager;
+    private _onAnimationEnd: Nullable<() => void> = null;
 
     /**
      * Gets or sets the sprite size
@@ -82,13 +50,6 @@ export class Sprite implements IAnimatable {
     public set size(value: number) {
         this.width = value;
         this.height = value;
-    }
-
-    /**
-     * Returns a boolean indicating if the animation is started
-     */
-    public get animationStarted() {
-        return this._animationStarted;
     }
 
     /**
@@ -112,12 +73,13 @@ export class Sprite implements IAnimatable {
         /** defines the name */
         public name: string,
         manager: ISpriteManager) {
-        this._manager = manager;
+        super();
+        this.color = new Color4(1.0, 1.0, 1.0, 1.0);
+        this.position = Vector3.Zero();
 
+        this._manager = manager;
         this._manager.sprites.push(this);
         this.uniqueId = this._manager.scene.getUniqueId();
-
-        this.position = Vector3.Zero();
     }
 
     /**
@@ -132,7 +94,6 @@ export class Sprite implements IAnimatable {
     public get fromIndex() {
         return this._fromIndex;
     }
-
     public set fromIndex(value: number) {
         this.playAnimation(value, this._toIndex, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
@@ -141,7 +102,6 @@ export class Sprite implements IAnimatable {
     public get toIndex() {
         return this._toIndex;
     }
-
     public set toIndex(value: number) {
         this.playAnimation(this._fromIndex, value, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
@@ -150,7 +110,6 @@ export class Sprite implements IAnimatable {
     public get loopAnimation() {
         return this._loopAnimation;
     }
-
     public set loopAnimation(value: boolean) {
         this.playAnimation(this._fromIndex, this._toIndex, value, this._delay, this._onAnimationEnd);
     }
@@ -159,7 +118,6 @@ export class Sprite implements IAnimatable {
     public get delay() {
         return Math.max(this._delay, 1);
     }
-
     public set delay(value: number) {
         this.playAnimation(this._fromIndex, this._toIndex, this._loopAnimation, value, this._onAnimationEnd);
     }
@@ -173,57 +131,19 @@ export class Sprite implements IAnimatable {
      * @param onAnimationEnd defines a callback to call when animation ends
      */
     public playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: Nullable<() => void> = null): void {
-        this._fromIndex = from;
-        this._toIndex = to;
-        this._loopAnimation = loop;
-        this._delay = delay || 1;
-        this._animationStarted = true;
-
-        if (from < to) {
-            this._direction = 1;
-        } else {
-            this._direction = -1;
-            this._toIndex = from;
-            this._fromIndex = to;
-        }
-
-        this.cellIndex = from;
-        this._time = 0;
-
         this._onAnimationEnd = onAnimationEnd;
+
+        super.playAnimation(from, to, loop, delay, this._endAnimation);
     }
 
-    /** Stops current animation (if any) */
-    public stopAnimation(): void {
-        this._animationStarted = false;
-    }
-
-    /** @hidden */
-    public _animate(deltaTime: number): void {
-        if (!this._animationStarted) {
-            return;
+    private _endAnimation = () => {
+        if (this._onAnimationEnd) {
+            this._onAnimationEnd();
         }
-
-        this._time += deltaTime;
-        if (this._time > this._delay) {
-            this._time = this._time % this._delay;
-            this.cellIndex += this._direction;
-            if (this._direction > 0 && this.cellIndex > this._toIndex || this._direction < 0 && this.cellIndex < this._fromIndex) {
-                if (this._loopAnimation) {
-                    this.cellIndex = this._direction > 0 ? this._fromIndex : this._toIndex;
-                } else {
-                    this.cellIndex = this._toIndex;
-                    this._animationStarted = false;
-                    if (this._onAnimationEnd) {
-                        this._onAnimationEnd();
-                    }
-                    if (this.disposeWhenFinishedAnimating) {
-                        this.dispose();
-                    }
-                }
-            }
+        if (this.disposeWhenFinishedAnimating) {
+            this.dispose();
         }
-    }
+    };
 
     /** Release associated resources */
     public dispose(): void {

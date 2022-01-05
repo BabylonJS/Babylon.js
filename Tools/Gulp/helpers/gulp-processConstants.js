@@ -33,9 +33,13 @@ function processConstants(sourceCode) {
     }
 
     for (var constant of constantList) {
-        var value = babylonConstants[constant];
         var regex = new RegExp(`(?<![_0-9a-zA-Z])Constants\.${constant}(?![_0-9a-zA-Z])`, "g");
-        sourceCode = sourceCode.replace(regex, value);
+        var value = babylonConstants[constant];
+        if (typeof(value) === "string") {
+            sourceCode = sourceCode.replace(regex, "`" + value + "`");
+        } else  {
+            sourceCode = sourceCode.replace(regex, value);
+        }
     }
 
     return sourceCode;

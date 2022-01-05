@@ -1,11 +1,12 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { IAudioEngine } from "../Audio/audioEngine";
 import { Engine } from "../Engines/engine";
+import { IAudioEngine } from "./Interfaces/IAudioEngine";
+import { Tools } from "../Misc/tools";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export class Analyser {
     /**
@@ -50,6 +51,10 @@ export class Analyser {
      */
     constructor(scene: Scene) {
         this._scene = scene;
+        if (!Engine.audioEngine) {
+            Tools.Warn("No audio engine initialized, failed to create an audio analyser");
+            return;
+        }
         this._audioEngine = Engine.audioEngine;
         if (this._audioEngine.canUseWebAudio && this._audioEngine.audioContext) {
             this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();
@@ -69,8 +74,7 @@ export class Analyser {
     public getFrequencyBinCount(): number {
         if (this._audioEngine.canUseWebAudio) {
             return this._webAudioAnalyser.frequencyBinCount;
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -139,7 +143,7 @@ export class Analyser {
             if (this._registerFunc && this._debugCanvasContext) {
                 var workingArray = this.getByteFrequencyData();
 
-                this._debugCanvasContext.fillStyle = 'rgb(0, 0, 0)';
+                this._debugCanvasContext.fillStyle = "rgb(0, 0, 0)";
                 this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
 
                 // Draw the frequency domain chart.
@@ -149,8 +153,8 @@ export class Analyser {
                     var height = this.DEBUGCANVASSIZE.height * percent;
                     var offset = this.DEBUGCANVASSIZE.height - height - 1;
                     var barWidth = this.DEBUGCANVASSIZE.width / this.getFrequencyBinCount();
-                    var hue = i / this.getFrequencyBinCount() * 360;
-                    this._debugCanvasContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+                    var hue = (i / this.getFrequencyBinCount()) * 360;
+                    this._debugCanvasContext.fillStyle = "hsl(" + hue + ", 100%, 50%)";
                     this._debugCanvasContext.fillRect(i * barWidth, offset, barWidth, height);
                 }
             }

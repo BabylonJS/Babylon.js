@@ -4,11 +4,11 @@ import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IP
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 import { PhysicsRaycastResult } from "./physicsRaycastResult";
-import { _DevTools } from '../Misc/devTools';
+import { _WarnImport } from '../Misc/devTools';
 
 /**
  * Class used to control physics engine
- * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsEngine implements IPhysicsEngine {
     /**
@@ -30,7 +30,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @returns The default physics plugin
      */
     public static DefaultPluginFactory(): IPhysicsEnginePlugin {
-        throw _DevTools.WarnImport("CannonJSPlugin");
+        throw _WarnImport("CannonJSPlugin");
     }
 
     /**
@@ -98,7 +98,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Release all resources
      */
     public dispose(): void {
-        this._impostors.forEach(function(impostor) {
+        this._impostors.forEach(function (impostor) {
             impostor.dispose();
         });
         this._physicsPlugin.dispose();
@@ -165,7 +165,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param joint defines the joint to remove
      */
     public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-        var matchingJoints = this._joints.filter(function(impostorJoint) {
+        var matchingJoints = this._joints.filter(function (impostorJoint) {
             return (impostorJoint.connectedImpostor === connectedImpostor
                 && impostorJoint.joint === joint
                 && impostorJoint.mainImpostor === mainImpostor);
@@ -179,7 +179,7 @@ export class PhysicsEngine implements IPhysicsEngine {
 
     /**
      * Called by the scene. No need to call it.
-     * @param delta defines the timespam between frames
+     * @param delta defines the timespan between frames
      */
     public _step(delta: number) {
         //check if any mesh has no body / requires an update

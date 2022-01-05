@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 
 interface ITextInputLineComponentProps {
     label: string;
@@ -9,17 +9,20 @@ interface ITextInputLineComponentProps {
     target?: any;
     propertyName?: string;
     value?: string;
+    multilines?: boolean;
     onChange?: (value: string) => void;
+    validator?: (value: string) => boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
     private _localChange = false;
+    private _onFocus = false;
 
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!] || "" }
+        this.state = { value: this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!] || "" };
     }
 
     shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string }) {
@@ -36,6 +39,12 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return false;
     }
 
+    componentWillUnmount() {
+        if (this._onFocus) {
+            this.updateValue(this.state.value, true);
+        }
+    }
+
     raiseOnPropertyChanged(newValue: string, previousValue: string) {
         if (this.props.onChange) {
             this.props.onChange(newValue);
@@ -50,14 +59,20 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             object: this.props.target,
             property: this.props.propertyName!,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
     updateValue(value: string, raisePropertyChanged: boolean) {
-
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
+
+        if (this.props.validator && raisePropertyChanged) {
+            if (this.props.validator(value) == false) {
+                value = store;
+            }
+        }
+
         this.setState({ value: value });
 
         if (raisePropertyChanged) {
@@ -71,23 +86,57 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     render() {
         return (
-            <div className="textInputLine">
-                <div className="label">
+            <div className={this.props.multilines ? "textInputArea" : "textInputLine"}>
+                <div className="label" title={this.props.label}>
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input value={this.state.value} 
-                        onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                        onChange={evt => this.updateValue(evt.target.value, false)}
-                        onKeyDown={evt => {
-                            if (evt.keyCode !== 13) {
-                                return;
-                            }
-                            this.updateValue(this.state.value, true);
-                        }} onBlur={evt => {
-                            this.updateValue(evt.target.value, true)
-                            this.props.globalState.blockKeyboardEvents = false;
-                        }}/>
+                    {this.props.multilines && (
+                        <>
+                            <textarea
+                                value={this.state.value}
+                                onFocus={() => {
+                                    this.props.globalState.blockKeyboardEvents = true;
+                                    this._onFocus = true;
+                                }}
+                                onChange={(evt) => this.updateValue(evt.target.value, false)}
+                                onKeyDown={(evt) => {
+                                    if (evt.keyCode !== 13) {
+                                        return;
+                                    }
+                                    this.updateValue(this.state.value, true);
+                                }}
+                                onBlur={(evt) => {
+                                    this.updateValue(evt.target.value, true);
+                                    this.props.globalState.blockKeyboardEvents = false;
+                                    this._onFocus = false;
+                                }}
+                            />
+                        </>
+                    )}
+                    {!this.props.multilines && (
+                        <>
+                            <input
+                                value={this.state.value}
+                                onFocus={() => {
+                                    this.props.globalState.blockKeyboardEvents = true;
+                                    this._onFocus = true;
+                                }}
+                                onChange={(evt) => this.updateValue(evt.target.value, false)}
+                                onKeyDown={(evt) => {
+                                    if (evt.keyCode !== 13) {
+                                        return;
+                                    }
+                                    this.updateValue(this.state.value, true);
+                                }}
+                                onBlur={(evt) => {
+                                    this.updateValue(evt.target.value, true);
+                                    this.props.globalState.blockKeyboardEvents = false;
+                                    this._onFocus = false;
+                                }}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
         );

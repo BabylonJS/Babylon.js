@@ -9,7 +9,7 @@ export let name = "viewer Tests";
  * To prevent test-state-leakage ensure that there is a viewer.dispose() for every new DefaultViewer
  */
 
-describe('Viewer', function() {
+describe('Viewer', function () {
     it('should initialize a new viewer and its internal variables', (done) => {
         let viewer = Helper.getNewViewerInstance();
         assert.isDefined(viewer.baseId, "base id should be defined");
@@ -102,13 +102,13 @@ describe('Viewer', function() {
                 renderCount++;
             });
             assert.equal(renderCount, 0);
-            window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(function () {
                 assert.equal(renderCount, 1, "render loop should have been executed");
                 viewer.runRenderLoop = false;
-                window.requestAnimationFrame(function() {
+                window.requestAnimationFrame(function () {
                     assert.equal(renderCount, 1, "Render loop should not have been executed");
                     viewer.runRenderLoop = true;
-                    window.requestAnimationFrame(function() {
+                    window.requestAnimationFrame(function () {
                         assert.equal(renderCount, 2, "render loop should have been executed again");
                         viewer.dispose();
                         done();
@@ -192,19 +192,19 @@ describe('Viewer', function() {
     it('should attach and detach camera control correctly', (done) => {
         let viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
-            assert.isDefined(viewer.sceneManager.camera.inputs.attachedElement, "Camera is not attached per default");
+            assert.isTrue(viewer.sceneManager.camera.inputs.attachedToElement, "Camera is not attached per default");
             viewer.updateConfiguration({
                 scene: {
                     disableCameraControl: true
                 }
             });
-            assert.isNull(viewer.sceneManager.camera.inputs.attachedElement, "Camera is still attached");
+            assert.isFalse(viewer.sceneManager.camera.inputs.attachedToElement, "Camera is still attached");
             viewer.updateConfiguration({
                 scene: {
                     disableCameraControl: false
                 }
             });
-            assert.isDefined(viewer.sceneManager.camera.inputs.attachedElement, "Camera not attached");
+            assert.isTrue(viewer.sceneManager.camera.inputs.attachedToElement, "Camera not attached");
             viewer.dispose();
             done();
         });
@@ -215,7 +215,7 @@ describe('Viewer', function() {
         viewer.onInitDoneObservable.add(() => {
             Helper.MockScreenCapture(viewer, Helper.mockScreenCaptureData());
 
-            viewer.takeScreenshot(function(data) {
+            viewer.takeScreenshot(function (data) {
                 assert.equal(data, Helper.mockScreenCaptureData(), "Screenshot failed.");
 
                 viewer.dispose();

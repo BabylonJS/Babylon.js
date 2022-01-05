@@ -294,7 +294,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      */
     public disableEdgeBlur() { this._edgeBlur = 0; }
     /**
-     * Sets the amout of grain
+     * Sets the amount of grain
      * @param amount Amount of grain
      */
     public setGrainAmount(amount: number) { this._grainAmount = amount; }
@@ -389,7 +389,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
     /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-     * @param disableDepthRender If the scens depth rendering should be disabled (default: false)
+     * @param disableDepthRender If the scene's depth rendering should be disabled (default: false)
      */
     public dispose(disableDepthRender: boolean = false): void {
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
@@ -432,6 +432,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
             null, Texture.TRILINEAR_SAMPLINGMODE,
             this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
 
+        this._highlightsPostProcess.externalTextureSamplerBinding = true;
         this._highlightsPostProcess.onApply = (effect: Effect) => {
             effect.setFloat('gain', this._highlightsGain);
             effect.setFloat('threshold', this._highlightsThreshold);
@@ -452,6 +453,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
             ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
             this._scene.getEngine(), false);
 
+        this._depthOfFieldPostProcess.externalTextureSamplerBinding = true;
         this._depthOfFieldPostProcess.onApply = (effect: Effect) => {
 
             effect.setTexture("depthSampler", this._depthTexture);

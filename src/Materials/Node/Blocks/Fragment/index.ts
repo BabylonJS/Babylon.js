@@ -7,3 +7,5 @@ export * from "./frontFacingBlock";
 export * from "./derivativeBlock";
 export * from "./fragCoordBlock";
 export * from "./screenSizeBlock";
+export * from "./screenSpaceBlock";
+export * from "./twirlBlock";

@@ -1,4 +1,3 @@
-import { Nullable } from "../../types";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
@@ -19,14 +18,14 @@ declare module "../../Cameras/arcRotateCameraInputsManager" {
  * Add orientation input support to the input manager.
  * @returns the current input manager
  */
-ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function(): ArcRotateCameraInputsManager {
+ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function (): ArcRotateCameraInputsManager {
     this.add(new ArcRotateCameraVRDeviceOrientationInput());
     return this;
 };
 
 /**
  * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -59,17 +58,18 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this.camera.attachControl(element, noPreventDefault);
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+
+        this.camera.attachControl(noPreventDefault);
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
         if (hostWindow) {
             // check iOS 13+ support
-            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+            if (typeof (DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
                 (<any>DeviceOrientationEvent).requestPermission()
                     .then((response: string) => {
                         if (response === 'granted') {
@@ -118,14 +118,19 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void;
+
+    /**
+     * Detach the current controls from the specified dom element.
+     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     */
+    public detachControl(ignored?: any): void {
         window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

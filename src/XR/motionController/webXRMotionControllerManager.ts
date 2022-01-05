@@ -1,10 +1,10 @@
-import {
-    WebXRAbstractMotionController, IMotionControllerProfile,
-} from './webXRAbstractMotionController';
-import { WebXRGenericTriggerMotionController } from './webXRGenericMotionController';
-import { Scene } from '../../scene';
-import { Tools } from '../../Misc/tools';
-import { WebXRProfiledMotionController } from './webXRProfiledMotionController';
+import { WebXRAbstractMotionController, IMotionControllerProfile } from "./webXRAbstractMotionController";
+import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionController";
+import { Scene } from "../../scene";
+import { Tools } from "../../Misc/tools";
+import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
+import { Nullable } from "../../types";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -19,12 +19,23 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  *
  * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
  */
+
+const controllerCache: Array<{
+    filename: string;
+    path: string;
+    meshes: AbstractMesh[]
+}> = [];
+
+/**
+ * Motion controller manager is managing the different webxr profiles and makes sure the right
+ * controller is being loaded.
+ */
 export class WebXRMotionControllerManager {
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
     // cache for loading
     private static _ProfileLoadingPromises: { [profileName: string]: Promise<IMotionControllerProfile> } = {};
-    private static _ProfilesList: Promise<{ [profile: string]: string }>;
+    private static _ProfilesList: Nullable<Promise<{ [profile: string]: string }>>;
 
     /**
      * The base URL of the online controller repository. Can be changed at any time.
@@ -40,10 +51,16 @@ export class WebXRMotionControllerManager {
     public static UseOnlineRepository: boolean = true;
 
     /**
+     * Disable the controller cache and load the models each time a new WebXRProfileMotionController is loaded.
+     * Defaults to true.
+     */
+    public static DisableControllerCache: boolean = true;
+
+    /**
      * Clear the cache used for profile loading and reload when requested again
      */
     public static ClearProfilesCache() {
-        delete this._ProfilesList;
+        this._ProfilesList = null;
         this._ProfileLoadingPromises = {};
     }
 
@@ -64,6 +81,7 @@ export class WebXRMotionControllerManager {
         this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
         this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
         this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("generic-hand-select", ["generic-trigger"]);
     }
 
     /**
@@ -108,7 +126,7 @@ export class WebXRMotionControllerManager {
         // legacy support - try using the gamepad id
         if (xrInput.gamepad && xrInput.gamepad.id) {
             switch (xrInput.gamepad.id) {
-                case (xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined):
+                case xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined:
                     // oculus in gamepad id
                     profileArray.push("oculus-touch-v2");
                     break;
@@ -132,7 +150,6 @@ export class WebXRMotionControllerManager {
             return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
                 return secondFunction.call(this, profileArray, xrInput, scene);
             });
-
         } else {
             // use only available functions
             return this._LoadProfilesFromAvailableControllers(profileArray, xrInput, scene);
@@ -169,41 +186,57 @@ export class WebXRMotionControllerManager {
      * @return a promise that resolves to a map of profiles available online
      */
     public static UpdateProfilesList() {
-        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
+        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + "/profiles/profilesList.json", false).then((data) => {
             return JSON.parse(data.toString());
         });
         return this._ProfilesList;
     }
 
-    private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
-        return Promise.resolve().then(() => {
-            if (!this._ProfilesList) {
-                return this.UpdateProfilesList();
-            } else {
-                return this._ProfilesList;
-            }
-        }).then((profilesList: { [profile: string]: string }) => {
-            // load the right profile
-            for (let i = 0; i < profileArray.length; ++i) {
-                // defensive
-                if (!profileArray[i]) {
-                    continue;
-                }
-                if (profilesList[profileArray[i]]) {
-                    return profileArray[i];
-                }
-            }
-
-            throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
-        }).then((profileToLoad: string) => {
-            // load the profile
-            if (!this._ProfileLoadingPromises[profileToLoad]) {
-                this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then((data) => <IMotionControllerProfile>JSON.parse(data as string));
-            }
-            return this._ProfileLoadingPromises[profileToLoad];
-        }).then((profile: IMotionControllerProfile) => {
-            return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl);
+    /**
+     * Clear the controller's cache (usually happens at the end of a session)
+     */
+    public static ClearControllerCache() {
+        controllerCache.forEach((cacheItem) => {
+            cacheItem.meshes.forEach((mesh) => {
+                mesh.dispose(false, true);
+            });
         });
+        controllerCache.length = 0;
+    }
+
+    private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
+        return Promise.resolve()
+            .then(() => {
+                if (!this._ProfilesList) {
+                    return this.UpdateProfilesList();
+                } else {
+                    return this._ProfilesList;
+                }
+            })
+            .then((profilesList: { [profile: string]: string }) => {
+                // load the right profile
+                for (let i = 0; i < profileArray.length; ++i) {
+                    // defensive
+                    if (!profileArray[i]) {
+                        continue;
+                    }
+                    if (profilesList[profileArray[i]]) {
+                        return profileArray[i];
+                    }
+                }
+
+                throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
+            })
+            .then((profileToLoad: string) => {
+                // load the profile
+                if (!this._ProfileLoadingPromises[profileToLoad]) {
+                    this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then((data) => <IMotionControllerProfile>JSON.parse(data as string));
+                }
+                return this._ProfileLoadingPromises[profileToLoad];
+            })
+            .then((profile: IMotionControllerProfile) => {
+                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl, this.DisableControllerCache ? undefined : controllerCache);
+            });
     }
 
     private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
@@ -228,7 +261,7 @@ export class WebXRMotionControllerManager {
 
 // register the generic profile(s) here so we will at least have them
 WebXRMotionControllerManager.RegisterController(WebXRGenericTriggerMotionController.ProfileId, (xrInput: XRInputSource, scene: Scene) => {
-    return new WebXRGenericTriggerMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness);
+    return new WebXRGenericTriggerMotionController(scene, <any>xrInput.gamepad, xrInput.handedness);
 });
 
 // register fallbacks

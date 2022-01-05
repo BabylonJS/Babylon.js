@@ -1,5 +1,5 @@
 {
-    "name": "babylonjs",
+    "name": "babylonjs-gulp",
     "version": "0.0.0",
     "description": "Babylon.js is a 3D engine based on webgl and javascript",
     "main": "",
@@ -9,9 +9,16 @@
     "readme": "https://github.com/BabylonJS/Babylon.js/edit/master/readme.md",
     "license": "(Apache-2.0)",
     "scripts": {
-        "install": "cd ../../ && npm install && cd Playground/ && npm install && cd ../Viewer && npm install && cd ../Tools/Gulp/",
-        "build": "gulp --max-old-space-size=8192 --tsLintFix",
+        "install": "cd ../../ && npm install && cd ./Viewer && npm install && cd ../Tools/Gulp/",
+        "build": "gulp --max-old-space-size=8192 --tsLintFix=true",
         "start": "gulp run --max-old-space-size=8192",
         "start-public-ssl": "gulp run --max-old-space-size=8192 --public --ssl"
+    },
+    "dependencies": {
+        "node-sass": "6.0.1"
+    },
+    "devDependencies": {
+        "gulp": "4.0.0",
+        "typescript": "~4.2.4"
     }
 }

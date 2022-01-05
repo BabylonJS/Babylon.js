@@ -11,6 +11,7 @@ attribute vec3 normal;
 #endif
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
@@ -30,7 +31,7 @@ attribute vec2 uv2;
 varying vec2 vMainUV1;
 #endif
 #ifdef MAINUV2
-varying vec2 vMainUV2; 
+varying vec2 vMainUV2;
 #endif
 
 #if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
@@ -40,7 +41,7 @@ varying vec2 vDiffuseUV;
 #include<clipPlaneVertexDeclaration>
 
 #include<fogVertexDeclaration>
-#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<__decl__lightVxFragment>[0..maxSimultaneousLights]
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
@@ -50,14 +51,21 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 
 #ifdef REFLECTIONMAP_SKYBOX
     vPositionUVW = position;
-#endif 
+#endif
 
 #include<instancesVertex>
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
@@ -106,13 +114,13 @@ void main(void) {
 
 #ifdef MAINUV1
 	vMainUV1 = uv;
-#endif 
+#endif
 
 #ifdef MAINUV2
 	vMainUV2 = uv2;
 #endif
 
-#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0 
+#if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
     if (vDiffuseInfos.x == 0.)
     {
         vDiffuseUV = vec2(diffuseMatrix * vec4(uv, 1.0, 0.0));
@@ -141,4 +149,6 @@ void main(void) {
 #ifdef POINTSIZE
     gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

@@ -5,6 +5,7 @@ const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConf
 var config = babylonWebpackConfig({
     module: "inspector",
     resolve: {
+        symlinks: false,
         extensions: [".js", '.ts', ".tsx"],
         alias: {
             "re-resizable$": __dirname + "/../node_modules/re-resizable/lib/index.es5.js"

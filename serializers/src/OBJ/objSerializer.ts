@@ -21,6 +21,9 @@ export class OBJExport {
     public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
         const output: string[] = [];
         let v = 1;
+        // keep track of uv index in case mixed meshes are passed in
+        let textureV = 1;
+
         if (materials) {
             if (!matlibname) {
                 matlibname = 'mat';
@@ -32,11 +35,13 @@ export class OBJExport {
             output.push("o object_" + j);
 
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
-            let lastMatrix: Nullable<Matrix> = null;
+            let inverseTransform: Nullable<Matrix> = null;
             if (globalposition) {
-                var newMatrix = Matrix.Translation(mesh[j].position.x, mesh[j].position.y, mesh[j].position.z);
-                lastMatrix = Matrix.Translation(-(mesh[j].position.x), -(mesh[j].position.y), -(mesh[j].position.z));
-                mesh[j].bakeTransformIntoVertices(newMatrix);
+                const transform = mesh[j].computeWorldMatrix(true);
+                inverseTransform = new Matrix();
+                transform.invertToRef(inverseTransform);
+
+                mesh[j].bakeTransformIntoVertices(transform);
             }
 
             //TODO: submeshes (groups)
@@ -59,7 +64,8 @@ export class OBJExport {
             const trunkNormals = g.getVerticesData('normal');
             const trunkUV = g.getVerticesData('uv');
             const trunkFaces = g.getIndices();
-            var curV = 0;
+            let currentV = 0;
+            let currentTextureV = 0;
 
             if (!trunkVerts || !trunkFaces) {
                 Tools.Warn("There are no position vertices or indices on the mesh!");
@@ -74,7 +80,7 @@ export class OBJExport {
                 } else {
                     output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + -trunkVerts[i + 2]);
                 }
-                curV++;
+                currentV++;
             }
 
             if (trunkNormals != null) {
@@ -86,15 +92,17 @@ export class OBJExport {
 
                 for (i = 0; i < trunkUV.length; i += 2) {
                     output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
+                    currentTextureV++;
                 }
             }
 
             for (i = 0; i < trunkFaces.length; i += 3) {
                 const indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
+                const textureIndices = [String(trunkFaces[i + 2] + textureV), String(trunkFaces[i + 1] + textureV), String(trunkFaces[i] + textureV)];
                 const blanks: string[] = ["", "", ""];
 
                 const facePositions = indices;
-                const faceUVs = trunkUV != null ? indices : blanks;
+                const faceUVs = trunkUV != null ? textureIndices : blanks;
                 const faceNormals = trunkNormals != null ? indices : blanks;
 
                 output.push(
@@ -104,10 +112,11 @@ export class OBJExport {
                 );
             }
             //back de previous matrix, to not change the original mesh in the scene
-            if (globalposition && lastMatrix) {
-                mesh[j].bakeTransformIntoVertices(lastMatrix);
+            if (globalposition && inverseTransform) {
+                mesh[j].bakeTransformIntoVertices(inverseTransform);
             }
-            v += curV;
+            v += currentV;
+            textureV += currentTextureV;
         }
         const text: string = output.join("\n");
         return (text);

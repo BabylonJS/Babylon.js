@@ -4,8 +4,7 @@ import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicAnaglyphRigMode";
+import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
 
 Node.AddNodeConstructor("AnaglyphUniversalCamera", (name, scene, options) => {
     return () => new AnaglyphUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
@@ -13,7 +12,7 @@ Node.AddNodeConstructor("AnaglyphUniversalCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
- * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
  */
 export class AnaglyphUniversalCamera extends UniversalCamera {
     /**
@@ -36,4 +35,6 @@ export class AnaglyphUniversalCamera extends UniversalCamera {
     public getClassName(): string {
         return "AnaglyphUniversalCamera";
     }
+
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
 }

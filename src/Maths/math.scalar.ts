@@ -16,8 +16,7 @@ export class Scalar {
      * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
      */
     public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298E-45): boolean {
-        var num = a - b;
-        return -epsilon <= num && num <= epsilon;
+        return Math.abs(a - b) <= epsilon;
     }
 
     /**
@@ -70,6 +69,39 @@ export class Scalar {
      */
     public static Log2(value: number): number {
         return Math.log(value) * Math.LOG2E;
+    }
+
+    /**
+     * the floor part of a log2 value.
+     * @param value the value to compute log2 of
+     * @returns the log2 of value.
+     */
+    public static ILog2(value: number): number {
+        if (Math.log2) {
+            return Math.floor(Math.log2(value));
+        }
+
+        if (value < 0) {
+            return NaN;
+        } else if (value === 0) {
+            return -Infinity;
+        }
+
+        let n = 0;
+        if (value < 1) {
+            while (value < 1) {
+                n++;
+                value = value * 2;
+            }
+            n = -n;
+        } else if (value > 1) {
+            while (value > 1) {
+                n++;
+                value = Math.floor(value / 2);
+            }
+        }
+
+        return n;
     }
 
     /**
@@ -239,11 +271,11 @@ export class Scalar {
     /**
      * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
      * @see http://mathworld.wolfram.com/HermitePolynomial.html
-     * @param value1 spline value
-     * @param tangent1 spline value
-     * @param value2 spline value
-     * @param tangent2 spline value
-     * @param amount input value
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns hermite result
      */
     public static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
@@ -255,6 +287,25 @@ export class Scalar {
         var part4 = cubed - squared;
 
         return (((value1 * part1) + (value2 * part2)) + (tangent1 * part3)) + (tangent2 * part4);
+    }
+
+    /**
+     * Returns a new scalar which is the 1st derivative of the Hermite spline defined by the scalars "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @returns 1st derivative
+     */
+    public static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
+        const t2 = time * time;
+        return (
+            (t2 - time) * 6 * value1 +
+            (3 * t2 - 4 * time + 1) * tangent1 +
+            (-t2 + time) * 6 * value2 +
+            (3 * t2 - 2 * time) * tangent2
+        );
     }
 
     /**
@@ -312,5 +363,19 @@ export class Scalar {
         angle -= (Scalar.TwoPi * Math.floor((angle + Math.PI) / Scalar.TwoPi));
 
         return angle;
+    }
+
+    /**
+     * Returns the highest common factor of two integers.
+     * @param a first parameter
+     * @param b second parameter
+     * @return HCF of a and b
+     */
+    public static HCF(a: number, b: number): number {
+        const r: number = a % b;
+        if (r === 0) {
+            return b;
+        }
+        return Scalar.HCF(b, r);
     }
 }

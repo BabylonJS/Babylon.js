@@ -1,5 +1,33 @@
 import { FloatArray, Nullable, IndicesArray } from '../types';
 import { Vector2, Vector3 } from './math.vector';
+import { nativeOverride } from '../Misc/decorators';
+
+// This helper class is only here so we can apply the nativeOverride decorator to functions.
+class MathHelpers {
+
+    @nativeOverride.filter((...[positions, indices]: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(positions) && !Array.isArray(indices))
+    public static extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, minimum: Vector3, maximum: Vector3): void {
+        for (var index = indexStart; index < indexStart + indexCount; index++) {
+            const offset = indices[index] * 3;
+            const x = positions[offset];
+            const y = positions[offset + 1];
+            const z = positions[offset + 2];
+            minimum.minimizeInPlaceFromFloats(x, y, z);
+            maximum.maximizeInPlaceFromFloats(x, y, z);
+        }
+    }
+
+    @nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
+    public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
+        for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
+            const x = positions[offset];
+            const y = positions[offset + 1];
+            const z = positions[offset + 2];
+            minimum.minimizeInPlaceFromFloats(x, y, z);
+            maximum.maximizeInPlaceFromFloats(x, y, z);
+        }
+    }
+}
 
 /**
  * Extracts minimum and maximum values from a list of indexed positions
@@ -14,14 +42,7 @@ export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesA
     var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-    for (var index = indexStart; index < indexStart + indexCount; index++) {
-        const offset = indices[index] * 3;
-        const x = positions[offset];
-        const y = positions[offset + 1];
-        const z = positions[offset + 2];
-        minimum.minimizeInPlaceFromFloats(x, y, z);
-        maximum.maximizeInPlaceFromFloats(x, y, z);
-    }
+    MathHelpers.extractMinAndMaxIndexed(positions, indices, indexStart, indexCount, minimum, maximum);
 
     if (bias) {
         minimum.x -= minimum.x * bias.x + bias.y;
@@ -55,13 +76,7 @@ export function extractMinAndMax(positions: FloatArray, start: number, count: nu
         stride = 3;
     }
 
-    for (var index = start, offset = start * stride; index < start + count; index++ , offset += stride) {
-        const x = positions[offset];
-        const y = positions[offset + 1];
-        const z = positions[offset + 2];
-        minimum.minimizeInPlaceFromFloats(x, y, z);
-        maximum.maximizeInPlaceFromFloats(x, y, z);
-    }
+    MathHelpers.extractMinAndMax(positions, start, count, stride, minimum, maximum);
 
     if (bias) {
         minimum.x -= minimum.x * bias.x + bias.y;

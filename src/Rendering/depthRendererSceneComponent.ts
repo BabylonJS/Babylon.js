@@ -16,9 +16,10 @@ declare module "../scene" {
          * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
          * @param camera The camera to create the depth renderer on (default: scene's active camera)
          * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+         * @param force32bitsFloat Forces 32 bits float when supported (else 16 bits float is prioritized over 32 bits float if supported)
          * @returns the created depth renderer
          */
-        enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean): DepthRenderer;
+        enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean, force32bitsFloat?: boolean): DepthRenderer;
 
         /**
          * Disables a depth renderer for a given camera
@@ -28,7 +29,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>, storeNonLinearDepth = false): DepthRenderer {
+Scene.prototype.enableDepthRenderer = function (camera?: Nullable<Camera>, storeNonLinearDepth = false, force32bitsFloat: boolean = false): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
         throw "No camera available to enable depth renderer";
@@ -37,11 +38,12 @@ Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>, storeN
         this._depthRenderer = {};
     }
     if (!this._depthRenderer[camera.id]) {
-        var textureType = 0;
-        if (this.getEngine().getCaps().textureHalfFloatRender) {
+        const supportFullfloat = !!this.getEngine().getCaps().textureFloatRender;
+        let textureType = 0;
+        if (this.getEngine().getCaps().textureHalfFloatRender && (!force32bitsFloat || !supportFullfloat)) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
         }
-        else if (this.getEngine().getCaps().textureFloatRender) {
+        else if (supportFullfloat) {
             textureType = Constants.TEXTURETYPE_FLOAT;
         } else {
             textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -52,14 +54,13 @@ Scene.prototype.enableDepthRenderer = function(camera?: Nullable<Camera>, storeN
     return this._depthRenderer[camera.id];
 };
 
-Scene.prototype.disableDepthRenderer = function(camera?: Nullable<Camera>): void {
+Scene.prototype.disableDepthRenderer = function (camera?: Nullable<Camera>): void {
     camera = camera || this.activeCamera;
     if (!camera || !this._depthRenderer || !this._depthRenderer[camera.id]) {
         return;
     }
 
     this._depthRenderer[camera.id].dispose();
-    delete this._depthRenderer[camera.id];
 };
 
 /**
@@ -68,7 +69,7 @@ Scene.prototype.disableDepthRenderer = function(camera?: Nullable<Camera>): void
  */
 export class DepthRendererSceneComponent implements ISceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_DEPTHRENDERER;
 
@@ -102,7 +103,7 @@ export class DepthRendererSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         for (var key in this.scene._depthRenderer) {

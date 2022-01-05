@@ -72,7 +72,7 @@ export class PhysicsJoint {
     public set physicsJoint(newJoint: any) {
 
         if (this._physicsJoint) {
-            //remove from the wolrd
+            //remove from the world
         }
 
         this._physicsJoint = newJoint;
@@ -180,7 +180,7 @@ export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoin
     /**
      * Initializes the Motor-Enabled Joint
      * @param type The type of the joint
-     * @param jointData The physica joint data for the joint
+     * @param jointData The physical joint data for the joint
      */
     constructor(type: number, jointData: PhysicsJointData) {
         super(type, jointData);

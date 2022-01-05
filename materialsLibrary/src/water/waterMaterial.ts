@@ -15,17 +15,18 @@ import { IImageProcessingConfigurationDefines, ImageProcessingConfiguration } fr
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Camera } from "babylonjs/Cameras/camera";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./water.fragment";
 import "./water.vertex";
 import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -50,6 +51,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public INSTANCES = false;
     public SPECULARTERM = false;
     public LOGARITHMICDEPTH = false;
+    public USE_REVERSE_DEPTHBUFFER = false;
     public FRESNELSEPARATE = false;
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;
@@ -68,6 +70,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -104,27 +107,27 @@ export class WaterMaterial extends PushMaterial {
     public maxSimultaneousLights: number;
 
     /**
-    * @param {number}: Represents the wind force
-    */
+     * Defines the wind force.
+     */
     @serialize()
     public windForce: number = 6;
     /**
-    * @param {Vector2}: The direction of the wind in the plane (X, Z)
-    */
+     * Defines the direction of the wind in the plane (X, Z).
+     */
     @serializeAsVector2()
     public windDirection: Vector2 = new Vector2(0, 1);
     /**
-    * @param {number}: Wave height, represents the height of the waves
-    */
+     * Defines the height of the waves.
+     */
     @serialize()
     public waveHeight: number = 0.4;
     /**
-    * @param {number}: Bump height, represents the bump height related to the bump map
-    */
+     * Defines the bump height related to the bump map.
+     */
     @serialize()
     public bumpHeight: number = 0.4;
     /**
-     * @param {boolean}: Add a smaller moving bump to less steady waves.
+     * Defines wether or not: to add a smaller moving bump to less steady waves.
      */
     @serialize("bumpSuperimpose")
     private _bumpSuperimpose = false;
@@ -132,7 +135,7 @@ export class WaterMaterial extends PushMaterial {
     public bumpSuperimpose: boolean;
 
     /**
-     * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+     * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
      */
     @serialize("fresnelSeparate")
     private _fresnelSeparate = false;
@@ -140,7 +143,7 @@ export class WaterMaterial extends PushMaterial {
     public fresnelSeparate: boolean;
 
     /**
-     * @param {boolean}: bump Waves modify the reflection.
+     * Defines wether or not bump Wwves modify the reflection.
      */
     @serialize("bumpAffectsReflection")
     private _bumpAffectsReflection = false;
@@ -148,36 +151,42 @@ export class WaterMaterial extends PushMaterial {
     public bumpAffectsReflection: boolean;
 
     /**
-    * @param {number}: The water color blended with the refraction (near)
-    */
+     * Defines the water color blended with the refraction (near).
+     */
     @serializeAsColor3()
     public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
     /**
-    * @param {number}: The blend factor related to the water color
-    */
+     * Defines the blend factor related to the water color.
+     */
     @serialize()
     public colorBlendFactor: number = 0.2;
     /**
-     * @param {number}: The water color blended with the reflection (far)
+     * Defines the water color blended with the reflection (far).
      */
     @serializeAsColor3()
     public waterColor2: Color3 = new Color3(0.1, 0.1, 0.6);
     /**
-     * @param {number}: The blend factor related to the water color (reflection, far)
+     * Defines the blend factor related to the water color (reflection, far).
      */
     @serialize()
     public colorBlendFactor2: number = 0.2;
     /**
-    * @param {number}: Represents the maximum length of a wave
-    */
+     * Defines the maximum length of a wave.
+     */
     @serialize()
     public waveLength: number = 0.1;
 
     /**
-    * @param {number}: Defines the waves speed
-    */
+     * Defines the waves speed.
+     */
     @serialize()
     public waveSpeed: number = 1.0;
+
+    /**
+     * Defines the number of times waves are repeated. This is typically used to adjust waves count according to the ground's size where the material is applied on.
+     */
+    @serialize()
+    public waveCount: number = 20;
     /**
      * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
      * will avoid calculating useless pixels in the pixel shader of the water material.
@@ -307,11 +316,11 @@ export class WaterMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new WaterMaterialDefines();
+        if (!subMesh.materialDefines) {
+            subMesh.materialDefines = new WaterMaterialDefines();
         }
 
-        var defines = <WaterMaterialDefines>subMesh._materialDefines;
+        var defines = <WaterMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -380,7 +389,7 @@ export class WaterMaterial extends PushMaterial {
 
         if (this._waitingRenderList) {
             for (var i = 0; i < this._waitingRenderList.length; i++) {
-                this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                this.addToRenderList(scene.getNodeById(this._waitingRenderList[i]));
             }
 
             this._waitingRenderList = null;
@@ -441,7 +450,8 @@ export class WaterMaterial extends PushMaterial {
 
                 // Water
                 "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-                "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed"
+                "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed",
+                "waveCount"
             ];
             var samplers = ["normalSampler",
                 // Water
@@ -472,7 +482,7 @@ export class WaterMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
 
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -488,7 +498,7 @@ export class WaterMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <WaterMaterialDefines>subMesh._materialDefines;
+        var defines = <WaterMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -522,7 +532,7 @@ export class WaterMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -573,6 +583,7 @@ export class WaterMaterial extends PushMaterial {
         this._activeEffect.setColor4("waterColor2", this.waterColor2, 1.0);
         this._activeEffect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
         this._activeEffect.setFloat("waveSpeed", this.waveSpeed);
+        this._activeEffect.setFloat("waveCount", this.waveCount);
 
         // image processing
         if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
@@ -660,7 +671,7 @@ export class WaterMaterial extends PushMaterial {
 
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = true;
+            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     }
@@ -764,9 +775,9 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-        var mesh = Mesh.CreateGround(name, 512, 512, 32, scene, false);
+        var mesh = CreateGround(name, { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
         return mesh;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.WaterMaterial"] = WaterMaterial;
+RegisterClass("BABYLON.WaterMaterial", WaterMaterial);

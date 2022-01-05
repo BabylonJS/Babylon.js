@@ -39,8 +39,8 @@ export interface PBREnvironment {
 }
 
 /**
-		 * Environment map representations: layouts, projections and approximations
-		 */
+         * Environment map representations: layouts, projections and approximations
+         */
 export type MapType =
     'irradiance_sh_coefficients_9' |
     'cubemap_faces';

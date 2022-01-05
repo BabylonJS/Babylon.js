@@ -4,11 +4,17 @@ import { Logger } from "babylonjs/Misc/logger";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { serialize } from 'babylonjs/Misc/decorators';
+import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
+import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Constants } from 'babylonjs/Engines/constants';
 
 /**
  * Root class for 2D containers
- * @see http://doc.babylonjs.com/how_to/gui#containers
+ * @see https://doc.babylonjs.com/how_to/gui#containers
  */
 export class Container extends Control {
     /** @hidden */
@@ -21,6 +27,23 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
+    /** @hidden */
+    protected _renderToIntermediateTexture: boolean = false;
+    /** @hidden */
+    protected _intermediateTexture: Nullable<DynamicTexture> = null;
+
+    /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+    @serialize()
+    public get renderToIntermediateTexture(): boolean {
+        return this._renderToIntermediateTexture;
+    }
+    public set renderToIntermediateTexture(value: boolean) {
+        if (this._renderToIntermediateTexture === value) {
+            return;
+        }
+        this._renderToIntermediateTexture = value;
+        this._markAsDirty();
+    }
 
     /**
      * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
@@ -30,9 +53,11 @@ export class Container extends Control {
     /**
      * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
      */
+    @serialize()
     public maxLayoutCycle = 3;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
+    @serialize()
     public get adaptHeightToChildren(): boolean {
         return this._adaptHeightToChildren;
     }
@@ -52,6 +77,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
+    @serialize()
     public get adaptWidthToChildren(): boolean {
         return this._adaptWidthToChildren;
     }
@@ -71,6 +97,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets background color */
+    @serialize()
     public get background(): string {
         return this._background;
     }
@@ -87,6 +114,18 @@ export class Container extends Control {
     /** Gets the list of children */
     public get children(): Control[] {
         return this._children;
+    }
+
+    public get isReadOnly() {
+        return this._isReadOnly;
+    }
+
+    public set isReadOnly(value: boolean) {
+        this._isReadOnly = value;
+
+        for (const child of this._children) {
+            child.isReadOnly = value;
+        }
     }
 
     /**
@@ -260,7 +299,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _localDraw(context: CanvasRenderingContext2D): void {
+    protected _localDraw(context: ICanvasRenderingContext): void {
         if (this._background) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -291,15 +330,28 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
+            if (this._renderToIntermediateTexture) {
+                if (this._intermediateTexture && this._host.getScene() != this._intermediateTexture.getScene()) {
+                    this._intermediateTexture.dispose();
+                    this._intermediateTexture = null;
+                }
+                if (!this._intermediateTexture) {
+                    this._intermediateTexture = new DynamicTexture('', { width: this._currentMeasure.width, height: this._currentMeasure.height },
+                        this._host.getScene(), false, Texture.NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA, false);
+                    this._intermediateTexture.hasAlpha = true;
+                } else {
+                    this._intermediateTexture.scaleTo(this._currentMeasure.width, this._currentMeasure.height);
+                }
+            }
         }
     }
 
     /** @hidden */
-    public _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean {
+    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -331,22 +383,26 @@ export class Container extends Control {
                     if (child._layout(this._measureForChildren, context)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
                         }
                     }
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
+                        this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
+                        this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
                     }
@@ -378,12 +434,26 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
+        const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
+        const contextToDrawTo = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
 
-        this._localDraw(context);
+        if (renderToIntermediateTextureThisDraw) {
+            contextToDrawTo.save();
+            contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
+            if (invalidatedRectangle) {
+                contextToDrawTo.clearRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
+            } else {
+                contextToDrawTo.clearRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+            }
+        }
+
+        this._localDraw(contextToDrawTo);
+
+        context.save();
 
         if (this.clipChildren) {
-            this._clipForChildren(context);
+            this._clipForChildren(contextToDrawTo);
         }
 
         for (var child of this._children) {
@@ -393,8 +463,18 @@ export class Container extends Control {
                     continue;
                 }
             }
-            child._render(context, invalidatedRectangle);
+            child._render(contextToDrawTo, invalidatedRectangle);
         }
+
+        if (renderToIntermediateTextureThisDraw) {
+            contextToDrawTo.restore();
+            context.save();
+            context.globalAlpha = this.alpha;
+            context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
+            context.restore();
+        }
+
+        context.restore();
     }
 
     public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
@@ -416,7 +496,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -428,7 +508,7 @@ export class Container extends Control {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -440,14 +520,33 @@ export class Container extends Control {
             return false;
         }
 
-        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     }
 
     /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(this._currentMeasure);
+    }
+
+    /**
+    * Serializes the current control
+    * @param serializationObject defined the JSON serialized object
+    */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        if (!this.children.length) {
+            return;
+        }
+
+        serializationObject.children = [];
+
+        for (var child of this.children) {
+            let childSerializationObject = {};
+            child.serialize(childSerializationObject);
+            serializationObject.children.push(childSerializationObject);
+        }
     }
 
     /** Releases associated resources */
@@ -457,6 +556,21 @@ export class Container extends Control {
         for (var index = this.children.length - 1; index >= 0; index--) {
             this.children[index].dispose();
         }
+        this._intermediateTexture?.dispose();
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        this._link(host);
+
+        if (!serializedObject.children) {
+            return;
+        }
+
+        for (var childData of serializedObject.children) {
+            this.addControl(Control.Parse(childData, host));
+        }
     }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.Container"] = Container;
+RegisterClass("BABYLON.GUI.Container", Container);

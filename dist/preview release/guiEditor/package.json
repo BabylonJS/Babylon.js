@@ -1,0 +1,27 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "name": "babylonjs-gui-editor",
+    "description": "The Babylon.js GUI editor.",
+    "version": "5.0.0-alpha.65",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "license": "Apache-2.0",
+    "dependencies": {
+        "babylonjs": "5.0.0-alpha.65"
+    },
+    "files": [
+        "babylon.guiEditor.max.js.map",
+        "babylon.guiEditor.max.js",
+        "babylon.guiEditor.js",
+        "babylon.guiEditor.module.d.ts",
+        "readme.md",
+        "package.json"
+    ],
+    "engines": {
+        "node": "*"
+    }
+}

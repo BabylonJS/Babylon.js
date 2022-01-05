@@ -1,15 +1,16 @@
 import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { TextLineComponent } from "../lines/textLineComponent";
-import { LineContainerComponent } from "../lineContainerComponent";
+import { TextLineComponent } from "../../../sharedUiComponents/lines/textLineComponent";
+import { LineContainerComponent } from "../../../sharedUiComponents/lines/lineContainerComponent";
 
 import { Nullable } from "babylonjs/types";
 import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
 import { Engine } from "babylonjs/Engines/engine";
 
-import { ValueLineComponent } from "../lines/valueLineComponent";
-import { BooleanLineComponent } from "../lines/booleanLineComponent";
+import { ValueLineComponent } from "../../../sharedUiComponents/lines/valueLineComponent";
+import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
+import { PerformanceViewerComponent } from "./performanceViewer/performanceViewerComponent";
 
 export class StatisticsTabComponent extends PaneComponent {
     private _sceneInstrumentation: Nullable<SceneInstrumentation>;
@@ -72,7 +73,8 @@ export class StatisticsTabComponent extends PaneComponent {
             <div className="pane">
                 <TextLineComponent label="Version" value={Engine.Version} color="rgb(113, 159, 255)" />
                 <ValueLineComponent label="FPS" value={engine.getFps()} fractionDigits={0} />
-                <LineContainerComponent globalState={this.props.globalState} title="COUNT">
+                <PerformanceViewerComponent scene={scene} />
+                <LineContainerComponent title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />
                     <TextLineComponent label="Active meshes" value={scene.getActiveMeshes().length.toString()} />
                     <TextLineComponent label="Active indices" value={scene.getActiveIndices().toString()} />
@@ -85,7 +87,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <TextLineComponent label="Total materials" value={scene.materials.length.toString()} />
                     <TextLineComponent label="Total textures" value={scene.textures.length.toString()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="FRAME STEPS DURATION">
+                <LineContainerComponent title="FRAME STEPS DURATION">
                     <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation!.frameTimeCounter.lastSecAverage} fractionDigits={0} />
                     <ValueLineComponent label="Meshes selection" value={sceneInstrumentation.activeMeshesEvaluationTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Render targets" value={sceneInstrumentation.renderTargetsRenderTimeCounter.lastSecAverage} units="ms" />
@@ -99,10 +101,10 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001} units="ms" />
                     <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter.average * 0.000001} units="ms" />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SYSTEM INFO">
+                <LineContainerComponent title="SYSTEM INFO">
                     <TextLineComponent label="Resolution" value={engine.getRenderWidth() + "x" + engine.getRenderHeight()} />
-                    <TextLineComponent label="Hardawre scaling level" value={engine.getHardwareScalingLevel().toString()} />
-                    <TextLineComponent label="WebGL version" value={engine.webGLVersion.toString()} />
+                    <TextLineComponent label="Hardware scaling level" value={engine.getHardwareScalingLevel().toString()} />
+                    <TextLineComponent label="Engine" value={engine.description} />
                     <BooleanLineComponent label="Std derivatives" value={caps.standardDerivatives} />
                     <BooleanLineComponent label="Compressed textures" value={caps.s3tc !== undefined} />
                     <BooleanLineComponent label="Hardware instances" value={caps.instancedArrays} />

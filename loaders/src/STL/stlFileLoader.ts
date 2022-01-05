@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Tools } from "babylonjs/Misc/tools";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -16,7 +16,8 @@ import { Scene } from "babylonjs/scene";
 export class STLFileLoader implements ISceneLoaderPlugin {
 
     /** @hidden */
-    public solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+    public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
+
     /** @hidden */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
     /** @hidden */
@@ -37,6 +38,13 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     public extensions: ISceneLoaderPluginExtensions = {
         ".stl": { isBinary: true },
     };
+
+    /**
+     * Defines if Y and Z axes are swapped or not when loading an STL file.
+     * The default is false to maintain backward compatibility. When set to
+     * true, coordinates from the STL file are used without change.
+     */
+    public static DO_NOT_ALTER_FILE_COORDINATES = false;
 
     /**
      * Import meshes into a scene.
@@ -147,6 +155,13 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         // check if file size is correct for binary stl
         var faceSize, nFaces, reader;
         reader = new DataView(data);
+
+        // A Binary STL header is 80 bytes, if the data size is not great than
+        // that then it's not a binary STL.
+        if (reader.byteLength <= 80) {
+            return false;
+        }
+
         faceSize = (32 / 8 * 3) + ((32 / 8 * 3) * 3) + (16 / 8);
         nFaces = reader.getUint32(80, true);
 
@@ -193,12 +208,24 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
                 // ordering is intentional to match ascii import
                 positions[offset] = reader.getFloat32(vertexstart, true);
-                positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
-                positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
-
                 normals[offset] = normalX;
-                normals[offset + 2] = normalY;
-                normals[offset + 1] = normalZ;
+
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
+
+                    normals[offset + 2] = normalY;
+                    normals[offset + 1] = normalZ;
+                }
+                else {
+
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 8, true);
+
+                    normals[offset + 1] = normalY;
+                    normals[offset + 2] = normalZ;
+                }
 
                 offset += 3;
             }
@@ -234,8 +261,20 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
             var vertexMatch;
             while (vertexMatch = this.vertexPattern.exec(facet)) {
-                positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
-                normals.push(normal[0], normal[1], normal[2]);
+
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
+                    normals.push(normal[0], normal[1], normal[2]);
+                }
+                else {
+
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+
+                    // Flipping the second and third component because inverted
+                    // when normal was declared.
+                    normals.push(normal[0], normal[2], normal[1]);
+                }
             }
             indices.push(indicesCount++, indicesCount++, indicesCount++);
             this.vertexPattern.lastIndex = 0;

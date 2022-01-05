@@ -3,11 +3,11 @@ import { Vector2 } from "../../../Maths/math.vector";
 /**
  * Defines the basic options interface of a TexturePacker Frame
  */
-export interface ITexturePackerFrame{
+export interface ITexturePackerFrame {
 
     /**
-	 * The frame ID
-	 */
+     * The frame ID
+     */
     id: number;
 
     /**
@@ -25,7 +25,7 @@ export interface ITexturePackerFrame{
 /**
  * This is a support class for frame Data on texture packer sets.
  */
-export class TexturePackerFrame implements ITexturePackerFrame{
+export class TexturePackerFrame implements ITexturePackerFrame {
     /**
      * The frame ID
      */

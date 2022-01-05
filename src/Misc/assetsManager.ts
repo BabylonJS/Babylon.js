@@ -12,6 +12,7 @@ import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
 import { AnimationGroup } from '../Animations/animationGroup';
+import { AssetContainer } from "../assetContainer";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -209,6 +210,90 @@ export class AssetsProgressEvent implements IAssetsProgressEvent {
         this.remainingCount = remainingCount;
         this.totalCount = totalCount;
         this.task = task;
+    }
+}
+
+/**
+ * Define a task used by AssetsManager to load assets into a container
+ */
+export class ContainerAssetTask extends AbstractAssetTask {
+    /**
+     * Get the loaded asset container
+     */
+    public loadedContainer: AssetContainer;
+    /**
+     * Gets the list of loaded meshes
+     */
+    public loadedMeshes: Array<AbstractMesh>;
+    /**
+     * Gets the list of loaded particle systems
+     */
+    public loadedParticleSystems: Array<IParticleSystem>;
+    /**
+     * Gets the list of loaded skeletons
+     */
+    public loadedSkeletons: Array<Skeleton>;
+    /**
+     * Gets the list of loaded animation groups
+     */
+    public loadedAnimationGroups: Array<AnimationGroup>;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onSuccess: (task: ContainerAssetTask) => void;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onError: (task: ContainerAssetTask, message?: string, exception?: any) => void;
+
+    /**
+     * Creates a new ContainerAssetTask
+     * @param name defines the name of the task
+     * @param meshesNames defines the list of mesh's names you want to load
+     * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
+     * @param sceneFilename defines the filename or File of the scene to load from
+     */
+    constructor(
+        /**
+         * Defines the name of the task
+         */
+        public name: string,
+        /**
+         * Defines the list of mesh's names you want to load
+         */
+        public meshesNames: any,
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        public rootUrl: string,
+        /**
+         * Defines the filename or File of the scene to load from
+         */
+        public sceneFilename: string | File) {
+        super(name);
+    }
+
+    /**
+     * Execute the current task
+     * @param scene defines the scene where you want your assets to be loaded
+     * @param onSuccess is a callback called when the task is successfully executed
+     * @param onError is a callback called if an error occurs
+     */
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        SceneLoader.LoadAssetContainer(this.rootUrl, this.sceneFilename, scene,
+            (container: AssetContainer) => {
+                this.loadedContainer = container;
+                this.loadedMeshes = container.meshes;
+                this.loadedParticleSystems = container.particleSystems;
+                this.loadedSkeletons = container.skeletons;
+                this.loadedAnimationGroups = container.animationGroups;
+                onSuccess();
+            }, null, (scene, message, exception) => {
+                onError(message, exception);
+            }
+        );
     }
 }
 
@@ -583,7 +668,11 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
         /**
          * Defines the explicit list of files (undefined by default)
          */
-        public files?: string[]) {
+        public files?: string[],
+        /**
+         * Defines the prefiltered texture option (default is false)
+         */
+        public prefiltered?: boolean) {
         super(name);
     }
 
@@ -603,7 +692,7 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
             onError(message, exception);
         };
 
-        this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
+        this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror, undefined, this.prefiltered);
     }
 }
 
@@ -763,7 +852,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
 
 /**
  * This class can be used to easily import assets into a scene
- * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+ * @see https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
  */
 export class AssetsManager {
     private _scene: Scene;
@@ -815,7 +904,7 @@ export class AssetsManager {
 
     /**
      * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public useDefaultLoadingScreen = true;
 
@@ -835,14 +924,29 @@ export class AssetsManager {
     }
 
     /**
+     * Add a ContainerAssetTask to the list of active tasks
+     * @param taskName defines the name of the new task
+     * @param meshesNames defines the name of meshes to load
+     * @param rootUrl defines the root url to use to locate files
+     * @param sceneFilename defines the filename of the scene file or the File itself
+     * @returns a new ContainerAssetTask object
+     */
+    public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): ContainerAssetTask {
+        var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+        this._tasks.push(task);
+
+        return task;
+    }
+
+    /**
      * Add a MeshAssetTask to the list of active tasks
      * @param taskName defines the name of the new task
      * @param meshesNames defines the name of meshes to load
      * @param rootUrl defines the root url to use to locate files
-     * @param sceneFilename defines the filename of the scene file
+     * @param sceneFilename defines the filename of the scene file or the File itself
      * @returns a new MeshAssetTask object
      */
-    public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): MeshAssetTask {
+    public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): MeshAssetTask {
         var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
         this._tasks.push(task);
 
@@ -911,10 +1015,11 @@ export class AssetsManager {
      * @param extensions defines the extension to use to load the cube map (can be null)
      * @param noMipmap defines if the texture must not receive mipmaps (false by default)
      * @param files defines the list of files to load (can be null)
+     * @param prefiltered defines the prefiltered texture option (default is false)
      * @returns a new CubeTextureAssetTask object
      */
-    public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[]): CubeTextureAssetTask {
-        var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files);
+    public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[], prefiltered?: boolean): CubeTextureAssetTask {
+        var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files, prefiltered);
         this._tasks.push(task);
 
         return task;

@@ -19,7 +19,7 @@ export class TrigonometryDisplayManager implements IDisplayManager {
         return "#405C86";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         const trigonometryBlock = block as TrigonometryBlock;
 
         contentArea.classList.add("trigonometry-block");

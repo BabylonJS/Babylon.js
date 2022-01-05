@@ -221,7 +221,7 @@ Validate.prototype.validateTypedocNamespace = function(namespace) {
         containerNode = namespace.children[a];
 
         // Validate Sub Module
-        if (containerNode.kindString === "Module") {
+        if (containerNode.kindString === "Module" || containerNode.kindString === "Namespace") {
             this.validateTypedocNamespace(containerNode);
             continue;
         }
@@ -552,22 +552,10 @@ Validate.prototype.validateNaming = function(parent, node) {
         }
     }
     else if (node.kindString == "Variable") {
-        this.errorCallback(parent ? parent.name : null,
-            node.name,
-            node.kindString,
-            "Naming",
-            "ShouldNotBeLooseVariable",
-            node.name + " should not be a variable (id: " + node.id + ")", Validate.position(node));
+        // Allow variables to be defined in declaration (for back-compat static-only classes)
     }
     else if (node.kindString === "Function") {
-        if (!Validate.camelCase.test(node.name)) {
-            this.errorCallback(parent ? parent.name : null,
-                node.name,
-                node.kindString,
-                "Naming",
-                "NotCamelCase",
-                node.name + " should be Camel Case (id: " + node.id + ")", Validate.position(node));
-        }
+        // as we export "static" function and to maintain back-compat, allow parentless functions to have different cases
     }
     else if (node.kindString == "Constructor") {
         // Do Nothing Here, this is handled through the class name.

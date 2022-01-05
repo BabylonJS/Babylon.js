@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 /**
  * Block used to compute value of one parameter modulo another
  */
@@ -57,10 +57,10 @@ export class ModBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-      state.compilationString += this._declareOutput(output, state) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ModBlock"] = ModBlock;
+RegisterClass("BABYLON.ModBlock", ModBlock);

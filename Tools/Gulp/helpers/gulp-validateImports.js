@@ -61,7 +61,7 @@ var validatePath = function(fileLocation, directory, module, lineNumber, errors,
                     }
                 }
                 if (!excluded && fileLocation.indexOf("index.ts") === -1) {
-                    errors.push(`Line ${lineNumber} Imports ${module} should not be from index for tree shaking.`);
+                    errors.push(`Line ${internalModulePath} Imports ${module} should not be from index for tree shaking.`);
                 }
             }
         }

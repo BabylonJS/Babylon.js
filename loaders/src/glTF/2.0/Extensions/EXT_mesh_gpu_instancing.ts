@@ -6,13 +6,9 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 const NAME = "EXT_mesh_gpu_instancing";
-
-interface IEXTMeshGpuInstancing {
-    mesh?: number;
-    attributes: { [name: string]: number };
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
@@ -40,7 +36,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
@@ -48,7 +44,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             this._loader._disableInstancedMesh++;
 
-            const promise = this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, assign);
+            const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);
 
             this._loader._disableInstancedMesh--;
 
@@ -98,7 +94,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                     }
 
                     for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                            (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+                        (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
                     }
 
                     return babylonTransformNode;

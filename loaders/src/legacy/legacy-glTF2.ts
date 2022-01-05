@@ -1,6 +1,6 @@
-import * as Extensions from "../glTF/2.0/Extensions";
+import * as Extensions from "../glTF/2.0/Extensions/index";
 import * as Interfaces from "../glTF/2.0/glTFLoaderInterfaces";
-import * as GLTF2 from "../glTF/2.0";
+import * as GLTF2 from "../glTF/2.0/index";
 
 /**
  * This is the entry point for the UMD module.

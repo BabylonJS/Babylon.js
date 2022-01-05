@@ -1,7 +1,7 @@
 import { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { Plane } from '../Maths/math.plane';
+import { Plane } from "../Maths/math.plane";
 
 /**
  * Class used to store bounding sphere information
@@ -96,8 +96,7 @@ export class BoundingSphere {
             const tempVector = BoundingSphere.TmpVector3[0];
             Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
             this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
-        }
-        else {
+        } else {
             this.centerWorld.copyFrom(this.center);
             this.radiusWorld = this.radius;
         }
@@ -151,10 +150,10 @@ export class BoundingSphere {
 
     // Statics
     /**
-     * Checks if two sphere intersct
+     * Checks if two sphere intersect
      * @param sphere0 sphere 0
      * @param sphere1 sphere 1
-     * @returns true if the speres intersect
+     * @returns true if the spheres intersect
      */
     public static Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): boolean {
         const squareDistance = Vector3.DistanceSquared(sphere0.centerWorld, sphere1.centerWorld);
@@ -165,5 +164,30 @@ export class BoundingSphere {
         }
 
         return true;
+    }
+
+    /**
+     * Creates a sphere from a center and a radius
+     * @param center The center
+     * @param radius radius
+     * @param matrix Optional worldMatrix
+     * @returns The sphere
+     */
+    public static CreateFromCenterAndRadius(center: DeepImmutable<Vector3>, radius: number, matrix?: DeepImmutable<Matrix>): BoundingSphere {
+        this.TmpVector3[0].copyFrom(center);
+        this.TmpVector3[1].copyFromFloats(0, 0, radius);
+        this.TmpVector3[2].copyFrom(center);
+        this.TmpVector3[0].addInPlace(this.TmpVector3[1]);
+        this.TmpVector3[2].subtractInPlace(this.TmpVector3[1]);
+
+        const sphere = new BoundingSphere(this.TmpVector3[0], this.TmpVector3[2]);
+
+        if (matrix) {
+            sphere._worldMatrix = matrix;
+        } else {
+            sphere._worldMatrix = Matrix.Identity();
+        }
+
+        return sphere;
     }
 }

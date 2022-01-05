@@ -2,7 +2,7 @@ import { serializeAsTexture, SerializationHelper } from "babylonjs/Misc/decorato
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./normalMapProceduralTexture.fragment";
 
@@ -16,7 +16,7 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
 
     public updateShaderUniforms() {
         this.setTexture("baseSampler", this._baseTexture);
-        this.setFloat("size", this.getRenderSize());
+        this.setFloat("size", this.getRenderSize() as number);
     }
 
     public render(useCameraPostProcess?: boolean) {
@@ -28,6 +28,14 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
 
         // We need to update the "size" uniform
         this.updateShaderUniforms();
+    }
+
+    public isReady(): boolean {
+        if (!this._baseTexture || !this._baseTexture.isReady()) {
+            return false;
+        }
+
+        return super.isReady();
     }
 
     @serializeAsTexture()
@@ -65,4 +73,4 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.NormalMapProceduralTexture"] = NormalMapProceduralTexture;
+RegisterClass("BABYLON.NormalMapProceduralTexture", NormalMapProceduralTexture);

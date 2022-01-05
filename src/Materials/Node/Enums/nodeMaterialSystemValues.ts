@@ -19,5 +19,7 @@ export enum NodeMaterialSystemValues {
     /** Fog Color */
     FogColor = 8,
     /** Delta time */
-    DeltaTime = 9
+    DeltaTime = 9,
+    /** Camera parameters */
+    CameraParameters = 10,
 }

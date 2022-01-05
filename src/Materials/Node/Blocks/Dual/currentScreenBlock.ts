@@ -7,7 +7,7 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterialDefines } from '../../nodeMaterial';
 import { BaseTexture } from '../../../Textures/baseTexture';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
@@ -47,7 +47,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this._isUnique = true;
+        this._isUnique = false;
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
 
@@ -61,7 +61,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
 
-        this._inputs[0]._prioritizeVertex = true;
+        this._inputs[0]._prioritizeVertex = false;
     }
 
     /**
@@ -130,8 +130,6 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     }
 
     public get target() {
-        // TextureBlock has a special optimizations for uvs that come from the vertex shaders as they can be packed into a single varyings.
-        // But we need to detect uvs coming from fragment then
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }
@@ -140,32 +138,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }
 
-        let parent = this.uv.connectedPoint;
-
-        while (parent) {
-            if (parent.target === NodeMaterialBlockTargets.Fragment) {
-                return NodeMaterialBlockTargets.Fragment;
-            }
-
-            if (parent.target === NodeMaterialBlockTargets.Vertex) {
-                return NodeMaterialBlockTargets.VertexAndFragment;
-            }
-
-            if (parent.target === NodeMaterialBlockTargets.Neutral || parent.target === NodeMaterialBlockTargets.VertexAndFragment) {
-                let parentBlock = parent.ownerBlock;
-
-                parent = null;
-                for (var input of parentBlock.inputs) {
-                    if (input.connectedPoint) {
-                        parent = input.connectedPoint;
-                        break;
-                    }
-                }
-            }
-
-        }
-
-        return NodeMaterialBlockTargets.VertexAndFragment;
+        return NodeMaterialBlockTargets.Fragment;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -261,18 +234,21 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex) {
-            this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
+        this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
 
-            state._emit2DSampler(this._samplerName);
-
+        if (state.sharedData.blockingBlocks.indexOf(this) < 0) {
             state.sharedData.blockingBlocks.push(this);
+        }
+        if (state.sharedData.textureBlocks.indexOf(this) < 0) {
             state.sharedData.textureBlocks.push(this);
+        }
+        if (state.sharedData.blocksWithDefines.indexOf(this) < 0) {
             state.sharedData.blocksWithDefines.push(this);
         }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
+            state._emit2DSampler(this._samplerName);
             this._injectVertexCode(state);
             return;
         }
@@ -306,7 +282,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
-        if (this.texture) {
+        if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();
         }
 
@@ -326,4 +302,4 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.CurrentScreenBlock"] = CurrentScreenBlock;
+RegisterClass("BABYLON.CurrentScreenBlock", CurrentScreenBlock);

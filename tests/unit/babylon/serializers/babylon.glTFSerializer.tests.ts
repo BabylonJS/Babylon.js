@@ -7,12 +7,12 @@ describe('Babylon glTF Serializer', () => {
     /**
      * Loads the dependencies
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
@@ -22,7 +22,7 @@ describe('Babylon glTF Serializer', () => {
     /**
      * Create a null engine subject before each test.
      */
-    beforeEach(function() {
+    beforeEach(function () {
         subject = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -73,15 +73,15 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize sphere geometry in scene to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
+            BABYLON.MeshBuilder.CreateSphere("sphere", { segments: 16, diameter: 2 }, scene);
 
             return BABYLON.GLTF2Export.GLTFAsync(scene, 'test')
                 .then(glTFData => {
                     const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                     const jsonData = JSON.parse(jsonString);
 
-                    // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials
-                    Object.keys(jsonData).length.should.be.equal(9);
+                    // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes
+                    Object.keys(jsonData).length.should.be.equal(8);
 
                     // positions, normals, indices
                     jsonData.accessors.length.should.be.equal(3);
@@ -105,7 +105,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize single component translation animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -133,8 +133,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.channels[0].target.node.should.be.equal(0);
                 animation.channels[0].target.path.should.be.equal('translation');
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -150,7 +150,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize translation animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -182,8 +182,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].input.should.be.equal(3);
                 animation.samplers[0].output.should.be.equal(4);
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -199,7 +199,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize scale animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -231,8 +231,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].input.should.be.equal(3);
                 animation.samplers[0].output.should.be.equal(4);
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -248,7 +248,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize rotation quaternion animation to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             let keys: BABYLON.IAnimationKey[] = [];
             keys.push({
                 frame: 0,
@@ -280,8 +280,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].input.should.be.equal(3);
                 animation.samplers[0].output.should.be.equal(4);
                 jsonData.animations[0].samplers.length.should.be.equal(1);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, animation keyframe data, animation data
                 jsonData.accessors.length.should.be.equal(5);
                 // generator, version
@@ -297,7 +297,7 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize combined animations to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const box = BABYLON.Mesh.CreateBox('box', 1, scene);
+            const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
             const rotationKeyFrames: BABYLON.IAnimationKey[] = [];
             rotationKeyFrames.push({
                 frame: 0,
@@ -353,8 +353,8 @@ describe('Babylon glTF Serializer', () => {
                 animation.samplers[0].interpolation.should.be.equal('LINEAR');
                 animation.samplers[0].input.should.be.equal(5);
                 animation.samplers[0].output.should.be.equal(6);
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials, animations
-                Object.keys(jsonData).length.should.be.equal(10);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, animations
+                Object.keys(jsonData).length.should.be.equal(9);
                 // positions, normals, indices, rotation animation keyframe data, rotation animation data, scale animation keyframe data, scale animation data
                 jsonData.accessors.length.should.be.equal(7);
                 // generator, version
@@ -390,10 +390,10 @@ describe('Babylon glTF Serializer', () => {
         });
         it('should serialize spot light to glTF', () => {
             const scene = new BABYLON.Scene(subject);
-            const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI/4, 0), Math.PI/4, 2, scene);
+            const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI / 4, 0), Math.PI / 4, 2, scene);
             const intensity = 0.2;
             spotLight.intensity = intensity;
-            spotLight.innerAngle = Math.PI/8;
+            spotLight.innerAngle = Math.PI / 8;
             const diffuseColor = BABYLON.Color3.Red();
             spotLight.diffuse = diffuseColor;
 
@@ -404,8 +404,8 @@ describe('Babylon glTF Serializer', () => {
                 Object.keys(jsonData).length.should.be.equal(6);
                 jsonData.extensions['KHR_lights_punctual'].lights.length.should.be.equal(1);
                 jsonData.extensions['KHR_lights_punctual'].lights[0].intensity.should.be.equal(intensity);
-                jsonData.extensions['KHR_lights_punctual'].lights[0].spot.outerConeAngle.should.be.equal(spotLight.angle/2);
-                jsonData.extensions['KHR_lights_punctual'].lights[0].spot.innerConeAngle.should.be.equal(spotLight.innerAngle/2);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].spot.outerConeAngle.should.be.equal(spotLight.angle / 2);
+                jsonData.extensions['KHR_lights_punctual'].lights[0].spot.innerConeAngle.should.be.equal(spotLight.innerAngle / 2);
                 expect(jsonData.extensions['KHR_lights_punctual'].lights[0].color).to.deep.equal(diffuseColor.asArray());
                 jsonData.nodes.length.should.be.equal(1);
                 jsonData.nodes[0].extensions['KHR_lights_punctual']['light'].should.be.equal(0);
@@ -434,7 +434,7 @@ describe('Babylon glTF Serializer', () => {
         it('should serialize multiple lights to glTF', () => {
             const scene = new BABYLON.Scene(subject);
             const pointLight = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(4, 4, 0), scene);
-            const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI/4, 0), Math.PI/4, 2, scene);
+            const spotLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-4, 4, 0), new BABYLON.Vector3(0, Math.PI / 4, 0), Math.PI / 4, 2, scene);
             const directionalLight = new BABYLON.DirectionalLight("directionalLight", BABYLON.Vector3.Forward(), scene);
 
             return BABYLON.GLTF2Export.GLTFAsync(scene, 'test').then(glTFData => {

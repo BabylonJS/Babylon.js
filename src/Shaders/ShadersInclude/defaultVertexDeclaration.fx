@@ -44,3 +44,10 @@ uniform mat4 reflectionMatrix;
 #ifdef POINTSIZE
 	uniform float pointSize;
 #endif
+
+#ifdef DETAIL
+uniform vec4 vDetailInfos;
+uniform mat4 detailMatrix;
+#endif
+
+#define ADDITIONAL_VERTEX_DECLARATION

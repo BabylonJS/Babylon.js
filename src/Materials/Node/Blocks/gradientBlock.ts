@@ -3,28 +3,54 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { Color3 } from '../../../Maths/math.color';
 import { Scene } from '../../../scene';
+import { Observable } from '../../../Misc/observable';
 
 /**
  * Class used to store a color step for the GradientBlock
  */
 export class GradientBlockColorStep {
+    private _step: number;
+    /**
+     * Gets value indicating which step this color is associated with (between 0 and 1)
+     */
+    public get step(): number {
+        return this._step;
+    }
+
+    /**
+     * Sets a value indicating which step this color is associated with (between 0 and 1)
+    */
+    public set step(val: number) {
+        this._step = val;
+    }
+
+    private _color: Color3;
+
+    /**
+     * Gets the color associated with this step
+     */
+    public get color(): Color3 {
+        return this._color;
+    }
+
+    /**
+     * Sets the color associated with this step
+     */
+    public set color(val: Color3) {
+        this._color = val;
+    }
+
     /**
      * Creates a new GradientBlockColorStep
      * @param step defines a value indicating which step this color is associated with (between 0 and 1)
      * @param color defines the color associated with this step
      */
-    public constructor(
-        /**
-         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
-         */
-        public step: number,
-        /**
-         * Gets or sets the color associated with this step
-         */
-        public color: Color3) {
+    public constructor(step: number, color: Color3) {
+        this.step = step;
+        this.color = color;
     }
 }
 
@@ -41,6 +67,13 @@ export class GradientBlock extends NodeMaterialBlock {
         new GradientBlockColorStep(1.0, Color3.White())
     ];
 
+    /** Gets an observable raised when the value is changed */
+    public onValueChangedObservable = new Observable<GradientBlock>();
+
+    /** calls observable when the value is changed*/
+    public colorStepsUpdated() {
+        this.onValueChangedObservable.notifyObservers(this);
+    }
     /**
      * Creates a new GradientBlock
      * @param name defines the block name
@@ -121,7 +154,18 @@ export class GradientBlock extends NodeMaterialBlock {
     public serialize(): any {
         let serializationObject = super.serialize();
 
-        serializationObject.colorSteps = this.colorSteps;
+        serializationObject.colorSteps = [];
+
+        for (var step of this.colorSteps) {
+            serializationObject.colorSteps.push({
+                step: step.step,
+                color: {
+                    r: step.color.r,
+                    g: step.color.g,
+                    b: step.color.b
+                }
+            });
+        }
 
         return serializationObject;
     }
@@ -137,7 +181,9 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = "";
+        var codeString = super._dumpPropertiesCode();
+
+        codeString += `${this._codeVariableName}.colorSteps = [];\r\n`;
 
         for (var colorStep of this.colorSteps) {
             codeString += `${this._codeVariableName}.colorSteps.push(new BABYLON.GradientBlockColorStep(${colorStep.step}, new BABYLON.Color3(${colorStep.color.r}, ${colorStep.color.g}, ${colorStep.color.b})));\r\n`;
@@ -147,4 +193,4 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.GradientBlock"] = GradientBlock;
+RegisterClass("BABYLON.GradientBlock", GradientBlock);

@@ -3,7 +3,7 @@ import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
 
 /**
  * The PBR material of BJS following the specular glossiness convention.
@@ -21,7 +21,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     public diffuseColor: Color3;
 
     /**
-     * Specifies the diffuse texture of the material. This can also contains the opcity value in its alpha
+     * Specifies the diffuse texture of the material. This can also contains the opacity value in its alpha
      * channel.
      */
     @serializeAsTexture()
@@ -50,6 +50,13 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     public specularGlossinessTexture: BaseTexture;
 
     /**
+     * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+    */
+    public get useMicroSurfaceFromReflectivityMapAlpha() {
+        return this._useMicroSurfaceFromReflectivityMapAlpha;
+    }
+
+    /**
      * Instantiates a new PBRSpecularGlossinessMaterial instance.
      *
      * @param name The material name
@@ -61,7 +68,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Return the currrent class name of the material.
+     * Return the current class name of the material.
      */
     public getClassName(): string {
         return "PBRSpecularGlossinessMaterial";
@@ -103,7 +110,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Parses a JSON object correponding to the serialize function.
+     * Parses a JSON object corresponding to the serialize function.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
@@ -126,4 +133,4 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRSpecularGlossinessMaterial"] = PBRSpecularGlossinessMaterial;
+RegisterClass("BABYLON.PBRSpecularGlossinessMaterial", PBRSpecularGlossinessMaterial);

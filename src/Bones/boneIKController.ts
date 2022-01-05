@@ -1,12 +1,12 @@
 import { Bone } from "./bone";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { TransformNode } from "../Meshes/transformNode";
 import { Nullable } from "../types";
 import { Space } from '../Maths/math.axis';
 
 /**
  * Class used to apply inverse kinematics to bones
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
  */
 export class BoneIKController {
 
@@ -15,12 +15,13 @@ export class BoneIKController {
     private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
 
     /**
-     * Gets or sets the target mesh
+     * Gets or sets the target TransformNode
+     * Name kept as mesh for back compability
      */
-    public targetMesh: AbstractMesh;
+    public targetMesh: TransformNode;
 
     /** Gets or sets the mesh used as pole */
-    public poleTargetMesh: AbstractMesh;
+    public poleTargetMesh: TransformNode;
 
     /**
      * Gets or sets the bone used as pole
@@ -48,9 +49,10 @@ export class BoneIKController {
     public poleAngle = 0;
 
     /**
-     * Gets or sets the mesh associated with the controller
+     * Gets or sets the TransformNode associated with the controller
+     * Name kept as mesh for back compability
      */
-    public mesh: AbstractMesh;
+    public mesh: TransformNode;
 
     /**
      * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp)
@@ -88,15 +90,15 @@ export class BoneIKController {
 
     /**
      * Creates a new BoneIKController
-     * @param mesh defines the mesh to control
+     * @param mesh defines the TransformNode to control
      * @param bone defines the bone to control
      * @param options defines options to set up the controller
      */
-    constructor(mesh: AbstractMesh,
+    constructor(mesh: TransformNode,
         bone: Bone,
         options?: {
-            targetMesh?: AbstractMesh,
-            poleTargetMesh?: AbstractMesh,
+            targetMesh?: TransformNode,
+            poleTargetMesh?: TransformNode,
             poleTargetBone?: Bone,
             poleTargetLocalOffset?: Vector3,
             poleAngle?: number,
@@ -333,6 +335,7 @@ export class BoneIKController {
                 Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
                 Quaternion.SlerpToRef(this._bone1Quat, _tmpQuat, this.slerpAmount, this._bone1Quat);
                 angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
+
                 this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);
                 this._slerping = true;
             } else {
@@ -340,9 +343,20 @@ export class BoneIKController {
                 this._bone1Mat.copyFrom(mat1);
                 this._slerping = false;
             }
+            this._updateLinkedTransformRotation(this._bone1);
         }
 
         this._bone2.setAxisAngle(this._bendAxis, angC, Space.LOCAL);
+        this._updateLinkedTransformRotation(this._bone2);
         this._bone2Ang = angC;
+    }
+
+    private _updateLinkedTransformRotation(bone: Bone): void {
+        if (bone._linkedTransformNode) {
+            if (!bone._linkedTransformNode.rotationQuaternion) {
+                bone._linkedTransformNode.rotationQuaternion = new Quaternion();
+            }
+            bone.getRotationQuaternionToRef(Space.LOCAL, null, bone._linkedTransformNode.rotationQuaternion);
+        }
     }
 }

@@ -3,13 +3,13 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../lineContainerComponent";
+import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../lockObject";
-import { GlobalState } from '../../../../globalState';
-import { TextLineComponent } from '../../../lines/textLineComponent';
-import { Material } from 'babylonjs/Materials/material';
-import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { GlobalState } from "../../../../globalState";
+import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { Material } from "babylonjs/Materials/material";
+import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
 
 interface IMultiMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -36,17 +36,13 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
         const material = this.props.material;
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="CHILDREN">
-                {
-                    material.subMaterials.map((mat, i) => {
-                        if (mat) {
-                            return (
-                                <TextLineComponent key={"Material #" + i} label={"Material #" + i} value={mat.name} onLink={() => this.onMaterialLink(mat)} />
-                            )
-                        }
-                        return null;                        
-                    })
-                }
+            <LineContainerComponent title="CHILDREN" selection={this.props.globalState}>
+                {material.subMaterials.map((mat, i) => {
+                    if (mat) {
+                        return <TextLineComponent key={"Material #" + i} label={"Material #" + i} value={mat.name} onLink={() => this.onMaterialLink(mat)} />;
+                    }
+                    return null;
+                })}
             </LineContainerComponent>
         );
     }
@@ -56,7 +52,12 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
 
         return (
             <div className="pane">
-                <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    lockObject={this.props.lockObject}
+                    material={material}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 {this.renderChildMaterial()}
             </div>
         );

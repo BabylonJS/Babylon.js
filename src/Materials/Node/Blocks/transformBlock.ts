@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 import { InputBlock } from './Input/inputBlock';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
@@ -29,7 +29,9 @@ export class TransformBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Vertex);
+        super(name, NodeMaterialBlockTargets.Neutral);
+
+        this.target = NodeMaterialBlockTargets.Vertex;
 
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
@@ -171,7 +173,7 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
+        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
 
         codeString += `${this._codeVariableName}.complementW = ${this.complementW};\r\n`;
 
@@ -179,4 +181,4 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.TransformBlock"] = TransformBlock;
+RegisterClass("BABYLON.TransformBlock", TransformBlock);

@@ -19,6 +19,7 @@ import "../Materials/Textures/Loaders/envTextureLoader";
 import "../Materials/Textures/Loaders/ktxTextureLoader";
 import "../Meshes/Builders/boxBuilder";
 import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from '../XR/webXRDefaultExperience';
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
 
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
@@ -27,14 +28,14 @@ declare module "../scene" {
     export interface Scene {
         /**
          * Creates a default light for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
+         * @see https://doc.babylonjs.com/How_To/Fast_Build#create-default-light
          * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
          */
         createDefaultLight(replace?: boolean): void;
 
         /**
          * Creates a default camera for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
+         * @see https://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
          * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
          * @param replace has default false, when true replaces the active camera in the scene
          * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
@@ -43,7 +44,7 @@ declare module "../scene" {
 
         /**
          * Creates a default camera and a default light.
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
+         * @see https://doc.babylonjs.com/divingDeeper/scene/fastBuildWorld#create-default-camera-or-light
          * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
          * @param replace has the default false, when true replaces the active camera/light in the scene
          * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
@@ -52,7 +53,7 @@ declare module "../scene" {
 
         /**
          * Creates a new sky box
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
+         * @see https://doc.babylonjs.com/divingDeeper/scene/fastBuildWorld#create-default-skybox
          * @param environmentTexture defines the texture to use as environment texture
          * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
          * @param scale defines the overall scale of the skybox
@@ -64,7 +65,7 @@ declare module "../scene" {
 
         /**
          * Creates a new environment
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
+         * @see https://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
          * @param options defines the options you can use to configure the environment
          * @returns the new EnvironmentHelper
          */
@@ -72,7 +73,7 @@ declare module "../scene" {
 
         /**
          * Creates a new VREXperienceHelper
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
+         * @see https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
          * @param webVROptions defines the options used to create the new VREXperienceHelper
          * @returns a new VREXperienceHelper
          */
@@ -80,15 +81,15 @@ declare module "../scene" {
 
         /**
          * Creates a new WebXRDefaultExperience
-         * @see http://doc.babylonjs.com/how_to/webxr
+         * @see https://doc.babylonjs.com/how_to/introduction_to_webxr
          * @param options experience options
          * @returns a promise for a new WebXRDefaultExperience
          */
-        createDefaultXRExperienceAsync(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        createDefaultXRExperienceAsync(options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
     }
 }
 
-Scene.prototype.createDefaultLight = function(replace = false): void {
+Scene.prototype.createDefaultLight = function (replace = false): void {
     // Dispose existing light in replace mode.
     if (replace) {
         if (this.lights) {
@@ -104,7 +105,7 @@ Scene.prototype.createDefaultLight = function(replace = false): void {
     }
 };
 
-Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
+Scene.prototype.createDefaultCamera = function (createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
     // Dispose existing camera in replace mode.
     if (replace) {
         if (this.activeCamera) {
@@ -142,19 +143,18 @@ Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, re
         camera.speed = radius * 0.2;
         this.activeCamera = camera;
 
-        let canvas = this.getEngine().getInputElement();
-        if (attachCameraControls && canvas) {
-            camera.attachControl(canvas);
+        if (attachCameraControls) {
+            camera.attachControl();
         }
     }
 };
 
-Scene.prototype.createDefaultCameraOrLight = function(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
+Scene.prototype.createDefaultCameraOrLight = function (createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
     this.createDefaultLight(replace);
     this.createDefaultCamera(createArcRotateCamera, replace, attachCameraControls);
 };
 
-Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
+Scene.prototype.createDefaultSkybox = function (environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
 
     if (!environmentTexture) {
         Logger.Warn("Can not create default skybox without environment texture.");
@@ -168,9 +168,9 @@ Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture,
     }
 
     // Skybox
-    var hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
+    const hdrSkybox = CreateBox("hdrSkyBox", { size: scale }, this);
     if (pbr) {
-        let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
+        const hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
         hdrSkyboxMaterial.backFaceCulling = false;
         hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
         if (hdrSkyboxMaterial.reflectionTexture) {
@@ -179,36 +179,36 @@ Scene.prototype.createDefaultSkybox = function(environmentTexture?: BaseTexture,
         hdrSkyboxMaterial.microSurface = 1.0 - blur;
         hdrSkyboxMaterial.disableLighting = true;
         hdrSkyboxMaterial.twoSidedLighting = true;
-        hdrSkybox.infiniteDistance = true;
         hdrSkybox.material = hdrSkyboxMaterial;
     }
     else {
-        let skyboxMaterial = new StandardMaterial("skyBox", this);
+        const skyboxMaterial = new StandardMaterial("skyBox", this);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = environmentTexture.clone();
         if (skyboxMaterial.reflectionTexture) {
             skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
         }
         skyboxMaterial.disableLighting = true;
-        hdrSkybox.infiniteDistance = true;
         hdrSkybox.material = skyboxMaterial;
     }
     hdrSkybox.isPickable = false;
+    hdrSkybox.infiniteDistance = true;
+    hdrSkybox.ignoreCameraMaxZ = true;
     return hdrSkybox;
 };
 
-Scene.prototype.createDefaultEnvironment = function(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
+Scene.prototype.createDefaultEnvironment = function (options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
     if (EnvironmentHelper) {
         return new EnvironmentHelper(options, this);
     }
     return null;
 };
 
-Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
+Scene.prototype.createDefaultVRExperience = function (webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
     return new VRExperienceHelper(this, webVROptions);
 };
 
-Scene.prototype.createDefaultXRExperienceAsync = function(options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
+Scene.prototype.createDefaultXRExperienceAsync = function (options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
     return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
         return helper;
     });

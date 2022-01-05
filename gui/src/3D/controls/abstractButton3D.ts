@@ -1,12 +1,11 @@
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
-
-import { Control3D } from "./control3D";
+import { ContentDisplay3D } from "./contentDisplay3D";
 
 /**
  * Class used as a root to all buttons
  */
-export class AbstractButton3D extends Control3D {
+export class AbstractButton3D extends ContentDisplay3D {
     /**
      * Creates a new button
      * @param name defines the control name

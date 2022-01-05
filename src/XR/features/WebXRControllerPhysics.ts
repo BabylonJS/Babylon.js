@@ -5,10 +5,10 @@ import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRInput } from "../webXRInput";
 import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { Logger } from '../../Misc/logger';
-import { Nullable } from '../../types';
+import { Logger } from "../../Misc/logger";
+import { Nullable } from "../../types";
 
 /**
  * Options for the controller physics feature
@@ -29,7 +29,7 @@ export class IWebXRControllerPhysicsOptions {
         /**
          * the size of the impostor. Defaults to 10cm
          */
-        impostorSize?: number | { width: number, height: number, depth: number };
+        impostorSize?: number | { width: number; height: number; depth: number };
         /**
          * Friction definitions
          */
@@ -55,7 +55,7 @@ export class IWebXRControllerPhysicsOptions {
         /**
          * the size of the impostor. Defaults to 10cm
          */
-        impostorSize?: number | { width: number, height: number, depth: number };
+        impostorSize?: number | { width: number; height: number; depth: number };
         /**
          * Friction definitions
          */
@@ -76,8 +76,7 @@ export class IWebXRControllerPhysicsOptions {
  * including naive calculation of their linear and angular velocity
  */
 export class WebXRControllerPhysics extends WebXRAbstractFeature {
-    private _attachController = (xrController: WebXRInputSource
-    ) => {
+    private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
@@ -88,55 +87,68 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         // if no motion controller available, create impostors!
         if (this._options.physicsProperties!.useControllerMesh && xrController.inputSource.gamepad) {
             xrController.onMotionControllerInitObservable.addOnce((motionController) => {
-                motionController.onModelLoadedObservable.addOnce(() => {
-                    const impostor = new PhysicsImpostor(motionController.rootMesh!, PhysicsImpostor.MeshImpostor, {
-                        mass: 0,
-                        ...this._options.physicsProperties
+                if (!motionController._doNotLoadControllerMesh) {
+                    motionController.onModelLoadedObservable.addOnce(() => {
+                        const impostor = new PhysicsImpostor(
+                            motionController.rootMesh!,
+                            PhysicsImpostor.MeshImpostor,
+                            {
+                                mass: 0,
+                                ...this._options.physicsProperties,
+                            });
+
+                        const controllerMesh = xrController.grip || xrController.pointer;
+                        this._controllers[xrController.uniqueId] = {
+                            xrController,
+                            impostor,
+                            oldPos: controllerMesh.position.clone(),
+                            oldRotation: controllerMesh.rotationQuaternion!.clone(),
+                        };
                     });
-                    const controllerMesh = xrController.grip || xrController.pointer;
-                    this._controllers[xrController.uniqueId] = {
-                        xrController,
-                        impostor,
-                        oldPos: controllerMesh.position.clone(),
-                        oldRotation: controllerMesh.rotationQuaternion!.clone()
-                    };
-                });
+                } else {
+                    // This controller isn't using a model, create impostors instead
+                    this._createPhysicsImpostor(xrController);
+                }
             });
         } else {
-            const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
-            const impostorSize: number | { width: number, height: number, depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
-            const impostorMesh = SphereBuilder.CreateSphere('impostor-mesh-' + xrController.uniqueId, {
-                diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === 'number' ? impostorSize : impostorSize.depth
-            });
-            impostorMesh.isVisible = this._debugMode;
-            impostorMesh.isPickable = false;
-            impostorMesh.rotationQuaternion = new Quaternion();
-            const controllerMesh = xrController.grip || xrController.pointer;
-            impostorMesh.position.copyFrom(controllerMesh.position);
-            impostorMesh.rotationQuaternion!.copyFrom(controllerMesh.rotationQuaternion!);
-            const impostor = new PhysicsImpostor(impostorMesh, impostorType, {
-                mass: 0,
-                ...this._options.physicsProperties
-            });
-            this._controllers[xrController.uniqueId] = {
-                xrController,
-                impostor,
-                impostorMesh
-            };
+            this._createPhysicsImpostor(xrController);
         }
+    };
+
+    private _createPhysicsImpostor(xrController: WebXRInputSource) {
+        const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
+        const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
+        const impostorMesh = CreateSphere("impostor-mesh-" + xrController.uniqueId, {
+            diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+            diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+            diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
+        });
+        impostorMesh.isVisible = this._debugMode;
+        impostorMesh.isPickable = false;
+        impostorMesh.rotationQuaternion = new Quaternion();
+        const controllerMesh = xrController.grip || xrController.pointer;
+        impostorMesh.position.copyFrom(controllerMesh.position);
+        impostorMesh.rotationQuaternion!.copyFrom(controllerMesh.rotationQuaternion!);
+        const impostor = new PhysicsImpostor(impostorMesh, impostorType, {
+            mass: 0,
+            ...this._options.physicsProperties,
+        });
+        this._controllers[xrController.uniqueId] = {
+            xrController,
+            impostor,
+            impostorMesh,
+        };
     }
 
     private _controllers: {
         [id: string]: {
             xrController: WebXRInputSource;
-            impostorMesh?: AbstractMesh,
-            impostor: PhysicsImpostor
+            impostorMesh?: AbstractMesh;
+            impostor: PhysicsImpostor;
             oldPos?: Vector3;
-            oldSpeed?: Vector3,
+            oldSpeed?: Vector3;
             oldRotation?: Quaternion;
-        }
+        };
     } = {};
     private _debugMode = false;
     private _delta: number = 0;
@@ -165,8 +177,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPhysicsOptions) {
         super(_xrSessionManager);
         if (!this._options.physicsProperties) {
-            this._options.physicsProperties = {
-            };
+            this._options.physicsProperties = {};
         }
     }
 
@@ -218,13 +229,13 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             const params = this._options.headsetImpostorParams || {
                 impostorType: PhysicsImpostor.SphereImpostor,
                 restitution: 0.8,
-                impostorSize: 0.3
+                impostorSize: 0.3,
             };
             const impostorSize = params.impostorSize || 0.3;
-            this._headsetMesh = SphereBuilder.CreateSphere('headset-mesh', {
-                diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === 'number' ? impostorSize : impostorSize.depth
+            this._headsetMesh = CreateSphere("headset-mesh", {
+                diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+                diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+                diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
             });
             this._headsetMesh.rotationQuaternion = new Quaternion();
             this._headsetMesh.isVisible = false;
@@ -283,64 +294,81 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      * Update the physics properties provided in the constructor
      * @param newProperties the new properties object
      */
-    public setPhysicsProperties(newProperties: {
-        impostorType?: number,
-        impostorSize?: number | { width: number, height: number, depth: number },
-        friction?: number,
-        restitution?: number
-    }) {
+    public setPhysicsProperties(newProperties: { impostorType?: number; impostorSize?: number | { width: number; height: number; depth: number }; friction?: number; restitution?: number }) {
         this._options.physicsProperties = {
             ...this._options.physicsProperties,
-            ...newProperties
+            ...newProperties,
         };
     }
 
     protected _onXRFrame(_xrFrame: any): void {
-        this._delta = (this._xrSessionManager.currentTimestamp - this._lastTimestamp);
+        this._delta = this._xrSessionManager.currentTimestamp - this._lastTimestamp;
         this._lastTimestamp = this._xrSessionManager.currentTimestamp;
-        if (this._headsetMesh) {
-            this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.position);
-            this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion!);
+        if (this._headsetMesh && this._headsetImpostor) {
+            this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.globalPosition);
+            this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.absoluteRotation);
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.linearVelocity) {
+                const lv = this._options.xrInput.xrCamera._lastXRViewerPose.linearVelocity;
+                this._tmpVector.set(lv.x, lv.y, lv.z);
+                this._headsetImpostor.setLinearVelocity(this._tmpVector);
+            }
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.angularVelocity) {
+                const av = this._options.xrInput.xrCamera._lastXRViewerPose.angularVelocity;
+                this._tmpVector.set(av.x, av.y, av.z);
+                this._headsetImpostor.setAngularVelocity(this._tmpVector);
+            }
         }
         Object.keys(this._controllers).forEach((controllerId) => {
             const controllerData = this._controllers[controllerId];
             const controllerMesh = controllerData.xrController.grip || controllerData.xrController.pointer;
-
             const comparedPosition = controllerData.oldPos || controllerData.impostorMesh!.position;
-            const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
-
-            controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
-            this._tmpVector.scaleInPlace(1000 / this._delta);
-            controllerData.impostor.setLinearVelocity(this._tmpVector);
-            if (this._debugMode) {
-                console.log(this._tmpVector, 'linear');
-            }
-
-            if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
-                // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
-                comparedQuaternion.conjugateInPlace().multiplyToRef(controllerMesh.rotationQuaternion!, this._tmpQuaternion);
-                const len = Math.sqrt(this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z);
-                this._tmpVector.set(this._tmpQuaternion.x, this._tmpQuaternion.y, this._tmpQuaternion.z);
-                // define a better epsilon
-                if (len < 0.001) {
-                    this._tmpVector.scaleInPlace(2);
-                } else {
-                    const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
-                    this._tmpVector.scaleInPlace((angle / (len * (this._delta / 1000))));
-                }
-                controllerData.impostor.setAngularVelocity(this._tmpVector);
-                if (this._debugMode) {
-                    console.log(this._tmpVector, this._tmpQuaternion, 'angular');
-                }
+            if (controllerData.xrController._lastXRPose?.linearVelocity) {
+                const lv = controllerData.xrController._lastXRPose.linearVelocity;
+                this._tmpVector.set(lv.x, lv.y, lv.z);
+                controllerData.impostor.setLinearVelocity(this._tmpVector);
+            } else {
+                controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
+                this._tmpVector.scaleInPlace(1000 / this._delta);
+                controllerData.impostor.setLinearVelocity(this._tmpVector);
             }
             comparedPosition.copyFrom(controllerMesh.position);
+            if (this._debugMode) {
+                console.log(this._tmpVector, "linear");
+            }
+
+            const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
+            if (controllerData.xrController._lastXRPose?.angularVelocity) {
+                const av = controllerData.xrController._lastXRPose.angularVelocity;
+                this._tmpVector.set(av.x, av.y, av.z);
+                controllerData.impostor.setAngularVelocity(this._tmpVector);
+            } else {
+                if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
+                    // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
+                    comparedQuaternion.conjugateInPlace().multiplyToRef(controllerMesh.rotationQuaternion!, this._tmpQuaternion);
+                    const len = Math.sqrt(this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z);
+                    this._tmpVector.set(this._tmpQuaternion.x, this._tmpQuaternion.y, this._tmpQuaternion.z);
+                    // define a better epsilon
+                    if (len < 0.001) {
+                        this._tmpVector.scaleInPlace(2);
+                    } else {
+                        const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
+                        this._tmpVector.scaleInPlace(angle / (len * (this._delta / 1000)));
+                    }
+                    controllerData.impostor.setAngularVelocity(this._tmpVector);
+                }
+            }
             comparedQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
+            if (this._debugMode) {
+                console.log(this._tmpVector, this._tmpQuaternion, "angular");
+            }
         });
     }
 
     private _detachController(xrControllerUniqueId: string) {
         const controllerData = this._controllers[xrControllerUniqueId];
-        if (!controllerData) { return; }
+        if (!controllerData) {
+            return;
+        }
         if (controllerData.impostorMesh) {
             controllerData.impostorMesh.dispose();
         }
@@ -350,6 +378,11 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
 }
 
 //register the plugin
-WebXRFeaturesManager.AddWebXRFeature(WebXRControllerPhysics.Name, (xrSessionManager, options) => {
-    return () => new WebXRControllerPhysics(xrSessionManager, options);
-}, WebXRControllerPhysics.Version, true);
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRControllerPhysics.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRControllerPhysics(xrSessionManager, options);
+    },
+    WebXRControllerPhysics.Version,
+    true
+);

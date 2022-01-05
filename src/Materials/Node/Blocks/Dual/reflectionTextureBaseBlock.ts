@@ -8,7 +8,7 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
@@ -17,6 +17,7 @@ import { Constants } from '../../../../Engines/constants';
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
+import { Engine } from "../../../../Engines/engine";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -50,6 +51,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _cubeSamplerName: string;
     /** @hidden */
     public _2DSamplerName: string;
+    /** @hidden */
+    public _reflectionPositionName: string;
+    /** @hidden */
+    public _reflectionSizeName: string;
+
     protected _positionUVWName: string;
     protected _directionWName: string;
     protected _reflectionVectorName: string;
@@ -59,10 +65,35 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _reflectionMatrixName: string;
     protected _reflectionColorName: string;
 
+    protected _texture: Nullable<BaseTexture>;
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public get texture(): Nullable<BaseTexture> {
+        return this._texture;
+    }
+
+    public set texture(texture: Nullable<BaseTexture>) {
+        if (this._texture === texture) {
+            return;
+        }
+
+        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+
+        if (!texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this._texture!);
+            });
+        }
+
+        this._texture = texture;
+
+        if (texture && scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(texture);
+            });
+        }
+    }
 
     /**
      * Create a new ReflectionTextureBaseBlock
@@ -135,7 +166,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             worldInput.output.connectTo(this.world);
         }
 
-        if (!this.view.isConnected) {
+        if (this.view && !this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
 
             if (!viewInput) {
@@ -161,7 +192,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         defines.setValue(this._defineLocalCubicName, (<any>texture).boundingBoxSize ? true : false, true);
         defines.setValue(this._defineExplicitName, texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE, true);
         defines.setValue(this._defineSkyboxName, texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE, true);
-        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE, true);
+        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE || texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
+        defines.setValue("INVERTCUBICMAP", texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
         defines.setValue(this._defineSphericalName, texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE, true);
         defines.setValue(this._definePlanarName, texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE, true);
         defines.setValue(this._defineProjectionName, texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE, true);
@@ -193,6 +225,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             effect.setTexture(this._cubeSamplerName, texture);
         } else {
             effect.setTexture(this._2DSamplerName, texture);
+        }
+
+        if ((<any>texture).boundingBoxSize) {
+            let cubeTexture = <CubeTexture>texture;
+            effect.setVector3(this._reflectionPositionName, cubeTexture.boundingBoxPosition);
+            effect.setVector3(this._reflectionSizeName, cubeTexture.boundingBoxSize);
         }
     }
 
@@ -271,6 +309,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         let comments = `//${this.name}`;
         state._emitFunction("ReciprocalPI", "#define RECIPROCAL_PI2 0.15915494", "");
+        state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("reflectionFunction", comments, {
             replaceStrings: [
                 { search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" }
@@ -280,6 +319,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionColorName = state._getFreeVariableName("reflectionColor");
         this._reflectionVectorName = state._getFreeVariableName("reflectionUVW");
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
+
+        this._reflectionPositionName = state._getFreeVariableName("vReflectionPosition");
+        state._emitUniformFromString(this._reflectionPositionName, "vec3");
+
+        this._reflectionSizeName = state._getFreeVariableName("vReflectionPosition");
+        state._emitUniformFromString(this._reflectionSizeName, "vec3");
     }
 
     /**
@@ -324,7 +369,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
             #ifdef ${this._defineCubicName}
                 #ifdef ${this._defineLocalCubicName}
-                    vec3 ${this._reflectionVectorName} = computeCubicLocalCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);
+                    vec3 ${this._reflectionVectorName} = computeCubicLocalCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix}, ${this._reflectionSizeName}, ${this._reflectionPositionName});
                 #else
                 vec3 ${this._reflectionVectorName} = computeCubicCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix});
                 #endif
@@ -420,16 +465,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
+        let codeString = super._dumpPropertiesCode();
+
         if (!this.texture) {
-            return "";
+            return codeString;
         }
 
-        let codeString: string;
-
         if (this.texture.isCube) {
-            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}");\r\n`;
+            const forcedExtension = (this.texture as CubeTexture).forcedExtension;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
         } else {
-            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
         }
         codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
 
@@ -439,7 +485,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public serialize(): any {
         let serializationObject = super.serialize();
 
-        if (this.texture) {
+        if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();
         }
 
@@ -460,4 +506,4 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ReflectionTextureBaseBlock"] = ReflectionTextureBaseBlock;
+RegisterClass("BABYLON.ReflectionTextureBaseBlock", ReflectionTextureBaseBlock);

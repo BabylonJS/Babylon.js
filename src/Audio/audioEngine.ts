@@ -1,115 +1,26 @@
-import { IDisposable } from "../scene";
 import { Analyser } from "./analyser";
 
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { Engine } from "../Engines/engine";
-
-/**
- * This represents an audio engine and it is responsible
- * to play, synchronize and analyse sounds throughout the application.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
- */
-export interface IAudioEngine extends IDisposable {
-    /**
-     * Gets whether the current host supports Web Audio and thus could create AudioContexts.
-     */
-    readonly canUseWebAudio: boolean;
-
-    /**
-     * Gets the current AudioContext if available.
-     */
-    readonly audioContext: Nullable<AudioContext>;
-
-    /**
-     * The master gain node defines the global audio volume of your audio engine.
-     */
-    readonly masterGain: GainNode;
-
-    /**
-     * Gets whether or not mp3 are supported by your browser.
-     */
-    readonly isMP3supported: boolean;
-
-    /**
-     * Gets whether or not ogg are supported by your browser.
-     */
-    readonly isOGGsupported: boolean;
-
-    /**
-     * Defines if Babylon should emit a warning if WebAudio is not supported.
-     * @ignoreNaming
-     */
-    WarnedWebAudioUnsupported: boolean;
-
-    /**
-     * Defines if the audio engine relies on a custom unlocked button.
-     * In this case, the embedded button will not be displayed.
-     */
-    useCustomUnlockedButton: boolean;
-
-    /**
-     * Gets whether or not the audio engine is unlocked (require first a user gesture on some browser).
-     */
-    readonly unlocked: boolean;
-
-    /**
-     * Event raised when audio has been unlocked on the browser.
-     */
-    onAudioUnlockedObservable: Observable<AudioEngine>;
-
-    /**
-     * Event raised when audio has been locked on the browser.
-     */
-    onAudioLockedObservable: Observable<AudioEngine>;
-
-    /**
-     * Flags the audio engine in Locked state.
-     * This happens due to new browser policies preventing audio to autoplay.
-     */
-    lock(): void;
-
-    /**
-     * Unlocks the audio engine once a user action has been done on the dom.
-     * This is helpful to resume play once browser policies have been satisfied.
-     */
-    unlock(): void;
-
-    /**
-     * Gets the global volume sets on the master gain.
-     * @returns the global volume if set or -1 otherwise
-     */
-    getGlobalVolume(): number;
-
-    /**
-     * Sets the global volume of your experience (sets on the master gain).
-     * @param newVolume Defines the new global volume of the application
-     */
-    setGlobalVolume(newVolume: number): void;
-
-    /**
-     * Connect the audio engine to an audio analyser allowing some amazing
-     * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
-     * @param analyser The analyser to connect to the engine
-     */
-    connectToAnalyser(analyser: Analyser): void;
-}
+import { IAudioEngine } from './Interfaces/IAudioEngine';
+import { IsWindowObjectExist } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
-Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new AudioEngine(hostElement); };
+Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => { return new AudioEngine(hostElement, audioContext, audioDestination); };
 
 /**
  * This represents the default audio engine used in babylon.
  * It is responsible to play, synchronize and analyse sounds throughout the  application.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export class AudioEngine implements IAudioEngine {
     private _audioContext: Nullable<AudioContext> = null;
     private _audioContextInitialized = false;
     private _muteButton: Nullable<HTMLButtonElement> = null;
     private _hostElement: Nullable<HTMLElement>;
+    private _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null;
 
     /**
      * Gets whether the current host supports Web Audio and thus could create AudioContexts.
@@ -153,12 +64,12 @@ export class AudioEngine implements IAudioEngine {
     /**
      * Event raised when audio has been unlocked on the browser.
      */
-    public onAudioUnlockedObservable = new Observable<AudioEngine>();
+    public onAudioUnlockedObservable = new Observable<IAudioEngine>();
 
     /**
      * Event raised when audio has been locked on the browser.
      */
-    public onAudioLockedObservable = new Observable<AudioEngine>();
+    public onAudioLockedObservable = new Observable<IAudioEngine>();
 
     /**
      * Gets the current AudioContext if available.
@@ -183,8 +94,13 @@ export class AudioEngine implements IAudioEngine {
      * There should be only one per page as some browsers restrict the number
      * of audio contexts you can create.
      * @param hostElement defines the host element where to display the mute icon if necessary
+     * @param audioContext defines the audio context to be used by the audio engine
+     * @param audioDestination defines the audio destination node to be used by audio engine
      */
-    constructor(hostElement: Nullable<HTMLElement> = null) {
+    constructor(hostElement: Nullable<HTMLElement> = null, audioContext: Nullable<AudioContext> = null, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> = null) {
+        if (!IsWindowObjectExist()) {
+            return;
+        }
         if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
             window.AudioContext = window.AudioContext || window.webkitAudioContext;
             this.canUseWebAudio = true;
@@ -192,9 +108,12 @@ export class AudioEngine implements IAudioEngine {
 
         var audioElem = document.createElement('audio');
         this._hostElement = hostElement;
+        this._audioContext = audioContext;
+        this._audioDestination = audioDestination;
 
         try {
-            if (audioElem && !!audioElem.canPlayType && audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '')) {
+            if (audioElem && !!audioElem.canPlayType && (audioElem.canPlayType('audio/mpeg; codecs="mp3"').replace(/^no$/, '') ||
+                audioElem.canPlayType('audio/mp3').replace(/^no$/, ''))) {
                 this.isMP3supported = true;
             }
         }
@@ -230,7 +149,7 @@ export class AudioEngine implements IAudioEngine {
 
     private _resumeAudioContext(): Promise<void> {
         let result: Promise<void>;
-        if (this._audioContext!.resume) {
+        if (this._audioContext!.resume !== undefined) {
             result = this._audioContext!.resume();
         }
         return result! || Promise.resolve();
@@ -239,11 +158,16 @@ export class AudioEngine implements IAudioEngine {
     private _initializeAudioContext() {
         try {
             if (this.canUseWebAudio) {
-                this._audioContext = new AudioContext();
+                if (!this._audioContext) {
+                    this._audioContext = new AudioContext();
+                }
                 // create a global volume gain node
                 this.masterGain = this._audioContext.createGain();
                 this.masterGain.gain.value = 1;
-                this.masterGain.connect(this._audioContext.destination);
+                if (!this._audioDestination) {
+                    this._audioDestination = this._audioContext.destination;
+                }
+                this.masterGain.connect(this._audioDestination);
                 this._audioContextInitialized = true;
                 if (this._audioContext.state === "running") {
                     // Do not wait for the promise to unlock.
@@ -270,14 +194,13 @@ export class AudioEngine implements IAudioEngine {
                 if (this._muteButton) {
                     this._hideMuteButton();
                 }
+                // Notify users that the audio stack is unlocked/unmuted
+                this.unlocked = true;
+                this.onAudioUnlockedObservable.notifyObservers(this);
             }).catch(() => {
                 this._tryToRun = false;
                 this.unlocked = false;
             });
-
-        // Notify users that the audio stack is unlocked/unmuted
-        this.unlocked = true;
-        this.onAudioUnlockedObservable.notifyObservers(this);
     }
 
     private _triggerSuspendedState() {
@@ -336,7 +259,7 @@ export class AudioEngine implements IAudioEngine {
     }
 
     /**
-     * Destroy and release the resources associated with the audio ccontext.
+     * Destroy and release the resources associated with the audio context.
      */
     public dispose(): void {
         if (this.canUseWebAudio && this._audioContextInitialized) {
@@ -382,8 +305,8 @@ export class AudioEngine implements IAudioEngine {
 
     /**
      * Connect the audio engine to an audio analyser allowing some amazing
-     * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * synchronization between the sounds/music and your visualization (VuMeter for instance).
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */
     public connectToAnalyser(analyser: Analyser): void {

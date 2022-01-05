@@ -4,7 +4,7 @@ import { Matrix } from "../../Maths/math.vector";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from "../../Misc/typeStore";
+import { RegisterClass } from "../../Misc/typeStore";
 import { ThinEngine } from "../../Engines/thinEngine";
 
 // Ensures Raw texture are included
@@ -35,7 +35,7 @@ export class ColorGradingTexture extends BaseTexture {
     /**
      * Instantiates a ColorGradingTexture from the following parameters.
      *
-     * @param url The location of the color gradind data (currently only supporting 3dl)
+     * @param url The location of the color grading data (currently only supporting 3dl)
      * @param sceneOrEngine The scene or engine the texture will be used in
      * @param onLoad defines a callback triggered when the texture has been loaded
      */
@@ -94,7 +94,7 @@ export class ColorGradingTexture extends BaseTexture {
     private load3dlTexture() {
         var engine = this._getEngine()!;
         var texture: InternalTexture;
-        if (engine.webGLVersion === 1) {
+        if (!engine._features.support3DTextures) {
             texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
         }
         else {
@@ -105,7 +105,7 @@ export class ColorGradingTexture extends BaseTexture {
         this._texture.isReady = false;
 
         this.isCube = false;
-        this.is3D = engine.webGLVersion > 1;
+        this.is3D = engine._features.support3DTextures;
         this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -231,7 +231,7 @@ export class ColorGradingTexture extends BaseTexture {
     }
 
     /**
-     * Clones the color gradind texture.
+     * Clones the color grading texture.
      */
     public clone(): ColorGradingTexture {
         var newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
@@ -263,7 +263,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @param parsedTexture The texture information being parsedTexture
      * @param scene The scene to load the texture in
      * @param rootUrl The root url of the data assets to load
-     * @return A color gradind texture
+     * @return A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
         var texture = null;
@@ -292,4 +292,4 @@ export class ColorGradingTexture extends BaseTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ColorGradingTexture"] = ColorGradingTexture;
+RegisterClass("BABYLON.ColorGradingTexture", ColorGradingTexture);

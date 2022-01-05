@@ -61,7 +61,7 @@ export class EffectFallbacks implements IEffectFallbacks {
     }
 
     /**
-     * Checks to see if more fallbacks are still availible.
+     * Checks to see if more fallbacks are still available.
      */
     public get hasMoreFallbacks(): boolean {
         return this._currentRank <= this._maxRank;

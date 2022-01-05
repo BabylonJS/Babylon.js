@@ -1,4 +1,4 @@
-import {GLTFFileLoader, GLTFLoaderAnimationStartMode} from "babylonjs-loaders/glTF/glTFFileLoader"
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/glTFFileLoader"
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
 import { Tools } from 'babylonjs/Misc/tools';
 import { SceneLoader } from 'babylonjs/Loading/sceneLoader';
@@ -66,7 +66,7 @@ export class ModelLoader {
      * @param modelConfiguration the modelConfiguration to use to load the model
      */
     public load(modelConfiguration: IModelConfiguration): ViewerModel {
-        
+
         const model = new ViewerModel(this._observablesManager, modelConfiguration, this._configurationContainer);
 
         model.loadId = this._loadId++;

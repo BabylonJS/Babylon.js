@@ -1,7 +1,7 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
 import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math.vector";
-import { _DevTools } from './devTools';
+import { _WarnImport } from './devTools';
 import { IAnimatable } from '../Animations/animatable.interface';
 import { Color4, Color3 } from '../Maths/math.color';
 
@@ -32,7 +32,7 @@ var _copySource = function <T>(creationFunction: () => T, source: T, instanciate
         var sourceProperty = (<any>source)[property];
         var propertyType = propertyDescriptor.type;
 
-        if (sourceProperty !== undefined && sourceProperty !== null && property !== "uniqueId") {
+        if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
             switch (propertyType) {
                 case 0:     // Value
                 case 6:     // Mesh reference
@@ -133,10 +133,10 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
     return (target: any, propertyKey: string) => {
         var key = targetKey || ("_" + propertyKey);
         Object.defineProperty(target, propertyKey, {
-            get: function(this: any) {
+            get: function (this: any) {
                 return this[key];
             },
-            set: function(this: any, value) {
+            set: function (this: any, value) {
                 if (this[key] === value) {
                     return;
                 }
@@ -214,24 +214,29 @@ export function serializeAsCameraReference(sourceName?: string) {
  * Class used to help serialization objects
  */
 export class SerializationHelper {
+    /**
+    * Gets or sets a boolean to indicate if the UniqueId property should be serialized
+    */
+    public static AllowLoadingUniqueId = false;
+
     /** @hidden */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
-        throw _DevTools.WarnImport("ImageProcessingConfiguration");
+        throw _WarnImport("ImageProcessingConfiguration");
     }
 
     /** @hidden */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
-        throw _DevTools.WarnImport("FresnelParameters");
+        throw _WarnImport("FresnelParameters");
     }
 
     /** @hidden */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
-        throw _DevTools.WarnImport("ColorCurves");
+        throw _WarnImport("ColorCurves");
     }
 
     /** @hidden */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
-        throw _DevTools.WarnImport("Texture");
+        throw _WarnImport("Texture");
     }
 
     /**
@@ -253,7 +258,7 @@ export class SerializationHelper {
     /**
      * Static function used to serialized a specific entity
      * @param entity defines the entity to serialize
-     * @param serializationObject defines the optional target obecjt where serialization data will be stored
+     * @param serializationObject defines the optional target object where serialization data will be stored
      * @returns a JSON compatible object representing the serialization of the entity
      */
     public static Serialize<T>(entity: T, serializationObject?: any): any {
@@ -275,7 +280,7 @@ export class SerializationHelper {
             var propertyType = propertyDescriptor.type;
             var sourceProperty = (<any>entity)[property];
 
-            if (sourceProperty !== undefined && sourceProperty !== null) {
+            if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 switch (propertyType) {
                     case 0:     // Value
                         serializationObject[targetPropertyName] = sourceProperty;
@@ -312,6 +317,7 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
+                        break;
                     case 12:    // Matrix
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;
@@ -350,7 +356,7 @@ export class SerializationHelper {
             var sourceProperty = source[propertyDescriptor.sourceName || property];
             var propertyType = propertyDescriptor.type;
 
-            if (sourceProperty !== undefined && sourceProperty !== null) {
+            if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 var dest = <any>destination;
                 switch (propertyType) {
                     case 0:     // Value
@@ -375,7 +381,7 @@ export class SerializationHelper {
                         break;
                     case 6:     // Mesh reference
                         if (scene) {
-                            dest[property] = scene.getLastMeshByID(sourceProperty);
+                            dest[property] = scene.getLastMeshById(sourceProperty);
                         }
                         break;
                     case 7:     // Color Curves
@@ -392,7 +398,7 @@ export class SerializationHelper {
                         break;
                     case 11:    // Camera reference
                         if (scene) {
-                            dest[property] = scene.getCameraByID(sourceProperty);
+                            dest[property] = scene.getCameraById(sourceProperty);
                         }
                     case 12:    // Matrix
                         dest[property] = Matrix.FromArray(sourceProperty);
@@ -424,3 +430,51 @@ export class SerializationHelper {
         return _copySource(creationFunction, source, true);
     }
 }
+
+/** @hidden */
+declare const _native: any;
+
+/**
+ * Decorator used to redirect a function to a native implementation if available.
+ * @hidden
+ */
+export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T) {
+    // Cache the original JS function for later.
+    const jsFunc = descriptor.value!;
+
+    // Override the JS function to check for a native override on first invocation. Setting descriptor.value overrides the function at the early stage of code being loaded/imported.
+    descriptor.value = (...params: Parameters<T>): unknown => {
+        // Assume the resolved function will be the original JS function, then we will check for the Babylon Native context.
+        let func = jsFunc;
+
+        // Check if we are executing in a Babylon Native context (e.g. check the presence of the _native global property) and if so also check if a function override is available.
+        if (typeof _native !== 'undefined' && _native[propertyKey]) {
+            const nativeFunc = _native[propertyKey] as (...params: Parameters<T>) => unknown;
+            // If a predicate was provided, then we'll need to invoke the predicate on each invocation of the underlying function to determine whether to call the native function or the JS function.
+            if (predicate) {
+                // The resolved function will execute the predicate and then either execute the native function or the JS function.
+                func = (...params: Parameters<T>) => predicate(...params) ? nativeFunc(...params) : jsFunc(...params);
+            } else {
+                // The resolved function will directly execute the native function.
+                func = nativeFunc;
+            }
+        }
+
+        // Override the JS function again with the final resolved target function.
+        target[propertyKey] = func;
+
+        // The JS function has now been overridden based on whether we're executing in the context of Babylon Native, but we still need to invoke that function.
+        // Future invocations of the function will just directly invoke the final overridden function, not any of the decorator setup logic above.
+        return func(...params);
+    };
+}
+
+/**
+ * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
+ * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
+ *          public someMethod(arg1: string, arg2: number): string {
+ * @hidden
+ */
+nativeOverride.filter = function<T extends (...params: any) => boolean>(predicate: T) {
+    return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) => nativeOverride(target, propertyKey, descriptor, predicate);
+};

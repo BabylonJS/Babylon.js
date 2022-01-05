@@ -1,14 +1,15 @@
 import { Nullable, FloatArray } from "../types";
 import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { VertexBuffer } from "../Meshes/buffer";
+import { TransformNode } from "../Meshes/transformNode";
+import { VertexBuffer } from "../Buffers/buffer";
 import { Sprite } from "../Sprites/sprite";
 
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
      * Information about the result of picking within a scene
-     * @see https://doc.babylonjs.com/babylon101/picking_collisions
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/interactions/picking_collisions
      */
 export class PickingInfo {
     /** @hidden */
@@ -36,24 +37,37 @@ export class PickingInfo {
     public bv = 0;
     /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
     public faceId = -1;
+    /** The index of the face on the subMesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+    public subMeshFaceId = -1;
     /** Id of the the submesh that was picked */
     public subMeshId = 0;
     /** If a sprite was picked, this will be the sprite the pick collided with */
     public pickedSprite: Nullable<Sprite> = null;
-    /**
-     * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
-     */
-    public originMesh: Nullable<AbstractMesh> = null;
+    /** If we are picking a mesh with thin instance, this will give you the picked thin instance */
+    public thinInstanceIndex = -1;
     /**
      * The ray that was used to perform the picking.
      */
     public ray: Nullable<Ray> = null;
+    /**
+     * If a mesh was used to do the picking (eg. 6dof controller) as a "near interaction", this will be populated.
+     */
+    public originMesh: Nullable<AbstractMesh> = null;
+    /**
+     * The aim-space transform of the input used for picking, if it is an XR input source.
+     */
+    public aimTransform: Nullable<TransformNode> = null;
+    /**
+     * The grip-space transform of the input used for picking, if it is an XR input source.
+     * Some XR sources, such as input coming from head mounted displays, do not have this.
+     */
+    public gripTransform: Nullable<TransformNode> = null;
 
     /**
-     * Gets the normal correspodning to the face the pick collided with
+     * Gets the normal corresponding to the face the pick collided with
      * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
      * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-     * @returns The normal correspodning to the face the pick collided with
+     * @returns The normal corresponding to the face the pick collided with
      */
     public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
         if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -115,8 +129,8 @@ export class PickingInfo {
     }
 
     /**
-     * Gets the texture coordinates of where the pick occured
-     * @returns the vector containing the coordnates of the texture
+     * Gets the texture coordinates of where the pick occurred
+     * @returns the vector containing the coordinates of the texture
      */
     public getTextureCoordinates(): Nullable<Vector2> {
         if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {

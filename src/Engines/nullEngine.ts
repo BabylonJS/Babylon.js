@@ -1,15 +1,19 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
-import { VertexBuffer } from "../Meshes/buffer";
+import { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
+import { PerformanceConfigurator } from './performanceConfigurator';
+import { DrawWrapper } from "../Materials/drawWrapper";
+import { RenderTargetWrapper } from "./renderTargetWrapper";
+import { IStencilState } from "../States/IStencilState";
 
 declare const global: any;
 
@@ -42,6 +46,11 @@ export class NullEngineOptions {
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public lockstepMaxSteps = 4;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -53,7 +62,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -62,7 +71,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -94,6 +103,8 @@ export class NullEngine extends Engine {
 
         this._options = options;
 
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+
         // Init caps
         // We consider we are on a webgl1 capable device
 
@@ -113,6 +124,7 @@ export class NullEngine extends Engine {
             pvrtc: null,
             etc1: null,
             etc2: null,
+            bptc: null,
             maxAnisotropy: 0,
             uintIndices: false,
             fragmentDepthSupported: false,
@@ -129,9 +141,40 @@ export class NullEngine extends Engine {
             depthTextureExtension: false,
             vertexArrayObject: false,
             instancedArrays: false,
+            supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             maxMSAASamples: 1,
-            blendMinMax: false
+            blendMinMax: false,
+            canUseGLInstanceID: false,
+            canUseGLVertexID: false,
+            supportComputeShaders: false,
+            supportSRGBBuffers: false,
+        };
+
+        this._features = {
+            forceBitmapOverHTMLImageElement: false,
+            supportRenderAndCopyToLodForFloatTextures: false,
+            supportDepthStencilTexture: false,
+            supportShadowSamplers: false,
+            uniformBufferHardCheckMatrix: false,
+            allowTexturePrefiltering: false,
+            trackUbosInFrame: false,
+            checkUbosContentBeforeUpload: false,
+            supportCSM: false,
+            basisNeedsPOT: false,
+            support3DTextures: false,
+            needTypeSuffixInShaderConstants: false,
+            supportMSAA: false,
+            supportSSAO2: false,
+            supportExtendedTextureFormats: false,
+            supportSwitchCaseInShader: false,
+            supportSyncTextureRead: false,
+            needsInvertingBitmap: false,
+            useUBOBindingCache: false,
+            needShaderCodeInlining: false,
+            needToAlwaysBindUniformBuffers: false,
+            supportRenderPasses: true,
+            _collectUbosUpdatedInFrame: false,
         };
 
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
@@ -140,12 +183,12 @@ export class NullEngine extends Engine {
         const theCurrentGlobal = (typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : window);
         if (typeof URL === "undefined") {
             theCurrentGlobal.URL = {
-                createObjectURL: function() { },
-                revokeObjectURL: function() { }
+                createObjectURL: function () { },
+                revokeObjectURL: function () { }
             };
         }
         if (typeof Blob === "undefined") {
-            theCurrentGlobal.Blob = function() { };
+            theCurrentGlobal.Blob = function () { };
         }
     }
 
@@ -253,11 +296,16 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Effect): void {
-        this._currentEffect = effect;
+    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
+        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+
+        this._currentEffect = effect as Nullable<Effect>;
+        if (!effect) {
+            return;
+        }
 
         if (effect.onBind) {
             effect.onBind(effect);
@@ -269,140 +317,175 @@ export class NullEngine extends Engine {
 
     /**
      * Set various states to the webGL context
-     * @param culling defines backface culling state
+     * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
      * @param force defines if states must be applied even if cache is up to date
-     * @param reverseSide defines if culling must be reversed (CCW instead of CW and CW instead of CCW)
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param stencil stencil states to set
+     * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
+    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
     }
 
     /**
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if value was set
      */
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if value was set
      */
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as matrices)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrices defines the array of float32 to store
+     * @returns true if value was set
      */
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a matrix (3x3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
+     * @returns true if value was set
      */
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a matrix (2x2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 2x2 matrix to store
+     * @returns true if value was set
      */
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
+     * @returns true if value was set
      */
-    public setFloat(uniform: WebGLUniformLocation, value: number): void {
+    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
+        return true;
     }
 
     /**
@@ -410,8 +493,10 @@ export class NullEngine extends Engine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param x defines the 1st component of the value
      * @param y defines the 2nd component of the value
+     * @returns true if value was set
      */
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
+        return true;
     }
 
     /**
@@ -420,16 +505,20 @@ export class NullEngine extends Engine {
      * @param x defines the 1st component of the value
      * @param y defines the 2nd component of the value
      * @param z defines the 3rd component of the value
+     * @returns true if value was set
      */
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
+        return true;
     }
 
     /**
      * Set the value of an uniform to a boolean
      * @param uniform defines the webGL uniform location where to store the value
      * @param bool defines the boolean to store
+     * @returns true if value was set
      */
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
+    public setBool(uniform: WebGLUniformLocation, bool: number): boolean {
+        return true;
     }
 
     /**
@@ -439,15 +528,17 @@ export class NullEngine extends Engine {
      * @param y defines the 2nd component of the value
      * @param z defines the 3rd component of the value
      * @param w defines the 4th component of the value
+     * @returns true if value was set
      */
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
+        return true;
     }
 
     /**
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -488,7 +579,7 @@ export class NullEngine extends Engine {
         if (bruteForce) {
             this._currentProgram = null;
 
-            this.stencilState.reset();
+            this._stencilStateComposer.reset();
             this.depthCullingState.reset();
             this.alphaState.reset();
         }
@@ -529,7 +620,7 @@ export class NullEngine extends Engine {
     }
 
     /** @hidden */
-    public _createTexture(): WebGLTexture {
+    protected _createTexture(): WebGLTexture {
         return {};
     }
 
@@ -587,14 +678,23 @@ export class NullEngine extends Engine {
         return texture;
     }
 
+    /** @hidden */
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number, height: number, layers?: number }): RenderTargetWrapper {
+        const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
+        this._renderTargetWrapperCache.push(rtWrapper);
+        return rtWrapper;
+    }
+
     /**
-     * Creates a new render target texture
+     * Creates a new render target wrapper
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
-     * @returns a new render target texture stored in an InternalTexture
+     * @returns a new render target wrapper
      */
-    public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
-        let fullOptions = new RenderTargetCreationOptions();
+    public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size);
+
+        const fullOptions: RenderTargetCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
@@ -614,8 +714,9 @@ export class NullEngine extends Engine {
         var width = size.width || size;
         var height = size.height || size;
 
-        texture._depthStencilBuffer = {};
-        texture._framebuffer = {};
+        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -625,12 +726,10 @@ export class NullEngine extends Engine {
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;
-        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
         this._internalTexturesCache.push(texture);
 
-        return texture;
+        return rtWrapper;
     }
 
     /**
@@ -643,20 +742,74 @@ export class NullEngine extends Engine {
     }
 
     /**
+     * Creates a raw texture
+     * @param data defines the data to store in the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param format defines the format of the data
+     * @param generateMipMaps defines if the engine should generate the mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+     * @param compression defines the compression used (null by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @returns the raw texture inside an InternalTexture
+     */
+    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
+        compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture {
+        var texture = new InternalTexture(this, InternalTextureSource.Raw);
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.format = format;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture._compression = compression;
+        texture.type = type;
+
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
+        }
+
+        return texture;
+    }
+
+    /**
+     * Update a raw texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store in the texture
+     * @param format defines the format of the data
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     */
+    public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+        if (texture) {
+            texture._bufferView = data;
+            texture.format = format;
+            texture.invertY = invertY;
+            texture._compression = compression;
+            texture.type = type;
+        }
+    }
+
+    /**
      * Binds the frame buffer to the specified texture.
-     * @param texture The texture to render to or null for the default canvas
+     * @param rtWrapper The render target wrapper to render to
      * @param faceIndex The face of the texture to render to in case of cube texture
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
      * @param lodLevel defines le lod level to bind to the frame buffer
      */
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
-        this._currentRenderTarget = texture;
-        this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
+        this._currentRenderTarget = rtWrapper;
+        this._currentFramebuffer = null;
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
         }
@@ -664,17 +817,14 @@ export class NullEngine extends Engine {
 
     /**
      * Unbind the current render target texture from the webGL context
-     * @param texture defines the render target texture to unbind
+     * @param rtWrapper defines the render target wrapper to unbind
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         this._currentRenderTarget = null;
 
         if (onBeforeUnbind) {
-            if (texture._MSAAFramebuffer) {
-                this._currentFramebuffer = texture._framebuffer;
-            }
             onBeforeUnbind();
         }
         this._currentFramebuffer = null;

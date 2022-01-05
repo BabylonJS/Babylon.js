@@ -1,10 +1,10 @@
-import { faObjectGroup, faHighlighter, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faObjectGroup, faHighlighter, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
-import * as React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IControlTreeItemComponentProps {
     control: Control;
@@ -12,7 +12,7 @@ interface IControlTreeItemComponentProps {
     onClick: () => void;
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean, isVisible: boolean }> {
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 

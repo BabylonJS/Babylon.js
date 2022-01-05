@@ -3,8 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../../Misc/typeStore';
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
@@ -27,27 +26,16 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
 
         this._isUnique = true;
 
-        this.registerInput("minThickness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("maxThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("thicknessTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("thickness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("translucencyIntensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("translucencyDiffusionDistance", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("translucencyDiffusionDist", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("refraction", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Input, RefractionBlock, "RefractionBlock"));
 
         this.registerOutput("subsurface", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Output, SubSurfaceBlock, "SubSurfaceBlock"));
     }
-
-    /**
-     * Stores the intensity of the different subsurface effects in the thickness texture.
-     * * the green channel is the translucency intensity.
-     * * the blue channel is the scattering intensity.
-     * * the alpha channel is the refraction intensity.
-     */
-    @editableInPropertyPage("Mask from thickness texture", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
-    public useMaskFromThicknessTexture: boolean = false;
 
     /**
      * Initialize the block and prepare the context for build
@@ -69,52 +57,38 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the min thickness input component
+     * Gets the thickness component
      */
-    public get minThickness(): NodeMaterialConnectionPoint {
+    public get thickness(): NodeMaterialConnectionPoint {
         return this._inputs[0];
-    }
-
-    /**
-     * Gets the max thickness input component
-     */
-    public get maxThickness(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the thickness texture component
-     */
-    public get thicknessTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
     }
 
     /**
      * Gets the tint color input component
      */
     public get tintColor(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[1];
     }
 
     /**
      * Gets the translucency intensity input component
      */
     public get translucencyIntensity(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[2];
     }
 
     /**
      * Gets the translucency diffusion distance input component
      */
-    public get translucencyDiffusionDistance(): NodeMaterialConnectionPoint {
-        return this._inputs[5];
+    public get translucencyDiffusionDist(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
      * Gets the refraction object parameters
      */
     public get refraction(): NodeMaterialConnectionPoint {
-        return this._inputs[6];
+        return this._inputs[4];
     }
 
     /**
@@ -125,22 +99,25 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure(material: NodeMaterial) {
-        if (!this.minThickness.isConnected) {
-            let minThicknessInput = new InputBlock("SubSurface min thickness", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
-            minThicknessInput.value = 0;
-            minThicknessInput.output.connectTo(this.minThickness);
+        if (!this.thickness.isConnected) {
+            let thicknessInput = new InputBlock("SubSurface thickness", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
+            thicknessInput.value = 0;
+            thicknessInput.output.connectTo(this.thickness);
         }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
-        const translucencyEnabled = this.translucencyDiffusionDistance.isConnected || this.translucencyIntensity.isConnected;
+        const translucencyEnabled = this.translucencyDiffusionDist.isConnected || this.translucencyIntensity.isConnected;
 
         defines.setValue("SUBSURFACE", translucencyEnabled || this.refraction.isConnected, true);
         defines.setValue("SS_TRANSLUCENCY", translucencyEnabled, true);
-        defines.setValue("SS_THICKNESSANDMASK_TEXTURE", this.thicknessTexture.isConnected, true);
-        defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", this.useMaskFromThicknessTexture, true);
+        defines.setValue("SS_THICKNESSANDMASK_TEXTURE", false, true);
+        defines.setValue("SS_REFRACTIONINTENSITY_TEXTURE", false, true);
+        defines.setValue("SS_TRANSLUCENCYINTENSITY_TEXTURE", false, true);
+        defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", false, true);
+        defines.setValue("SS_USE_GLTF_TEXTURES", false, true);
     }
 
     /**
@@ -154,12 +131,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     public static GetCode(state: NodeMaterialBuildState, ssBlock: Nullable<SubSurfaceBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string): string {
         let code = "";
 
-        const minThickness = ssBlock?.minThickness.isConnected ? ssBlock.minThickness.associatedVariableName : "0.";
-        const maxThickness = ssBlock?.maxThickness.isConnected ? ssBlock.maxThickness.associatedVariableName : "1.";
-        const thicknessTexture = ssBlock?.thicknessTexture.isConnected ? ssBlock.thicknessTexture.associatedVariableName : "vec4(0.)";
+        const thickness = ssBlock?.thickness.isConnected ? ssBlock.thickness.associatedVariableName : "0.";
         const tintColor = ssBlock?.tintColor.isConnected ? ssBlock.tintColor.associatedVariableName : "vec3(1.)";
         const translucencyIntensity = ssBlock?.translucencyIntensity.isConnected ? ssBlock?.translucencyIntensity.associatedVariableName : "1.";
-        const translucencyDiffusionDistance = ssBlock?.translucencyDiffusionDistance.isConnected ? ssBlock?.translucencyDiffusionDistance.associatedVariableName : "vec3(1.)";
+        const translucencyDiffusionDistance = ssBlock?.translucencyDiffusionDist.isConnected ? ssBlock?.translucencyDiffusionDist.associatedVariableName : "vec3(1.)";
 
         const refractionBlock: Nullable<RefractionBlock> = (ssBlock?.refraction.isConnected ? ssBlock?.refraction.connectedPoint?.ownerBlock : null) as Nullable<RefractionBlock>;
 
@@ -172,7 +147,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         code += `subSurfaceOutParams subSurfaceOut;
 
         #ifdef SUBSURFACE
-            vec2 vThicknessParam = vec2(${minThickness}, ${maxThickness} - ${minThickness});
+            vec2 vThicknessParam = vec2(0., ${thickness});
             vec4 vTintColor = vec4(${tintColor}, ${refractionTintAtDistance});
             vec3 vSubSurfaceIntensity = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
 
@@ -183,7 +158,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 normalW,
                 specularEnvironmentReflectance,
             #ifdef SS_THICKNESSANDMASK_TEXTURE
-                ${thicknessTexture},
+                vec4(0.),
             #endif
             #ifdef REFLECTION
                 #ifdef SS_TRANSLUCENCY
@@ -192,17 +167,23 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                             reflectionOut.irradianceVector,
                         #endif
-                    #endif
+                        #if defined(REALTIME_FILTERING)
+                            ${reflectionBlock?._cubeSamplerName},
+                            ${reflectionBlock?._vReflectionFilteringInfoName},
+                        #endif
+                        #endif
                     #ifdef USEIRRADIANCEMAP
                         irradianceSampler,
                     #endif
                 #endif
             #endif
+            #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+                surfaceAlbedo,
+            #endif
             #ifdef SS_REFRACTION
                 ${worldPosVarName}.xyz,
                 viewDirectionW,
                 ${refractionView},
-                surfaceAlbedo,
                 ${refractionBlock?._vRefractionInfosName ?? ""},
                 ${refractionBlock?._refractionMatrixName ?? ""},
                 ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""},
@@ -215,9 +196,8 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
                 #ifdef ${refractionBlock?._defineLinearSpecularRefraction ?? "IGNORE"}
                     roughness,
-                #else
-                    alphaG,
                 #endif
+                alphaG,
                 #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
                     ${refractionBlock?._cubeSamplerName ?? ""},
                 #else
@@ -234,6 +214,13 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
                 #ifdef ANISOTROPIC
                     anisotropicOut,
+                #endif
+                #ifdef REALTIME_FILTERING
+                    ${refractionBlock?._vRefractionFilteringInfoName ?? ""},
+                #endif
+                #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                    vRefractionPosition,
+                    vRefractionSize,
                 #endif
             #endif
             #ifdef SS_TRANSLUCENCY
@@ -264,4 +251,4 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SubSurfaceBlock"] = SubSurfaceBlock;
+RegisterClass("BABYLON.SubSurfaceBlock", SubSurfaceBlock);

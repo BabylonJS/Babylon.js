@@ -32,62 +32,71 @@ struct clearcoatOutParams
     #define pbr_inline
     #define inline
     void clearcoatBlock(
-        const in vec3 vPositionW,
-        const in vec3 geometricNormalW,
-        const in vec3 viewDirectionW,
-        const in vec2 vClearCoatParams,
-        const in vec3 specularEnvironmentR0,
+        in vec3 vPositionW,
+        in vec3 geometricNormalW,
+        in vec3 viewDirectionW,
+        in vec2 vClearCoatParams,
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+        in vec4 clearCoatMapRoughnessData,
+    #endif
+        in vec3 specularEnvironmentR0,
     #ifdef CLEARCOAT_TEXTURE
-        const in vec2 clearCoatMapData,
+        in vec2 clearCoatMapData,
     #endif
     #ifdef CLEARCOAT_TINT
-        const in vec4 vClearCoatTintParams,
-        const in float clearCoatColorAtDistance,
-        const in vec4 vClearCoatRefractionParams,
+        in vec4 vClearCoatTintParams,
+        in float clearCoatColorAtDistance,
+        in vec4 vClearCoatRefractionParams,
         #ifdef CLEARCOAT_TINT_TEXTURE
-            const in vec4 clearCoatTintMapData,
+            in vec4 clearCoatTintMapData,
         #endif
     #endif
     #ifdef CLEARCOAT_BUMP
-        const in vec2 vClearCoatBumpInfos,
-        const in vec4 clearCoatBumpMapData,
-        const in vec2 vClearCoatBumpUV,
+        in vec2 vClearCoatBumpInfos,
+        in vec4 clearCoatBumpMapData,
+        in vec2 vClearCoatBumpUV,
         #if defined(TANGENT) && defined(NORMAL)
-            const in mat3 vTBN,
+            in mat3 vTBN,
         #else
-            const in vec2 vClearCoatTangentSpaceParams,
+            in vec2 vClearCoatTangentSpaceParams,
         #endif
         #ifdef OBJECTSPACE_NORMALMAP
-            const in mat4 normalMatrix,
+            in mat4 normalMatrix,
         #endif
     #endif
     #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-        const in vec3 faceNormal,
+        in vec3 faceNormal,
     #endif
     #ifdef REFLECTION
-        const in vec3 vReflectionMicrosurfaceInfos,
-        const in vec2 vReflectionInfos,
-        const in vec3 vReflectionColor,
-        const in vec4 vLightingIntensity,
+        in vec3 vReflectionMicrosurfaceInfos,
+        in vec2 vReflectionInfos,
+        in vec3 vReflectionColor,
+        in vec4 vLightingIntensity,
         #ifdef REFLECTIONMAP_3D
-            const in samplerCube reflectionSampler,
+            in samplerCube reflectionSampler,
         #else
-            const in sampler2D reflectionSampler,
+            in sampler2D reflectionSampler,
         #endif
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                const in samplerCube reflectionSamplerLow,
-                const in samplerCube reflectionSamplerHigh,
+                in samplerCube reflectionSamplerLow,
+                in samplerCube reflectionSamplerHigh,
             #else
-                const in sampler2D reflectionSamplerLow,
-                const in sampler2D reflectionSamplerHigh,
+                in sampler2D reflectionSamplerLow,
+                in sampler2D reflectionSamplerHigh,
             #endif
+        #endif
+        #ifdef REALTIME_FILTERING
+            in vec2 vReflectionFilteringInfo,
         #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
-            const in float ambientMonochrome,
+            in float ambientMonochrome,
         #endif
+    #endif
+    #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
+        in float frontFacingMultiplier,
     #endif
         out clearcoatOutParams outParams
     )
@@ -98,9 +107,20 @@ struct clearcoatOutParams
 
         #ifdef CLEARCOAT_TEXTURE
             clearCoatIntensity *= clearCoatMapData.x;
-            clearCoatRoughness *= clearCoatMapData.y;
+            #ifdef CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE
+                clearCoatRoughness *= clearCoatMapData.y;
+            #endif
             #if DEBUGMODE > 0
                 outParams.clearCoatMapData = clearCoatMapData;
+            #endif
+        #endif
+
+
+        #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            #ifdef CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL
+                clearCoatRoughness *= clearCoatMapData.y;
+            #else
+                clearCoatRoughness *= clearCoatMapRoughnessData.y;
             #endif
         #endif
 
@@ -112,7 +132,11 @@ struct clearcoatOutParams
             float clearCoatThickness = vClearCoatTintParams.a;
 
             #ifdef CLEARCOAT_TINT_TEXTURE
-                clearCoatColor *= clearCoatTintMapData.rgb;
+                #ifdef CLEARCOAT_TINT_GAMMATEXTURE
+                    clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                #else
+                    clearCoatColor *= clearCoatTintMapData.rgb;
+                #endif
                 clearCoatThickness *= clearCoatTintMapData.a;
                 #if DEBUGMODE > 0
                     outParams.clearCoatTintMapData = clearCoatTintMapData;
@@ -128,7 +152,11 @@ struct clearcoatOutParams
         // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
 
         // Remap F0 to account for the change of interface within the material.
-        vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
+        #ifdef CLEARCOAT_REMAP_F0
+            vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
+        #else
+            vec3 specularEnvironmentR0Updated = specularEnvironmentR0;
+        #endif
         outParams.specularEnvironmentR0 = mix(specularEnvironmentR0, specularEnvironmentR0Updated, clearCoatIntensity);
 
         // Needs to use the geometric normal before bump for this.
@@ -144,7 +172,9 @@ struct clearcoatOutParams
             #if defined(TANGENT) && defined(NORMAL)
                 mat3 TBNClearCoat = vTBN;
             #else
-                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, vClearCoatBumpUV, vClearCoatTangentSpaceParams);
+                // flip the uv for the backface
+                vec2 TBNClearCoatUV = vClearCoatBumpUV * frontFacingMultiplier;
+                mat3 TBNClearCoat = cotangent_frame(clearCoatNormalW * clearCoatNormalScale, vPositionW, TBNClearCoatUV, vClearCoatTangentSpaceParams);
             #endif
 
             #if DEBUGMODE > 0
@@ -164,7 +194,7 @@ struct clearcoatOutParams
         #endif
 
         #if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
-            clearCoatNormalW = gl_FrontFacing ? clearCoatNormalW : -clearCoatNormalW;
+            clearCoatNormalW = clearCoatNormalW * frontFacingMultiplier;
         #endif
 
         outParams.clearCoatNormalW = clearCoatNormalW;
@@ -188,7 +218,7 @@ struct clearcoatOutParams
             outParams.clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
         #endif
 
-        #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
+        #if defined(ENVIRONMENTBRDF) && (!defined(REFLECTIONMAP_SKYBOX) || defined(MS_BRDF_ENERGY_CONSERVATION))
             // BRDF Lookup
             vec3 environmentClearCoatBrdf = getBRDFLookup(clearCoatNdotV, clearCoatRoughness);
         #endif
@@ -236,6 +266,9 @@ struct clearcoatOutParams
             #ifndef LODBASEDMICROSFURACE
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
             #endif
                 environmentClearCoatRadiance
             );

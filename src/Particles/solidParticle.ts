@@ -91,10 +91,7 @@ export class SolidParticle {
      * @hidden Reference to the shape model BoundingInfo object (Internal use)
      */
     public _modelBoundingInfo: BoundingInfo;
-    /**
-     * @hidden Particle BoundingInfo object (Internal use)
-     */
-    public _boundingInfo: BoundingInfo;
+    private _boundingInfo: BoundingInfo;
     /**
      * @hidden Reference to the SPS what the particle belongs to (Internal use)
      */
@@ -136,6 +133,21 @@ export class SolidParticle {
      * @hidden Internal global position in the SPS.
      */
     public _globalPosition: Vector3 = Vector3.Zero();
+
+    /**
+     * Particle BoundingInfo object
+     * @returns a BoundingInfo
+     */
+    public getBoundingInfo(): BoundingInfo {
+        return this._boundingInfo;
+    }
+
+    /**
+     * Returns true if there is already a bounding info
+     */
+    public get hasBoundingInfo(): boolean {
+        return this._boundingInfo !== null;
+    }
 
     /**
      * Creates a Solid Particle object.
@@ -241,13 +253,13 @@ export class SolidParticle {
      * @returns true if it intersects
      */
     public intersectsMesh(target: Mesh | SolidParticle): boolean {
-        if (!this._boundingInfo || !target._boundingInfo) {
+        if (!this._boundingInfo || !target.hasBoundingInfo) {
             return false;
         }
         if (this._sps._bSphereOnly) {
-            return BoundingSphere.Intersects(this._boundingInfo.boundingSphere, target._boundingInfo.boundingSphere);
+            return BoundingSphere.Intersects(this._boundingInfo.boundingSphere, target.getBoundingInfo().boundingSphere);
         }
-        return this._boundingInfo.intersects(target._boundingInfo, false);
+        return this._boundingInfo.intersects(target.getBoundingInfo(), false);
     }
 
     /**
@@ -285,10 +297,20 @@ export class SolidParticle {
  */
 export class ModelShape {
     /**
+     * Get or set the shapeId
+     * @deprecated Please use shapeId instead
+     */
+    public get shapeID(): number {
+        return this.shapeId;
+    }
+    public set shapeID(shapeID: number) {
+        this.shapeId = shapeID;
+    }
+    /**
      * The shape id
      * @hidden
      */
-    public shapeID: number;
+    public shapeId: number;
     /**
      * flat array of model positions (internal use)
      * @hidden
@@ -343,7 +365,7 @@ export class ModelShape {
     constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[],
         posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>,
         material: Nullable<Material>) {
-        this.shapeID = id;
+        this.shapeId = id;
         this._shape = shape;
         this._indices = indices;
         this._indicesLength = indices.length;

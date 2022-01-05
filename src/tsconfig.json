@@ -3,6 +3,7 @@
     "compilerOptions": {
         "types": [],
         "baseUrl": "./",
-        "rootDir": "./"
+        "rootDir": "./",
+        "outDir": "../.temp/manualBuildCore"
     }
 }

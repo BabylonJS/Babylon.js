@@ -202,6 +202,10 @@ declare module BABYLON {
          */
         mixToNormal: number;
         /**
+         * Speed of the effect
+         */
+        speed: number;
+        /**
          * Instantiates a new Digital Rain Post Process.
          * @param name the name to give to the postprocess
          * @camera the camera to apply the post process to.

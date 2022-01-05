@@ -2,10 +2,10 @@ import { DeepImmutable, FloatArray } from '../types';
 import { Scalar } from './math.scalar';
 import { ToLinearSpace, ToGammaSpace } from './math.constants';
 import { ArrayTools } from '../Misc/arrayTools';
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 /**
- * Class used to hold a RBG color
+ * Class used to hold a RGB color
  */
 export class Color3 {
 
@@ -70,6 +70,17 @@ export class Color3 {
         array[index + 1] = this.g;
         array[index + 2] = this.b;
 
+        return this;
+    }
+
+    /**
+     * Update the current color with values stored in an array from the starting index of the given array
+     * @param array defines the source array
+     * @param offset defines an offset in the source array
+     * @returns the current Color3 object
+     */
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color3 {
+        Color3.FromArrayToRef(array, offset, this);
         return this;
     }
 
@@ -285,9 +296,9 @@ export class Color3 {
      * @returns a string containing the hexadecimal representation of the Color3 object
      */
     public toHexString(): string {
-        var intR = (this.r * 255) | 0;
-        var intG = (this.g * 255) | 0;
-        var intB = (this.b * 255) | 0;
+        var intR = Math.round(this.r * 255);
+        var intG = Math.round(this.g * 255);
+        var intB = Math.round(this.b * 255);
         return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
     }
 
@@ -458,6 +469,18 @@ export class Color3 {
     }
 
     /**
+     * Creates a new Color3 from the starting index element of the given array
+     * @param array defines the source array to read from
+     * @param offset defines the offset in the source array
+     * @param result defines the target Color3 object
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number = 0, result: Color3) {
+        result.r = array[offset];
+        result.g = array[offset + 1];
+        result.b = array[offset + 2];
+    }
+
+    /**
      * Creates a new Color3 from integer values (< 256)
      * @param r defines the red component to read from (value between 0 and 255)
      * @param g defines the green component to read from (value between 0 and 255)
@@ -492,6 +515,63 @@ export class Color3 {
         result.r = left.r + ((right.r - left.r) * amount);
         result.g = left.g + ((right.g - left.g) * amount);
         result.b = left.b + ((right.b - left.b) * amount);
+    }
+
+    /**
+     * Returns a new Color3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent Color3
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent Color3
+     * @param amount defines the amount on the interpolation spline (between 0 and 1)
+     * @returns the new Color3
+     */
+     public static Hermite(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, amount: number): Color3 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+        const part2 = (-2.0 * cubed) + (3.0 * squared);
+        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part4 = cubed - squared;
+
+        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
+        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
+        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        return new Color3(r, g, b);
+    }
+
+    /**
+     * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @returns 1st derivative
+     */
+    public static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3 {
+        let result = Color3.Black();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Returns a new Color3 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where to store the derivative
+     */
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3) {
+        const t2 = time * time;
+
+        result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
+        result.g = (t2 - time) * 6 * value1.g + (3 * t2 - 4 * time + 1) * tangent1.g + (-t2 + time) * 6 * value2.g + (3 * t2 - 2 * time) * tangent2.g;
+        result.b = (t2 - time) * 6 * value1.b + (3 * t2 - 4 * time + 1) * tangent1.b + (-t2 + time) * 6 * value2.b + (3 * t2 - 2 * time) * tangent2.b;
     }
 
     /**
@@ -625,6 +705,17 @@ export class Color4 {
         array[index + 1] = this.g;
         array[index + 2] = this.b;
         array[index + 3] = this.a;
+        return this;
+    }
+
+    /**
+     * Update the current color with values stored in an array from the starting index of the given array
+     * @param array defines the source array
+     * @param offset defines an offset in the source array
+     * @returns the current Color4 object
+     */
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
+        Color4.FromArrayToRef(array, offset, this);
         return this;
     }
 
@@ -827,15 +918,15 @@ export class Color4 {
      * @returns a string containing the hexadecimal representation of the Color4 object
      */
     public toHexString(returnAsColor3 = false): string {
-        var intR = (this.r * 255) | 0;
-        var intG = (this.g * 255) | 0;
-        var intB = (this.b * 255) | 0;
+        var intR = Math.round(this.r * 255);
+        var intG = Math.round(this.g * 255);
+        var intB = Math.round(this.b * 255);
 
         if (returnAsColor3) {
             return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
         }
 
-        var intA = (this.a * 255) | 0;
+        var intA = Math.round(this.a * 255);
         return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB) + Scalar.ToHex(intA);
     }
 
@@ -893,14 +984,14 @@ export class Color4 {
      * @returns a new Color4 object
      */
     public static FromHexString(hex: string): Color4 {
-        if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
+        if (hex.substring(0, 1) !== "#" || (hex.length !== 9 && hex.length !== 7)) {
             return new Color4(0.0, 0.0, 0.0, 0.0);
         }
 
         var r = parseInt(hex.substring(1, 3), 16);
         var g = parseInt(hex.substring(3, 5), 16);
         var b = parseInt(hex.substring(5, 7), 16);
-        var a = parseInt(hex.substring(7, 9), 16);
+        var a = hex.length === 9 ? parseInt(hex.substring(7, 9), 16) : 255;
 
         return Color4.FromInts(r, g, b, a);
     }
@@ -933,6 +1024,65 @@ export class Color4 {
     }
 
     /**
+     * Interpolate between two Color4 using Hermite interpolation
+     * @param value1 defines first Color4
+     * @param tangent1 defines the incoming tangent
+     * @param value2 defines second Color4
+     * @param tangent2 defines the outgoing tangent
+     * @param amount defines the target Color4
+     * @returns the new interpolated Color4
+     */
+     public static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
+        const part2 = (-2.0 * cubed) + (3.0 * squared);
+        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part4 = cubed - squared;
+
+        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
+        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
+        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        const a = (((value1.a * part1) + (value2.a * part2)) + (tangent1.a * part3)) + (tangent2.a * part4);
+        return new Color4(r, g, b, a);
+    }
+
+    /**
+     * Returns a new Color4 which is the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @returns 1st derivative
+     */
+    public static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4 {
+        let result = new Color4();
+
+        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
+
+        return result;
+    }
+
+    /**
+     * Update a Color4 with the 1st derivative of the Hermite spline defined by the colors "value1", "value2", "tangent1", "tangent2".
+     * @param value1 defines the first control point
+     * @param tangent1 defines the first tangent
+     * @param value2 defines the second control point
+     * @param tangent2 defines the second tangent
+     * @param time define where the derivative must be done
+     * @param result define where to store the derivative
+     */
+    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4) {
+        const t2 = time * time;
+
+        result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
+        result.g = (t2 - time) * 6 * value1.g + (3 * t2 - 4 * time + 1) * tangent1.g + (-t2 + time) * 6 * value2.g + (3 * t2 - 2 * time) * tangent2.g;
+        result.b = (t2 - time) * 6 * value1.b + (3 * t2 - 4 * time + 1) * tangent1.b + (-t2 + time) * 6 * value2.b + (3 * t2 - 2 * time) * tangent2.b;
+        result.a = (t2 - time) * 6 * value1.a + (3 * t2 - 4 * time + 1) * tangent1.a + (-t2 + time) * 6 * value2.a + (3 * t2 - 2 * time) * tangent2.a;
+    }
+
+    /**
      * Creates a new Color4 from a Color3 and an alpha value
      * @param color3 defines the source Color3 to read from
      * @param alpha defines the alpha component (1.0 by default)
@@ -950,6 +1100,19 @@ export class Color4 {
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
         return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    }
+
+    /**
+     * Creates a new Color4 from the starting index element of the given array
+     * @param array defines the source array to read from
+     * @param offset defines the offset in the source array
+     * @param result defines the target Color4 object
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number = 0, result: Color4) {
+        result.r = array[offset];
+        result.g = array[offset + 1];
+        result.b = array[offset + 2];
+        result.a = array[offset + 3];
     }
 
     /**
@@ -998,5 +1161,5 @@ export class TmpColors {
     public static Color4: Color4[] = ArrayTools.BuildArray(3, () => new Color4(0, 0, 0, 0));
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Color3"] = Color3;
-_TypeStore.RegisteredTypes["BABYLON.Color4"] = Color4;
+RegisterClass("BABYLON.Color3", Color3);
+RegisterClass("BABYLON.Color4", Color4);

@@ -4,9 +4,12 @@ import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Scene } from '../../scene';
 import { IInternalTextureLoader } from '../../Materials/Textures/internalTextureLoader';
-import { FileTools } from '../../Misc/fileTools';
-import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
+import { LoadImage } from '../../Misc/fileTools';
+import { RandomGUID } from '../../Misc/guid';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
+import { Constants } from '../constants';
+import { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -15,9 +18,10 @@ declare module "../../Engines/thinEngine" {
          * This is only available in WebGL 2.
          * @param size The size of face edge in the cube texture.
          * @param options The options defining the cube texture.
+         * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
          * @returns The cube texture
          */
-        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
+        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /**
          * Creates a cube texture
@@ -33,11 +37,13 @@ declare module "../../Engines/thinEngine" {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @param loaderOptions options to be passed to the loader
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined,
             onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>,
-            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>): InternalTexture;
+            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any, useSRGBBuffer: boolean): InternalTexture;
 
         /**
          * Creates a cube texture
@@ -75,26 +81,32 @@ declare module "../../Engines/thinEngine" {
             format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
 
         /** @hidden */
+        createCubeTextureBase(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean,
+            onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>,
+            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>,
+            beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>, imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>, useSRGBBuffer: boolean): InternalTexture;
+
+        /** @hidden */
         _partialLoadFile(url: string, index: number, loadedFiles: ArrayBuffer[], onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
 
         /** @hidden */
         _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
 
         /** @hidden */
-        _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+        _cascadeLoadImgs(scene: Nullable<Scene>, texture: InternalTexture, onfinish: Nullable<(texture: InternalTexture, images: HTMLImageElement[] | ImageBitmap[]) => void>, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
 
         /** @hidden */
-        _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+        _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[] | ImageBitmap[], scene: Nullable<Scene>, texture: InternalTexture, onfinish: Nullable<(texture: InternalTexture, images: HTMLImageElement[] | ImageBitmap[]) => void>, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
 
         /**
          * @hidden
          */
-        _setCubeMapTextureParams(loadMipmap: boolean): void;
+        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean): void;
     }
 }
 
-ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, options: DepthTextureCreationOptions): InternalTexture {
-    var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown);
+ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+    var internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
     internalTexture.isCube = true;
 
     if (this.webGLVersion === 1) {
@@ -114,6 +126,9 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
 
     this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
 
+    rtWrapper._depthStencilTexture = internalTexture;
+    rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
+
     // Create the depth/stencil buffer
     for (var face = 0; face < 6; face++) {
         if (internalOptions.generateStencil) {
@@ -126,10 +141,12 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
 
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
+    this._internalTexturesCache.push(internalTexture);
+
     return internalTexture;
 };
 
-ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: ArrayBuffer[],
+ThinEngine.prototype._partialLoadFile = function (url: string, index: number, loadedFiles: ArrayBuffer[],
     onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
     var onload = (data: ArrayBuffer) => {
         loadedFiles[index] = data;
@@ -149,7 +166,7 @@ ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loa
     this._loadFile(url, onload as (data: string | ArrayBuffer) => void, undefined, undefined, true, onerror);
 };
 
-ThinEngine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+ThinEngine.prototype._cascadeLoadFiles = function (scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
     var loadedFiles: ArrayBuffer[] = [];
     (<any>loadedFiles)._internalCount = 0;
 
@@ -158,40 +175,38 @@ ThinEngine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfini
     }
 };
 
-ThinEngine.prototype._cascadeLoadImgs = function(scene: Nullable<Scene>,
-    onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
+ThinEngine.prototype._cascadeLoadImgs = function (scene: Nullable<Scene>, texture: InternalTexture,
+    onfinish: Nullable<(texture: InternalTexture, images: HTMLImageElement[] | ImageBitmap[]) => void>, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
 
-    var loadedImages: HTMLImageElement[] = [];
+    var loadedImages: HTMLImageElement[] | ImageBitmap[] = [];
     (<any>loadedImages)._internalCount = 0;
 
     for (let index = 0; index < 6; index++) {
-        this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError, mimeType);
+        this._partialLoadImg(files[index], index, loadedImages, scene, texture, onfinish, onError, mimeType);
     }
 };
 
-ThinEngine.prototype._partialLoadImg = function(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
-    onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
+ThinEngine.prototype._partialLoadImg = function (url: string, index: number, loadedImages: HTMLImageElement[] | ImageBitmap[], scene: Nullable<Scene>, texture: InternalTexture,
+    onfinish: Nullable<(texture: InternalTexture, images: HTMLImageElement[] | ImageBitmap[]) => void>, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
 
-    var img: Nullable<HTMLImageElement>;
+    var tokenPendingData = RandomGUID();
 
-    var onload = () => {
-        if (img) {
-            loadedImages[index] = img;
-            (<any>loadedImages)._internalCount++;
+    var onload = (img: HTMLImageElement | ImageBitmap) => {
+        loadedImages[index] = img;
+        (<any>loadedImages)._internalCount++;
 
-            if (scene) {
-                scene._removePendingData(img);
-            }
+        if (scene) {
+            scene._removePendingData(tokenPendingData);
         }
 
-        if ((<any>loadedImages)._internalCount === 6) {
-            onfinish(loadedImages);
+        if ((<any>loadedImages)._internalCount === 6 && onfinish) {
+            onfinish(texture, loadedImages);
         }
     };
 
     var onerror = (message?: string, exception?: any) => {
         if (scene) {
-            scene._removePendingData(img);
+            scene._removePendingData(tokenPendingData);
         }
 
         if (onErrorCallBack) {
@@ -199,31 +214,34 @@ ThinEngine.prototype._partialLoadImg = function(url: string, index: number, load
         }
     };
 
-    img = FileTools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
-    if (scene && img) {
-        scene._addPendingData(img);
+    LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
+    if (scene) {
+        scene._addPendingData(tokenPendingData);
     }
 };
 
-ThinEngine.prototype._setCubeMapTextureParams = function(loadMipmap: boolean): void {
+ThinEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean): void {
     var gl = this._gl;
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_LINEAR_LINEAR;
 
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 };
 
-ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
-    const gl = this._gl;
-
+ThinEngine.prototype.createCubeTextureBase = function (rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
+    onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
+    fallback: Nullable<InternalTexture> = null, beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void> = null,
+    imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void> = null, useSRGBBuffer = false): InternalTexture {
     const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
     texture.isCube = true;
     texture.url = rootUrl;
     texture.generateMipMaps = !noMipmap;
     texture._lodGenerationScale = lodScale;
     texture._lodGenerationOffset = lodOffset;
+    texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || !!noMipmap);
 
     if (!this._doNotHandleContextLost) {
         texture._extension = forcedExtension;
@@ -255,13 +273,15 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
         else {
             // fall back to the original url if the transformed url fails to load
             Logger.Warn(`Failed to load ${rootUrl}, falling back to the ${originalRootUrl}`);
-            this.createCubeTexture(originalRootUrl, scene, files, noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, texture);
+            this.createCubeTextureBase(originalRootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, texture, beforeLoadCubeDataCallback, imageHandler, useSRGBBuffer);
         }
     };
 
     if (loader) {
         const onloaddata = (data: ArrayBufferView | ArrayBufferView[]) => {
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
+            if (beforeLoadCubeDataCallback) {
+                beforeLoadCubeDataCallback(texture, data);
+            }
             loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
         };
         if (files && files.length === 6) {
@@ -285,7 +305,27 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             throw new Error("Cannot load cubemap because files were not defined");
         }
 
-        this._cascadeLoadImgs(scene, (imgs) => {
+        this._cascadeLoadImgs(scene, texture, (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
+            if (imageHandler) {
+                imageHandler(texture, imgs);
+            }
+        }, files, onError);
+    }
+
+    this._internalTexturesCache.push(texture);
+
+    return texture;
+};
+
+ThinEngine.prototype.createCubeTexture = function (rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
+    onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
+    fallback: Nullable<InternalTexture> = null, loaderOptions?: any, useSRGBBuffer = false): InternalTexture {
+    const gl = this._gl;
+
+    return this.createCubeTextureBase(
+        rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
+        (texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true),
+        (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
             const width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             const height = width;
 
@@ -297,7 +337,13 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             this._unpackFlipY(false);
 
-            const internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+            const internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : (texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA);
+            let texelFormat = format ? this._getInternalFormat(format) : gl.RGBA;
+
+            if (texture._useSRGBBuffer && this.webGLVersion === 1) {
+                texelFormat = internalFormat;
+            }
+
             for (var index = 0; index < faces.length; index++) {
                 if (imgs[index].width !== width || imgs[index].height !== height) {
 
@@ -311,9 +357,9 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
                     this._workingCanvas.height = height;
 
                     this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
-                    gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+                    gl.texImage2D(faces[index], 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
                 } else {
-                    gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, imgs[index]);
+                    gl.texImage2D(faces[index], 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, imgs[index]);
                 }
             }
 
@@ -321,7 +367,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
-            this._setCubeMapTextureParams(!noMipmap);
+            this._setCubeMapTextureParams(texture, !noMipmap);
 
             texture.width = width;
             texture.height = height;
@@ -336,10 +382,6 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             if (onLoad) {
                 onLoad();
             }
-        }, files, onError);
-    }
-
-    this._internalTexturesCache.push(texture);
-
-    return texture;
+        }, !!useSRGBBuffer
+    );
 };

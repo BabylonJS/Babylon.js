@@ -3,7 +3,7 @@ import { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 
 import "../../../Shaders/noise.fragment";
 
@@ -11,7 +11,9 @@ import "../../../Shaders/noise.fragment";
  * Class used to generate noise procedural textures
  */
 export class NoiseProceduralTexture extends ProceduralTexture {
-    private _time = 0;
+
+    /** Gets or sets the start time (default is 0) */
+    public time: number = 0.0;
 
     /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
     public brightness = 0.2;
@@ -46,11 +48,11 @@ export class NoiseProceduralTexture extends ProceduralTexture {
             return;
         }
 
-        this._time += scene.getAnimationRatio() * this.animationSpeedFactor * 0.01;
+        this.time += scene.getAnimationRatio() * this.animationSpeedFactor * 0.01;
 
         this.setFloat("brightness", this.brightness);
         this.setFloat("persistence", this.persistence);
-        this.setFloat("timeScale", this._time);
+        this.setFloat("timeScale", this.time);
     }
 
     protected _getDefines(): string {
@@ -77,6 +79,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         serializationObject.animationSpeedFactor = this.animationSpeedFactor;
         serializationObject.size = this.getSize().width;
         serializationObject.generateMipMaps = this._generateMipMaps;
+        serializationObject.time = this.time;
 
         return serializationObject;
     }
@@ -101,6 +104,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         newTexture.octaves = this.octaves;
         newTexture.persistence = this.persistence;
         newTexture.animationSpeedFactor = this.animationSpeedFactor;
+        newTexture.time = this.time;
 
         return newTexture;
     }
@@ -119,9 +123,10 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         texture.octaves = parsedTexture.octaves;
         texture.persistence = parsedTexture.persistence;
         texture.animationSpeedFactor = parsedTexture.animationSpeedFactor;
+        texture.time = parsedTexture.time ?? 0;
 
         return texture;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.NoiseProceduralTexture"] = NoiseProceduralTexture;
+RegisterClass("BABYLON.NoiseProceduralTexture", NoiseProceduralTexture);

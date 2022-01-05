@@ -8,6 +8,8 @@ import { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
 import "./animatable";
+import { AbstractScene } from "../abstractScene";
+import { Tags } from '../Misc/tags';
 
 /**
  * This class defines the direct association between an animation and a target
@@ -59,6 +61,9 @@ export class AnimationGroup implements IDisposable {
     private _loopAnimation = false;
     private _isAdditive = false;
 
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
     /**
      * Gets or sets the unique id of the node
      */
@@ -93,6 +98,11 @@ export class AnimationGroup implements IDisposable {
      * This observable will notify when all animations are playing.
      */
     public onAnimationGroupPlayObservable = new Observable<AnimationGroup>();
+
+    /**
+     * Gets or sets an object used to store user defined information for the node
+     */
+    public metadata: any = null;
 
     /**
      * Gets the first frame
@@ -209,7 +219,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
-     * @see http://doc.babylonjs.com/how_to/group
+     * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
      */
@@ -280,7 +290,7 @@ export class AnimationGroup implements IDisposable {
                 let newKey: IAnimationKey = {
                     frame: endFrame,
                     value: endKey.value,
-                    inTangent: endKey.outTangent,
+                    inTangent: endKey.inTangent,
                     outTangent: endKey.outTangent,
                     interpolation: endKey.interpolation
                 };
@@ -359,16 +369,6 @@ export class AnimationGroup implements IDisposable {
 
         this._speedRatio = speedRatio;
 
-        if (from !== undefined && to !== undefined) {
-            if (from < to && this._speedRatio < 0) {
-                let temp = to;
-                to = from;
-                from = temp;
-            } else if (from > to && this._speedRatio > 0) {
-                this._speedRatio = -speedRatio;
-            }
-        }
-
         this._isStarted = true;
         this._isPaused = false;
 
@@ -427,6 +427,9 @@ export class AnimationGroup implements IDisposable {
      */
     public reset(): AnimationGroup {
         if (!this._isStarted) {
+            this.play();
+            this.goToFrame(0);
+            this.stop();
             return this;
         }
 
@@ -480,7 +483,7 @@ export class AnimationGroup implements IDisposable {
      * Set animation weight for all animatables
      * @param weight defines the weight to use
      * @return the animationGroup
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
@@ -493,11 +496,11 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Synchronize and normalize all animatables with a source animatable
-     * @param root defines the root animatable to synchronize with
+     * @param root defines the root animatable to synchronize with (null to stop synchronizing)
      * @return the animationGroup
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
-    public syncAllAnimationsWith(root: Animatable): AnimationGroup {
+    public syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
             let animatable = this._animatables[index];
             animatable.syncWith(root);
@@ -531,10 +534,19 @@ export class AnimationGroup implements IDisposable {
         this._targetedAnimations = [];
         this._animatables = [];
 
+        // Remove from scene
         var index = this._scene.animationGroups.indexOf(this);
 
         if (index > -1) {
             this._scene.animationGroups.splice(index, 1);
+        }
+
+        if (this._parentContainer) {
+            const index = this._parentContainer.animationGroups.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.animationGroups.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         this.onAnimationEndObservable.clear();
@@ -563,13 +575,15 @@ export class AnimationGroup implements IDisposable {
      * Clone the current animation group and returns a copy
      * @param newName defines the name of the new group
      * @param targetConverter defines an optional function used to convert current animation targets to new ones
-     * @returns the new aniamtion group
+     * @param cloneAnimations defines if the animations should be cloned or referenced
+     * @returns the new animation group
      */
-    public clone(newName: string, targetConverter?: (oldTarget: any) => any): AnimationGroup {
+    public clone(newName: string, targetConverter?: (oldTarget: any) => any, cloneAnimations = false): AnimationGroup {
         let newGroup = new AnimationGroup(newName || this.name, this._scene);
 
         for (var targetAnimation of this._targetedAnimations) {
-            newGroup.addTargetedAnimation(targetAnimation.animation.clone(), targetConverter ? targetConverter(targetAnimation.target) : targetAnimation.target);
+            newGroup.addTargetedAnimation(cloneAnimations ? targetAnimation.animation.clone() : targetAnimation.animation,
+                targetConverter ? targetConverter(targetAnimation.target) : targetAnimation.target);
         }
 
         return newGroup;
@@ -589,6 +603,15 @@ export class AnimationGroup implements IDisposable {
         for (var targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++) {
             var targetedAnimation = this.targetedAnimations[targetedAnimationIndex];
             serializationObject.targetedAnimations[targetedAnimationIndex] = targetedAnimation.serialize();
+        }
+
+        if (Tags && Tags.HasTags(this)) {
+            serializationObject.tags = Tags.GetTags(this);
+        }
+
+        // Metadata
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
         }
 
         return serializationObject;
@@ -614,7 +637,7 @@ export class AnimationGroup implements IDisposable {
                 }
             }
             else {
-                var targetNode = scene.getNodeByID(id);
+                var targetNode = scene.getNodeById(id);
 
                 if (targetNode != null) {
                     animationGroup.addTargetedAnimation(animation, targetNode);
@@ -624,6 +647,14 @@ export class AnimationGroup implements IDisposable {
 
         if (parsedAnimationGroup.from !== null && parsedAnimationGroup.to !== null) {
             animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
+        }
+
+        if (Tags) {
+            Tags.AddTagsTo(animationGroup, parsedAnimationGroup.tags);
+        }
+
+        if (parsedAnimationGroup.metadata !== undefined) {
+            animationGroup.metadata = parsedAnimationGroup.metadata;
         }
 
         return animationGroup;
@@ -664,7 +695,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Creates a detailled string about the object
+     * Creates a detailed string about the object
      * @param fullDetails defines if the output string will support multiple levels of logging within scene loading
      * @returns a string representing the object
      */

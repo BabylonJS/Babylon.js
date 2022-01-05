@@ -1,13 +1,13 @@
 import { IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { AsyncLoop } from "../Misc/tools";
 import { Epsilon } from '../Maths/math.constants';
 /**
  * A simplifier interface for future simplification implementations
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export interface ISimplifier {
     /**
@@ -23,7 +23,7 @@ export interface ISimplifier {
 /**
  * Expected simplification settings.
  * Quality should be between 0 and 1 (1 being 100%, 0 being 0%)
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export interface ISimplificationSettings {
     /**
@@ -42,7 +42,7 @@ export interface ISimplificationSettings {
 
 /**
  * Class used to specify simplification options
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export class SimplificationSettings implements ISimplificationSettings {
     /**
@@ -89,7 +89,7 @@ export interface ISimplificationTask {
 
 /**
  * Queue used to order the simplification tasks
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export class SimplificationQueue {
     private _simplificationArray: Array<ISimplificationTask>;
@@ -138,7 +138,9 @@ export class SimplificationQueue {
             task.settings.forEach((setting) => {
                 var simplifier = this.getSimplifier(task);
                 simplifier.simplify(setting, (newMesh) => {
-                    task.mesh.addLODLevel(setting.distance, newMesh);
+                    if (setting.distance !== undefined) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                    }
                     newMesh.isVisible = true;
                     //check if it is the last
                     if (setting.quality === task.settings[task.settings.length - 1].quality && task.successCallback) {
@@ -154,7 +156,9 @@ export class SimplificationQueue {
 
             var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                 simplifier.simplify(setting, (newMesh) => {
-                    task.mesh.addLODLevel(setting.distance, newMesh);
+                    if (setting.distance !== undefined) {
+                        task.mesh.addLODLevel(setting.distance, newMesh);
+                    }
                     newMesh.isVisible = true;
                     //run the next quality level
                     callback();
@@ -187,7 +191,7 @@ export class SimplificationQueue {
 /**
  * The implemented types of simplification
  * At the moment only Quadratic Error Decimation is implemented
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export enum SimplificationType {
     /** Quadratic error decimation */
@@ -295,7 +299,7 @@ class Reference {
  * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
  * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
  * @author RaananW
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export class QuadraticErrorSimplification implements ISimplifier {
 
@@ -305,7 +309,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
     private _reconstructedMesh: Mesh;
 
-    /** Gets or sets the number pf sync interations */
+    /** Gets or sets the number pf sync iterations */
     public syncIterations = 5000;
 
     /** Gets or sets the aggressiveness of the simplifier */
@@ -469,7 +473,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
         var findInVertices = (positionToSearch: Vector3) => {
             if (optimizeMesh) {
                 for (var ii = 0; ii < this.vertices.length; ++ii) {
-                    if (this.vertices[ii].position.equals(positionToSearch)) {
+                    if (this.vertices[ii].position.equalsWithEpsilon(positionToSearch, 0.0001)) {
                         return this.vertices[ii];
                     }
                 }
@@ -578,21 +582,20 @@ export class QuadraticErrorSimplification implements ISimplifier {
             vertex.id = vertexCount;
             if (vertex.triangleCount) {
                 vertex.originalOffsets.forEach((originalOffset) => {
-                    if (!normalData) {
-                        return;
-                    }
 
                     newPositionData.push(vertex.position.x);
                     newPositionData.push(vertex.position.y);
                     newPositionData.push(vertex.position.z);
-                    newNormalData.push(normalData[originalOffset * 3]);
-                    newNormalData.push(normalData[(originalOffset * 3) + 1]);
-                    newNormalData.push(normalData[(originalOffset * 3) + 2]);
+
+                    if (normalData && normalData.length) {
+                        newNormalData.push(normalData[originalOffset * 3]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
+                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                    }
                     if (uvs && uvs.length) {
                         newUVsData.push(uvs[(originalOffset * 2)]);
                         newUVsData.push(uvs[(originalOffset * 2) + 1]);
                     }
-
                     if (colorsData && colorsData.length) {
                         newColorsData.push(colorsData[(originalOffset * 4)]);
                         newColorsData.push(colorsData[(originalOffset * 4) + 1]);
@@ -626,7 +629,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
         this._reconstructedMesh.setIndices(newIndicesArray);
         this._reconstructedMesh.setVerticesData(VertexBuffer.PositionKind, newPositionData);
-        this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+        if (newNormalData.length > 0) {
+            this._reconstructedMesh.setVerticesData(VertexBuffer.NormalKind, newNormalData);
+        }
         if (newUVsData.length > 0) {
             this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
         }

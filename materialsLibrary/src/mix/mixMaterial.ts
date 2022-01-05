@@ -10,12 +10,12 @@ import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 
 import "./mix.fragment";
 import "./mix.vertex";
@@ -43,6 +43,8 @@ class MixMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public INSTANCES = false;
     public MIXMAP2 = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
+    public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
         super();
@@ -156,11 +158,11 @@ export class MixMaterial extends PushMaterial {
             }
         }
 
-        if (!subMesh._materialDefines) {
-            subMesh._materialDefines = new MixMaterialDefines();
+        if (!subMesh.materialDefines) {
+            subMesh.materialDefines = new MixMaterialDefines();
         }
 
-        var defines = <MixMaterialDefines>subMesh._materialDefines;
+        var defines = <MixMaterialDefines>subMesh.materialDefines;
         var scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
@@ -246,6 +248,8 @@ export class MixMaterial extends PushMaterial {
                 fallbacks.addCPUSkinningFallback(0, mesh);
             }
 
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
@@ -307,7 +311,7 @@ export class MixMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-                }, engine), defines);
+                }, engine), defines, this._materialContext);
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -322,7 +326,7 @@ export class MixMaterial extends PushMaterial {
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        var defines = <MixMaterialDefines>subMesh._materialDefines;
+        var defines = <MixMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
@@ -398,7 +402,7 @@ export class MixMaterial extends PushMaterial {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
             }
 
-            MaterialHelper.BindEyePosition(effect, scene);
+            scene.bindEyePosition(effect);
         }
 
         this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -562,4 +566,4 @@ export class MixMaterial extends PushMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MixMaterial"] = MixMaterial;
+RegisterClass("BABYLON.MixMaterial", MixMaterial);

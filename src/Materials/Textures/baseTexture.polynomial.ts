@@ -11,26 +11,50 @@ declare module "./baseTexture" {
          * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
          */
         sphericalPolynomial: Nullable<SphericalPolynomial>;
+
+        /**
+         * Force recomputation of spherical polynomials.
+         * Can be useful if you generate a cubemap multiple times (from a probe for eg) and you need the proper polynomials each time
+         */
+        forceSphericalPolynomialsRecompute(): void;
     }
 }
 
+BaseTexture.prototype.forceSphericalPolynomialsRecompute = function(): void {
+    if (this._texture) {
+        this._texture._sphericalPolynomial = null;
+        this._texture._sphericalPolynomialPromise = null;
+        this._texture._sphericalPolynomialComputed = false;
+    }
+};
+
 Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
-    get: function(this: BaseTexture) {
+    get: function (this: BaseTexture) {
         if (this._texture) {
-            if (this._texture._sphericalPolynomial) {
+            if (this._texture._sphericalPolynomial || this._texture._sphericalPolynomialComputed) {
                 return this._texture._sphericalPolynomial;
             }
 
             if (this._texture.isReady) {
-                this._texture._sphericalPolynomial =
-                    CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
-                return this._texture._sphericalPolynomial;
+                if (!this._texture._sphericalPolynomialPromise) {
+                    this._texture._sphericalPolynomialPromise = CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+                    if (this._texture._sphericalPolynomialPromise === null) {
+                        this._texture._sphericalPolynomialComputed = true;
+                    } else {
+                        this._texture._sphericalPolynomialPromise.then((sphericalPolynomial) => {
+                            this._texture!._sphericalPolynomial = sphericalPolynomial;
+                            this._texture!._sphericalPolynomialComputed = true;
+                        });
+                    }
+                }
+
+                return null;
             }
         }
 
         return null;
     },
-    set: function(this: BaseTexture, value: Nullable<SphericalPolynomial>) {
+    set: function (this: BaseTexture, value: Nullable<SphericalPolynomial>) {
         if (this._texture) {
             this._texture._sphericalPolynomial = value;
         }

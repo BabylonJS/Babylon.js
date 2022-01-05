@@ -25,8 +25,8 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of effect layers (highlights/glow) added to the scene
-         * @see http://doc.babylonjs.com/how_to/highlight_layer
-         * @see http://doc.babylonjs.com/how_to/glow_layer
+         * @see https://doc.babylonjs.com/how_to/highlight_layer
+         * @see https://doc.babylonjs.com/how_to/glow_layer
          */
         effectLayers: Array<EffectLayer>;
 
@@ -45,7 +45,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.removeEffectLayer = function(toRemove: EffectLayer): number {
+AbstractScene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
     var index = this.effectLayers.indexOf(toRemove);
     if (index !== -1) {
         this.effectLayers.splice(index, 1);
@@ -54,7 +54,7 @@ AbstractScene.prototype.removeEffectLayer = function(toRemove: EffectLayer): num
     return index;
 };
 
-AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): void {
+AbstractScene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
     this.effectLayers.push(newEffectLayer);
 };
 
@@ -64,7 +64,7 @@ AbstractScene.prototype.addEffectLayer = function(newEffectLayer: EffectLayer): 
  */
 export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_EFFECTLAYER;
 
@@ -162,7 +162,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         let layers = this.scene.effectLayers;
@@ -172,18 +172,24 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
     }
 
     private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {
+        const currentRenderPassId = this._engine.currentRenderPassId;
         let layers = this.scene.effectLayers;
         for (let layer of layers) {
             if (!layer.hasMesh(mesh)) {
                 continue;
             }
 
+            const renderTarget = (<RenderTargetTexture>(<any>layer)._mainTexture);
+            this._engine.currentRenderPassId = renderTarget.renderPassId;
+
             for (var subMesh of mesh.subMeshes) {
                 if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                    this._engine.currentRenderPassId = currentRenderPassId;
                     return false;
                 }
             }
         }
+        this._engine.currentRenderPassId = currentRenderPassId;
         return true;
     }
 

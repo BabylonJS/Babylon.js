@@ -3,9 +3,7 @@ import { GamepadCamera } from "../../Cameras/gamepadCamera";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicAnaglyphRigMode";
+import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
 
 Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {
     return () => new AnaglyphGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
@@ -13,7 +11,7 @@ Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
- * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
  */
 export class AnaglyphGamepadCamera extends GamepadCamera {
     /**
@@ -36,4 +34,6 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
     public getClassName(): string {
         return "AnaglyphGamepadCamera";
     }
+
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
 }

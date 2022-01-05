@@ -7,6 +7,8 @@ import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
 import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
 import { Scene } from '../../scene';
+import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
+import { Immutable } from "../../types";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -28,6 +30,11 @@ export class NodeMaterialBuildStateSharedData {
     public varyingDeclaration = "";
 
     /**
+     * List of the fragment output nodes
+     */
+    public fragmentOutputNodes: Immutable<Array<NodeMaterialBlock>>;
+
+    /**
      * Input blocks
      */
     public inputBlocks = new Array<InputBlock>();
@@ -35,7 +42,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
@@ -43,6 +50,11 @@ export class NodeMaterialBuildStateSharedData {
     public bindableBlocks = new Array<NodeMaterialBlock>();
 
     /**
+     * Bindable blocks (Blocks that need to set data to the effect) that will always be called (by bindForSubMesh), contrary to bindableBlocks that won't be called if _mustRebind() returns false
+     */
+    public forcedBindableBlocks = new Array<NodeMaterialBlock>();
+
+     /**
      * List of blocks that can provide a compilation fallback
      */
     public blocksWithFallbacks = new Array<NodeMaterialBlock>();
@@ -126,7 +138,6 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["uv2"] = 0;
         this.variableNames["uv3"] = 0;
         this.variableNames["uv4"] = 0;
-        this.variableNames["uv4"] = 0;
         this.variableNames["uv5"] = 0;
         this.variableNames["uv6"] = 0;
         this.variableNames["color"] = 0;
@@ -138,6 +149,7 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["specularBase"] = 0;
         this.variableNames["worldPos"] = 0;
         this.variableNames["shadow"] = 0;
+        this.variableNames["view"] = 0;
 
         // Exclude known varyings
         this.variableNames["vTBN"] = 0;

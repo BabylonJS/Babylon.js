@@ -32,8 +32,12 @@ uniform mat4 reflectivityMatrix;
 #endif
 
 #ifdef METALLIC_REFLECTANCE
-uniform vec2 vMetallicReflectanceInfos;
-uniform mat4 metallicReflectanceMatrix;
+    uniform vec2 vMetallicReflectanceInfos;
+    uniform mat4 metallicReflectanceMatrix;
+#endif
+#ifdef REFLECTANCE
+    uniform vec2 vReflectanceInfos;
+    uniform mat4 reflectanceMatrix;
 #endif
 
 #ifdef MICROSURFACEMAP
@@ -58,9 +62,16 @@ uniform float pointSize;
 
 // Clear Coat
 #ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+        uniform vec4 vClearCoatInfos;
+    #endif
+
     #ifdef CLEARCOAT_TEXTURE
-        uniform vec2 vClearCoatInfos;
         uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+        uniform mat4 clearCoatRoughnessMatrix;
     #endif
 
     #ifdef CLEARCOAT_BUMP
@@ -84,9 +95,16 @@ uniform float pointSize;
 
 // Sheen
 #ifdef SHEEN
+    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+        uniform vec4 vSheenInfos;
+    #endif
+
     #ifdef SHEEN_TEXTURE
-        uniform vec2 vSheenInfos;
         uniform mat4 sheenMatrix;
+    #endif
+
+    #ifdef SHEEN_TEXTURE_ROUGHNESS
+        uniform mat4 sheenRoughnessMatrix;
     #endif
 #endif
 
@@ -101,5 +119,49 @@ uniform float pointSize;
         uniform vec2 vThicknessInfos;
         uniform mat4 thicknessMatrix;
     #endif
+
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        uniform vec2 vRefractionIntensityInfos;
+        uniform mat4 refractionIntensityMatrix;
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        uniform vec2 vTranslucencyIntensityInfos;
+        uniform mat4 translucencyIntensityMatrix;
+    #endif
 #endif
 
+#ifdef NORMAL
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
+        #ifdef USESPHERICALFROMREFLECTIONMAP
+            #ifdef SPHERICAL_HARMONICS
+                uniform vec3 vSphericalL00;
+                uniform vec3 vSphericalL1_1;
+                uniform vec3 vSphericalL10;
+                uniform vec3 vSphericalL11;
+                uniform vec3 vSphericalL2_2;
+                uniform vec3 vSphericalL2_1;
+                uniform vec3 vSphericalL20;
+                uniform vec3 vSphericalL21;
+                uniform vec3 vSphericalL22;
+            #else
+                uniform vec3 vSphericalX;
+                uniform vec3 vSphericalY;
+                uniform vec3 vSphericalZ;
+                uniform vec3 vSphericalXX_ZZ;
+                uniform vec3 vSphericalYY_ZZ;
+                uniform vec3 vSphericalZZ;
+                uniform vec3 vSphericalXY;
+                uniform vec3 vSphericalYZ;
+                uniform vec3 vSphericalZX;
+            #endif
+        #endif
+    #endif
+#endif
+
+#ifdef DETAIL
+uniform vec4 vDetailInfos;
+uniform mat4 detailMatrix;
+#endif
+
+#define ADDITIONAL_VERTEX_DECLARATION

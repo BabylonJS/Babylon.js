@@ -1,0 +1,188 @@
+﻿{
+    "root": "https://cdn.babylonjs.com",
+    "tests": [   
+        {
+            "title": "edge renderer and zOffset",
+            "renderCount": 5,
+            "playgroundId": "#3DBA8X#1"
+        },
+        {
+            "title": "cube with holes using stencil buffer",
+            "playgroundId": "#CW5PRI#11"
+        },
+        {
+            "title": "water material",
+            "playgroundId": "#EUH2VL#1"
+        },
+        {
+            "title": "show bounding box",
+            "renderCount": 5,
+            "playgroundId": "#0LN1JD#0"
+        },
+        {
+            "title": "cube reflection with probe and mirrors",
+            "renderCount": 20,
+            "playgroundId": "#X3V1NN#0"
+        },
+        {
+            "title": "sphere with custom shader to display wireframe using glow layer",
+            "renderCount": 5,
+            "playgroundId": "#Y05E2C#6"
+        },
+        {
+            "title": "blur cube with the effect renderer",
+            "renderCount": 20,
+            "playgroundId": "#4C900K#2"
+        },
+        {
+            "title": "simple render target with blue spheres",
+            "playgroundId": "#NRR7F4#0"
+        },
+        {
+            "title": "neon pipe with glow layer",
+            "renderCount": 5,
+            "playgroundId": "#X229PI#0"
+        },
+        {
+            "title": "pillars sphere and torus with PCSS shadows",
+            "playgroundId": "#WL4Q8J#0",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "soft transparent shadows",
+            "playgroundId": "#G3DJGA#0",
+            "excludedEngines": ["webgl1"]
+
+        },
+        {
+            "title": "default render pipeline",
+            "playgroundId": "#GAFR36#0",
+            "renderCount": 5
+        },
+        {
+            "title": "torus knot mirror",
+            "playgroundId": "#M5GFLR#0"
+        },
+        {
+            "title": "simple sphere in 4 mirrors",
+            "playgroundId": "#58CFTW#0"
+        },
+        {
+            "title": "procedural texture with node material",
+            "renderCount": 10,
+            "playgroundId": "#IA4X0H#1"
+        },
+        {
+            "title": "apply all post processes",
+            "renderCount": 10,
+            "playgroundId": "#MJ59Y8#2"
+        },
+        {
+            "title": "simple custom shader",
+            "renderCount": 5,
+            "playgroundId": "#6GFJNR#2"
+        },
+        {
+            "title": "show multiple guis",
+            "renderCount": 5,
+            "playgroundId": "#6X9UMD#12"
+        },
+        {
+            "title": "skybox with boombox",
+            "renderCount": 20,
+            "playgroundId": "#I2TR8G#0"
+        },
+        {
+            "title": "show all procedural textures",
+            "renderCount": 5,
+            "playgroundId": "#4N0QRP#1"
+        },
+        {
+            "title": "custom handling of materials for render target pass",
+            "renderCount": 30,
+            "playgroundId": "#FIVL25#17"
+        },
+        {
+            "title": "dissolve effect with node material and glow layer",
+            "renderCount": 2,
+            "playgroundId": "#F6PGMC"
+        },
+        {
+            "title": "cascaded shadow maps and flying saucers",
+            "renderCount": 10,
+            "playgroundId": "#IIZ9UU#63",
+            "excludedEngines": ["webgl1"]
+
+        },
+        {
+            "title": "sprite maps",
+            "playgroundId": "#PIVJ45#4"
+        },
+        {
+            "title": "halo particle system",
+            "renderCount": 20,
+            "playgroundId": "#2441BU#1"
+        },
+        {
+            "title": "depth renderer",
+            "renderCount": 5,
+            "playgroundId": "#1PHYB0#112"
+        },
+        {
+            "title": "particle system with custom nme shader",
+            "renderCount": 5,
+            "playgroundId": "#DMLLV2"
+        },
+        {
+            "title": "create environment texture",
+            "playgroundId": "#L4RXKN#7",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "particle system matrix like",
+            "renderCount": 100,
+            "playgroundId": "#WL44T7"
+        },
+        {
+            "title": "lens flare",
+            "playgroundId": "#KICG93"
+        },
+        {
+            "title": "update sampler info",
+            "renderCount": 5,
+            "playgroundId": "#7GKK8E#20"
+        },
+        {
+            "title": "wgsl in shadermaterial",
+            "renderCount": 30,
+            "playgroundId": "#8RU8Q3#79",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "terrain erosion",
+            "renderCount": 15,
+            "playgroundId": "#C90R62#8",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "change texture of material",
+            "renderCount": 10,
+            "playgroundId": "#7PN9PH#2"
+        },
+        {
+            "title": "screen space curvature",
+            "renderCount": 5,
+            "playgroundId": "#YF8D42#22"
+        },
+        {
+            "title": "digital rain",
+            "renderCount": 8,
+            "playgroundId": "#2I28SC#36"
+        },
+        {
+            "title": "ascii art",
+            "renderCount": 10,
+            "playgroundId": "#2I28SC#25"
+        }
+    ]
+}

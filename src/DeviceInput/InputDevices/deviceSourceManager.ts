@@ -5,6 +5,7 @@ import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
+import { IDeviceEvent } from '../Interfaces/inputInterfaces';
 
 /**
  * Class that handles all input for a specific device
@@ -14,7 +15,7 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
-    public readonly onInputChangedObservable = new Observable<{ inputIndex: DeviceInput<T>, previousState: Nullable<number>, currentState: Nullable<number> }>();
+    public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
 
     // Private Members
     private readonly _deviceInputSystem: DeviceInputSystem;
@@ -38,7 +39,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param inputIndex index of specific input on device
      * @returns Input value from DeviceInputSystem
      */
-    public getInput(inputIndex: DeviceInput<T>): Nullable<number> {
+    public getInput(inputIndex: DeviceInput<T>): number {
         return this._deviceInputSystem.pollInput(this.deviceType, this.deviceSlot, inputIndex);
     }
 }
@@ -49,24 +50,20 @@ export class DeviceSource<T extends DeviceType> {
 export class DeviceSourceManager implements IDisposable {
     // Public Members
     /**
-     * Observable to be triggered when before a device is connected
+     * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
      */
-    public readonly onBeforeDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
-
-    /**
-     * Observable to be triggered when before a device is disconnected
-     */
-    public readonly onBeforeDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
-
-    /**
-     * Observable to be triggered when after a device is connected
-     */
-    public readonly onAfterDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
+        this.getDevices().forEach((device) => {
+            if (device) {
+                this.onDeviceConnectedObservable.notifyObserver(observer, device);
+            }
+        });
+    });
 
     /**
      * Observable to be triggered when after a device is disconnected
      */
-    public readonly onAfterDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
 
     // Private Members
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
@@ -81,23 +78,26 @@ export class DeviceSourceManager implements IDisposable {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
-        this._deviceInputSystem = DeviceInputSystem.Create(engine);
+        this._deviceInputSystem = DeviceInputSystem._Create(engine);
 
-        this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
-            this.onBeforeDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
-            this._addDevice(deviceType, deviceSlot);
-            this.onAfterDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
-        };
-        this._deviceInputSystem.onDeviceDisconnected = (deviceType, deviceSlot) => {
-            this.onBeforeDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
-            this._removeDevice(deviceType, deviceSlot);
-            this.onAfterDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
-        };
+        this._deviceInputSystem.onDeviceConnectedObservable.add((eventData) => {
+            this._addDevice(eventData.deviceType, eventData.deviceSlot);
+            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)!);
+        });
 
-        if (!this._deviceInputSystem.onInputChanged) {
-            this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
-                this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
-            };
+        this._deviceInputSystem.onDeviceDisconnectedObservable.add((eventData) => {
+            const device = this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)!; // Grab local reference to use before removing from devices
+            this._removeDevice(eventData.deviceType, eventData.deviceSlot);
+            this.onDeviceDisconnectedObservable.notifyObservers(device);
+        });
+
+        this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
+            this.getDeviceSource(eventData.deviceType, eventData.deviceSlot)?.onInputChangedObservable.notifyObservers(eventData);
+        });
+
+        // Since the mouse is already added in the DeviceInputSystem for some scenarios, add it here automatically
+        if (this._deviceInputSystem.isDeviceAvailable(DeviceType.Mouse)) {
+            this._addDevice(DeviceType.Mouse, 0);
         }
     }
 
@@ -130,13 +130,28 @@ export class DeviceSourceManager implements IDisposable {
      * @returns Array of DeviceSource objects
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
-        return this._devices[deviceType];
+        return this._devices[deviceType].filter((source) => { return !!source; });
+    }
+
+    /**
+     * Returns a read-only list of all available devices
+     * @returns Read-only array with active devices
+     */
+    public getDevices(): ReadonlyArray<DeviceSource<DeviceType>> {
+        const deviceArray = new Array<DeviceSource<DeviceType>>();
+        this._devices.forEach((deviceSet) => {
+            deviceArray.push.apply(deviceArray, deviceSet);
+        });
+
+        return deviceArray;
     }
 
     /**
      * Dispose of DeviceInputSystem and other parts
      */
     public dispose() {
+        this.onDeviceConnectedObservable.clear();
+        this.onDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();
     }
 
@@ -151,8 +166,10 @@ export class DeviceSourceManager implements IDisposable {
             this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
         }
 
-        this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
-        this._updateFirstDevices(deviceType);
+        if (!this._devices[deviceType][deviceSlot]) {
+            this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
+            this._updateFirstDevices(deviceType);
+        }
     }
 
     /**
@@ -161,7 +178,10 @@ export class DeviceSourceManager implements IDisposable {
      * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _removeDevice(deviceType: DeviceType, deviceSlot: number) {
-        delete this._devices[deviceType][deviceSlot];
+        if (this._devices[deviceType]?.[deviceSlot]) {
+            delete this._devices[deviceType][deviceSlot];
+        }
+        // Even if we don't delete a device, we should still check for the first device as things may have gotten out of sync.
         this._updateFirstDevices(deviceType);
     }
 
@@ -180,12 +200,14 @@ export class DeviceSourceManager implements IDisposable {
             case DeviceType.Xbox:
             case DeviceType.Switch:
             case DeviceType.Generic:
-                const devices = this._devices[type];
                 delete this._firstDevice[type];
-                for (let i = 0; i < devices.length; i++) {
-                    if (devices[i]) {
-                        this._firstDevice[type] = i;
-                        break;
+                const devices = this._devices[type];
+                if (devices) {
+                    for (let i = 0; i < devices.length; i++) {
+                        if (devices[i]) {
+                            this._firstDevice[type] = i;
+                            break;
+                        }
                     }
                 }
                 break;

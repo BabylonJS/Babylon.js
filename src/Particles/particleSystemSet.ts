@@ -1,14 +1,14 @@
 import { Nullable } from "../types";
 import { Color3 } from '../Maths/math.color';
-import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
+import { Vector3 } from "../Maths/math.vector";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -27,7 +27,8 @@ export class ParticleSystemSet implements IDisposable {
     public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
-    private _emitterNode: Nullable<TransformNode>;
+    private _emitterNode: Nullable<AbstractMesh | Vector3>;
+    private _emitterNodeIsOwned = true;
 
     /**
      * Gets the particle system list
@@ -35,10 +36,25 @@ export class ParticleSystemSet implements IDisposable {
     public systems = new Array<IParticleSystem>();
 
     /**
-     * Gets the emitter node used with this set
+     * Gets or sets the emitter node used with this set
      */
-    public get emitterNode(): Nullable<TransformNode> {
+    public get emitterNode(): Nullable<AbstractMesh | Vector3> {
         return this._emitterNode;
+    }
+
+    public set emitterNode(value: Nullable<AbstractMesh | Vector3>) {
+        if (this._emitterNodeIsOwned && this._emitterNode) {
+            if ((this._emitterNode as AbstractMesh).dispose) {
+                (this._emitterNode as AbstractMesh).dispose();
+            }
+            this._emitterNodeIsOwned = false;
+        }
+
+        for (var system of this.systems) {
+            system.emitter = value;
+        }
+
+        this._emitterNode = value;
     }
 
     /**
@@ -48,9 +64,13 @@ export class ParticleSystemSet implements IDisposable {
      * @param scene defines the hosting scene
      */
     public setEmitterAsSphere(options: { diameter: number, segments: number, color: Color3 }, renderingGroupId: number, scene: Scene) {
-        if (this._emitterNode) {
-            this._emitterNode.dispose();
+        if (this._emitterNodeIsOwned && this._emitterNode) {
+            if ((this._emitterNode as AbstractMesh).dispose) {
+                (this._emitterNode as AbstractMesh).dispose();
+            }
         }
+
+        this._emitterNodeIsOwned = true;
 
         this._emitterCreationOptions = {
             kind: "Sphere",
@@ -58,7 +78,7 @@ export class ParticleSystemSet implements IDisposable {
             renderingGroupId: renderingGroupId
         };
 
-        let emitterMesh = SphereBuilder.CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
+        let emitterMesh = CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
         emitterMesh.renderingGroupId = renderingGroupId;
 
         var material = new StandardMaterial("emitterSphereMaterial", scene);
@@ -96,7 +116,9 @@ export class ParticleSystemSet implements IDisposable {
         this.systems = [];
 
         if (this._emitterNode) {
-            this._emitterNode.dispose();
+            if ((this._emitterNode as AbstractMesh).dispose) {
+                (this._emitterNode as AbstractMesh).dispose();
+            }
             this._emitterNode = null;
         }
     }
@@ -126,16 +148,17 @@ export class ParticleSystemSet implements IDisposable {
      * @param data defines a JSON compatible representation of the set
      * @param scene defines the hosting scene
      * @param gpu defines if we want GPU particles or CPU particles
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a new ParticleSystemSet
      */
-    public static Parse(data: any, scene: Scene, gpu = false): ParticleSystemSet {
+    public static Parse(data: any, scene: Scene, gpu = false, capacity?: number): ParticleSystemSet {
         var result = new ParticleSystemSet();
         var rootUrl = this.BaseAssetsUrl + "/textures/";
 
         scene = scene || EngineStore.LastCreatedScene;
 
         for (var system of data.systems) {
-            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true) : ParticleSystem.Parse(system, scene, rootUrl, true));
+            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true, capacity) : ParticleSystem.Parse(system, scene, rootUrl, true, capacity));
         }
 
         if (data.emitter) {

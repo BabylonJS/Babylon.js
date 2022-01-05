@@ -3,13 +3,13 @@ import { Vector3 } from "../Maths/math.vector";
 import { Action } from "./action";
 import { Condition } from "./condition";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 
 declare type ActionEvent = import("./actionEvent").ActionEvent;
 
 /**
  * This defines an action responsible to toggle a boolean once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class SwitchBooleanAction extends Action {
     /**
@@ -66,7 +66,7 @@ export class SwitchBooleanAction extends Action {
 /**
  * This defines an action responsible to set a the state field of the target
  *  to a desired value once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class SetStateAction extends Action {
     /**
@@ -115,7 +115,7 @@ export class SetStateAction extends Action {
 /**
  * This defines an action responsible to set a property of the target
  *  to a desired value once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class SetValueAction extends Action {
     /**
@@ -154,7 +154,7 @@ export class SetValueAction extends Action {
     }
 
     /**
-     * Execute the action and set the targetted property to the desired value.
+     * Execute the action and set the targeted property to the desired value.
      */
     public execute(): void {
         this._effectiveTarget[this._property] = this.value;
@@ -184,7 +184,7 @@ export class SetValueAction extends Action {
 /**
  * This defines an action responsible to increment the target value
  *  to a desired value once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class IncrementValueAction extends Action {
     /**
@@ -256,7 +256,7 @@ export class IncrementValueAction extends Action {
 
 /**
  * This defines an action responsible to start an animation once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class PlayAnimationAction extends Action {
     /**
@@ -281,7 +281,7 @@ export class PlayAnimationAction extends Action {
      * @param triggerOptions defines the trigger options
      * @param target defines the target animation or animation name
      * @param from defines from where the animation should start (animation frame)
-     * @param end defines where the animation should stop (animation frame)
+     * @param to defines where the animation should stop (animation frame)
      * @param loop defines if the animation should loop or stop after the first play
      * @param condition defines the trigger related conditions
      */
@@ -325,7 +325,7 @@ export class PlayAnimationAction extends Action {
 
 /**
  * This defines an action responsible to stop an animation once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class StopAnimationAction extends Action {
     private _target: any;
@@ -368,7 +368,7 @@ export class StopAnimationAction extends Action {
 
 /**
  * This defines an action responsible that does nothing once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class DoNothingAction extends Action {
     /**
@@ -401,7 +401,7 @@ export class DoNothingAction extends Action {
 
 /**
  * This defines an action responsible to trigger several actions once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class CombineAction extends Action {
     /**
@@ -410,14 +410,21 @@ export class CombineAction extends Action {
     public children: Action[];
 
     /**
+     * defines if the children actions conditions should be check before execution
+     */
+    public enableChildrenConditions: boolean;
+
+    /**
      * Instantiate the action
      * @param triggerOptions defines the trigger options
      * @param children defines the list of aggregated animations to run
      * @param condition defines the trigger related conditions
+     * @param enableChildrenConditions defines if the children actions conditions should be check before execution
      */
-    constructor(triggerOptions: any, children: Action[], condition?: Condition) {
+    constructor(triggerOptions: any, children: Action[], condition?: Condition, enableChildrenConditions = true) {
         super(triggerOptions, condition);
         this.children = children;
+        this.enableChildrenConditions = enableChildrenConditions;
     }
 
     /** @hidden */
@@ -432,8 +439,10 @@ export class CombineAction extends Action {
      * Execute the action and executes all the aggregated actions.
      */
     public execute(evt: ActionEvent): void {
-        for (var index = 0; index < this.children.length; index++) {
-            this.children[index].execute(evt);
+        for (const action of this.children) {
+            if (!this.enableChildrenConditions || action._evaluateConditionForCurrentFrame()) {
+                action.execute(evt);
+            }
         }
     }
 
@@ -459,7 +468,7 @@ export class CombineAction extends Action {
 
 /**
  * This defines an action responsible to run code (external event) once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class ExecuteCodeAction extends Action {
     /**
@@ -488,7 +497,7 @@ export class ExecuteCodeAction extends Action {
 
 /**
  * This defines an action responsible to set the parent property of the target once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class SetParentAction extends Action {
     private _parent: any;
@@ -543,12 +552,12 @@ export class SetParentAction extends Action {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.SetParentAction"] = SetParentAction;
-_TypeStore.RegisteredTypes["BABYLON.ExecuteCodeAction"] = ExecuteCodeAction;
-_TypeStore.RegisteredTypes["BABYLON.DoNothingAction"] = DoNothingAction;
-_TypeStore.RegisteredTypes["BABYLON.StopAnimationAction"] = StopAnimationAction;
-_TypeStore.RegisteredTypes["BABYLON.PlayAnimationAction"] = PlayAnimationAction;
-_TypeStore.RegisteredTypes["BABYLON.IncrementValueAction"] = IncrementValueAction;
-_TypeStore.RegisteredTypes["BABYLON.SetValueAction"] = SetValueAction;
-_TypeStore.RegisteredTypes["BABYLON.SetStateAction"] = SetStateAction;
-_TypeStore.RegisteredTypes["BABYLON.SetParentAction"] = SetParentAction;
+RegisterClass("BABYLON.SetParentAction", SetParentAction);
+RegisterClass("BABYLON.ExecuteCodeAction", ExecuteCodeAction);
+RegisterClass("BABYLON.DoNothingAction", DoNothingAction);
+RegisterClass("BABYLON.StopAnimationAction", StopAnimationAction);
+RegisterClass("BABYLON.PlayAnimationAction", PlayAnimationAction);
+RegisterClass("BABYLON.IncrementValueAction", IncrementValueAction);
+RegisterClass("BABYLON.SetValueAction", SetValueAction);
+RegisterClass("BABYLON.SetStateAction", SetStateAction);
+RegisterClass("BABYLON.SetParentAction", SetParentAction);

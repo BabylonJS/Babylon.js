@@ -12,11 +12,13 @@ import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { Light } from '../../../../Lights/light';
 import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
+import { RegisterClass } from '../../../../Misc/typeStore';
 import { Scene } from '../../../../scene';
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
+import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightUboDeclaration";
+import "../../../../Shaders/ShadersInclude/lightVxUboDeclaration";
 import "../../../../Shaders/ShadersInclude/lightFragment";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
@@ -50,6 +52,7 @@ export class LightBlock extends NodeMaterialBlock {
         this.registerInput("glossPower", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("diffuseColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("specularColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -93,7 +96,7 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Gets the glossinness power component
+    * Gets the glossiness power component
     */
     public get glossPower(): NodeMaterialConnectionPoint {
         return this._inputs[4];
@@ -111,6 +114,13 @@ export class LightBlock extends NodeMaterialBlock {
     */
     public get specularColor(): NodeMaterialConnectionPoint {
         return this._inputs[6];
+    }
+
+    /**
+    * Gets the view matrix component
+    */
+    public get view(): NodeMaterialConnectionPoint {
+        return this._inputs[7];
     }
 
     /**
@@ -177,7 +187,8 @@ export class LightBlock extends NodeMaterialBlock {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers);
+            const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
     }
 
@@ -201,7 +212,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Declaration
         if (!this.light) { // Emit for all lights
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
             this._lightId = 0;
@@ -212,7 +223,7 @@ export class LightBlock extends NodeMaterialBlock {
             this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
             state.counters["lightCounter"] = this._lightId;
 
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
+            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());
         }
@@ -232,6 +243,9 @@ export class LightBlock extends NodeMaterialBlock {
             });
         } else {
             state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\r\n`;
+            if (this.view.isConnected) {
+                state.compilationString += `mat4 view = ${this.view.associatedVariableName};\r\n`;
+            }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
@@ -249,7 +263,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         // Fragment
-        state.sharedData.bindableBlocks.push(this);
+        state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
 
         let comments = `//${this.name}`;
@@ -333,9 +347,9 @@ export class LightBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.lightId) {
-            this.light = scene.getLightByID(serializationObject.lightId);
+            this.light = scene.getLightById(serializationObject.lightId);
         }
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LightBlock"] = LightBlock;
+RegisterClass("BABYLON.LightBlock", LightBlock);

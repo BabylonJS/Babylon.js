@@ -14,7 +14,7 @@ declare type Scene = import("../../scene").Scene;
  */
 export interface IHtmlElementTextureOptions {
     /**
-     * Defines wether mip maps should be created or not.
+     * Defines whether mip maps should be created or not.
      */
     generateMipMaps?: boolean;
     /**
@@ -124,7 +124,7 @@ export class HtmlElementTexture extends BaseTexture {
 
     /**
      * Updates the content of the texture.
-     * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
+     * @param invertY Defines whether the texture should be inverted on Y (false by default on video and true on canvas)
      */
     public update(invertY: Nullable<boolean> = null): void {
         const engine = this._getEngine();

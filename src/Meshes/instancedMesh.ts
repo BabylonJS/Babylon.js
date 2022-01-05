@@ -10,15 +10,16 @@ import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
-import { VertexBuffer } from './buffer';
+import { VertexBuffer } from '../Buffers/buffer';
+import { Tools } from '../Misc/tools';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
-    let instance = new InstancedMesh(name, mesh);
+    const instance = new InstancedMesh(name, mesh);
 
     if (mesh.instancedBuffers) {
         instance.instancedBuffers = {};
 
-        for (var key in mesh.instancedBuffers) {
+        for (const key in mesh.instancedBuffers) {
             instance.instancedBuffers[key] = mesh.instancedBuffers[key];
         }
     }
@@ -32,9 +33,14 @@ Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
 export class InstancedMesh extends AbstractMesh {
     private _sourceMesh: Mesh;
     private _currentLOD: Mesh;
+    private _billboardWorldMatrix: Matrix;
 
     /** @hidden */
     public _indexInSourceMeshInstanceArray = -1;
+    /** @hidden */
+    public _distanceToCamera: number = 0;
+    /** @hidden */
+    public _previousWorldMatrix: Nullable<Matrix>;
 
     constructor(name: string, source: Mesh) {
         super(name, source.getScene());
@@ -53,8 +59,8 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
-        this.animations = source.animations;
-        for (var range of source.getAnimationRanges()) {
+        this.animations = Tools.Slice(source.animations);
+        for (let range of source.getAnimationRanges()) {
             if (range != null) {
                 this.createAnimationRange(range.name, range.from, range.to);
             }
@@ -161,7 +167,7 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Creates a new InstancedMesh object from the mesh model.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
      * @param name defines the name of the new instance
      * @returns a new InstancedMesh
      */
@@ -180,9 +186,9 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
-     * @param kind kind of verticies to retreive (eg. positons, normals, uvs, etc.)
+     * @param kind kind of verticies to retrieve (eg. positions, normals, uvs, etc.)
      * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
-     * @returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
+     * @returns a float array or a Float32Array of the requested kind of data : positions, normals, uvs, etc.
      */
     public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
         return this._sourceMesh.getVerticesData(kind, copyWhenShared);
@@ -192,7 +198,7 @@ export class InstancedMesh extends AbstractMesh {
      * Sets the vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
      * The `data` are either a numeric array either a Float32Array.
-     * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initianilly none) or updater.
+     * The parameter `updatable` is passed as is to the underlying Geometry object constructor (if initially none) or updater.
      * The parameter `stride` is an optional positive integer, it is usually automatically deducted from the `kind` (3 for positions or normals, 2 for UV, etc).
      * Note that a new underlying VertexBuffer object is created each call.
      * If the `kind` is the `PositionKind`, the mesh BoundingInfo is renewed, so the bounding box and sphere, and the mesh World Matrix is recomputed.
@@ -287,15 +293,16 @@ export class InstancedMesh extends AbstractMesh {
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
      * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
+     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false): InstancedMesh {
-        if (this._boundingInfo && this._boundingInfo.isLocked) {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): InstancedMesh {
+        if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
 
         const bias = this._sourceMesh.geometry ? this._sourceMesh.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._sourceMesh._getPositionData(applySkeleton), bias);
+        this._refreshBoundingInfo(this._sourceMesh._getPositionData(applySkeleton, applyMorph), bias);
         return this;
     }
 
@@ -352,14 +359,17 @@ export class InstancedMesh extends AbstractMesh {
 
     public getWorldMatrix(): Matrix {
         if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
+            if (!this._billboardWorldMatrix) {
+                this._billboardWorldMatrix = new Matrix();
+            }
             let tempMaster = this._currentLOD._masterMesh;
             this._currentLOD._masterMesh = this;
             TmpVectors.Vector3[7].copyFrom(this._currentLOD.position);
             this._currentLOD.position.set(0, 0, 0);
-            TmpVectors.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
+            this._billboardWorldMatrix.copyFrom(this._currentLOD.computeWorldMatrix(true));
             this._currentLOD.position.copyFrom(TmpVectors.Vector3[7]);
             this._currentLOD._masterMesh = tempMaster;
-            return TmpVectors.Matrix[0];
+            return this._billboardWorldMatrix;
         }
 
         return super.getWorldMatrix();
@@ -409,6 +419,19 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh._generatePointsArray();
     }
 
+    /** @hidden */
+    public _updateBoundingInfo(): AbstractMesh {
+        const effectiveMesh = this as AbstractMesh;
+        if (this.hasBoundingInfo) {
+            this.getBoundingInfo().update(effectiveMesh.worldMatrixFromCache);
+        }
+        else {
+            this.buildBoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+        }
+        this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
+        return this;
+    }
+
     /**
      * Creates a new InstancedMesh from the current mesh.
      * - name (string) : the cloned mesh name
@@ -417,7 +440,7 @@ export class InstancedMesh extends AbstractMesh {
      *
      * Returns the clone.
      */
-    public clone(name: string, newParent: Nullable<Node>= null, doNotCloneChildren?: boolean): InstancedMesh {
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): InstancedMesh {
         var result = this._sourceMesh.createInstance(name);
 
         // Deep copy
@@ -427,7 +450,7 @@ export class InstancedMesh extends AbstractMesh {
             "sourceMesh", "isAnInstance", "facetNb", "isFacetDataEnabled",
             "isBlocked", "useBones", "hasInstances", "collider", "edgesRenderer",
             "forward", "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion",
-            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache"
+            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances"
         ], []);
 
         // Bounding info
@@ -450,6 +473,8 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         result.computeWorldMatrix(true);
+
+        this.onClonedObservable.notifyObservers(result);
 
         return result;
     }
@@ -476,16 +501,22 @@ declare module "./mesh" {
         registerInstancedBuffer(kind: string, stride: number): void;
 
         /**
+         * Invalidate VertexArrayObjects belonging to the mesh (but not to the Geometry of the mesh).
+         */
+        _invalidateInstanceVertexArrayObject(): void;
+
+        /**
          * true to use the edge renderer for all instances of this mesh
          */
         edgesShareWithInstances: boolean;
 
         /** @hidden */
         _userInstancedBuffersStorage: {
-            data: {[key: string]: Float32Array},
-            sizes: {[key: string]: number},
-            vertexBuffers: {[key: string]: Nullable<VertexBuffer>},
-            strides: {[key: string]: number}
+            data: { [key: string]: Float32Array },
+            sizes: { [key: string]: number },
+            vertexBuffers: { [key: string]: Nullable<VertexBuffer> },
+            strides: { [key: string]: number },
+            vertexArrayObjects?: { [key: string]: WebGLVertexArrayObject }
         };
     }
 }
@@ -496,15 +527,15 @@ declare module "./abstractMesh" {
          * Object used to store instanced buffers defined by user
          * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
          */
-        instancedBuffers: {[key: string]: any};
+        instancedBuffers: { [key: string]: any };
     }
 }
 
 Mesh.prototype.edgesShareWithInstances = false;
 
-Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
+Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number): void {
     // Remove existing one
-    this.removeVerticesData(kind);
+    this._userInstancedBuffersStorage?.vertexBuffers[kind]?.dispose();
 
     // Creates the instancedBuffer field if not present
     if (!this.instancedBuffers) {
@@ -518,7 +549,8 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
             data: {},
             vertexBuffers: {},
             strides: {},
-            sizes: {}
+            sizes: {},
+            vertexArrayObjects: (this.getEngine().getCaps().vertexArrayObject) ? {} : undefined
         };
     }
 
@@ -529,14 +561,15 @@ Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number):
     this._userInstancedBuffersStorage.sizes[kind] = stride * 32; // Initial size
     this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
     this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-    this.setVerticesBuffer(this._userInstancedBuffersStorage.vertexBuffers[kind]!);
 
     for (var instance of this.instances) {
         instance.instancedBuffers[kind] = null;
     }
+
+    this._invalidateInstanceVertexArrayObject();
 };
 
-Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedMesh[], renderSelf: boolean) {
     let instanceCount = visibleInstances.length;
 
     for (var kind in this.instancedBuffers) {
@@ -568,8 +601,10 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
 
             if (value.toArray) {
                 value.toArray(data, offset);
-            } else {
+            } else if (value.copyToArray) {
                 value.copyToArray(data, offset);
+            } else {
+                 data[offset] = value;
             }
 
             offset += stride;
@@ -582,8 +617,10 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
 
             if (value.toArray) {
                 value.toArray(data, offset);
-            } else {
+            } else if (value.copyToArray) {
                 value.copyToArray(data, offset);
+            } else {
+                 data[offset] = value;
             }
 
             offset += stride;
@@ -592,14 +629,26 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update vertex buffer
         if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
             this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-            this.setVerticesBuffer(this._userInstancedBuffersStorage.vertexBuffers[kind]!);
+            this._invalidateInstanceVertexArrayObject();
         } else {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, 0);
         }
     }
 };
 
-Mesh.prototype._disposeInstanceSpecificData = function() {
+Mesh.prototype._invalidateInstanceVertexArrayObject = function () {
+    if (!this._userInstancedBuffersStorage || this._userInstancedBuffersStorage.vertexArrayObjects === undefined) {
+        return;
+    }
+
+    for (var kind in this._userInstancedBuffersStorage.vertexArrayObjects) {
+        this.getEngine().releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
+    }
+
+    this._userInstancedBuffersStorage.vertexArrayObjects = {};
+};
+
+Mesh.prototype._disposeInstanceSpecificData = function () {
     if (this._instanceDataStorage.instancesBuffer) {
         this._instanceDataStorage.instancesBuffer.dispose();
         this._instanceDataStorage.instancesBuffer = null;
@@ -614,6 +663,8 @@ Mesh.prototype._disposeInstanceSpecificData = function() {
             this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
         }
     }
+
+    this._invalidateInstanceVertexArrayObject();
 
     this.instancedBuffers = {};
 };

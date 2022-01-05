@@ -4,7 +4,9 @@ import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { ShaderCodeInliner } from "babylonjs/Engines/Processors/shaderCodeInliner";
+import { ICustomShaderNameResolveOptions } from "babylonjs/Materials/material";
 
 export class ShaderAlebdoParts {
 
@@ -13,6 +15,7 @@ export class ShaderAlebdoParts {
     public Fragment_Begin: string;
     public Fragment_Definitions: string;
     public Fragment_MainBegin: string;
+    public Fragment_MainEnd: string;
 
     // albedoColor
     public Fragment_Custom_Albedo: string;
@@ -26,7 +29,9 @@ export class ShaderAlebdoParts {
     public Fragment_Before_Fog: string;
     // alpha
     public Fragment_Custom_Alpha: string;
-
+    // color composition
+    public Fragment_Before_FinalColorComposition: string;
+    // frag color
     public Fragment_Before_FragColor: string;
 
     public Vertex_Begin: string;
@@ -60,7 +65,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     public FragmentShader: string;
     public VertexShader: string;
 
-    public AttachAfterBind(mesh: Mesh, effect: Effect) {
+    public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
             for (let el in this._newUniformInstances) {
                 const ea = el.toString().split('-');
@@ -93,14 +98,14 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform" && this._newUniforms) {
-            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
         if (name == "sampler" && this._newUniforms) {
-            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
@@ -109,7 +114,19 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions): string {
+        if (options) {
+            const currentProcessing = options.processFinalCode;
+            options.processFinalCode = (type: string, code: string) => {
+                if (type === "vertex") {
+                    return currentProcessing ? currentProcessing(type, code) : code;
+                }
+                const sci = new ShaderCodeInliner(code);
+                sci.inlineToken = "#define pbr_inline";
+                sci.processCode();
+                return currentProcessing ? currentProcessing(type, sci.code) : sci.code;
+            };
+        }
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
@@ -157,7 +174,9 @@ export class PBRCustomMaterial extends PBRMaterial {
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
-            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION', (this.CustomParts.Fragment_Before_FinalColorComposition ? this.CustomParts.Fragment_Before_FinalColorComposition : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""))
+            .replace('#define CUSTOM_FRAGMENT_MAIN_END', (this.CustomParts.Fragment_MainEnd ? this.CustomParts.Fragment_MainEnd : ""));
 
         if (this.CustomParts.Fragment_Before_Fog) {
             Effect.ShadersStore[name + "PixelShader"] = Effect.ShadersStore[name + "PixelShader"].replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', this.CustomParts.Fragment_Before_Fog);
@@ -190,7 +209,7 @@ export class PBRCustomMaterial extends PBRMaterial {
             this._newUniformInstances = {};
         }
         if (param) {
-            if (kind.indexOf("sampler") == -1) {
+            if (kind.indexOf("sampler") != -1) {
                 (<any>this._newSamplerInstances)[kind + "-" + name] = param;
             }
             else {
@@ -258,8 +277,18 @@ export class PBRCustomMaterial extends PBRMaterial {
         return this;
     }
 
+    public Fragment_Before_FinalColorComposition(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Fragment_Before_FinalColorComposition = shaderPart;
+        return this;
+    }
+
     public Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
+        return this;
+    }
+
+    public Fragment_MainEnd(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Fragment_MainEnd = shaderPart;
         return this;
     }
 
@@ -299,4 +328,4 @@ export class PBRCustomMaterial extends PBRMaterial {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
+RegisterClass("BABYLON.PBRCustomMaterial", PBRCustomMaterial);

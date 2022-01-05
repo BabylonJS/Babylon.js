@@ -5,7 +5,7 @@ import { PBRMaterial } from "babylonjs";
 
 export let name = "scene manager";
 
-describe(name, function() {
+describe(name, function () {
 
     it("should be initialized when an engine is created", (done) => {
         let viewer = Helper.getNewViewerInstance();

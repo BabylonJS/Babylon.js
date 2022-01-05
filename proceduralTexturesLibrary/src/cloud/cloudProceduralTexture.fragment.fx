@@ -4,6 +4,8 @@ varying vec2 vUV;
 
 uniform vec4 skyColor;
 uniform vec4 cloudColor;
+uniform float amplitude;
+uniform int numOctaves;
 
 float rand(vec2 n) {
 	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -16,11 +18,15 @@ float noise(vec2 n) {
 }
 
 float fbm(vec2 n) {
-	float total = 0.0, amplitude = 1.0;
+	float total = 0.0, ampl = amplitude;
+#ifdef WEBGL2
+	for (int i = 0; i < numOctaves; i++) {
+#else
 	for (int i = 0; i < 4; i++) {
-		total += noise(n) * amplitude;
+#endif
+		total += noise(n) * ampl;
 		n += n;
-		amplitude *= 0.5;
+		ampl *= 0.5;
 	}
 	return total;
 }

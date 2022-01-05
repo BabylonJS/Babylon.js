@@ -1,8 +1,11 @@
 import { BaseSlider } from "./baseSlider";
 import { Measure } from "../../measure";
 import { Image } from "../image";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
+import { serialize } from "babylonjs/Misc/decorators";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 
 /**
  * Class used to create slider controls based on images
@@ -11,9 +14,9 @@ export class ImageBasedSlider extends BaseSlider {
     private _backgroundImage: Image;
     private _thumbImage: Image;
     private _valueBarImage: Image;
-
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
+    @serialize()
     public get displayThumb(): boolean {
         return this._displayThumb && this.thumbImage != null;
     }
@@ -102,7 +105,7 @@ export class ImageBasedSlider extends BaseSlider {
         return "ImageBasedSlider";
     }
 
-    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
@@ -162,5 +165,30 @@ export class ImageBasedSlider extends BaseSlider {
 
         context.restore();
     }
+
+    /**
+    * Serializes the current control
+    * @param serializationObject defined the JSON serialized object
+    */
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+        let backgroundImage = {};
+        let thumbImage = {};
+        let valueBarImage = {};
+        this.backgroundImage.serialize(backgroundImage);
+        this.thumbImage.serialize(thumbImage);
+        this.valueBarImage.serialize(valueBarImage);
+        serializationObject.backgroundImage = backgroundImage;
+        serializationObject.thumbImage = thumbImage;
+        serializationObject.valueBarImage = valueBarImage;
+    }
+
+    /** @hidden */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        this.backgroundImage = Image.Parse(serializedObject.backgroundImage, host) as Image;
+        this.thumbImage = Image.Parse(serializedObject.thumbImage, host) as Image;
+        this.valueBarImage = Image.Parse(serializedObject.valueBarImage, host) as Image;
+    }
 }
-_TypeStore.RegisteredTypes["BABYLON.GUI.ImageBasedSlider"] = ImageBasedSlider;
+RegisterClass("BABYLON.GUI.ImageBasedSlider", ImageBasedSlider);

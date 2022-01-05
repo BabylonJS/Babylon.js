@@ -220,7 +220,7 @@ export class TextureUtils {
             babylonTexture.gammaSpace = false;
 
             let internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.CubeRaw);
-            let glTexture = internalTexture._webGLTexture;
+            let glTexture = internalTexture._hardwareTexture?.underlyingResource;
             //babylon properties
             internalTexture.isCube = true;
             internalTexture.generateMipMaps = false;
@@ -232,11 +232,11 @@ export class TextureUtils {
             let maxMipLevel = automaticMipmaps ? 0 : textureCube.source.length - 1;
             let texturesUploaded = 0;
 
-            var textureComplete = function() {
+            var textureComplete = function () {
                 return texturesUploaded === ((maxMipLevel + 1) * 6);
             };
 
-            var uploadFace = function(i: number, level: number, face: TextureSource) {
+            var uploadFace = function (i: number, level: number, face: TextureSource) {
                 if (!glTexture) { return; }
 
                 if (i === 0 && level === 0) {
@@ -352,7 +352,7 @@ export class TextureUtils {
 
         let internalTexture = babylonTexture._texture;
         if (!internalTexture) { return; }
-        let glTexture = internalTexture._webGLTexture;
+        let glTexture = internalTexture._hardwareTexture?.underlyingResource;
         gl.bindTexture(target, glTexture);
 
         if (parameters.magFilter != null) { gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, parameters.magFilter); }

@@ -1,11 +1,24 @@
 import { IWebRequest } from './interfaces/iWebRequest';
 import { Nullable } from '../types';
+import { INative } from '../Engines/Native/nativeInterfaces';
+
+declare const _native: INative;
+
+/** @hidden */
+function createXMLHttpRequest(): XMLHttpRequest {
+    // If running in Babylon Native, then defer to the native XMLHttpRequest, which has the same public contract
+    if (typeof _native !== 'undefined' && _native.XMLHttpRequest) {
+        return new _native.XMLHttpRequest();
+    } else {
+        return new XMLHttpRequest();
+    }
+}
 
 /**
  * Extended version of XMLHttpRequest with support for customizations (headers, ...)
  */
 export class WebRequest implements IWebRequest {
-    private _xhr = new XMLHttpRequest();
+    private readonly _xhr = createXMLHttpRequest();
 
     /**
      * Custom HTTP Request Headers to be sent with XMLHttpRequests
@@ -91,6 +104,17 @@ export class WebRequest implements IWebRequest {
         this._xhr.responseType = value;
     }
 
+    /**
+     * Gets or sets the timeout value in milliseconds
+     */
+    public get timeout(): number {
+        return this._xhr.timeout;
+    }
+
+    public set timeout(value: number) {
+        this._xhr.timeout = value;
+    }
+
     /** @hidden */
     public addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
     public addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
@@ -114,7 +138,7 @@ export class WebRequest implements IWebRequest {
      * Initiates the request. The optional argument provides the request body. The argument is ignored if request method is GET or HEAD
      * @param body defines an optional request body
      */
-    public send(body?: Document | BodyInit | null): void {
+    public send(body?: Document | XMLHttpRequestBodyInit | null): void {
         if (WebRequest.CustomRequestHeaders) {
             this._injectCustomRequestHeaders();
         }

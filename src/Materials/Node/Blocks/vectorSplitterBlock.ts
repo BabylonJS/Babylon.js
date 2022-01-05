@@ -3,7 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBloc
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { RegisterClass } from '../../../Misc/typeStore';
 
 /**
  * Block used to expand a Vector3/4 into 4 outputs (one for each component)
@@ -23,6 +23,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
 
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("xy", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerOutput("zw", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("x", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("y", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("z", NodeMaterialBlockConnectionPointTypes.Float);
@@ -75,31 +76,38 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the zw component (output)
+     */
+    public get zw(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
      * Gets the x component (output)
      */
     public get x(): NodeMaterialConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[3];
     }
 
     /**
      * Gets the y component (output)
      */
     public get y(): NodeMaterialConnectionPoint {
-        return this._outputs[3];
+        return this._outputs[4];
     }
 
     /**
      * Gets the z component (output)
      */
     public get z(): NodeMaterialConnectionPoint {
-        return this._outputs[4];
+        return this._outputs[5];
     }
 
     /**
      * Gets the w component (output)
      */
     public get w(): NodeMaterialConnectionPoint {
-        return this._outputs[5];
+        return this._outputs[6];
     }
 
     protected _inputRename(name: string) {
@@ -107,7 +115,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
             case "xy ":
                 return "xyIn";
             case "xyz ":
-                    return "xyzIn";
+                return "xyzIn";
             default:
                 return name;
         }
@@ -118,7 +126,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
             case "xy":
                 return "xyOut";
             case "xyz":
-                    return "xyzOut";
+                return "xyzOut";
             default:
                 return name;
         }
@@ -131,10 +139,11 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
 
         let xyzOutput = this._outputs[0];
         let xyOutput = this._outputs[1];
-        let xOutput = this._outputs[2];
-        let yOutput = this._outputs[3];
-        let zOutput = this._outputs[4];
-        let wOutput = this._outputs[5];
+        let zwOutput = this._outputs[2];
+        let xOutput = this._outputs[3];
+        let yOutput = this._outputs[4];
+        let zOutput = this._outputs[5];
+        let wOutput = this._outputs[6];
 
         if (xyzOutput.hasEndpoints) {
             if (input === this.xyIn) {
@@ -142,6 +151,9 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
             } else {
                 state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\r\n`;
             }
+        }
+        if (zwOutput.hasEndpoints && this.xyzw.isConnected) {
+            state.compilationString += this._declareOutput(zwOutput, state) + ` = ${this.xyzw.associatedVariableName}.zw;\r\n`;
         }
         if (xyOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\r\n`;
@@ -163,4 +175,4 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.VectorSplitterBlock"] = VectorSplitterBlock;
+RegisterClass("BABYLON.VectorSplitterBlock", VectorSplitterBlock);

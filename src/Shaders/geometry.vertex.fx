@@ -1,12 +1,13 @@
 precision highp float;
-precision highp int;
 
 #include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 #include<instancesDeclaration>
+#include<__decl__geometryVertex>
 
 attribute vec3 position;
 attribute vec3 normal;
@@ -35,10 +36,6 @@ attribute vec3 normal;
 	#endif
 #endif
 
-// Uniform
-uniform mat4 viewProjection;
-uniform mat4 view;
-
 #ifdef BUMP
 varying mat4 vWorldView;
 #endif
@@ -56,17 +53,14 @@ varying vec3 vPositionW;
 #endif
 
 #ifdef VELOCITY
-uniform mat4 previousWorld;
 uniform mat4 previousViewProjection;
-#ifdef BONES_VELOCITY_ENABLED
-#if NUM_BONE_INFLUENCERS > 0
-uniform mat4 mPreviousBones[BonesPerMesh];
-#endif
-#endif
 
 varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
+
+
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void)
 {
@@ -75,6 +69,8 @@ void main(void)
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
+
+#include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
@@ -86,6 +82,7 @@ void main(void)
 	#endif
 
 #include<bonesVertex>
+#include<bakedVertexAnimation>
 	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	#ifdef BUMP
@@ -105,30 +102,30 @@ void main(void)
 			previousInfluence = mPreviousBones[int(matricesIndices[0])] * matricesWeights[0];
 			#if NUM_BONE_INFLUENCERS > 1
 				previousInfluence += mPreviousBones[int(matricesIndices[1])] * matricesWeights[1];
-			#endif	
+			#endif
 			#if NUM_BONE_INFLUENCERS > 2
 				previousInfluence += mPreviousBones[int(matricesIndices[2])] * matricesWeights[2];
-			#endif	
+			#endif
 			#if NUM_BONE_INFLUENCERS > 3
 				previousInfluence += mPreviousBones[int(matricesIndices[3])] * matricesWeights[3];
-			#endif	
+			#endif
 
 			#if NUM_BONE_INFLUENCERS > 4
 				previousInfluence += mPreviousBones[int(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
-			#endif	
+			#endif
 			#if NUM_BONE_INFLUENCERS > 5
 				previousInfluence += mPreviousBones[int(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
-			#endif	
+			#endif
 			#if NUM_BONE_INFLUENCERS > 6
 				previousInfluence += mPreviousBones[int(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
-			#endif	
+			#endif
 			#if NUM_BONE_INFLUENCERS > 7
 				previousInfluence += mPreviousBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
 			#endif
 
-			vPreviousPosition = previousViewProjection * previousWorld * previousInfluence * vec4(positionUpdated, 1.0);
+			vPreviousPosition = previousViewProjection * finalPreviousWorld * previousInfluence * vec4(positionUpdated, 1.0);
 		#else
-			vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+			vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
 		#endif
 	#endif
 
@@ -140,30 +137,30 @@ void main(void)
 
 	#ifdef NEED_UV
 		#ifdef UV1
-			#ifdef ALPHATEST
+			#if defined(ALPHATEST) && defined(ALPHATEST_UV1)
 			vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#else
 			vUV = uv;
 			#endif
 
-			#ifdef BUMP
+			#ifdef BUMP_UV1
 			vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
-			#ifdef REFLECTIVITY
+			#ifdef REFLECTIVITY_UV1
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
 		#endif
 		#ifdef UV2
-			#ifdef ALPHATEST
+			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
 			vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 			#else
 			vUV = uv2;
 			#endif
 
-			#ifdef BUMP
+			#ifdef BUMP_UV2
 			vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
 			#endif
-			#ifdef REFLECTIVITY
+			#ifdef REFLECTIVITY_UV2
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
 			#endif
 		#endif

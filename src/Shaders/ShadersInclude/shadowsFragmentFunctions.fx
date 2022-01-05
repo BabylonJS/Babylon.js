@@ -113,7 +113,7 @@
         return esm;
     }
 
-    #ifdef WEBGL2
+    #if defined(WEBGL2) || defined(WEBGPU)
         #define inline
         float computeShadowCSM(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray shadowSampler, float darkness, float frustumEdgeFalloff)
         {
@@ -249,7 +249,13 @@
         }
     }
 
-    #ifdef WEBGL2
+    #ifdef IS_NDC_HALF_ZRANGE
+        #define ZINCLIP clipSpace.z
+    #else
+        #define ZINCLIP uvDepth.z
+    #endif
+
+    #if defined(WEBGL2) || defined(WEBGPU)
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
@@ -259,11 +265,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
-            float shadow = texture(shadowSampler, uvDepthLayer);
+            float shadow = texture2D(shadowSampler, uvDepthLayer);
             shadow = mix(darkness, 1., shadow);
             return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
         }
@@ -277,7 +283,7 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -314,7 +320,7 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -349,7 +355,7 @@
 
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
         #define inline
-        float computeShadowWithPCF1(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCF1(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -358,6 +364,7 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 float shadow = texture2D(shadowSampler, uvDepth);
                 shadow = mix(darkness, 1., shadow);
@@ -369,7 +376,7 @@
         // This uses a well distributed taps to allow a gaussian distribution covering a 3*3 kernel
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
         #define inline
-        float computeShadowWithPCF3(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCF3(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -378,6 +385,7 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
@@ -410,7 +418,7 @@
         // This uses a well distributed taps to allow a gaussian distribution covering a 5*5 kernel
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
         #define inline
-        float computeShadowWithPCF5(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCF5(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -419,6 +427,7 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
@@ -598,7 +607,7 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+            uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
@@ -606,7 +615,7 @@
             float sumBlockerDepth = 0.0;
             float numBlocker = 0.0;
             for (int i = 0; i < searchTapCount; i ++) {
-                blockerDepth = texture(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
+                blockerDepth = texture2D(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
                 if (blockerDepth < depthMetric) {
                     sumBlockerDepth += blockerDepth;
                     numBlocker++;
@@ -657,7 +666,7 @@
         // This is heavily inspired from http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
         // and http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
         #define inline
-        float computeShadowWithPCSS(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers)
+        float computeShadowWithPCSS(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -666,12 +675,13 @@
             {
                 vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+                uvDepth.z = ZINCLIP;
 
                 float blockerDepth = 0.0;
                 float sumBlockerDepth = 0.0;
                 float numBlocker = 0.0;
                 for (int i = 0; i < searchTapCount; i ++) {
-                    blockerDepth = texture(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
+                    blockerDepth = texture2D(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
                     if (blockerDepth < depthMetric) {
                         sumBlockerDepth += blockerDepth;
                         numBlocker++;
@@ -718,19 +728,19 @@
         }
 
         #define inline
-        float computeShadowWithPCSS16(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCSS16(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
         {
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 16, PoissonSamplers32);
         }
 
         #define inline
-        float computeShadowWithPCSS32(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCSS32(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
         {
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 32, PoissonSamplers32);
         }
 
         #define inline
-        float computeShadowWithPCSS64(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCSS64(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
         {
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 32, 64, PoissonSamplers64);
         }

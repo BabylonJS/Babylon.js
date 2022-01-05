@@ -67,7 +67,7 @@ vec2 getDistortedCoords(vec2 coords) {
 }
 
 // sample screen with an offset (randomize offset angle for better smothness), returns partial sample weight
-float sampleScreen(inout vec4 color, const in vec2 offset, const in float weight) {
+float sampleScreen(inout vec4 color, in vec2 offset, in float weight) {
 
 	// compute coords with offset (a random angle is added)
 	vec2 coords = distorted_coords;
@@ -88,7 +88,6 @@ float getBlurLevel(float size) {
 vec4 getBlurColor(float size) {
 
 	vec4 col = texture2D(textureSampler, distorted_coords);
-	if (size == 0.0) { return col; }
 
 	// there are max. 30 samples; the number of samples chosen is dependant on the blur size
 	// there can be 10, 20 or 30 samples chosen; levels of blur are then 1, 2 or 3
@@ -149,6 +148,9 @@ vec4 getBlurColor(float size) {
 
 	return col;
 }
+
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
 
 void main(void)
 {

@@ -224,15 +224,15 @@ describe(name + " scene optimizer", () => {
         let optimizerFunction = SceneOptimizer;
 
         //mock!
-        SceneOptimizer.prototype.start = function() {
+        SceneOptimizer.prototype.start = function () {
             started = true;
         };
 
-        SceneOptimizer.prototype.stop = function() {
+        SceneOptimizer.prototype.stop = function () {
             started = false;
         };
 
-        SceneOptimizer.prototype.dispose = function() {
+        SceneOptimizer.prototype.dispose = function () {
         };
 
         viewer.onInitDoneObservable.add(() => {

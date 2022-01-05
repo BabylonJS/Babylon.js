@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -7,11 +7,12 @@ import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
-import { GUID } from '../../Misc/guid';
-import { ISize, Size } from '../../Maths/math.size';
+import { RandomGUID } from '../../Misc/guid';
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
+import { ThinTexture } from './thinTexture';
+import { AbstractScene } from "../../abstractScene";
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -20,7 +21,7 @@ declare type Animation = import("../../Animations/animation").Animation;
  * It groups all the common properties the materials, post process, lights... might need
  * in order to make a correct use of the texture.
  */
-export class BaseTexture implements IAnimatable {
+export class BaseTexture extends ThinTexture implements IAnimatable {
     /**
      * Default anisotropic filtering level for the application.
      * It is set to 4 as a good tradeoff between perf and quality.
@@ -61,19 +62,35 @@ export class BaseTexture implements IAnimatable {
         }
         this._hasAlpha = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get hasAlpha(): boolean {
         return this._hasAlpha;
     }
 
+    @serialize("getAlphaFromRGB")
+    private _getAlphaFromRGB = false;
     /**
      * Defines if the alpha value should be determined via the rgb values.
      * If true the luminance of the pixel might be used to find the corresponding alpha value.
      */
-    @serialize()
-    public getAlphaFromRGB = false;
+    public set getAlphaFromRGB(value: boolean) {
+        if (this._getAlphaFromRGB === value) {
+            return;
+        }
+        this._getAlphaFromRGB = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
+    }
+    public get getAlphaFromRGB() : boolean {
+        return this._getAlphaFromRGB;
+    }
 
     /**
      * Intensity or strength of the texture.
@@ -82,15 +99,30 @@ export class BaseTexture implements IAnimatable {
     @serialize()
     public level = 1;
 
+    @serialize("coordinatesIndex")
+    protected _coordinatesIndex = 0;
+
     /**
-     * Define the UV chanel to use starting from 0 and defaulting to 0.
+     * Define the UV channel to use starting from 0 and defaulting to 0.
      * This is part of the texture as textures usually maps to one uv set.
      */
-    @serialize()
-    public coordinatesIndex = 0;
+    public set coordinatesIndex(value: number) {
+        if (this._coordinatesIndex === value) {
+            return;
+        }
+        this._coordinatesIndex = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
+    }
+    public get coordinatesIndex(): number {
+        return this._coordinatesIndex;
+    }
 
     @serialize("coordinatesMode")
-    private _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
+    protected _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
 
     /**
     * How a texture is mapped.
@@ -114,7 +146,9 @@ export class BaseTexture implements IAnimatable {
         }
         this._coordinatesMode = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get coordinatesMode(): number {
@@ -122,24 +156,34 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     @serialize()
-    public wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public get wrapU() {
+        return this._wrapU;
+    }
+    public set wrapU(value: number) {
+        this._wrapU = value;
+    }
 
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     @serialize()
-    public wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public get wrapV() {
+        return this._wrapV;
+    }
+    public set wrapV(value: number) {
+        this._wrapV = value;
+    }
 
     /**
     * | Value | Type               | Description |
@@ -159,13 +203,14 @@ export class BaseTexture implements IAnimatable {
     @serialize()
     public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
+    private _isCube = false;
     /**
      * Define if the texture is a cube texture or if false a 2d texture.
      */
     @serialize()
     public get isCube(): boolean {
         if (!this._texture) {
-            return false;
+            return this._isCube;
         }
 
         return this._texture.isCube;
@@ -173,10 +218,10 @@ export class BaseTexture implements IAnimatable {
 
     public set isCube(value: boolean) {
         if (!this._texture) {
-            return;
+            this._isCube = value;
+        } else {
+            this._texture.isCube = value;
         }
-
-        this._texture.isCube = value;
     }
 
     /**
@@ -219,14 +264,41 @@ export class BaseTexture implements IAnimatable {
         this._texture.is2DArray = value;
     }
 
+    private _gammaSpace = true;
     /**
      * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
      * HDR texture are usually stored in linear space.
      * This only impacts the PBR and Background materials
      */
     @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public gammaSpace = true;
+    public get gammaSpace(): boolean {
+        if (!this._texture) {
+            return this._gammaSpace;
+        } else {
+            if (this._texture._gammaSpace === null) {
+                this._texture._gammaSpace = this._gammaSpace;
+            }
+        }
+
+        return this._texture._gammaSpace && !this._texture._useSRGBBuffer;
+    }
+
+    public set gammaSpace(gamma: boolean) {
+        if (!this._texture) {
+            if (this._gammaSpace === gamma) {
+                return;
+            }
+
+            this._gammaSpace = gamma;
+        } else {
+            if (this._texture._gammaSpace === gamma) {
+                return;
+            }
+            this._texture._gammaSpace = gamma;
+        }
+
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
     /**
      * Gets or sets whether or not the texture contains RGBD data.
@@ -324,13 +396,15 @@ export class BaseTexture implements IAnimatable {
      */
     public get uid(): string {
         if (!this._uid) {
-            this._uid = GUID.RandomId();
+            this._uid = RandomGUID();
         }
         return this._uid;
     }
 
     /** @hidden */
     public _prefiltered: boolean = false;
+    /** @hidden */
+    public _forceSerialize: boolean = false;
 
     /**
      * Return a string representation of the texture.
@@ -370,24 +444,43 @@ export class BaseTexture implements IAnimatable {
         this._onDisposeObserver = this.onDisposeObservable.add(callback);
     }
 
-    /**
-     * Define the current state of the loading sequence when in delayed load mode.
-     */
-    public delayLoadState = Constants.DELAYLOADSTATE_NONE;
-
-    private _scene: Nullable<Scene> = null;
-    private _engine: Nullable<ThinEngine> = null;
+    protected _scene: Nullable<Scene> = null;
 
     /** @hidden */
-    public _texture: Nullable<InternalTexture> = null;
     private _uid: Nullable<string> = null;
 
     /**
-     * Define if the texture is preventinga material to render or not.
+     * Define if the texture is preventing a material to render or not.
      * If not and the texture is not ready, the engine will use a default black texture instead.
      */
     public get isBlocking(): boolean {
         return true;
+    }
+
+    /** @hidden */
+    public _parentContainer: Nullable<AbstractScene> = null;
+
+    protected _loadingError: boolean = false;
+    protected _errorObject?: {
+        message?: string;
+        exception?: any;
+    };
+
+    /**
+     * Was there any loading error?
+     */
+    public get loadingError(): boolean {
+        return this._loadingError;
+    }
+
+    /**
+     * If a loading error occurred this object will be populated with information about the error.
+     */
+    public get errorObject(): {
+        message?: string;
+        exception?: any;
+    } | undefined {
+        return this._errorObject;
     }
 
     /**
@@ -395,9 +488,11 @@ export class BaseTexture implements IAnimatable {
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
-     * @param sceneOrEngine Define the scene or engine the texture blongs to
+     * @param sceneOrEngine Define the scene or engine the texture belongs to
      */
     constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
+        super(null);
+
         if (sceneOrEngine) {
             if (BaseTexture._isScene(sceneOrEngine)) {
                 this._scene = sceneOrEngine;
@@ -433,7 +528,16 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
-     * Get the texture transform matrix used to offset tile the texture for istance.
+     * Checks if the texture has the same transform matrix than another texture
+     * @param texture texture to check against
+     * @returns true if the transforms are the same, else false
+     */
+    public checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean {
+        return texture !== null;
+    }
+
+    /**
+     * Get the texture transform matrix used to offset tile the texture for instance.
      * @returns the transformation matrix
      */
     public getTextureMatrix(): Matrix {
@@ -449,113 +553,11 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
-     * Get the underlying lower level texture from Babylon.
-     * @returns the insternal texture
-     */
-    public getInternalTexture(): Nullable<InternalTexture> {
-        return this._texture;
-    }
-
-    /**
      * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
-     * @returns true if ready or not blocking
+     * @returns true if ready, not blocking or if there was an error loading the texture
      */
     public isReadyOrNotBlocking(): boolean {
-        return !this.isBlocking || this.isReady();
-    }
-
-    /**
-     * Get if the texture is ready to be used (downloaded, converted, mip mapped...).
-     * @returns true if fully ready
-     */
-    public isReady(): boolean {
-        if (this.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
-            this.delayLoad();
-            return false;
-        }
-
-        if (this._texture) {
-            return this._texture.isReady;
-        }
-
-        return false;
-    }
-
-    private _cachedSize: ISize = Size.Zero();
-    /**
-     * Get the size of the texture.
-     * @returns the texture size.
-     */
-    public getSize(): ISize {
-        if (this._texture) {
-            if (this._texture.width) {
-                this._cachedSize.width = this._texture.width;
-                this._cachedSize.height = this._texture.height;
-                return this._cachedSize;
-            }
-
-            if (this._texture._size) {
-                this._cachedSize.width = this._texture._size;
-                this._cachedSize.height = this._texture._size;
-                return this._cachedSize;
-            }
-        }
-
-        return this._cachedSize;
-    }
-
-    /**
-     * Get the base size of the texture.
-     * It can be different from the size if the texture has been resized for POT for instance
-     * @returns the base size
-     */
-    public getBaseSize(): ISize {
-        if (!this.isReady() || !this._texture) {
-            return Size.Zero();
-        }
-
-        if (this._texture._size) {
-            return new Size(this._texture._size, this._texture._size);
-        }
-
-        return new Size(this._texture.baseWidth, this._texture.baseHeight);
-    }
-
-    /**
-     * Update the sampling mode of the texture.
-     * Default is Trilinear mode.
-     *
-     * | Value | Type               | Description |
-     * | ----- | ------------------ | ----------- |
-     * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-     * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-     * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-     * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-     * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-     * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-     * | 7    | NEAREST_LINEAR |             |
-     * | 8    | NEAREST_NEAREST |             |
-     * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-     * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-     * | 11   | LINEAR_LINEAR |             |
-     * | 12   | LINEAR_NEAREST |             |
-     *
-     *    > _mag_: magnification filter (close to the viewer)
-     *    > _min_: minification filter (far from the viewer)
-     *    > _mip_: filter used between mip map levels
-     *@param samplingMode Define the new sampling mode of the texture
-     */
-    public updateSamplingMode(samplingMode: number): void {
-        if (!this._texture) {
-            return;
-        }
-
-        const engine = this._getEngine();
-        if (!engine) {
-            return;
-        }
-
-        engine.updateTextureSamplingMode(samplingMode, this._texture);
+        return !this.isBlocking || this.isReady() || this.loadingError;
     }
 
     /**
@@ -573,21 +575,25 @@ export class BaseTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
         if (!engine) {
             return null;
         }
 
+        const correctedUseSRGBBuffer = engine._getUseSRGBBuffer(!!useSRGBBuffer,  noMipmap);
+
         var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
-            if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
-                if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
-                    if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                        texturesCacheEntry.incrementReferences();
-                        return texturesCacheEntry;
+            if (useSRGBBuffer === undefined || correctedUseSRGBBuffer === texturesCacheEntry._useSRGBBuffer) {
+                if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
+                    if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
+                        if (!sampling || sampling === texturesCacheEntry.samplingMode) {
+                            texturesCacheEntry.incrementReferences();
+                            return texturesCacheEntry;
+                        }
                     }
                 }
             }
@@ -599,12 +605,6 @@ export class BaseTexture implements IAnimatable {
     /** @hidden */
     public _rebuild(): void {
 
-    }
-
-    /**
-     * Triggers the load sequence in delayed load mode.
-     */
-    public delayLoad(): void {
     }
 
     /**
@@ -657,9 +657,11 @@ export class BaseTexture implements IAnimatable {
      * @param faceIndex defines the face of the texture to read (in case of cube texture)
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @param buffer defines a user defined buffer to fill with data (can be null)
-     * @returns The Array buffer containing the pixels data.
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param noDataConversion false to convert the data to Uint8Array (if texture type is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
+     * @returns The Array buffer promise containing the pixels data.
      */
-    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null): Nullable<ArrayBufferView> {
+    public readPixels(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Nullable<Promise<ArrayBufferView>> {
         if (!this._texture) {
             return null;
         }
@@ -683,22 +685,46 @@ export class BaseTexture implements IAnimatable {
 
         try {
             if (this._texture.isCube) {
-                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer);
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion);
             }
 
-            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer);
+            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer, flushRenderer, noDataConversion);
         } catch (e) {
             return null;
         }
     }
 
-    /**
-     * Release and destroy the underlying lower level texture aka internalTexture.
-     */
-    public releaseInternalTexture(): void {
-        if (this._texture) {
-            this._texture.dispose();
-            this._texture = null;
+    /** @hidden */
+    public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Nullable<ArrayBufferView> {
+        if (!this._texture) {
+            return null;
+        }
+
+        var size = this.getSize();
+        var width = size.width;
+        var height = size.height;
+
+        const engine = this._getEngine();
+        if (!engine) {
+            return null;
+        }
+
+        if (level != 0) {
+            width = width / Math.pow(2, level);
+            height = height / Math.pow(2, level);
+
+            width = Math.round(width);
+            height = Math.round(height);
+        }
+
+        try {
+            if (this._texture.isCube) {
+                return engine._readTexturePixelsSync(this._texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion);
+            }
+
+            return engine._readTexturePixelsSync(this._texture, width, height, -1, level, buffer, flushRenderer, noDataConversion);
+        } catch (e) {
+            return null;
         }
     }
 
@@ -745,20 +771,23 @@ export class BaseTexture implements IAnimatable {
             }
             this._scene.onTextureRemovedObservable.notifyObservers(this);
             this._scene = null;
-        }
 
-        if (this._texture === undefined) {
-            return;
+            if (this._parentContainer) {
+                const index = this._parentContainer.textures.indexOf(this);
+                if (index > -1) {
+                    this._parentContainer.textures.splice(index, 1);
+                }
+                this._parentContainer = null;
+            }
         }
-
-        // Release
-        this.releaseInternalTexture();
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
 
-        this._engine = null;
+        this.metadata = null;
+
+        super.dispose();
     }
 
     /**
@@ -802,14 +831,11 @@ export class BaseTexture implements IAnimatable {
                 var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
                 if (onLoadObservable) {
-                    let onLoadCallback = () => {
-                        onLoadObservable.removeCallback(onLoadCallback);
+                    onLoadObservable.addOnce(() => {
                         if (--numRemaining === 0) {
                             callback();
                         }
-                    };
-
-                    onLoadObservable.add(onLoadCallback);
+                    });
                 }
             }
         }

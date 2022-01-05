@@ -2,8 +2,9 @@ import { Observable } from "../Misc/observable";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Condition } from "./condition";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { AbstractActionManager } from './abstractActionManager';
+import { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
@@ -54,7 +55,7 @@ export interface IAction {
      * Internal only - manager for action
      * @hidden
      */
-    _actionManager: AbstractActionManager;
+    _actionManager: Nullable<AbstractActionManager>;
 
     /**
      * Adds action to chain of actions, may be a DoNothingAction
@@ -67,7 +68,7 @@ export interface IAction {
 
 /**
  * The action to be carried out following a trigger
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
  */
 export class Action implements IAction {
     /**
@@ -121,11 +122,40 @@ export class Action implements IAction {
     }
 
     /**
-     * Gets the trigger parameters
-     * @returns the trigger parameters
+     * Gets the trigger parameter
+     * @returns the trigger parameter
      */
     public getTriggerParameter(): any {
         return this._triggerParameter;
+    }
+
+    /**
+     * Sets the trigger parameter
+     * @param value defines the new trigger parameter
+     */
+    public setTriggerParameter(value: any) {
+        this._triggerParameter = value;
+    }
+
+    /**
+     * Internal only - Returns if the current condition allows to run the action
+     * @hidden
+     */
+     public _evaluateConditionForCurrentFrame(): boolean {
+        const condition = this._condition;
+        if (!condition) {
+            return true;
+        }
+
+        const currentRenderId = this._actionManager.getScene().getRenderId();
+
+        // We cache the current evaluation for the current frame
+        if (condition._evaluationId !== currentRenderId) {
+            condition._evaluationId = currentRenderId;
+            condition._currentResult = condition.isValid();
+        }
+
+        return condition._currentResult;
     }
 
     /**
@@ -133,25 +163,9 @@ export class Action implements IAction {
      * @hidden
      */
     public _executeCurrent(evt?: ActionEvent): void {
-        if (this._nextActiveAction._condition) {
-            var condition = this._nextActiveAction._condition;
-            var currentRenderId = this._actionManager.getScene().getRenderId();
-
-            // We cache the current evaluation for the current frame
-            if (condition._evaluationId === currentRenderId) {
-                if (!condition._currentResult) {
-                    return;
-                }
-            } else {
-                condition._evaluationId = currentRenderId;
-
-                if (!condition.isValid()) {
-                    condition._currentResult = false;
-                    return;
-                }
-
-                condition._currentResult = true;
-            }
+        const isConditionValid = this._evaluateConditionForCurrentFrame();
+        if (!isConditionValid) {
+            return;
         }
 
         this.onBeforeExecuteObservable.notifyObservers(this);
@@ -303,4 +317,4 @@ export class Action implements IAction {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Action"] = Action;
+RegisterClass("BABYLON.Action", Action);

@@ -9,7 +9,7 @@ uniform Material
 	vec4 reflectionRightColor;
 	vec4 refractionLeftColor;
 	vec4 refractionRightColor;
-	vec4 emissiveLeftColor; 
+	vec4 emissiveLeftColor;
 	vec4 emissiveRightColor;
 	vec2 vDiffuseInfos;
 	vec2 vAmbientInfos;
@@ -28,21 +28,21 @@ uniform Material
 	mat4 emissiveMatrix;
 	mat4 lightmapMatrix;
 	mat4 specularMatrix;
-	mat4 bumpMatrix; 
+	mat4 bumpMatrix;
 	vec2 vTangentSpaceParams;
 	float pointSize;
+    float alphaCutOff;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
+	vec3 vRefractionPosition;
+	vec3 vRefractionSize;
 	vec4 vSpecularColor;
 	vec3 vEmissiveColor;
-	float visibility;
 	vec4 vDiffuseColor;
+	vec3 vAmbientColor;
+
+    #define ADDITIONAL_UBO_DECLARATION
 };
 
-uniform Scene {
-    mat4 viewProjection;
-#ifdef MULTIVIEW
-	mat4 viewProjectionR;
-#endif 
-	mat4 view;
-};
+#include<sceneUboDeclaration>
+#include<meshUboDeclaration>

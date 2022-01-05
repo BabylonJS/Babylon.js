@@ -1,8 +1,10 @@
+import { AssetContainer } from "babylonjs/assetContainer";
 import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Node } from "babylonjs/node";
 import { Scene } from "babylonjs/scene";
+import { Nullable } from "babylonjs/types";
 
 /**
 * Enums
@@ -410,7 +412,7 @@ export interface IGLTFRuntime {
 
     dummyNodes: Node[];
 
-    forAssetContainer: boolean;
+    assetContainer: Nullable<AssetContainer>;
 }
 
 /** @hidden */

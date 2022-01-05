@@ -6,18 +6,12 @@ import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { IKHRMaterialsSpecular } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_specular";
 
-interface IKHR_materials_specular {
-    specularFactor: number;
-    specularColorFactor: number[];
-    specularTexture: ITextureInfo;
-}
-
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_specular)
  */
 export class KHR_materials_specular implements IGLTFLoaderExtension {
     /**
@@ -45,12 +39,12 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHR_materials_specular>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSpecular>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -58,7 +52,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadSpecularPropertiesAsync(context: string, properties: IKHR_materials_specular, babylonMaterial: Material): Promise<void> {
+    private _loadSpecularPropertiesAsync(context: string, properties: IKHRMaterialsSpecular, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
@@ -74,9 +68,18 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
         }
 
         if (properties.specularTexture) {
+            (properties.specularTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
+                texture.name = `${babylonMaterial.name} (Specular F0 Strength)`;
                 babylonMaterial.metallicReflectanceTexture = texture;
+                babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+            }));
+        }
+
+        if (properties.specularColorTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
+                babylonMaterial.reflectanceTexture = texture;
             }));
         }
 

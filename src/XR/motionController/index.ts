@@ -1,5 +1,6 @@
 export * from "./webXRAbstractMotionController";
 export * from "./webXRControllerComponent";
+export * from "./webXRGenericHandController";
 export * from "./webXRGenericMotionController";
 export * from "./webXRMicrosoftMixedRealityController";
 export * from "./webXRMotionControllerManager";

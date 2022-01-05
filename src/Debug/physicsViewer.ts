@@ -2,8 +2,8 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
-import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
+import { CreateBox } from "../Meshes/Builders/boxBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Material } from "../Materials/material";
@@ -12,7 +12,8 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
+import { CreateCylinder } from '../Meshes/Builders/cylinderBuilder';
+import { CreateCapsule, ICreateCapsuleOptions } from '../Meshes/Builders/capsuleBuilder';
 
 /**
      * Used to show the physics impostor around the specific mesh
@@ -34,6 +35,7 @@ export class PhysicsViewer {
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
+    private _debugCapsuleMesh: Mesh;
     private _debugCylinderMesh: Mesh;
     private _debugMaterial: StandardMaterial;
     private _debugMeshMeshes = new Array<Mesh>();
@@ -179,7 +181,7 @@ export class PhysicsViewer {
 
     private _getDebugBoxMesh(scene: Scene): AbstractMesh {
         if (!this._debugBoxMesh) {
-            this._debugBoxMesh = BoxBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+            this._debugBoxMesh = CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
             this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
             this._debugBoxMesh.material = this._getDebugMaterial(scene);
             this._debugBoxMesh.setEnabled(false);
@@ -190,30 +192,41 @@ export class PhysicsViewer {
 
     private _getDebugSphereMesh(scene: Scene): AbstractMesh {
         if (!this._debugSphereMesh) {
-            this._debugSphereMesh = SphereBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+            this._debugSphereMesh = CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
             this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
             this._debugSphereMesh.material = this._getDebugMaterial(scene);
             this._debugSphereMesh.setEnabled(false);
         }
 
-        return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+        return this._debugSphereMesh.createInstance('physicsBodySphereViewInstance');
+    }
+
+    private _getDebugCapsuleMesh(scene: Scene): AbstractMesh {
+        if (!this._debugCapsuleMesh) {
+            this._debugCapsuleMesh = CreateCapsule('physicsBodyCapsuleViewMesh', { height: 1 } as ICreateCapsuleOptions, scene);
+            this._debugCapsuleMesh.rotationQuaternion = Quaternion.Identity();
+            this._debugCapsuleMesh.material = this._getDebugMaterial(scene);
+            this._debugCapsuleMesh.setEnabled(false);
+        }
+
+        return this._debugCapsuleMesh.createInstance('physicsBodyCapsuleViewInstance');
     }
 
     private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
         if (!this._debugCylinderMesh) {
-            this._debugCylinderMesh = CylinderBuilder.CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugCylinderMesh = CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
             this._debugCylinderMesh.rotationQuaternion = Quaternion.Identity();
             this._debugCylinderMesh.material = this._getDebugMaterial(scene);
             this._debugCylinderMesh.setEnabled(false);
         }
 
-        return this._debugCylinderMesh.createInstance('physicsBodyBoxViewInstance');
+        return this._debugCylinderMesh.createInstance('physicsBodyCylinderViewInstance');
     }
 
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
         var wireframeOver = new Mesh(mesh.name, scene, null, mesh);
-        wireframeOver.position = Vector3.Zero();
         wireframeOver.setParent(mesh);
+        wireframeOver.position = Vector3.Zero();
         wireframeOver.material = this._getDebugMaterial(scene);
 
         this._debugMeshMeshes.push(wireframeOver);
@@ -246,6 +259,13 @@ export class PhysicsViewer {
                 mesh.scaling.y = radius * 2;
                 mesh.scaling.z = radius * 2;
                 break;
+            case PhysicsImpostor.CapsuleImpostor:
+                mesh = this._getDebugCapsuleMesh(utilityLayerScene);
+                var bi = impostor.object.getBoundingInfo();
+                mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * 2 * impostor.object.scaling.x;
+                mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
+                mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * 2 * impostor.object.scaling.z;
+                break;
             case PhysicsImpostor.MeshImpostor:
                 if (targetMesh) {
                     mesh = this._getDebugMeshMesh(targetMesh, utilityLayerScene);
@@ -256,17 +276,44 @@ export class PhysicsViewer {
                     // Handle compound impostors
                     var childMeshes = targetMesh.getChildMeshes().filter((c) => { return c.physicsImpostor ? 1 : 0; });
                     childMeshes.forEach((m) => {
-                        var a = this._getDebugBoxMesh(utilityLayerScene);
-                        a.parent = m;
+                        if (m.physicsImpostor && m.getClassName() === "Mesh") {
+                            const boundingInfo = m.getBoundingInfo();
+                            const min = boundingInfo.boundingBox.minimum;
+                            const max = boundingInfo.boundingBox.maximum;
+                            switch (m.physicsImpostor.type) {
+                                case PhysicsImpostor.BoxImpostor:
+                                    mesh = this._getDebugBoxMesh(utilityLayerScene);
+                                    mesh.position.copyFrom(min);
+                                    mesh.position.addInPlace(max);
+                                    mesh.position.scaleInPlace(0.5);
+                                    break;
+                                case PhysicsImpostor.SphereImpostor:
+                                    mesh = this._getDebugSphereMesh(utilityLayerScene);
+                                    break;
+                                case PhysicsImpostor.CylinderImpostor:
+                                    mesh = this._getDebugCylinderMesh(utilityLayerScene);
+                                    break;
+                                default:
+                                    mesh = null;
+                                    break;
+                            }
+                            if (mesh) {
+                                mesh.scaling.x = max.x - min.x;
+                                mesh.scaling.y = max.y - min.y;
+                                mesh.scaling.z = max.z - min.z;
+                                mesh.parent = m;
+                            }
+                        }
                     });
                 }
+                mesh = null;
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 mesh = this._getDebugCylinderMesh(utilityLayerScene);
                 var bi = impostor.object.getBoundingInfo();
-                mesh.scaling.x = bi.boundingBox.maximum.x - bi.boundingBox.minimum.x;
-                mesh.scaling.y = bi.boundingBox.maximum.y - bi.boundingBox.minimum.y;
-                mesh.scaling.z = bi.boundingBox.maximum.z - bi.boundingBox.minimum.z;
+                mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * impostor.object.scaling.x;
+                mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
+                mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * impostor.object.scaling.z;
                 break;
         }
         return mesh;

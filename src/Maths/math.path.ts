@@ -1,7 +1,7 @@
-import { DeepImmutable, Nullable } from '../types';
-import { Scalar } from './math.scalar';
-import { Vector2, Vector3, Quaternion, Matrix } from './math.vector';
-import { Epsilon } from './math.constants';
+import { DeepImmutable, Nullable } from "../types";
+import { Scalar } from "./math.scalar";
+import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
+import { Epsilon } from "./math.constants";
 
 /**
  * Defines potential orientation for back face culling
@@ -12,7 +12,7 @@ export enum Orientation {
      */
     CW = 0,
     /** Counter clockwise */
-    CCW = 1
+    CCW = 1,
 }
 
 /** Class used to represent a Bezier curve */
@@ -27,7 +27,6 @@ export class BezierCurve {
      * @returns the interpolated value
      */
     public static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
-
         // Extract X (which is equal to time here)
         var f0 = 1 - 3 * x2 + 3 * x1;
         var f1 = 3 * x2 - 6 * x1;
@@ -42,13 +41,10 @@ export class BezierCurve {
             var slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
             refinedT -= (x - t) * slope;
             refinedT = Math.min(1, Math.max(0, refinedT));
-
         }
 
         // Resolve cubic bezier for the given x
-        return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 +
-            3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 +
-            Math.pow(refinedT, 3);
+        return 3 * Math.pow(1 - refinedT, 2) * refinedT * y1 + 3 * (1 - refinedT) * Math.pow(refinedT, 2) * y2 + Math.pow(refinedT, 3);
     }
 }
 
@@ -64,7 +60,9 @@ export class Angle {
      */
     constructor(radians: number) {
         this._radians = radians;
-        if (this._radians < 0.0) { this._radians += (2.0 * Math.PI); }
+        if (this._radians < 0.0) {
+            this._radians += 2.0 * Math.PI;
+        }
     }
 
     /**
@@ -72,7 +70,7 @@ export class Angle {
      * @returns the Angle value in degrees (float)
      */
     public degrees() {
-        return this._radians * 180.0 / Math.PI;
+        return (this._radians * 180.0) / Math.PI;
     }
 
     /**
@@ -84,9 +82,9 @@ export class Angle {
     }
 
     /**
-     * Gets a new Angle object valued with the angle value in radians between the two given vectors
-     * @param a defines first vector
-     * @param b defines second vector
+     * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+     * @param a defines first point as the origin
+     * @param b defines point
      * @returns a new Angle
      */
     public static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle {
@@ -109,7 +107,7 @@ export class Angle {
      * @returns a new Angle
      */
     public static FromDegrees(degrees: number): Angle {
-        return new Angle(degrees * Math.PI / 180.0);
+        return new Angle((degrees * Math.PI) / 180.0);
     }
 }
 
@@ -150,17 +148,14 @@ export class Arc2 {
         /** Defines the mid point of the arc */
         public midPoint: Vector2,
         /** Defines the end point of the arc */
-        public endPoint: Vector2) {
-
+        public endPoint: Vector2
+    ) {
         var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
-        var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2.;
-        var midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2.;
+        var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2;
+        var midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2;
         var det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
 
-        this.centerPoint = new Vector2(
-            (startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det,
-            ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det
-        );
+        this.centerPoint = new Vector2((startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det, ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det);
 
         this.radius = this.centerPoint.subtract(this.startPoint).length();
 
@@ -171,12 +166,20 @@ export class Arc2 {
         var a3 = Angle.BetweenTwoPoints(this.centerPoint, this.endPoint).degrees();
 
         // angles correction
-        if (a2 - a1 > +180.0) { a2 -= 360.0; }
-        if (a2 - a1 < -180.0) { a2 += 360.0; }
-        if (a3 - a2 > +180.0) { a3 -= 360.0; }
-        if (a3 - a2 < -180.0) { a3 += 360.0; }
+        if (a2 - a1 > +180.0) {
+            a2 -= 360.0;
+        }
+        if (a2 - a1 < -180.0) {
+            a2 += 360.0;
+        }
+        if (a3 - a2 > +180.0) {
+            a3 -= 360.0;
+        }
+        if (a3 - a2 < -180.0) {
+            a3 += 360.0;
+        }
 
-        this.orientation = (a2 - a1) < 0 ? Orientation.CW : Orientation.CCW;
+        this.orientation = a2 - a1 < 0 ? Orientation.CW : Orientation.CCW;
         this.angle = Angle.FromDegrees(this.orientation === Orientation.CW ? a1 - a3 : a3 - a1);
     }
 }
@@ -239,7 +242,9 @@ export class Path2 {
         var arc = new Arc2(startPoint, midPoint, endPoint);
 
         var increment = arc.angle.radians() / numberOfSegments;
-        if (arc.orientation === Orientation.CW) { increment *= -1; }
+        if (arc.orientation === Orientation.CW) {
+            increment *= -1;
+        }
         var currentAngle = arc.startAngle.radians() + increment;
 
         for (var i = 0; i < numberOfSegments; i++) {
@@ -268,7 +273,7 @@ export class Path2 {
         if (this.closed) {
             var lastPoint = this._points[this._points.length - 1];
             var firstPoint = this._points[0];
-            result += (firstPoint.subtract(lastPoint).length());
+            result += firstPoint.subtract(lastPoint).length();
         }
         return result;
     }
@@ -301,15 +306,12 @@ export class Path2 {
             var b = this._points[j];
             var bToA = b.subtract(a);
 
-            var nextOffset = (bToA.length() + previousOffset);
+            var nextOffset = bToA.length() + previousOffset;
             if (lengthPosition >= previousOffset && lengthPosition <= nextOffset) {
                 var dir = bToA.normalize();
                 var localOffset = lengthPosition - previousOffset;
 
-                return new Vector2(
-                    a.x + (dir.x * localOffset),
-                    a.y + (dir.y * localOffset)
-                );
+                return new Vector2(a.x + dir.x * localOffset, a.y + dir.y * localOffset);
             }
             previousOffset = nextOffset;
         }
@@ -354,14 +356,14 @@ export class Path3D {
     };
 
     /**
-    * new Path3D(path, normal, raw)
-    * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-    * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
-    * @param path an array of Vector3, the curve axis of the Path3D
-    * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-    * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
-    * @param alignTangentsWithPath (optional, default false) : boolean, if true the tangents will be aligned with the path.
-    */
+     * new Path3D(path, normal, raw)
+     * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+     * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
+     * @param path an array of Vector3, the curve axis of the Path3D
+     * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+     * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+     * @param alignTangentsWithPath (optional, default false) : boolean, if true the tangents will be aligned with the path.
+     */
     constructor(
         /**
          * an array of Vector3, the curve axis of the Path3D
@@ -517,7 +519,7 @@ export class Path3D {
             let point = this._curve[i + 0];
             let tangent = this._curve[i + 1].subtract(point).normalize();
             let subLength = this._distances[i + 1] - this._distances[i + 0];
-            let subPosition = Math.min(Math.max(Vector3.Dot(tangent, target.subtract(point).normalize()), 0.0) * Vector3.Distance(point, target) / subLength, 1.0);
+            let subPosition = Math.min((Math.max(Vector3.Dot(tangent, target.subtract(point).normalize()), 0.0) * Vector3.Distance(point, target)) / subLength, 1.0);
             let distance = Vector3.Distance(point.add(tangent.scale(subPosition * subLength)), target);
 
             if (distance < smallestDistance) {
@@ -536,10 +538,10 @@ export class Path3D {
      */
     public slice(start: number = 0.0, end: number = 1.0) {
         if (start < 0.0) {
-            start = 1 - (start * -1.0) % 1.0;
+            start = 1 - ((start * -1.0) % 1.0);
         }
         if (end < 0.0) {
-            end = 1 - (end * -1.0) % 1.0;
+            end = 1 - ((end * -1.0) % 1.0);
         }
         if (start > end) {
             let _start = start;
@@ -586,7 +588,11 @@ export class Path3D {
 
     // private function compute() : computes tangents, normals and binormals
     private _compute(firstNormal: Nullable<Vector3>, alignTangentsWithPath = false): void {
-        var l = this._curve.length;
+        const l = this._curve.length;
+
+        if (l < 2) {
+            return;
+        }
 
         // first and last tangents
         this._tangents[0] = this._getFirstNonNullVector(0);
@@ -612,12 +618,12 @@ export class Path3D {
         this._distances[0] = 0.0;
 
         // normals and binormals : next points
-        var prev: Vector3;        // previous vector (segment)
-        var cur: Vector3;         // current vector (segment)
-        var curTang: Vector3;     // current tangent
+        var prev: Vector3; // previous vector (segment)
+        var cur: Vector3; // current vector (segment)
+        var curTang: Vector3; // current tangent
         // previous normal
-        var prevNor: Vector3;    // previous normal
-        var prevBinor: Vector3;   // previous binormal
+        var prevNor: Vector3; // previous normal
+        var prevBinor: Vector3; // previous binormal
 
         for (var i = 1; i < l; i++) {
             // tangents
@@ -686,21 +692,18 @@ export class Path3D {
 
         if (va === undefined || va === null) {
             var point: Vector3;
-            if (!Scalar.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {     // search for a point in the plane
+            if (!Scalar.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {
+                // search for a point in the plane
                 point = new Vector3(0.0, -1.0, 0.0);
-            }
-            else if (!Scalar.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
+            } else if (!Scalar.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
                 point = new Vector3(1.0, 0.0, 0.0);
-            }
-            else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
+            } else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                 point = new Vector3(0.0, 0.0, 1.0);
-            }
-            else {
+            } else {
                 point = Vector3.Zero();
             }
             normal0 = Vector3.Cross(vt, point);
-        }
-        else {
+        } else {
             normal0 = Vector3.Cross(vt, va);
             Vector3.CrossToRef(normal0, vt, normal0);
         }
@@ -893,8 +896,7 @@ export class Curve3 {
                 }
             }
             catmullRom.push(catmullRom[0]);
-        }
-        else {
+        } else {
             var totalPoints = new Array<Vector3>();
             totalPoints.push(points[0].clone());
             Array.prototype.push.apply(totalPoints, points);
@@ -958,7 +960,7 @@ export class Curve3 {
     private _computeLength(path: DeepImmutable<Vector3[]>): number {
         var l = 0;
         for (var i = 1; i < path.length; i++) {
-            l += (path[i].subtract(path[i - 1])).length();
+            l += path[i].subtract(path[i - 1]).length();
         }
         return l;
     }

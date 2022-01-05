@@ -1,13 +1,14 @@
 import { Nullable } from '../types';
-import { InternalTexture } from './Textures/internalTexture';
-import { RenderTargetTexture } from './Textures/renderTargetTexture';
 import { ThinEngine } from '../Engines/thinEngine';
-import { VertexBuffer } from '../Meshes/buffer';
+import { VertexBuffer } from '../Buffers/buffer';
 import { Viewport } from '../Maths/math.viewport';
 import { Constants } from '../Engines/constants';
-import { Observable } from '../Misc/observable';
+import { Observable, Observer } from '../Misc/observable';
 import { Effect } from './effect';
-import { DataBuffer } from '../Meshes/dataBuffer';
+import { DataBuffer } from '../Buffers/dataBuffer';
+import { DrawWrapper } from "./drawWrapper";
+import { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -37,10 +38,11 @@ export class EffectRenderer {
         indices: [0, 1, 2, 0, 2, 3],
     };
 
-    private _vertexBuffers: {[key: string]: VertexBuffer};
+    private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
 
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
+    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * Creates an effect renderer
@@ -57,6 +59,15 @@ export class EffectRenderer {
             [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
         };
         this._indexBuffer = engine.createIndexBuffer(options.indices!);
+
+        this._onContextRestoredObserver = engine.onContextRestoredObservable.add(() => {
+            this._indexBuffer = engine.createIndexBuffer(options.indices!);
+
+            for (const key in this._vertexBuffers) {
+                const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+                vertexBuffer._rebuild();
+            }
+        });
     }
 
     /**
@@ -84,7 +95,7 @@ export class EffectRenderer {
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
-        this.engine.enableEffect(effectWrapper.effect);
+        this.engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
@@ -104,8 +115,8 @@ export class EffectRenderer {
         this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
-    private isRenderTargetTexture(texture: InternalTexture | RenderTargetTexture): texture is RenderTargetTexture  {
-        return (texture as RenderTargetTexture).renderList !== undefined;
+    private isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {
+        return (texture as IRenderTargetTexture).renderTarget !== undefined;
     }
 
     /**
@@ -113,7 +124,7 @@ export class EffectRenderer {
      * @param effectWrapper the effect to renderer
      * @param outputTexture texture to draw to, if null it will render to the screen.
      */
-    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<InternalTexture | RenderTargetTexture> = null) {
+    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
         // Ensure effect is ready
         if (!effectWrapper.effect.isReady()) {
             return;
@@ -122,7 +133,7 @@ export class EffectRenderer {
         // Reset state
         this.setViewport();
 
-        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.getInternalTexture()! : outputTexture;
+        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.renderTarget! : outputTexture;
 
         if (out) {
             this.engine.bindFramebuffer(out);
@@ -151,6 +162,11 @@ export class EffectRenderer {
 
         if (this._indexBuffer) {
             this.engine._releaseBuffer(this._indexBuffer);
+        }
+
+        if (this._onContextRestoredObserver) {
+            this.engine.onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._onContextRestoredObserver = null;
         }
     }
 }
@@ -199,6 +215,10 @@ interface EffectWrapperCreationOptions {
      * The friendly name of the effect displayed in Spector.
      */
     name?: string;
+    /**
+     * The language the shader is written in (default: GLSL)
+     */
+     shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -212,7 +232,18 @@ export class EffectWrapper {
     /**
      * The underlying effect
      */
-    public effect: Effect;
+    public get effect(): Effect {
+        return this._drawWrapper.effect!;
+    }
+
+    public set effect(effect: Effect) {
+        this._drawWrapper.effect = effect;
+    }
+
+    /** @hidden */
+    public _drawWrapper: DrawWrapper;
+
+    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * Creates an effect to be renderer
@@ -246,6 +277,7 @@ export class EffectWrapper {
         }
 
         const defines = creationOptions.defines ? creationOptions.defines.join("\n") : "";
+        this._drawWrapper = new DrawWrapper(creationOptions.engine);
 
         if (creationOptions.useShaderStore) {
             effectCreationOptions.fragment = effectCreationOptions.fragmentSource;
@@ -256,13 +288,16 @@ export class EffectWrapper {
             delete effectCreationOptions.fragmentSource;
             delete effectCreationOptions.vertexSource;
 
-            this.effect = creationOptions.engine.createEffect(effectCreationOptions.spectorName,
+            this.effect = creationOptions.engine.createEffect(effectCreationOptions,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
                 defines,
                 undefined,
-                creationOptions.onCompiled
+                creationOptions.onCompiled,
+                undefined,
+                undefined,
+                creationOptions.shaderLanguage,
             );
         } else {
             this.effect = new Effect(effectCreationOptions,
@@ -273,7 +308,17 @@ export class EffectWrapper {
                 defines,
                 undefined,
                 creationOptions.onCompiled,
+                undefined,
+                undefined,
+                undefined,
+                creationOptions.shaderLanguage,
             );
+
+            this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {
+                this.effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+                this.effect._wasPreviouslyReady = false;
+                this.effect._prepareEffect();
+            });
         }
     }
 
@@ -281,6 +326,10 @@ export class EffectWrapper {
     * Disposes of the effect wrapper
     */
     public dispose() {
+        if (this._onContextRestoredObserver) {
+            this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._onContextRestoredObserver = null;
+        }
         this.effect.dispose();
     }
 }

@@ -3,9 +3,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-
-// Side effect import to define the stereoscopic mode.
-import "../RigModes/stereoscopicAnaglyphRigMode";
+import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
 
 Node.AddNodeConstructor("AnaglyphFreeCamera", (name, scene, options) => {
     return () => new AnaglyphFreeCamera(name, Vector3.Zero(), options.interaxial_distance, scene);
@@ -13,7 +11,7 @@ Node.AddNodeConstructor("AnaglyphFreeCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on FreeCamera)
- * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
  */
 export class AnaglyphFreeCamera extends FreeCamera {
     /**
@@ -36,4 +34,6 @@ export class AnaglyphFreeCamera extends FreeCamera {
     public getClassName(): string {
         return "AnaglyphFreeCamera";
     }
+
+    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
 }

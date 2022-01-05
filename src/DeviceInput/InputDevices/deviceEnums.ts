@@ -36,7 +36,17 @@ export enum PointerInput {
     /** Browser Back */
     BrowserBack = 5,
     /** Browser Forward */
-    BrowserForward = 6
+    BrowserForward = 6,
+    /** Mouse Wheel X */
+    MouseWheelX = 7,
+    /** Mouse Wheel Y */
+    MouseWheelY = 8,
+    /** Mouse Wheel Z */
+    MouseWheelZ = 9,
+    /** Delta X */
+    DeltaHorizontal = 10,
+    /** Delta Y */
+    DeltaVertical = 11,
 }
 
 /**

@@ -15,14 +15,14 @@ declare module "../scene" {
 
         /**
          * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
+         * @see https://doc.babylonjs.com/how_to/how_to_use_gamepads
          */
         gamepadManager: GamepadManager;
     }
 }
 
 Object.defineProperty(Scene.prototype, "gamepadManager", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         if (!this._gamepadManager) {
             this._gamepadManager = new GamepadManager(this);
             let component = this._getComponent(SceneComponentConstants.NAME_GAMEPAD) as GamepadSystemSceneComponent;
@@ -54,7 +54,7 @@ declare module "../Cameras/freeCameraInputsManager" {
 /**
  * Adds a gamepad to the free camera inputs manager
  */
-FreeCameraInputsManager.prototype.addGamepad = function(): FreeCameraInputsManager {
+FreeCameraInputsManager.prototype.addGamepad = function (): FreeCameraInputsManager {
     this.add(new FreeCameraGamepadInput());
     return this;
 };
@@ -75,7 +75,7 @@ declare module "../Cameras/arcRotateCameraInputsManager" {
 /**
  * Adds a gamepad to the arc rotate camera inputs manager
  */
-ArcRotateCameraInputsManager.prototype.addGamepad = function(): ArcRotateCameraInputsManager {
+ArcRotateCameraInputsManager.prototype.addGamepad = function (): ArcRotateCameraInputsManager {
     this.add(new ArcRotateCameraGamepadInput());
     return this;
 };

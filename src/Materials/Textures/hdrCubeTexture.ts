@@ -6,11 +6,13 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { _TypeStore } from '../../Misc/typeStore';
+import { RegisterClass } from '../../Misc/typeStore';
+import { Observable } from "../../Misc/observable";
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
+import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -18,7 +20,7 @@ import "../../Materials/Textures/baseTexture.polynomial";
  * This represents a texture coming from an HDR input.
  *
  * The only supported format is currently panorama picture stored in RGBE format.
- * Example of such files can be found on HDRLib: http://hdrlib.com/
+ * Example of such files can be found on Poly Haven: https://polyhaven.com/hdris
  */
 export class HDRCubeTexture extends BaseTexture {
 
@@ -36,7 +38,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _prefilterOnLoad: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
-    private _onLoad: Nullable<() => void> = null;
+    private _onLoad: () => void;
     private _onError: Nullable<() => void> = null;
 
     /**
@@ -44,20 +46,15 @@ export class HDRCubeTexture extends BaseTexture {
      */
     public url: string;
 
-    /**
-     * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
-     */
-    public coordinatesMode = Texture.CUBIC_MODE;
-
     protected _isBlocking: boolean = true;
     /**
-     * Sets wether or not the texture is blocking during loading.
+     * Sets whether or not the texture is blocking during loading.
      */
     public set isBlocking(value: boolean) {
         this._isBlocking = value;
     }
     /**
-     * Gets wether or not the texture is blocking during loading.
+     * Gets whether or not the texture is blocking during loading.
      */
     public get isBlocking(): boolean {
         return this._isBlocking;
@@ -107,6 +104,11 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<HDRCubeTexture> = new Observable<HDRCubeTexture>();
+
+    /**
      * Instantiates an HDRTexture from the following parameters.
      *
      * @param url The location of the HDR raw data (Panorama stored in RGBE format)
@@ -124,13 +126,20 @@ export class HDRCubeTexture extends BaseTexture {
             return;
         }
 
+        this._coordinatesMode = Texture.CUBIC_MODE;
         this.name = url;
         this.url = url;
         this.hasAlpha = false;
         this.isCube = true;
         this._textureMatrix = Matrix.Identity();
         this._prefilterOnLoad = prefilterOnLoad;
-        this._onLoad = onLoad;
+        this._onLoad = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
         this._onError = onError;
         this.gammaSpace = gammaSpace;
 
@@ -146,11 +155,11 @@ export class HDRCubeTexture extends BaseTexture {
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
-        } else if (onLoad) {
+        } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                Tools.SetImmediate(() => this._onLoad());
             } else {
-                this._texture.onLoadedObservable.add(onLoad);
+                this._texture.onLoadedObservable.add(this._onLoad);
             }
         }
     }
@@ -168,13 +177,22 @@ export class HDRCubeTexture extends BaseTexture {
      */
     private loadTexture() {
         const engine = this._getEngine()!;
-        var callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
+        const caps = engine.getCaps();
+
+        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (caps.textureFloat && caps.textureFloatLinearFiltering) {
+            textureType = Constants.TEXTURETYPE_FLOAT;
+        } else if (caps.textureHalfFloat && caps.textureHalfFloatLinearFiltering) {
+            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+
+        const callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
 
             this.lodGenerationOffset = 0.0;
             this.lodGenerationScale = 0.8;
 
             // Extract the raw linear data.
-            var data = HDRTools.GetCubeMapTextureData(buffer, this._size);
+            const data = HDRTools.GetCubeMapTextureData(buffer, this._size);
 
             // Generate harmonics if needed.
             if (this._generateHarmonics) {
@@ -182,24 +200,27 @@ export class HDRCubeTexture extends BaseTexture {
                 this.sphericalPolynomial = sphericalPolynomial;
             }
 
-            var results = [];
-            var byteArray: Nullable<Uint8Array> = null;
+            const results = [];
+
+            let byteArray: Nullable<Uint8Array> = null;
+            let shortArray: Nullable<Uint16Array> = null;
 
             // Push each faces.
-            for (var j = 0; j < 6; j++) {
+            for (let j = 0; j < 6; j++) {
 
-                // Create uintarray fallback.
-                if (!engine.getCaps().textureFloat) {
+                // Create fallback array
+                if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
+                    shortArray = new Uint16Array(this._size * this._size * 3);
+                } else if (textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
                     // 3 channels of 1 bytes per pixel in bytes.
-                    var byteBuffer = new ArrayBuffer(this._size * this._size * 3);
-                    byteArray = new Uint8Array(byteBuffer);
+                    byteArray = new Uint8Array(this._size * this._size * 3);
                 }
 
-                var dataFace = <Float32Array>((<any>data)[HDRCubeTexture._facesMapping[j]]);
+                const dataFace = <Float32Array>((<any>data)[HDRCubeTexture._facesMapping[j]]);
 
                 // If special cases.
-                if (this.gammaSpace || byteArray) {
-                    for (var i = 0; i < this._size * this._size; i++) {
+                if (this.gammaSpace || shortArray || byteArray) {
+                    for (let i = 0; i < this._size * this._size; i++) {
 
                         // Put in gamma space if requested.
                         if (this.gammaSpace) {
@@ -208,16 +229,23 @@ export class HDRCubeTexture extends BaseTexture {
                             dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], ToGammaSpace);
                         }
 
+                        // Convert to half float texture for fallback.
+                        if (shortArray) {
+                            shortArray[(i * 3) + 0] = ToHalfFloat(dataFace[(i * 3) + 0]);
+                            shortArray[(i * 3) + 1] = ToHalfFloat(dataFace[(i * 3) + 1]);
+                            shortArray[(i * 3) + 2] = ToHalfFloat(dataFace[(i * 3) + 2]);
+                        }
+
                         // Convert to int texture for fallback.
                         if (byteArray) {
-                            var r = Math.max(dataFace[(i * 3) + 0] * 255, 0);
-                            var g = Math.max(dataFace[(i * 3) + 1] * 255, 0);
-                            var b = Math.max(dataFace[(i * 3) + 2] * 255, 0);
+                            let r = Math.max(dataFace[(i * 3) + 0] * 255, 0);
+                            let g = Math.max(dataFace[(i * 3) + 1] * 255, 0);
+                            let b = Math.max(dataFace[(i * 3) + 2] * 255, 0);
 
                             // May use luminance instead if the result is not accurate.
-                            var max = Math.max(Math.max(r, g), b);
+                            const max = Math.max(Math.max(r, g), b);
                             if (max > 255) {
-                                var scale = 255 / max;
+                                const scale = 255 / max;
                                 r *= scale;
                                 g *= scale;
                                 b *= scale;
@@ -230,7 +258,10 @@ export class HDRCubeTexture extends BaseTexture {
                     }
                 }
 
-                if (byteArray) {
+                if (shortArray) {
+                    results.push(shortArray);
+                }
+                else if (byteArray) {
                     results.push(byteArray);
                 }
                 else {
@@ -241,7 +272,7 @@ export class HDRCubeTexture extends BaseTexture {
             return results;
         };
 
-        if (this._getEngine()!.webGLVersion >= 2 && this._prefilterOnLoad) {
+        if (engine._features.allowTexturePrefiltering && this._prefilterOnLoad) {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
@@ -251,7 +282,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._texture = engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
             Constants.TEXTUREFORMAT_RGB,
-            engine.getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
+            textureType,
             this._noMipmap,
             callback,
             null, this._onLoad, this._onError);
@@ -310,6 +341,14 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     /**
+     * Dispose the texture and release its associated resources.
+     */
+    public dispose(): void {
+        this.onLoadObservable.clear();
+        super.dispose();
+    }
+
+    /**
      * Parses a JSON representation of an HDR Texture in order to create the texture
      * @param parsedTexture Define the JSON representation
      * @param scene Define the scene the texture should be created in
@@ -364,4 +403,4 @@ export class HDRCubeTexture extends BaseTexture {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.HDRCubeTexture"] = HDRCubeTexture;
+RegisterClass("BABYLON.HDRCubeTexture", HDRCubeTexture);

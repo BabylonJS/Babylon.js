@@ -6,6 +6,7 @@ import { Nullable } from "../../types";
 import { Tools } from '../../Misc/tools';
 import "../../Engines/Extensions/engine.rawTexture";
 import { Constants } from '../../Engines/constants';
+import { LoadImage } from '../../Misc/fileTools';
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
@@ -33,9 +34,6 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     /** The URL to the image. */
     public url: string;
 
-    /** The texture coordinates mode. As this texture is stored in a cube format, please modify carefully. */
-    public coordinatesMode = Texture.CUBIC_MODE;
-
     /**
      * Instantiates an EquiRectangularCubeTexture from the following parameters.
      * @param url The location of the image
@@ -62,6 +60,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             throw new Error('Image url is not set');
         }
 
+        this._coordinatesMode = Texture.CUBIC_MODE;
         this.name = url;
         this.url = url;
         this._size = size;
@@ -95,9 +94,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      */
     private loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
         const canvas = document.createElement('canvas');
-        const image = new Image();
-
-        image.addEventListener('load', () => {
+        LoadImage(this.url, (image) => {
             this._width = image.width;
             this._height = image.height;
             canvas.width = this._width;
@@ -111,13 +108,11 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
             canvas.remove();
             loadTextureCallback();
-        });
-        image.addEventListener('error', (error) => {
+        }, (_, e) => {
             if (onError) {
-                onError(`${this.getClassName()} could not be loaded`, error);
+                onError(`${this.getClassName()} could not be loaded`, e);
             }
-        });
-        image.src = this.url;
+        }, null);
     }
 
     /**

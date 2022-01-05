@@ -159,7 +159,7 @@ export class RuntimeAnimation {
     }
 
     /**
-     * Gets the target path of the runtime animation
+     * Gets or sets the target path of the runtime animation
      */
     public get targetPath(): string {
         return this._targetPath;
@@ -398,7 +398,17 @@ export class RuntimeAnimation {
             const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             this._blendingFactor += blendingSpeed;
         } else {
-            this._currentValue = currentValue;
+            if (!this._currentValue) {
+                if (currentValue?.clone) {
+                    this._currentValue = currentValue.clone();
+                } else {
+                    this._currentValue = currentValue;
+                }
+            } else if (this._currentValue.copyFrom) {
+                this._currentValue.copyFrom(currentValue);
+            } else {
+                this._currentValue = currentValue;
+            }
         }
 
         if (weight !== -1.0) {
@@ -529,15 +539,19 @@ export class RuntimeAnimation {
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     // Size
                     case Animation.ANIMATIONTYPE_SIZE:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
                         this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                        break;
                     default:
                         break;
                 }
@@ -585,13 +599,18 @@ export class RuntimeAnimation {
             const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
             currentFrame = from + (to - from) * hostNormalizedFrame;
         } else {
-            currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
+            if (ratio > 0 && from > to || ratio < 0 && from < to) {
+                currentFrame = (returnValue && range !== 0) ? to + ratio % range : from;
+            } else {
+                currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
+            }
         }
 
         // Reset events if looping
         const events = this._events;
-        if (range > 0 && this.currentFrame > currentFrame ||
-            range < 0 && this.currentFrame < currentFrame) {
+
+        if (speedRatio > 0 && this.currentFrame > currentFrame ||
+            speedRatio < 0 && this.currentFrame < currentFrame) {
             this._onLoop();
 
             // Need to reset animation events

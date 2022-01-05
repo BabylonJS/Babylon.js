@@ -5,7 +5,7 @@ import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
-import { VertexBuffer } from "../Meshes/buffer";
+import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -20,7 +20,7 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { _TypeStore } from '../Misc/typeStore';
+import { RegisterClass } from '../Misc/typeStore';
 import { Color4, Color3 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
@@ -38,7 +38,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getHighlightLayerByName = function(name: string): Nullable<HighlightLayer> {
+AbstractScene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
     for (var index = 0; index < this.effectLayers.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
             return (<any>this.effectLayers[index]) as HighlightLayer;
@@ -76,7 +76,7 @@ export interface IHighlightLayerOptions {
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independant blur.
+     * Enforces a fixed size texture to ensure resize independent blur.
      */
     mainTextureFixedSize?: number;
 
@@ -209,6 +209,7 @@ export class HighlightLayer extends EffectLayer {
      */
     public set blurHorizontalSize(value: number) {
         this._horizontalBlurPostprocess.kernel = value;
+        this._options.blurHorizontalSize = value;
     }
 
     /**
@@ -216,6 +217,7 @@ export class HighlightLayer extends EffectLayer {
      */
     public set blurVerticalSize(value: number) {
         this._verticalBlurPostprocess.kernel = value;
+        this._options.blurVerticalSize = value;
     }
 
     /**
@@ -304,6 +306,10 @@ export class HighlightLayer extends EffectLayer {
         return HighlightLayer.EffectName;
     }
 
+    protected _numInternalDraws(): number {
+        return 2; // we need two rendering, one for the inner glow and the other for the outer glow
+    }
+
     /**
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
@@ -356,6 +362,7 @@ export class HighlightLayer extends EffectLayer {
         if (this._options.alphaBlendingMode === Constants.ALPHA_COMBINE) {
             this._downSamplePostprocess = new PassPostProcess("HighlightLayerPPP", this._options.blurTextureSizeRatio,
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+            this._downSamplePostprocess.externalTextureSamplerBinding = true;
             this._downSamplePostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });
@@ -382,6 +389,7 @@ export class HighlightLayer extends EffectLayer {
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, textureType);
             this._horizontalBlurPostprocess.width = blurTextureWidth;
             this._horizontalBlurPostprocess.height = blurTextureHeight;
+            this._horizontalBlurPostprocess.externalTextureSamplerBinding = true;
             this._horizontalBlurPostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });
@@ -398,7 +406,7 @@ export class HighlightLayer extends EffectLayer {
         this._mainTexture.onAfterUnbindObservable.add(() => {
             this.onBeforeBlurObservable.notifyObservers(this);
 
-            let internalTexture = this._blurTexture.getInternalTexture();
+            let internalTexture = this._blurTexture.renderTarget;
             if (internalTexture) {
                 this._scene.postProcessManager.directRender(
                     this._postProcesses,
@@ -415,7 +423,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return true;
@@ -449,7 +457,7 @@ export class HighlightLayer extends EffectLayer {
      * Implementation specific of rendering the generating effect on the main canvas.
      * @param effect The effect used to render through
      */
-    protected _internalRender(effect: Effect): void {
+    protected _internalRender(effect: Effect, renderIndex: number): void {
         // Texture
         effect.setTexture("textureSampler", this._blurTexture);
 
@@ -468,12 +476,12 @@ export class HighlightLayer extends EffectLayer {
         engine.setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
 
         // 2 passes inner outer
-        if (this.outerGlow) {
+        if (this.outerGlow && renderIndex === 0) { // the outer glow is rendered the first time _internalRender is called, so when renderIndex == 0 (and only if outerGlow is enabled)
             effect.setFloat("offset", 0);
             engine.setStencilFunction(Constants.NOTEQUAL);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
-        if (this.innerGlow) {
+        if (this.innerGlow && renderIndex === 1) { // the inner glow is rendered the second time _internalRender is called, so when renderIndex == 1 (and only if innerGlow is enabled)
             effect.setFloat("offset", 1);
             engine.setStencilFunction(Constants.EQUAL);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
@@ -509,6 +517,17 @@ export class HighlightLayer extends EffectLayer {
             return false;
         }
 
+        return true;
+    }
+
+    /**
+     * Returns true if the mesh can be rendered, otherwise false.
+     * @param mesh The mesh to render
+     * @param material The material used on the mesh
+     * @returns true if it can be rendered otherwise false
+     */
+    protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+        // all meshes can be rendered in the highlight layer, even transparent ones
         return true;
     }
 
@@ -834,7 +853,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Excluded meshes
         for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
-            var mesh = scene.getMeshByID(parsedHightlightLayer.excludedMeshes[index]);
+            var mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
             if (mesh) {
                 hl.addExcludedMesh(<Mesh>mesh);
             }
@@ -843,7 +862,7 @@ export class HighlightLayer extends EffectLayer {
         // Included meshes
         for (index = 0; index < parsedHightlightLayer.meshes.length; index++) {
             var highlightedMesh = parsedHightlightLayer.meshes[index];
-            var mesh = scene.getMeshByID(highlightedMesh.meshId);
+            var mesh = scene.getMeshById(highlightedMesh.meshId);
 
             if (mesh) {
                 hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);
@@ -854,4 +873,4 @@ export class HighlightLayer extends EffectLayer {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.HighlightLayer"] = HighlightLayer;
+RegisterClass("BABYLON.HighlightLayer", HighlightLayer);

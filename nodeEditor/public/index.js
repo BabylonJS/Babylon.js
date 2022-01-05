@@ -113,7 +113,7 @@ var showEditor = function() {
 // Let's start
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
-    var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: true});
+    var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: false});
     var scene = new BABYLON.Scene(engine);    
     var light0 = new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
     var light1 = new BABYLON.HemisphericLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
@@ -134,6 +134,9 @@ if (BABYLON.Engine.isSupported()) {
                 break;
             case BABYLON.NodeMaterialModes.Particle:
                 nodeMaterial.setToDefaultParticle();
+                break;                
+            case BABYLON.NodeMaterialModes.ProceduralTexture:
+                nodeMaterial.setToDefaultProceduralTexture();
                 break;
         }
         nodeMaterial.build(true);

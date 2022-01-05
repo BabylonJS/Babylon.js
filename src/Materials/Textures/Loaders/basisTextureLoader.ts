@@ -2,9 +2,9 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { BasisTools } from "../../../Misc/basis";
+import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from '../../../Misc/tools';
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 
 /**
  * Loader for .basis file format
@@ -13,7 +13,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
      */
-    public readonly supportCascades = true;
+    public readonly supportCascades = false;
 
     /**
      * This returns if the loader support the current file information.
@@ -21,7 +21,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return StringTools.EndsWith(extension, ".basis");
+        return EndsWith(extension, ".basis");
     }
 
     /**
@@ -45,19 +45,23 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 etc2: caps.etc2 ? true : false
             }
         };
-        BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
+        TranscodeAsync(data, transcodeConfig).then((result) => {
             var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
-            BasisTools.LoadTextureFromTranscodeResult(texture, result);
-            (texture.getEngine() as Engine)._setCubeMapTextureParams(hasMipmap);
+            LoadTextureFromTranscodeResult(texture, result);
+            (texture.getEngine() as Engine)._setCubeMapTextureParams(texture, hasMipmap);
             texture.isReady = true;
             texture.onLoadedObservable.notifyObservers(texture);
             texture.onLoadedObservable.clear();
             if (onLoad) {
-              onLoad();
+                onLoad();
             }
         }).catch((err) => {
-            Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
+            const errorMessage = "Failed to transcode Basis file, transcoding may not be supported on this device";
+            Tools.Warn(errorMessage);
             texture.isReady = true;
+            if (onError) {
+                onError(err);
+            }
         });
     }
 
@@ -68,7 +72,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @param callback defines the method to call once ready to upload
      */
     public loadData(data: ArrayBufferView, texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
+        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void): void {
         var caps = texture.getEngine().getCaps();
         var transcodeConfig = {
             supportedCompressionFormats: {
@@ -78,16 +82,16 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 etc2: caps.etc2 ? true : false
             }
         };
-        BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
+        TranscodeAsync(data, transcodeConfig).then((result) => {
             var rootImage = result.fileInfo.images[0].levels[0];
             var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
             callback(rootImage.width, rootImage.height, hasMipmap, result.format !== -1, () => {
-                BasisTools.LoadTextureFromTranscodeResult(texture, result);
+                LoadTextureFromTranscodeResult(texture, result);
             });
         }).catch((err) => {
             Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
             callback(0, 0, false, false, () => {
-            });
+            }, true);
         });
     }
 }

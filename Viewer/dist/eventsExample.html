@@ -25,7 +25,7 @@
             var willNotWork = BabylonViewer.viewerManager.getViewerById('babylon-viewer');
             console.log('viewer not yet initialized');
 
-            // Pomise-based API:
+            // Promise-based API:
             BabylonViewer.viewerManager.getViewerPromiseById('babylon-viewer').then(function (viewer) {
                 // this will resolve only after the viewer with this specific ID is initialized
                 console.log('Using promises: ', 'viewer - ' + viewer.getBaseId());

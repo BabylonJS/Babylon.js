@@ -4,7 +4,7 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { StringTools } from '../../../Misc/stringTools';
+import { EndsWith } from '../../../Misc/stringTools';
 import { Logger } from '../../../Misc/logger';
 
 /**
@@ -13,18 +13,19 @@ import { Logger } from '../../../Misc/logger';
  */
 export class _KTXTextureLoader implements IInternalTextureLoader {
     /**
-     * Defines wether the loader supports cascade loading the different faces.
+     * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = false;
 
     /**
      * This returns if the loader support the current file information.
      * @param extension defines the file extension of the file being loaded
+     * @param mimeType defines the optional mime type of the file being loaded
      * @returns true if the loader can load the specified file
      */
-    public canLoad(extension: string): boolean {
+    public canLoad(extension: string, mimeType?: string): boolean {
         // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
-        return StringTools.EndsWith(extension, ".ktx") || StringTools.EndsWith(extension, ".ktx2");
+        return EndsWith(extension, ".ktx") || EndsWith(extension, ".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2";
     }
 
     /**
@@ -54,7 +55,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         texture.width = ktx.pixelWidth;
         texture.height = ktx.pixelHeight;
 
-        engine._setCubeMapTextureParams(loadMipmap);
+        engine._setCubeMapTextureParams(texture, loadMipmap);
         texture.isReady = true;
         texture.onLoadedObservable.notifyObservers(texture);
         texture.onLoadedObservable.clear();
@@ -71,7 +72,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
      * @param callback defines the method to call once ready to upload
      */
     public loadData(data: ArrayBufferView, texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void {
+        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void, options?: any): void {
         if (KhronosTextureContainer.IsValid(data)) {
             // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
             texture._invertVScale = !texture.invertY;
@@ -82,16 +83,16 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         }
         else if (KhronosTextureContainer2.IsValid(data)) {
             const ktx2 = new KhronosTextureContainer2(texture.getEngine());
-            ktx2.uploadAsync(data, texture).then(() => {
-                callback(texture.width, texture.height, false, true, () => {}, false);
+            ktx2.uploadAsync(data, texture, options).then(() => {
+                callback(texture.width, texture.height, texture.generateMipMaps, true, () => { }, false);
             }, (error) => {
                 Logger.Warn(`Failed to load KTX2 texture data: ${error.message}`);
-                callback(0, 0, false, false, () => {}, true);
+                callback(0, 0, false, false, () => { }, true);
             });
         }
         else {
             Logger.Error("texture missing KTX identifier");
-            callback(0, 0, false, false, () => {}, true);
+            callback(0, 0, false, false, () => { }, true);
         }
     }
 }

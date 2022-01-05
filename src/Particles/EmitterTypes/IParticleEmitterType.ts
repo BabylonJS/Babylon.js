@@ -1,7 +1,11 @@
 import { Vector3, Matrix } from "../../Maths/math.vector";
-import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
-import { Scene } from '../../scene';
+import { Nullable } from '../../types';
+import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
+
+declare type Scene = import("../../scene").Scene;
+
 /**
  * Particle emitter represents a volume emitting particles.
  * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -13,8 +17,9 @@ export interface IParticleEmitterType {
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
      * @param isLocal defines if the direction should be set in local space
+     * @param inverseWorldMatrix defines the inverted world matrix to use if isLocal is false
      */
-    startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
+    startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean, inverseWorldMatrix: Matrix): void;
 
     /**
      * Called by the particle System when the position is computed for the created particle.
@@ -33,9 +38,15 @@ export interface IParticleEmitterType {
 
     /**
      * Called by the GPUParticleSystem to setup the update shader
-     * @param effect defines the update shader
+     * @param uboOrEffect defines the update shader
      */
-    applyToShader(effect: Effect): void;
+    applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void;
+
+    /**
+     * Creates the structure of the ubo for this particle emitter
+     * @param ubo ubo to create the structure for
+     */
+    buildUniformLayout(ubo: UniformBuffer): void;
 
     /**
      * Returns a string to use to update the GPU particles update shader
@@ -60,5 +71,5 @@ export interface IParticleEmitterType {
      * @param serializationObject defines the JSON object
      * @param scene defines the hosting scene
      */
-    parse(serializationObject: any, scene: Scene): void;
+    parse(serializationObject: any, scene: Nullable<Scene>): void;
 }

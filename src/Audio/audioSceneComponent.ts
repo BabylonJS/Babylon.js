@@ -21,7 +21,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, sc
     if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
         for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
             var parsedSound = parsedData.sounds[index];
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine?.canUseWebAudio) {
                 if (!parsedSound.url) { parsedSound.url = parsedSound.name; }
                 if (!loadedSounds[parsedSound.url]) {
                     loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
@@ -58,12 +58,12 @@ declare module "../scene" {
         _mainSoundTrack: SoundTrack;
         /**
          * The main sound track played by the scene.
-         * It cotains your primary collection of sounds.
+         * It contains your primary collection of sounds.
          */
         mainSoundTrack: SoundTrack;
         /**
          * The list of sound tracks added to the scene
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         soundTracks: Nullable<Array<SoundTrack>>;
 
@@ -76,19 +76,19 @@ declare module "../scene" {
 
         /**
          * Gets or sets if audio support is enabled
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioEnabled: boolean;
 
         /**
          * Gets or sets if audio will be output to headphones
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         headphone: boolean;
 
         /**
          * Gets or sets custom audio listener position provider
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
 
@@ -100,7 +100,7 @@ declare module "../scene" {
 }
 
 Object.defineProperty(Scene.prototype, "mainSoundTrack", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -117,7 +117,7 @@ Object.defineProperty(Scene.prototype, "mainSoundTrack", {
     configurable: true
 });
 
-Scene.prototype.getSoundByName = function(name: string): Nullable<Sound> {
+Scene.prototype.getSoundByName = function (name: string): Nullable<Sound> {
     var index: number;
     for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
         if (this.mainSoundTrack.soundCollection[index].name === name) {
@@ -139,7 +139,7 @@ Scene.prototype.getSoundByName = function(name: string): Nullable<Sound> {
 };
 
 Object.defineProperty(Scene.prototype, "audioEnabled", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -148,7 +148,7 @@ Object.defineProperty(Scene.prototype, "audioEnabled", {
 
         return compo.audioEnabled;
     },
-    set: function(this: Scene, value: boolean) {
+    set: function (this: Scene, value: boolean) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -167,7 +167,7 @@ Object.defineProperty(Scene.prototype, "audioEnabled", {
 });
 
 Object.defineProperty(Scene.prototype, "headphone", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -176,7 +176,7 @@ Object.defineProperty(Scene.prototype, "headphone", {
 
         return compo.headphone;
     },
-    set: function(this: Scene, value: boolean) {
+    set: function (this: Scene, value: boolean) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -195,7 +195,7 @@ Object.defineProperty(Scene.prototype, "headphone", {
 });
 
 Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -204,7 +204,7 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
 
         return compo.audioListenerPositionProvider;
     },
-    set: function(this: Scene, value: () => Vector3) {
+    set: function (this: Scene, value: () => Vector3) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -222,7 +222,7 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
 });
 
 Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
-    get: function(this: Scene) {
+    get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -231,7 +231,7 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
 
         return compo.audioPositioningRefreshRate;
     },
-    set: function(this: Scene, value: number) {
+    set: function (this: Scene, value: number) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
         if (!compo) {
             compo = new AudioSceneComponent(this);
@@ -249,8 +249,10 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
  * in a given scene.
  */
 export class AudioSceneComponent implements ISceneSerializableComponent {
+    private static _CameraDirection = new Vector3(0, 0, -1);
+
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_AUDIO;
 
@@ -270,7 +272,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     private _headphone = false;
     /**
-     * Gets whether audio is outputing to headphone or not.
+     * Gets whether audio is outputting to headphone or not.
      * Please use the according Switch methods to change output.
      */
     public get headphone(): boolean {
@@ -352,7 +354,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         container.sounds.forEach((sound) => {
             sound.play();
             sound.autoplay = true;
-            this.scene.mainSoundTrack.AddSound(sound);
+            this.scene.mainSoundTrack.addSound(sound);
         });
     }
 
@@ -368,7 +370,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         container.sounds.forEach((sound) => {
             sound.stop();
             sound.autoplay = false;
-            this.scene.mainSoundTrack.RemoveSound(sound);
+            this.scene.mainSoundTrack.removeSound(sound);
             if (dispose) {
                 sound.dispose();
             }
@@ -376,7 +378,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     public dispose(): void {
         const scene = this.scene;
@@ -493,6 +495,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
         var audioEngine = Engine.audioEngine;
 
+        if (!audioEngine) {
+            return;
+        }
+
         if (audioEngine.audioContext) {
             // A custom listener position provider was set
             // Use the users provided position instead of camera's
@@ -507,7 +513,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             } else {
                 var listeningCamera: Nullable<Camera>;
 
-                if (scene.activeCameras.length > 0) {
+                if (scene.activeCameras && scene.activeCameras.length > 0) {
                     listeningCamera = scene.activeCameras[0];
                 } else {
                     listeningCamera = scene.activeCamera;
@@ -526,7 +532,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                         listeningCamera = listeningCamera.rigCameras[0];
                     }
                     var mat = Matrix.Invert(listeningCamera.getViewMatrix());
-                    var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
+                    var cameraDirection = Vector3.TransformNormal(AudioSceneComponent._CameraDirection, mat);
                     cameraDirection.normalize();
                     // To avoid some errors on GearVR
                     if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {

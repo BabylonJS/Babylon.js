@@ -1,13 +1,13 @@
 import { Logger } from './logger';
-import { _TypeStore } from './typeStore';
+import { GetClass } from './typeStore';
 
 /**
- * Class used to enable instatition of objects by class name
+ * Class used to enable instantiation of objects by class name
  */
 export class InstantiationTools {
     /**
      * Use this object to register external classes like custom textures or material
-     * to allow the laoders to instantiate them
+     * to allow the loaders to instantiate them
      */
     public static RegisteredExternalClasses: { [key: string]: Object } = {};
 
@@ -21,7 +21,7 @@ export class InstantiationTools {
             return this.RegisteredExternalClasses[className];
         }
 
-        const internalClass = _TypeStore.GetClass(className);
+        const internalClass = GetClass(className);
         if (internalClass) {
             return internalClass;
         }

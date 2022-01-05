@@ -3,7 +3,7 @@ import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
+import { Buffer, VertexBuffer } from "babylonjs/Buffers/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
@@ -27,7 +27,7 @@ export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
     _data?: Promise<ArrayBufferView>;
 
     /** @hidden */
-    _babylonVertexBuffer?: Promise<VertexBuffer>;
+    _babylonVertexBuffer?: { [kind: string]: Promise<VertexBuffer>; };
 }
 
 /**
@@ -211,12 +211,16 @@ export interface ISkin extends GLTF2.ISkin, IArrayItem {
  * Loader interface with additional members.
  */
 export interface ITexture extends GLTF2.ITexture, IArrayItem {
+    /** @hidden */
+    _textureInfo: ITextureInfo;
 }
 
 /**
  * Loader interface with additional members.
  */
 export interface ITextureInfo extends GLTF2.ITextureInfo {
+    /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+    nonColorData?: boolean;
 }
 
 /**

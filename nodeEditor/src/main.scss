@@ -5,66 +5,71 @@
     width: 100%;
     background: #464646;
     font: 14px "acumin-pro";   
-}
 
-.wait-screen {
-    display: grid;
-    justify-content: center;
-    align-content: center;
-    height: 100%;
-    width: 100%;
-    background: #464646;
-    opacity: 0.95;
-    color:white;
-    font: 24px "acumin-pro";  
-    position: absolute;
-    top: 0;
-    left: 0; 
-
-    &.hidden {
-        visibility: hidden;
+    &.popup {
+        grid-template-columns: 100%;
+        overflow: hidden;
     }
-}
 
-#nodeList {
-    grid-row: 1 / span 2;
-    grid-column: 1;
-}
+    .wait-screen {
+        display: grid;
+        justify-content: center;
+        align-content: center;
+        height: 100%;
+        width: 100%;
+        background: #464646;
+        opacity: 0.95;
+        color:white;
+        font: 24px "acumin-pro";  
+        position: absolute;
+        top: 0;
+        left: 0; 
 
-#leftGrab {
-    grid-row: 1 / span 2;
-    grid-column: 2;
-    cursor: ew-resize;
-}
+        &.hidden {
+            visibility: hidden;
+        }
+    }
 
-#rightGrab {
-    grid-row: 1 / span 2;
-    grid-column: 4;
-    cursor: ew-resize;
-}
+    #nodeList {
+        grid-row: 1 / span 2;
+        grid-column: 1;
+    }
 
-.diagram-container {
-    grid-row: 1;
-    grid-column: 3;
-    background: #5f5b60;
-    width: 100%;
-    height: 100%;
+    #leftGrab {
+        grid-row: 1 / span 2;
+        grid-column: 2;
+        cursor: ew-resize;
+    }
 
-    .diagram {
-        display: none;
+    #rightGrab {
+        grid-row: 1 / span 2;
+        grid-column: 4;
+        cursor: ew-resize;
+    }
+
+    .diagram-container {
+        grid-row: 1;
+        grid-column: 3;
+        background: #5f5b60;
         width: 100%;
         height: 100%;
-    }
-}
 
-.right-panel {
-    grid-row: 1 / span 2;
-    grid-column: 5;
-    display: grid;
-    grid-template-rows: 1fr 40px auto 40px;
-    grid-template-columns: 100%;
-    height: 100%;
-    overflow-y: auto;
+        .diagram {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .right-panel {
+        grid-row: 1 / span 2;
+        grid-column: 5;
+        display: grid;
+        grid-template-rows: 1fr 40px auto 40px;
+        grid-template-columns: 100%;
+        height: 100%;
+        overflow-y: auto;
+    }
 
     #propertyTab {
         grid-row: 1;
@@ -154,8 +159,8 @@
             } 
 
             img{
-                height: 40px;
-                width: 100%;
+                height: 24px;
+                width: 24px;
             }
         }
 
@@ -166,9 +171,23 @@
 
         #color-picker-button {
             grid-column: 4;
+            display: grid;
+            grid-template-columns: 100%;
+            grid-template-rows: 100%;
+
+            img {
+                height: 24px;
+                width: 24px;  
+            }
+            #color-picker-image {                
+                padding-left: 7px;
+                padding-bottom: 38px;
+            }
 
             #color-picker {
-                display: none;
+                transform: scale(0);
+                grid-column: 1;
+                grid-row: 1;
             }
 
             #color-picker-label {
@@ -196,6 +215,36 @@
         color: white;
         align-items: center;
         font-size: 18px;    
+
+        &.extended {
+            grid-template-columns: 1fr;
+        }
+
+        .listLine {
+            padding-left: 5px;
+            height: 30px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+    
+            .label {
+                grid-column: 1;
+                display: flex;
+                align-items: center;
+                font-size: 14px;
+            }
+    
+            .options {
+                grid-column: 2;
+                
+                display: flex;
+                align-items: center;   
+                margin-right: 5px;
+    
+                select {
+                    width: 115px;
+                }
+            } 
+        }
 
         .button {
             width: 40px;
@@ -250,12 +299,15 @@
         width: 100%;
         display: grid;
         outline: 0 !important;
+        padding: 0 !important;
         user-select: none;
+        overflow: hidden;
 
         #preview-canvas {
             width: 100%;
             height: 100%;
             outline: 0 !important;
+            padding: 0 !important;
             grid-row: 1;
             grid-column: 1;            
         }
@@ -280,92 +332,92 @@
             }
         }
     }
-}
 
-.blocker {
-    visibility: hidden;
-    position: absolute;
-    width: calc(100% - 40px);
-    height: 100%;
-    top: 0;
-    left: 0;
+    .blocker {
+        visibility: hidden;
+        position: absolute;
+        width: calc(100% - 40px);
+        height: 100%;
+        top: 0;
+        left: 0;
 
-    background: rgba(20, 20, 20, 0.95);    
-    font-family: "acumin-pro";
-    color: white;
-    font-size: 24px;
-
-    display: grid;
-    align-content: center;
-    justify-content: center;
-
-    user-select: none;
-
-    padding: 20px;
-    text-align: center;
-}
-
-#log-console {
-    grid-row: 2;
-    grid-column: 3;
-}
-
-.dialog-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: rgba(0.1, 0.1, 0.1, 0.6);
-    display: grid;
-    font-family: "acumin-pro";
-    top:0;
-
-    .dialog {
-        align-self: center;
-        justify-self: center;
-        min-height: 140px;
-        max-width: 400px;
-        border-radius: 10px;
-        background: white;
+        background: rgba(20, 20, 20, 0.95);    
+        font-family: "acumin-pro";
+        color: white;
+        font-size: 24px;
 
         display: grid;
-        grid-template-columns: 100%;
-        grid-template-rows: calc(100% - 50px) 50px;
+        align-content: center;
+        justify-content: center;
 
-        .dialog-message {
-            grid-row: 1;
-            grid-column: 1;
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 18px;
-            color: black;
-        }
+        user-select: none;
 
-        .dialog-buttons {
-            grid-row: 2;
-            grid-column: 1;
+        padding: 20px;
+        text-align: center;
+    }
+
+    #log-console {
+        grid-row: 2;
+        grid-column: 3;
+    }
+
+    .dialog-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: rgba(0.1, 0.1, 0.1, 0.6);
+        display: grid;
+        font-family: "acumin-pro";
+        top:0;
+
+        .dialog {
+            align-self: center;
+            justify-self: center;
+            min-height: 140px;
+            max-width: 400px;
+            border-radius: 10px;
+            background: white;
+
             display: grid;
-            grid-template-rows: 100%;
             grid-template-columns: 100%;
-            color: white;
+            grid-template-rows: calc(100% - 50px) 50px;
 
-            .dialog-button-ok {
-                cursor: pointer;
-                justify-self: center;
-                background:green;
-                min-width: 80px;
-                justify-content: center;
+            .dialog-message {
+                grid-row: 1;
+                grid-column: 1;
+                margin-top: 20px;
+                padding: 10px;
+                font-size: 18px;
+                color: black;
+            }
+
+            .dialog-buttons {
+                grid-row: 2;
+                grid-column: 1;
                 display: grid;
-                align-content: center;
-                align-self: center;
-                height: 35px;      
-                border-radius: 10px;
+                grid-template-rows: 100%;
+                grid-template-columns: 100%;
+                color: white;
 
-                &:hover {
-                    opacity: 0.8;
-                }
+                .dialog-button-ok {
+                    cursor: pointer;
+                    justify-self: center;
+                    background:green;
+                    min-width: 80px;
+                    justify-content: center;
+                    display: grid;
+                    align-content: center;
+                    align-self: center;
+                    height: 35px;      
+                    border-radius: 10px;
 
-                &.error {
-                    background: red;
+                    &:hover {
+                        opacity: 0.8;
+                    }
+
+                    &.error {
+                        background: red;
+                    }
                 }
             }
         }

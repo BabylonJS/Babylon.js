@@ -13,6 +13,7 @@ struct subSurfaceOutParams
 #endif
 #ifdef SS_TRANSLUCENCY
     vec3 transmittance;
+    float translucencyIntensity;
     #ifdef REFLECTION
         vec3 refractionIrradiance;
     #endif
@@ -28,70 +29,88 @@ struct subSurfaceOutParams
     #define pbr_inline
     #define inline
     void subSurfaceBlock(
-        const in vec3 vSubSurfaceIntensity,
-        const in vec2 vThicknessParam,
-        const in vec4 vTintColor,
-        const in vec3 normalW,
-        const in vec3 specularEnvironmentReflectance,
+        in vec3 vSubSurfaceIntensity,
+        in vec2 vThicknessParam,
+        in vec4 vTintColor,
+        in vec3 normalW,
+        in vec3 specularEnvironmentReflectance,
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        const in vec4 thicknessMap,
+        in vec4 thicknessMap,
+    #endif
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        in vec4 refractionIntensityMap,
+    #endif
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        in vec4 translucencyIntensityMap,
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
-            const in mat4 reflectionMatrix,
+            in mat4 reflectionMatrix,
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    const in vec3 irradianceVector_,
+                    in vec3 irradianceVector_,
+                #endif
+                #if defined(REALTIME_FILTERING)
+                    in samplerCube reflectionSampler,
+                    in vec2 vReflectionFilteringInfo,
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
                 #ifdef REFLECTIONMAP_3D
-                    const in samplerCube irradianceSampler,
+                    in samplerCube irradianceSampler,
                 #else
-                    const in sampler2D irradianceSampler,
+                    in sampler2D irradianceSampler,
                 #endif
             #endif
         #endif
     #endif
+    #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
+        in vec3 surfaceAlbedo,
+    #endif
     #ifdef SS_REFRACTION
-        const in vec3 vPositionW,
-        const in vec3 viewDirectionW,
-        const in mat4 view,
-        const in vec3 surfaceAlbedo,
-        const in vec4 vRefractionInfos,
-        const in mat4 refractionMatrix,
-        const in vec3 vRefractionMicrosurfaceInfos,
-        const in vec4 vLightingIntensity,
+        in vec3 vPositionW,
+        in vec3 viewDirectionW,
+        in mat4 view,
+        in vec4 vRefractionInfos,
+        in mat4 refractionMatrix,
+        in vec4 vRefractionMicrosurfaceInfos,
+        in vec4 vLightingIntensity,
         #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-            const in float alpha,
+            in float alpha,
         #endif
         #ifdef SS_LODINREFRACTIONALPHA
-            const in float NdotVUnclamped,
+            in float NdotVUnclamped,
         #endif
         #ifdef SS_LINEARSPECULARREFRACTION
-            const in float roughness,
-        #else
-            const in float alphaG,
+            in float roughness,
         #endif
+        in float alphaG,
         #ifdef SS_REFRACTIONMAP_3D
-            const in samplerCube refractionSampler,
+            in samplerCube refractionSampler,
             #ifndef LODBASEDMICROSFURACE
-                const in samplerCube refractionSamplerLow,
-                const in samplerCube refractionSamplerHigh,
+                in samplerCube refractionSamplerLow,
+                in samplerCube refractionSamplerHigh,
             #endif
         #else
-            const in sampler2D refractionSampler,
+            in sampler2D refractionSampler,
             #ifndef LODBASEDMICROSFURACE
-                const in sampler2D refractionSamplerLow,
-                const in sampler2D refractionSamplerHigh,
+                in sampler2D refractionSamplerLow,
+                in sampler2D refractionSamplerHigh,
             #endif
         #endif
         #ifdef ANISOTROPIC
-            const in anisotropicOutParams anisotropicOut,
+            in anisotropicOutParams anisotropicOut,
+        #endif
+        #ifdef REALTIME_FILTERING
+            in vec2 vRefractionFilteringInfo,
+        #endif
+        #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+            in vec3 refractionPosition,
+            in vec3 refractionSize,
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
-        const in vec3 vDiffusionDistance,
+        in vec3 vDiffusionDistance,
     #endif
         out subSurfaceOutParams outParams
     )
@@ -112,30 +131,44 @@ struct subSurfaceOutParams
     #ifdef SS_TRANSLUCENCY
         float translucencyIntensity = vSubSurfaceIntensity.y;
     #endif
-    #ifdef SS_SCATTERING
-        float scatteringIntensity = vSubSurfaceIntensity.z;
-    #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
+        #if defined(SS_USE_GLTF_TEXTURES)
+            float thickness = thicknessMap.g * vThicknessParam.y + vThicknessParam.x;
+        #else
+            float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
+        #endif
 
         #if DEBUGMODE > 0
             outParams.thicknessMap = thicknessMap;
         #endif
 
         #ifdef SS_MASK_FROM_THICKNESS_TEXTURE
-            #ifdef SS_REFRACTION
-                refractionIntensity *= thicknessMap.g;
+            #if defined(SS_REFRACTION) && defined(SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE)
+                #if defined(SS_USE_GLTF_TEXTURES)
+                    refractionIntensity *= thicknessMap.r;
+                #else
+                    refractionIntensity *= thicknessMap.g;
+                #endif
             #endif
-            #ifdef SS_TRANSLUCENCY
+            #if defined(SS_TRANSLUCENCY) && defined(SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE)
                 translucencyIntensity *= thicknessMap.b;
-            #endif
-            #ifdef SS_SCATTERING
-                scatteringIntensity *= thicknessMap.a;
             #endif
         #endif
     #else
         float thickness = vThicknessParam.y;
+    #endif
+
+    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+        #ifdef SS_USE_GLTF_TEXTURES
+            refractionIntensity *= refractionIntensityMap.r;
+        #else
+            refractionIntensity *= refractionIntensityMap.g;
+        #endif
+    #endif
+
+    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+        translucencyIntensity *= translucencyIntensityMap.b;
     #endif
 
     // _________________________________________________________________________________________
@@ -146,6 +179,7 @@ struct subSurfaceOutParams
         vec3 transmittance = transmittanceBRDF_Burley(vTintColor.rgb, vDiffusionDistance, thickness);
         transmittance *= translucencyIntensity;
         outParams.transmittance = transmittance;
+        outParams.translucencyIntensity = translucencyIntensity;
     #endif
 
     // _____________________________________________________________________________________
@@ -166,21 +200,43 @@ struct subSurfaceOutParams
 
         // _____________________________ 2D vs 3D Maps ________________________________
         #ifdef SS_REFRACTIONMAP_3D
+            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+	            refractionVector = parallaxCorrectNormal(vPositionW, refractionVector, refractionSize, refractionPosition);
+            #endif
             refractionVector.y = refractionVector.y * vRefractionInfos.w;
             vec3 refractionCoords = refractionVector;
             refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
         #else
-            vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+            #ifdef SS_USE_THICKNESS_AS_DEPTH
+                vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * thickness, 1.0)));
+            #else
+                vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+            #endif
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
         #endif
 
-        #ifdef SS_LODINREFRACTIONALPHA
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
-        #elif defined(SS_LINEARSPECULARREFRACTION)
-            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, roughness);
+        // vRefractionInfos.y is the IOR of the volume.
+        // vRefractionMicrosurfaceInfos.w is the IOR of the surface.
+        #ifdef SS_HAS_THICKNESS
+            float ior = vRefractionInfos.y;
         #else
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, alphaG);
+            float ior = vRefractionMicrosurfaceInfos.w;
+        #endif
+        // Scale roughness with IOR so that an IOR of 1.0 results in no microfacet refraction and
+        // an IOR of 1.5 results in the default amount of microfacet refraction.
+        #ifdef SS_LODINREFRACTIONALPHA
+            float refractionAlphaG = alphaG;
+            refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
+        #elif defined(SS_LINEARSPECULARREFRACTION)
+            float refractionRoughness = alphaG;
+            refractionRoughness = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, refractionRoughness);
+        #else
+            float refractionAlphaG = alphaG;
+            refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
         #endif
 
         #ifdef LODBASEDMICROSFURACE
@@ -270,6 +326,11 @@ struct subSurfaceOutParams
             refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
         #endif
 
+        #ifdef SS_ALBEDOFORREFRACTIONTINT
+            // Tint the transmission with albedo.
+            environmentRefraction.rgb *= surfaceAlbedo.rgb;
+        #endif
+
         // Decrease Albedo Contribution
         outParams.surfaceAlbedo = surfaceAlbedo * (1. - refractionIntensity);
 
@@ -279,9 +340,16 @@ struct subSurfaceOutParams
             //environmentIrradiance *= (1. - refractionIntensity);
         #endif
 
-        // Add Multiple internal bounces.
-        vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
-        outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
+        #ifdef UNUSED_MULTIPLEBOUNCES
+            // Keeping track in case of back compat issue.
+            // The following code is broken and has never worked cause the mix is reversed. Fixing it
+            // Introduces more reflection at grazing angle than expected and we can not find it back in any
+            // nomenclatures (probably coming from our V1)
+
+            // Add Multiple internal bounces.
+            vec3 bounceSpecularEnvironmentReflectance = (2.0 * specularEnvironmentReflectance) / (1.0 + specularEnvironmentReflectance);
+            outParams.specularEnvironmentReflectance = mix(bounceSpecularEnvironmentReflectance, specularEnvironmentReflectance, refractionIntensity);
+        #endif
 
         // In theory T = 1 - R.
         refractionTransmittance *= 1.0 - outParams.specularEnvironmentReflectance;
@@ -343,6 +411,12 @@ struct subSurfaceOutParams
         #endif
 
         refractionIrradiance.rgb *= transmittance;
+
+        #ifdef SS_ALBEDOFORTRANSLUCENCYTINT
+            // Tint the transmission with albedo.
+            refractionIrradiance.rgb *= surfaceAlbedo.rgb;
+        #endif
+
         outParams.refractionIrradiance = refractionIrradiance.rgb;
     #endif
     }

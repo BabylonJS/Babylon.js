@@ -5,13 +5,19 @@ import { Scene } from '../../scene';
 
 /**
  * Class used to define an additional view for the engine
- * @see https://doc.babylonjs.com/how_to/multi_canvases
+ * @see https://doc.babylonjs.com/divingDeeper/scene/multiCanvas
  */
 export class EngineView {
     /** Defines the canvas where to render the view */
     target: HTMLCanvasElement;
     /** Defines an optional camera used to render the view (will use active camera else) */
     camera?: Camera;
+    /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
+    clearBeforeCopy?: boolean;
+    /** Indicates if the view is enabled (true by default) */
+    enabled: boolean;
+    /** Defines a custom function to handle canvas size changes. (the canvas to render into is provided to the callback) */
+    customResize?: (canvas: HTMLCanvasElement) => void;
 }
 
 declare module "../../Engines/engine" {
@@ -35,9 +41,10 @@ declare module "../../Engines/engine" {
          * Register a new child canvas
          * @param canvas defines the canvas to register
          * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+         * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1
          * @returns the associated view
          */
-        registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
+        registerView(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView;
 
         /**
          * Remove a registered child canvas
@@ -48,11 +55,11 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.getInputElement = function(): Nullable<HTMLElement> {
+Engine.prototype.getInputElement = function (): Nullable<HTMLElement> {
     return this.inputElement || this.getRenderingCanvas();
 };
 
-Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Camera): EngineView {
+Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView {
     if (!this.views) {
         this.views = [];
     }
@@ -69,7 +76,7 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
         canvas.height = masterCanvas.height;
     }
 
-    let newView = {target: canvas, camera: camera};
+    let newView = { target: canvas, camera, clearBeforeCopy, enabled: true };
     this.views.push(newView);
 
     if (camera) {
@@ -81,7 +88,7 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
     return newView;
 };
 
-Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
+Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
     if (!this.views) {
         return this;
     }
@@ -100,7 +107,7 @@ Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
     return this;
 };
 
-Engine.prototype._renderViews = function() {
+Engine.prototype._renderViews = function () {
     if (!this.views) {
         return false;
     }
@@ -112,6 +119,9 @@ Engine.prototype._renderViews = function() {
     }
 
     for (var view of this.views) {
+        if (!view.enabled) {
+            continue;
+        }
         let canvas = view.target;
         let context = canvas.getContext("2d");
         if (!context) {
@@ -123,7 +133,7 @@ Engine.prototype._renderViews = function() {
         if (camera) {
             scene = camera.getScene();
 
-            if (scene.activeCameras.length) {
+            if (scene.activeCameras && scene.activeCameras.length) {
                 continue;
             }
 
@@ -133,13 +143,22 @@ Engine.prototype._renderViews = function() {
             scene.activeCamera = camera;
         }
 
-        // Set sizes
-        if (canvas.clientWidth && canvas.clientHeight) {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-            parent.width = canvas.clientWidth;
-            parent.height = canvas.clientHeight;
-            this.resize();
+        if (view.customResize) {
+            view.customResize(canvas);
+        }
+        else {
+            // Set sizes
+            const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
+            const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
+
+            const dimsChanged =
+                width !== canvas.width || parent.width !== canvas.width ||
+                height !== canvas.height || parent.height !== canvas.height;
+            if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
+                canvas.width = width;
+                canvas.height = height;
+                this.setSize(width, height);
+            }
         }
 
         if (!parent.width || !parent.height) {
@@ -149,7 +168,12 @@ Engine.prototype._renderViews = function() {
         // Render the frame
         this._renderFrame();
 
+        this.flushFramebuffer();
+
         // Copy to target
+        if (view.clearBeforeCopy) {
+            context.clearRect(0, 0, parent.width, parent.height);
+        }
         context.drawImage(parent, 0, 0);
 
         // Restore

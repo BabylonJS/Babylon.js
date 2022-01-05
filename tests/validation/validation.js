@@ -5,6 +5,12 @@ var canvas;
 var currentScene;
 var config;
 var justOnce;
+var engineName;
+var currentTestName;
+var numTestsOk = 0;
+var failedTests = [];
+var forceUseReverseDepthBuffer;
+var forceUseNonCompatibilityMode;
 
 // Random replacement
 var seed = 1;
@@ -39,34 +45,48 @@ function compare(renderData, referenceCanvas, threshold, errorRatio) {
 
     referenceContext.putImageData(referenceData, 0, 0);
 
+    var curErrorRatio = (differencesCount * 100) / (width * height);
+
     if (differencesCount) {
-        console.log("%c Pixel difference: " + differencesCount + " pixels.", 'color: orange');
+        console.log("%c Pixel difference: " + differencesCount + " pixels. Error ratio=" + curErrorRatio.toFixed(4) + "%", 'color: orange');
     }
 
-    return (differencesCount * 100) / (width * height) > errorRatio;
+    return curErrorRatio > errorRatio;
 }
 
-function getRenderData(canvas, engine) {
+async function getRenderData(canvas, engine) {
     var width = canvas.width;
     var height = canvas.height;
 
-    var renderData = engine.readPixels(0, 0, width, height);
-    var numberOfChannelsByLine = width * 4;
-    var halfHeight = height / 2;
+    return new Promise((resolve) => {
+        engine.onEndFrameObservable.addOnce(async () => {
+            var renderData = await engine.readPixels(0, 0, width, height);
+            var numberOfChannelsByLine = width * 4;
+            var halfHeight = height / 2;
+            if (!engine.isWebGPU) {
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
 
-    for (var i = 0; i < halfHeight; i++) {
-        for (var j = 0; j < numberOfChannelsByLine; j++) {
-            var currentCell = j + i * numberOfChannelsByLine;
-            var targetLine = height - i - 1;
-            var targetCell = j + targetLine * numberOfChannelsByLine;
+                        var temp = renderData[currentCell];
+                        renderData[currentCell] = renderData[targetCell];
+                        renderData[targetCell] = temp;
+                    }
+                }
+            }
+            if (engine.isWebGPU) {
+                for (var i = 0; i < width * height * 4; i += 4) {
+                    var temp = renderData[i + 0];
+                    renderData[i + 0] = renderData[i + 2];
+                    renderData[i + 2] = temp;
+                }
+            }
 
-            var temp = renderData[currentCell];
-            renderData[currentCell] = renderData[targetCell];
-            renderData[targetCell] = temp;
-        }
-    }
-
-    return renderData;
+            resolve(renderData);
+        });
+    });
 }
 
 function saveRenderImage(data, canvas) {
@@ -85,17 +105,26 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
-    var renderData = getRenderData(canvas, engine);
+async function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
+    var renderData = await getRenderData(canvas, engine);
     var testRes = true;
 
+    var dontReportTestOutcome = false;
+    if (config.qs && config.qs.checkresourcecreation && engine.countersLastFrame) {
+        if (BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame > 0 || engine.countersLastFrame.numEnableEffects > 0 || engine.countersLastFrame.numBundleCreationNonCompatMode > 0) {
+            console.warn(`check resource creation: numBindGroupsCreation=${BABYLON.WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame}, numEnableEffects=${engine.countersLastFrame.numEnableEffects}, numBundleCreationNonCompatMode=${engine.countersLastFrame.numBundleCreationNonCompatMode}`);
+            testRes = false;
+        }
+        dontReportTestOutcome = true;
+    }
+
     // gl check
-    var gl = engine._gl;
-    if (gl.getError() !== 0) {
+    var gl = engine._gl, glError = gl ? gl.getError() : 0;
+    if (gl && glError !== 0) {
         result.classList.add("failed");
         result.innerHTML = "×";
         testRes = false;
-        console.log('%c failed (gl error)', 'color: red');
+        console.log(`%c failed (gl error: ${glError})`, 'color: red');
     } else {
 
         // Visual check
@@ -103,7 +132,7 @@ function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
             var info = engine.getGlInfo();
             var defaultErrorRatio = 2.5
 
-            if (compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
+            if ((dontReportTestOutcome && !testRes) || !dontReportTestOutcome && compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;
@@ -117,13 +146,41 @@ function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
     }
     waitRing.classList.add("hidden");
 
-    var renderB64 = saveRenderImage(renderData, canvas);
-    renderImage.src = renderB64;
+    if (!dontReportTestOutcome) {
+        var renderB64 = saveRenderImage(renderData, canvas);
+        renderImage.src = renderB64;
+    }
 
-    engine.applyStates();
     currentScene.dispose();
     currentScene = null;
     engine.setHardwareScalingLevel(1);
+    engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+    engine.compatibilityMode = !forceUseNonCompatibilityMode;
+    if (forceUseReverseDepthBuffer) {
+        engine.setDepthFunction(BABYLON.Constants.GEQUAL);
+    } else {
+        engine.setDepthFunction(BABYLON.Constants.LEQUAL);
+    }
+
+    engine.applyStates();
+
+    engine._deltaTime = 0;
+    engine._fps = 60;
+    engine._performanceMonitor = new BABYLON.PerformanceMonitor();
+
+    BABYLON.UnregisterAllMaterialPlugins();
+
+    if (resultCanvas.parentElement) {
+        resultCanvas.parentElement.setAttribute("result", testRes);
+    }
+
+    if (!dontReportTestOutcome) {
+        if (testRes) {
+            numTestsOk++;
+        } else {
+            failedTests.push(currentTestName);
+        }
+    }
 
     done(testRes, renderB64);
 }
@@ -131,6 +188,12 @@ function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.useConstantAnimationDeltaTime = true;
     var renderCount = test.renderCount || 1;
+
+    if (config.qs && config.qs.checkresourcecreation) {
+        renderCount = 50;
+    }
+
+    engine.endFrame();
 
     currentScene.executeWhenReady(function() {
         if (currentScene.activeCamera && currentScene.activeCamera.useAutoRotationBehavior) {
@@ -147,17 +210,25 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
                 }
             }
             catch (e) {
+                engine.stopRenderLoop();
                 console.error(e);
+                failedTests.push(currentTestName);
                 done(false);
             }
         });
 
-    });
+    }, true);
 }
 
-function runTest(index, done) {
+function runTest(index, done, listname) {
     if (index >= config.tests.length) {
         done(false);
+    }
+
+    const excludedEngines = config.tests[index].excludedEngines;
+    if (Array.isArray(excludedEngines) && excludedEngines.indexOf(engineName) >= 0) {
+        done(true);
+        return;
     }
 
     // Clear the plugin activated observables in case it is registered in the test.
@@ -192,7 +263,11 @@ function runTest(index, done) {
 
     title.innerHTML = "#" + index + "> " + test.title;
 
-    console.log("Running " + test.title);
+    console.log("Running " + (listname ? listname + "/" : "") + test.title);
+
+    currentTestName = test.title;
+
+    engine.beginFrame();
 
     var resultContext = resultCanvas.getContext("2d");
     var img = new Image();
@@ -216,14 +291,13 @@ function runTest(index, done) {
                 null,
                 function(loadedScene, msg) {
                     console.error(msg);
+                    failedTests.push(currentTestName);
                     done(false);
                 });
         }
         else if (test.playgroundId) {
             if (test.playgroundId[0] !== "#" || test.playgroundId.indexOf("#", 1) === -1) {
-                console.error("Invalid playground id");
-                done(false);
-                return;
+                test.playgroundId += "#0";
             }
 
             var snippetUrl = "https://snippet.babylonjs.com";
@@ -241,8 +315,8 @@ function runTest(index, done) {
                     }, retryTime);
                 }
                 else {
-                    // Skip the test as we can not fetch the source.
-                    done(true);
+                    failedTests.push(currentTestName);
+                    done(false);
                 }
             }
 
@@ -341,12 +415,14 @@ function runTest(index, done) {
                     }
                     catch (e) {
                         console.error(e);
+                        failedTests.push(currentTestName);
                         done(false);
                     }
                 }
             };
             request.onerror = function() {
                 console.error("Network error during test load.");
+                failedTests.push(currentTestName);
                 done(false);
             }
 
@@ -355,30 +431,122 @@ function runTest(index, done) {
         }
     }
 
-    img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
+    img.src = "/tests/validation/ReferenceImages/" + (listname ? listname + "/" : "") + (test.referenceImage ? test.referenceImage : test.title + ".png");
 
 }
 
-function init() {
+function GetAbsoluteUrl(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    return a.href;
+}
+
+function init(_engineName, useReverseDepthBuffer, useNonCompatibilityMode) {
+    _engineName = _engineName ? _engineName.toLowerCase() : "webgl2";
+    if (window.disableWebGL2Support) {
+        _engineName = "webgl1";
+    }
+    if (_engineName === "webgl") {
+        _engineName = "webgl1";
+    }
+
+    engineName = _engineName;
+
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
     BABYLON.DracoCompression.Configuration.decoder = {
-        wasmUrl: "../../dist/preview%20release/draco_wasm_wrapper_gltf.js",
-        wasmBinaryUrl: "../../dist/preview%20release/draco_decoder_gltf.wasm",
-        fallbackUrl: "../../dist/preview%20release/draco_decoder_gltf.js"
+        wasmUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_wasm_wrapper_gltf.js"),
+        wasmBinaryUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.wasm"),
+        fallbackUrl: GetAbsoluteUrl("../../dist/preview%20release/draco_decoder_gltf.js")
+    };
+    BABYLON.MeshoptCompression.Configuration.decoder = {
+        url: GetAbsoluteUrl("../../dist/preview%20release/meshopt_decoder.js")
+    };
+    BABYLON.GLTFValidation.Configuration = {
+        url: GetAbsoluteUrl("../../dist/preview%20release/gltf_validator.js")
+    };
+    BABYLON.KhronosTextureContainer2.URLConfig = {
+        jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
+        wasmUASTCToASTC: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+        wasmUASTCToBC7: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+        wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+        wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+        jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
 
-    BABYLON.GLTFValidation.Configuration = {
-        url: "../../dist/preview%20release/gltf_validator.js"
+    BABYLON.KhronosTextureContainer2.URLConfig = {
+        jsDecoderModule: GetAbsoluteUrl("../../dist/preview%20release/babylon.ktx2Decoder.js"),
+        wasmUASTCToASTC: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_astc.wasm"),
+        wasmUASTCToBC7: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_bc7.wasm"),
+        wasmUASTCToRGBA_UNORM: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_unorm.wasm"),
+        wasmUASTCToRGBA_SRGB: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/uastc_rgba32_srgb.wasm"),
+        jsMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.js"),
+        wasmMSCTranscoder: GetAbsoluteUrl("../../dist/preview%20release/ktx2Transcoders/msc_basis_transcoder.wasm"),
+        wasmZSTDDecoder: GetAbsoluteUrl("../../dist/preview%20release/zstddec.wasm"),
     };
+
+    forceUseReverseDepthBuffer = useReverseDepthBuffer == 1 || useReverseDepthBuffer == "true";
+    forceUseNonCompatibilityMode = useNonCompatibilityMode == 1 || useNonCompatibilityMode == "true";
 
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
     document.body.appendChild(canvas);
-    engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: window.disableWebGL2Support ? true : false });
-    engine.enableOfflineSupport = false;
-    engine.setDitheringState(false);
+    if (engineName === "webgpu") {
+        const glslangOptions = { 
+            jsPath: "../../dist/preview%20release/glslang/glslang.js",
+            wasmPath: "../../dist/preview%20release/glslang/glslang.wasm"
+        };
+
+        var twgslOptions = { 
+            jsPath: "/dist/preview release/twgsl/twgsl.js",
+            wasmPath: "/dist/preview release/twgsl/twgsl.wasm"
+        };
+
+        const options = {
+            deviceDescriptor: {
+                requiredFeatures: [
+                    "depth-clip-control",
+                    "depth24unorm-stencil8",
+                    "depth32float-stencil8",
+                    "texture-compression-bc",
+                    "texture-compression-etc2",
+                    "texture-compression-astc",
+                    "timestamp-query",
+                    "indirect-first-instance",
+                ]
+            },
+            antialiasing: false,
+        };
+
+        engine = new BABYLON.WebGPUEngine(canvas, options);
+        engine.enableOfflineSupport = false;
+        engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        engine.compatibilityMode = !forceUseNonCompatibilityMode;
+        if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        if (forceUseNonCompatibilityMode) console.log("Forcing non compatibility mode");
+        return new Promise((resolve) => {
+            engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
+        });
+    } else {
+        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
+        engine.enableOfflineSupport = false;
+        engine.setDitheringState(false);
+        engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
+        engine.compatibilityMode = !forceUseNonCompatibilityMode;
+        if (forceUseReverseDepthBuffer) console.log("Forcing reverse depth buffer in all tests");
+        if (forceUseNonCompatibilityMode) console.log("Forcing non compatibility mode");
+        return Promise.resolve();
+    }
+}
+
+function showResultSummary() {
+    console.log(`${numTestsOk} test(s) succeeded, ${failedTests.length} failed.`);
+    if (failedTests.length > 0) {
+        console.log(`List of failed test(s):\r\n  ${failedTests.join("\r\n  ")}`);
+    }
 }
 
 function dispose() {
@@ -388,5 +556,3 @@ function dispose() {
     document.body.removeChild(canvas);
     canvas = null;
 }
-
-init();

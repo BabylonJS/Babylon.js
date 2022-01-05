@@ -2,6 +2,7 @@
 // 'physicsEngineComponents.ts' injects methods and properties into Scene and AbstractMesh
 // these tests only check that Scene and AbstractMesh have the expected methods.
 
+declare const Ammo: any;
 
 /**
  * Describes the test suite.
@@ -16,23 +17,26 @@ describe('Babylon physicsComponents', () => {
     /**
      * Loads the dependencies.
      */
-    before(function(done) {
+    before(function (done) {
         this.timeout(180000);
 
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .testMode()
-            .load(function() {
+            .load(function () {
                 // Force apply promise polyfill for consistent behavior between chrome headless, IE11, and other browsers.
                 BABYLON.PromisePolyfill.Apply(true);
-                done();
+
+                Ammo().then(() => {
+                    done();
+                });
             });
     });
 
     /**
      * Create a new engine and scene before each test.
      */
-    beforeEach(function(done) {
+    beforeEach(function (done) {
         engine = new BABYLON.NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -102,7 +106,7 @@ describe('Babylon physicsComponents', () => {
             scene.enablePhysics(gravityVector, physicsPlugin);
 
             // The built-in 'sphere' shape. Params: name, subdivs, size, scene
-            let sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+            let sphere = BABYLON.MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
 
             sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
             expect(sphere.physicsImpostor).to.be.an('object');
@@ -114,7 +118,7 @@ describe('Babylon physicsComponents', () => {
             expect(sphere.physicsImpostor.uniqueId).to.be.a('number');
 
             // if we create another sphere, it should have a different ID
-            let sphere2 = BABYLON.Mesh.CreateSphere("sphere2", 16, 2, scene);
+            let sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere2", { segments: 16, diameter: 2 }, scene);
             sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
 
             expect(sphere.physicsImpostor.uniqueId).to.not.equal(sphere2.physicsImpostor.uniqueId);
@@ -123,16 +127,16 @@ describe('Babylon physicsComponents', () => {
     });
 
     // test 'Scene.onBeforePhysicsObservable' and 'Scene.onAfterPhysicsObservable' callbacks
-    describe('observables should fire before and after', function() {
+    describe('observables should fire before and after', function () {
 
         var obWasCalled = false;
 
         // only going to test onBefore for now
-        it('onBefore should trigger as soon as I animate', function(done) {
+        it('onBefore should trigger as soon as I animate', function (done) {
 
             scene.enablePhysics(gravityVector, physicsPlugin);
 
-            scene.onBeforePhysicsObservable.add(function(observer: any) {
+            scene.onBeforePhysicsObservable.add(function (observer: any) {
                 expect(obWasCalled).to.be.false;
                 obWasCalled = true;
                 done();
@@ -147,9 +151,9 @@ describe('Babylon physicsComponents', () => {
 
     // previous tests were on injected properties of Scene.
     // now test 'applyImpulse' which is an injected property of AbstractMesh
-    describe('applyImpulse should move a mesh', function() {
+    describe('applyImpulse should move a mesh', function () {
 
-        it('should move if an impulse is applied', function() {
+        it('if an impulse is applied', function () {
 
             scene.enablePhysics(noGravityVector, physicsPlugin);   // NO gravity
             let getGravity = scene.getPhysicsEngine().gravity;
@@ -158,28 +162,28 @@ describe('Babylon physicsComponents', () => {
             let sphere = BABYLON.MeshBuilder.CreateSphere("mySphere", { diameter: 1 }, scene);  // use MeshBuilder instead of Mesh
             sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
 
-            let getPosition = sphere.position;
-            expect(getPosition).to.deep.equal(BABYLON.Vector3.Zero());
+            let getPosition = sphere.position.asArray();
+            expect(getPosition).to.deep.equal([0, 0, 0]);
 
-            let linearVelocity = sphere.physicsImpostor.getLinearVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            let linearVelocity = sphere.physicsImpostor.getLinearVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
-            let angularVelocity = sphere.physicsImpostor.getAngularVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            let angularVelocity = sphere.physicsImpostor.getAngularVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
             //////////////////////////////`/////////////////////
             // so far, so good.  let's run the physics engine.  nothing should change.
 
             scene.animate();
 
-            getPosition = sphere.position;
-            expect(getPosition).to.deep.equal(BABYLON.Vector3.Zero());
+            getPosition = sphere.position.asArray();
+            expect(getPosition).to.deep.equal([0, 0, 0]);
 
-            linearVelocity = sphere.physicsImpostor.getLinearVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            linearVelocity = sphere.physicsImpostor.getLinearVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
-            angularVelocity = sphere.physicsImpostor.getAngularVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            angularVelocity = sphere.physicsImpostor.getAngularVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
             ///////////////////////////////////////////////////
             // now give an impulse, and run the physics engine again.  the sphere should start moving.
@@ -189,20 +193,19 @@ describe('Babylon physicsComponents', () => {
             sphere.applyImpulse(force, contact);  // give the sphere its kick
             scene.animate();   // and run the physics engine
 
-            getPosition = sphere.position;
-            expect(getPosition.x).to.be.greaterThan(0);   // moved about 0.01, I'm clueless how that was calculated
-            expect(getPosition.y).to.be.equal(0);
-            expect(getPosition.z).to.be.equal(0);
+            var getPosition2 = sphere.position;
+            expect(getPosition2.x).to.be.greaterThan(0);   // moved about 0.01, I'm clueless how that was calculated
+            expect(getPosition2.y).to.be.equal(0);
+            expect(getPosition2.z).to.be.equal(0);
 
-            linearVelocity = sphere.physicsImpostor.getLinearVelocity();
-            expect(linearVelocity.x).to.be.closeTo(10, 0.001);      // mass of 1, whack of 10, sounds right
-            expect(linearVelocity.y).to.be.equal(0);
-            expect(linearVelocity.z).to.be.equal(0);
+            var linearVelocity2 = sphere.physicsImpostor.getLinearVelocity();
+            expect(linearVelocity2.x).to.be.closeTo(10, 0.001);      // mass of 1, whack of 10, sounds right
+            expect(linearVelocity2.y).to.be.equal(0);
+            expect(linearVelocity2.z).to.be.equal(0);
 
             // we whacked it right along the axis, so don't expect any angular velocity
-            angularVelocity = sphere.physicsImpostor.getAngularVelocity()
-            console.log(angularVelocity);
-            expect(angularVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            var angularVelocity2 = sphere.physicsImpostor.getAngularVelocity()
+            expect(angularVelocity2.asArray()).to.deep.equal([0, 0, 0]);
 
         });
     });

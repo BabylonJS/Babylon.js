@@ -9,16 +9,27 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";
 import "../Shaders/kernelBlur.vertex";
+import { RegisterClass } from '../Misc/typeStore';
+import { serialize, serializeAsVector2, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
- * Can be used twice in x and y directions to perform a guassian blur in two passes.
+ * Can be used twice in x and y directions to perform a gaussian blur in two passes.
  */
 export class BlurPostProcess extends PostProcess {
+    @serialize("kernel")
     protected _kernel: number;
     protected _idealKernel: number;
+    @serialize("packedFloat")
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
+
+    /** The direction in which to blur the image. */
+    @serializeAsVector2()
+    public direction: Vector2;
+
     /**
      * Sets the length in pixels of the blur sample region
      */
@@ -43,7 +54,7 @@ export class BlurPostProcess extends PostProcess {
     }
 
     /**
-     * Sets wether or not the blur needs to unpack/repack floats
+     * Sets whether or not the blur needs to unpack/repack floats
      */
     public set packedFloat(v: boolean) {
         if (this._packedFloat === v) {
@@ -56,10 +67,18 @@ export class BlurPostProcess extends PostProcess {
     }
 
     /**
-     * Gets wether or not the blur is unpacking/repacking floats
+     * Gets whether or not the blur is unpacking/repacking floats
      */
     public get packedFloat(): boolean {
         return this._packedFloat;
+    }
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "BlurPostProcess" string
+     */
+    public getClassName(): string {
+        return "BlurPostProcess";
     }
 
     /**
@@ -76,11 +95,11 @@ export class BlurPostProcess extends PostProcess {
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
     constructor(name: string,
-        /** The direction in which to blur the image. */
-        public direction: Vector2,
+        direction: Vector2,
         kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
         super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["circleOfConfusionSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", { varyingCount: 0, depCount: 0 }, true);
         this._staticDefines = defines;
+        this.direction = direction;
         this.onApplyObservable.add((effect: Effect) => {
             if (this._outputTexture) {
                 effect.setFloat2('delta', (1 / this._outputTexture.width) * this.direction.x, (1 / this._outputTexture.height) * this.direction.y);
@@ -254,4 +273,16 @@ export class BlurPostProcess extends PostProcess {
     protected _glslFloat(x: number, decimalFigures = 8) {
         return x.toFixed(decimalFigures).replace(/0+$/, '');
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new BlurPostProcess(
+                parsedPostProcess.name, parsedPostProcess.direction, parsedPostProcess.kernel,
+                parsedPostProcess.options, targetCamera, parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType, undefined, false);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
+
+RegisterClass("BABYLON.BlurPostProcess", BlurPostProcess);

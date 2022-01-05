@@ -1,20 +1,15 @@
 import { DracoCompression } from "babylonjs/Meshes/Compression/dracoCompression";
 import { Nullable } from "babylonjs/types";
-import { VertexBuffer } from "babylonjs/Meshes/buffer";
+import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { IBufferView, IMeshPrimitive } from "../glTFLoaderInterfaces";
+import { MeshPrimitiveMode, IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
+import { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_draco_mesh_compression";
-
-interface IKHRDracoMeshCompression {
-    bufferView: number;
-    attributes: { [name: string]: number };
-}
 
 interface IBufferViewDraco extends IBufferView {
     _dracoBabylonGeometry?: Promise<Geometry>;
@@ -50,7 +45,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /** @hidden */
     public dispose(): void {
         delete this.dracoCompression;
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
@@ -88,13 +83,17 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             loadAttribute("TANGENT", VertexBuffer.TangentKind);
             loadAttribute("TEXCOORD_0", VertexBuffer.UVKind);
             loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind);
+            loadAttribute("TEXCOORD_2", VertexBuffer.UV3Kind);
+            loadAttribute("TEXCOORD_3", VertexBuffer.UV4Kind);
+            loadAttribute("TEXCOORD_4", VertexBuffer.UV5Kind);
+            loadAttribute("TEXCOORD_5", VertexBuffer.UV6Kind);
             loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
             loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
             loadAttribute("COLOR_0", VertexBuffer.ColorKind);
 
             var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
-                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
+                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
                     return dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                         const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);

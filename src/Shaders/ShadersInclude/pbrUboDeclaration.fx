@@ -1,80 +1,89 @@
 layout(std140, column_major) uniform;
 
-uniform Material
-{
-    uniform vec2 vAlbedoInfos;
-    uniform vec4 vAmbientInfos;
-    uniform vec2 vOpacityInfos;
-    uniform vec2 vEmissiveInfos;
-    uniform vec2 vLightmapInfos;
-    uniform vec3 vReflectivityInfos;
-    uniform vec2 vMicroSurfaceSamplerInfos;
-    uniform vec2 vReflectionInfos;
-    uniform vec2 vReflectionFilteringInfo;
-    uniform vec3 vReflectionPosition;
-    uniform vec3 vReflectionSize;
-    uniform vec3 vBumpInfos;
-    uniform mat4 albedoMatrix;
-    uniform mat4 ambientMatrix;
-    uniform mat4 opacityMatrix;
-    uniform mat4 emissiveMatrix;
-    uniform mat4 lightmapMatrix;
-    uniform mat4 reflectivityMatrix;
-    uniform mat4 microSurfaceSamplerMatrix;
-    uniform mat4 bumpMatrix;
-    uniform vec2 vTangentSpaceParams;
-    uniform mat4 reflectionMatrix;
-    uniform vec3 vReflectionColor;
-    uniform vec4 vAlbedoColor;
-    uniform vec4 vLightingIntensity;
-    uniform vec3 vReflectionMicrosurfaceInfos;
-    uniform float pointSize;
-    uniform vec4 vReflectivityColor;
-    uniform vec3 vEmissiveColor;
+// layout(set = 0, binding = 0) uniform Harmonics
+// {
+//     uniform vec3 vSphericalL00;
+//     uniform vec3 vSphericalL1_1;
+//     uniform vec3 vSphericalL10;
+//     uniform vec3 vSphericalL11;
+//     uniform vec3 vSphericalL2_2;
+//     uniform vec3 vSphericalL2_1;
+//     uniform vec3 vSphericalL20;
+//     uniform vec3 vSphericalL21;
+//     uniform vec3 vSphericalL22;
+//     uniform vec3 vSphericalX;
+//     uniform vec3 vSphericalY;
+//     uniform vec3 vSphericalZ;
+//     uniform vec3 vSphericalXX_ZZ;
+//     uniform vec3 vSphericalYY_ZZ;
+//     uniform vec3 vSphericalZZ;
+//     uniform vec3 vSphericalXY;
+//     uniform vec3 vSphericalYZ;
+//     uniform vec3 vSphericalZX;
+// }
 
-    uniform float visibility;
+uniform Material {
+    vec2 vAlbedoInfos;
+    vec4 vAmbientInfos;
+    vec2 vOpacityInfos;
+    vec2 vEmissiveInfos;
+    vec2 vLightmapInfos;
+    vec3 vReflectivityInfos;
+    vec2 vMicroSurfaceSamplerInfos;
+    vec2 vReflectionInfos;
+    vec2 vReflectionFilteringInfo;
+    vec3 vReflectionPosition;
+    vec3 vReflectionSize;
+    vec3 vBumpInfos;
+    mat4 albedoMatrix;
+    mat4 ambientMatrix;
+    mat4 opacityMatrix;
+    mat4 emissiveMatrix;
+    mat4 lightmapMatrix;
+    mat4 reflectivityMatrix;
+    mat4 microSurfaceSamplerMatrix;
+    mat4 bumpMatrix;
+    vec2 vTangentSpaceParams;
+    mat4 reflectionMatrix;
+    vec3 vReflectionColor;
+    vec4 vAlbedoColor;
+    vec4 vLightingIntensity;
+    vec3 vReflectionMicrosurfaceInfos;
+    float pointSize;
+    vec4 vReflectivityColor;
+    vec3 vEmissiveColor;
+    vec3 vAmbientColor;
 
-    uniform vec4 vMetallicReflectanceFactors;
-    uniform vec2 vMetallicReflectanceInfos;
-    uniform mat4 metallicReflectanceMatrix;
+    vec2 vDebugMode;
 
-    uniform vec2 vClearCoatParams;
-    uniform vec4 vClearCoatRefractionParams;
-    uniform vec2 vClearCoatInfos;
-    uniform mat4 clearCoatMatrix;
-    uniform vec2 vClearCoatBumpInfos;
-    uniform vec2 vClearCoatTangentSpaceParams;
-    uniform mat4 clearCoatBumpMatrix;
-    uniform vec4 vClearCoatTintParams;
-    uniform float clearCoatColorAtDistance;
-    uniform vec2 vClearCoatTintInfos;
-    uniform mat4 clearCoatTintMatrix;
+    vec4 vMetallicReflectanceFactors;
+    vec2 vMetallicReflectanceInfos;
+    mat4 metallicReflectanceMatrix;
+    vec2 vReflectanceInfos;
+    mat4 reflectanceMatrix;
 
-    uniform vec3 vAnisotropy;
-    uniform vec2 vAnisotropyInfos;
-    uniform mat4 anisotropyMatrix;
+    vec3 vSphericalL00;
+    vec3 vSphericalL1_1;
+    vec3 vSphericalL10;
+    vec3 vSphericalL11;
+    vec3 vSphericalL2_2;
+    vec3 vSphericalL2_1;
+    vec3 vSphericalL20;
+    vec3 vSphericalL21;
+    vec3 vSphericalL22;
 
-    uniform vec4 vSheenColor;
-    uniform float vSheenRoughness;
-    uniform vec2 vSheenInfos;
-    uniform mat4 sheenMatrix;
+    vec3 vSphericalX;
+    vec3 vSphericalY;
+    vec3 vSphericalZ;
+    vec3 vSphericalXX_ZZ;
+    vec3 vSphericalYY_ZZ;
+    vec3 vSphericalZZ;
+    vec3 vSphericalXY;
+    vec3 vSphericalYZ;
+    vec3 vSphericalZX;
 
-    uniform vec3 vRefractionMicrosurfaceInfos;
-    uniform vec2 vRefractionFilteringInfo;
-    uniform vec4 vRefractionInfos;
-    uniform mat4 refractionMatrix;
-    uniform vec2 vThicknessInfos;
-    uniform mat4 thicknessMatrix;
-    uniform vec2 vThicknessParam;
-    uniform vec3 vDiffusionDistance;
-    uniform vec4 vTintColor;
-    uniform vec3 vSubSurfaceIntensity;
+    #define ADDITIONAL_UBO_DECLARATION
 };
 
-uniform Scene {
-    mat4 viewProjection;
-#ifdef MULTIVIEW
-	mat4 viewProjectionR;
-#endif 
-    mat4 view;
-};
+#include<sceneUboDeclaration>
+#include<meshUboDeclaration>

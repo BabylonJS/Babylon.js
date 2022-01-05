@@ -1,3 +1,5 @@
+import { IKeyboardEvent } from "./deviceInputEvents";
+
 /**
  * Gather the list of keyboard event types as constants.
  */
@@ -30,7 +32,7 @@ export class KeyboardInfo {
         /**
          * Defines the related dom event
          */
-        public event: KeyboardEvent) {
+        public event: IKeyboardEvent) {
     }
 }
 
@@ -58,7 +60,7 @@ export class KeyboardInfoPre extends KeyboardInfo {
         /**
          * Defines the related dom event
          */
-        public event: KeyboardEvent) {
+        public event: IKeyboardEvent) {
         super(type, event);
         this.skipOnPointerObservable = false;
     }
