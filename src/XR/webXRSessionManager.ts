@@ -21,7 +21,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _referenceSpace: XRReferenceSpace;
     private _baseLayerWrapper: Nullable<WebXRLayerWrapper>;
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
-    private _sessionEnded: boolean = false;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
 
@@ -66,6 +65,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * or get the offset the player is currently at.
      */
     public viewerReferenceSpace: XRReferenceSpace;
+    /**
+     * Are we currently in the XR loop?
+     */
+    public inXRFrameLoop: boolean = false;
+    /**
+     * Are we in an XR session?
+     */
+    public inXRSession: boolean = false;
 
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
@@ -110,7 +117,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public dispose() {
         // disposing without leaving XR? Exit XR first
-        if (!this._sessionEnded) {
+        if (this.inXRSession) {
             this.exitXRAsync();
         }
         this.onXRFrameObservable.clear();
@@ -124,8 +131,8 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns Promise which resolves after it exits XR
      */
     public exitXRAsync() {
-        if (this.session && !this._sessionEnded) {
-            this._sessionEnded = true;
+        if (this.session && !this.inXRSession) {
+            this.inXRSession = false;
             return this.session.end().catch((e) => {
                 Logger.Warn("Could not end XR session.");
             });
@@ -204,13 +211,13 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             this.session = session;
             this._sessionMode = xrSessionMode;
             this.onXRSessionInit.notifyObservers(session);
-            this._sessionEnded = false;
+            this.inXRSession = true;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener(
                 "end",
                 () => {
-                    this._sessionEnded = true;
+                    this.inXRSession = false;
 
                     // Notify frame observers
                     this.onXRSessionEnded.notifyObservers(null);
@@ -262,7 +269,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Starts rendering to the xr layer
      */
     public runXRRenderLoop() {
-        if (this._sessionEnded || !this._engine) {
+        if (!this.inXRSession || !this._engine) {
             return;
         }
 
@@ -270,17 +277,19 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this._engine.customAnimationFrameRequester = {
             requestAnimationFrame: this.session.requestAnimationFrame.bind(this.session),
             renderFunction: (timestamp: number, xrFrame: Nullable<XRFrame>) => {
-                if (this._sessionEnded || !this._engine) {
+                if (!this.inXRSession || !this._engine) {
                     return;
                 }
                 // Store the XR frame and timestamp in the session manager
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
+                    this.inXRFrameLoop = true;
                     this._engine.framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                     this._engine._renderLoop();
                     this._engine.framebufferDimensionsObject = null;
+                    this.inXRFrameLoop = false;
                 }
             },
         };
@@ -427,6 +436,20 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public updateTargetFrameRate(rate: number): Promise<void> {
         return this.session.updateTargetFrameRate(rate);
+    }
+
+
+    /**
+     * Run a callback in the xr render loop
+     * @param callback the callback to call when in XR Frame
+     * @param ignoreIfNotInSession if no session is currently running, run it first thing on the next session
+     */
+    public runInXRFrame(callback: () => void, ignoreIfNotInSession = true): void {
+        if(this.inXRFrameLoop) {
+            callback();
+        } else if(this.inXRSession || !ignoreIfNotInSession) {
+            this.onXRFrameObservable.addOnce(callback);
+        }
     }
 
     /**
