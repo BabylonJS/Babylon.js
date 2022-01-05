@@ -62,7 +62,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._hasAlpha = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get hasAlpha(): boolean {
@@ -110,7 +112,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesIndex = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get coordinatesIndex(): number {
@@ -142,7 +146,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesMode = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get coordinatesMode(): number {
