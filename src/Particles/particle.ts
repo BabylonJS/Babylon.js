@@ -186,13 +186,15 @@ export class Particle {
         }
 
         let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
-        let ratio: number;
+        let age = offsetAge * changeSpeed;
         if (this._initialSpriteCellLoop) {
-            ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
+            age = age % this.lifeTime;
         }
-        else {
-            ratio = Scalar.Clamp((offsetAge * changeSpeed) / this.lifeTime);
+        if (this.particleSystem.spriteCellIndexOverlife) {
+            age = this.particleSystem.spriteCellIndexOverlife.getValue(age / this.lifeTime) * this.lifeTime;
         }
+        let ratio: number = Scalar.Clamp(age) / this.lifeTime;
+
         this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
     }
 

@@ -40,6 +40,7 @@ import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines
 import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
 import { ParticleHelper } from "babylonjs/Particles/particleHelper";
 import { Color4LineComponent } from "../../../../../sharedUiComponents/lines/color4LineComponent";
+import { HermiteCurveComponent } from "./HermiteCurveComponent";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -873,6 +874,22 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         maximum={10}
                         step={0.1}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <HermiteCurveComponent
+                        globalState={this.props.globalState}
+                        label="Index Overlife"
+                        curve={(system as any).spriteCellIndexOverlife}
+                        onCreateRequire={() => {
+                            (system as any).spriteCellIndexOverlife = (system as any).createHermiteCurve();
+                            this.forceUpdate();
+                            //To refresh Scene Explorer
+                            this.props.globalState.onSelectionRenamedObservable.notifyObservers();
+                        }}
+                        onDeleteRequire={() => {
+                            (system as any).spriteCellIndexOverlife = undefined;
+                            this.forceUpdate();
+                        }}
+                        scene={system.getScene()!}
                     />
                 </LineContainerComponent>
             </div>

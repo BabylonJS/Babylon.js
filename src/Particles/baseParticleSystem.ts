@@ -10,6 +10,7 @@ import { Color4 } from '../Maths/math.color';
 import { ThinEngine } from '../Engines/thinEngine';
 
 import "../Engines/Extensions/engine.dynamicBuffer";
+import { HermiteCurve } from "../Misc/HermiteCurve";
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type Scene = import("../scene").Scene;
@@ -262,7 +263,21 @@ export class BaseParticleSystem {
      * This allows the system to random pick the start cell ID between startSpriteCellID and endSpriteCellID
      */
     public spriteRandomStartCell = false;
-
+    /**
+     * Sprite Cell Index Overlife (Hermite Curve)
+     */
+    public spriteCellIndexOverlife?: HermiteCurve;
+    /**
+     * Create default hermite curve
+     * @returns HermiteCurve
+     */
+    public createHermiteCurve() {
+        const curve = new HermiteCurve();
+        curve.keys = [
+            { frame: 0, value: 0, inTangent: 0, outTangent: 0 },
+            { frame: 1, value: 1, inTangent: 0, outTangent: 0 }, ];
+        return curve;
+    }
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 

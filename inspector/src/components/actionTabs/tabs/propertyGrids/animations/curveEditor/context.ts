@@ -83,6 +83,18 @@ export class Context {
     onInterpolationModeSet = new Observable<{ keyId: number; value: AnimationKeyInterpolation }>();
 
     onSelectToActivated = new Observable<{ from: number; to: number }>();
+    /**
+     * Notifies when key frame/value/inTangent/outTangent change
+     */
+    onActiveKeyDataChange = new Observable<number>();
+    /**
+     * If true not allow change lastKey's frame
+     */
+    limitLastKeyFrame: boolean = false;
+    /**
+     * If true not allow change lastKey's Value
+     */
+    limitLastKeyValue: boolean = false;
 
     public prepare() {
         this.isPlaying = false;

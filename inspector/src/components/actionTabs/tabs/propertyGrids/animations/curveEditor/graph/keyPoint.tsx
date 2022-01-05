@@ -533,7 +533,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             if (nextX !== null) {
                 newX = Math.min(nextX - epsilon, newX);
             }
-            if (this.props.keyId !== 0) {
+            if (this.props.keyId !== 0 && !(this.props.context.limitLastKeyFrame && this.props.keyId === this.props.curve.keys.length - 1)) {
                 let frame = this.props.invertX(newX);
                 this.props.onFrameValueChanged(frame);
                 this.props.context.onFrameSet.notifyObservers(frame);
@@ -544,7 +544,9 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             } else {
                 newX = this.state.x;
             }
-
+            if (this.props.context.limitLastKeyValue) {
+                newY = this.state.y;
+            }
             let value = this.props.invertY(newY);
             this.props.onKeyValueChanged(value);
             this.props.context.onValueSet.notifyObservers(value);
@@ -607,6 +609,8 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             this.props.context.refreshTarget();
             this.forceUpdate();
         }
+
+        this.props.context.onActiveKeyDataChange.notifyObservers(this.props.keyId);
 
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
