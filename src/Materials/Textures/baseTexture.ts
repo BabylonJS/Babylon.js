@@ -69,12 +69,26 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._hasAlpha;
     }
 
+    @serialize("getAlphaFromRGB")
+    private _getAlphaFromRGB = false;
     /**
      * Defines if the alpha value should be determined via the rgb values.
      * If true the luminance of the pixel might be used to find the corresponding alpha value.
      */
-    @serialize()
-    public getAlphaFromRGB = false;
+    public set getAlphaFromRGB(value: boolean) {
+        if (this._getAlphaFromRGB === value) {
+            return;
+        }
+        this._getAlphaFromRGB = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
+    }
+    public get getAlphaFromRGB() : boolean {
+        return this._getAlphaFromRGB;
+    }
 
     /**
      * Intensity or strength of the texture.
