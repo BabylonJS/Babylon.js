@@ -264,7 +264,7 @@ export class MultiMaterial extends Material {
                 }
             });
         } else {
-            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: any) => {
+            parsedMultiMaterial.materials.forEach((subMatId: any) => {
                 if (subMatId) {
                     // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
                     // is why this lookup should use getLastMaterialByID instead of getMaterialByID
