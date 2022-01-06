@@ -47,8 +47,11 @@ export class Vector2 {
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        let hash = this.x | 0;
-        hash = (hash * 397) ^ (this.y | 0);
+        const x = parseInt(this.x.toString().replace(/\W/g, ""));
+        const y = parseInt(this.y.toString().replace(/\W/g, ""));
+        
+        let hash = x;
+        hash = (hash * 397) ^ y;
         return hash;
     }
 
@@ -836,9 +839,13 @@ export class Vector3 {
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        let hash = this._x | 0;
-        hash = (hash * 397) ^ (this._y | 0);
-        hash = (hash * 397) ^ (this._z | 0);
+        const x = parseInt(this._x.toString().replace(/\W/g, ""));
+        const y = parseInt(this._y.toString().replace(/\W/g, ""));
+        const z = parseInt(this._z.toString().replace(/\W/g, ""));
+
+        let hash = x;
+        hash = (hash * 397) ^ y;
+        hash = (hash * 397) ^ z;
         return hash;
     }
 
@@ -2473,10 +2480,15 @@ export class Vector4 {
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        let hash = this.x | 0;
-        hash = (hash * 397) ^ (this.y | 0);
-        hash = (hash * 397) ^ (this.z | 0);
-        hash = (hash * 397) ^ (this.w | 0);
+        const x = parseInt(this.x.toString().replace(/\W/g, ""));
+        const y = parseInt(this.y.toString().replace(/\W/g, ""));
+        const z = parseInt(this.z.toString().replace(/\W/g, ""));
+        const w = parseInt(this.w.toString().replace(/\W/g, ""));
+
+        let hash = x;
+        hash = (hash * 397) ^ y;
+        hash = (hash * 397) ^ z;
+        hash = (hash * 397) ^ w;
         return hash;
     }
 
@@ -3307,10 +3319,15 @@ export class Quaternion {
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        let hash = this._x | 0;
-        hash = (hash * 397) ^ (this._y | 0);
-        hash = (hash * 397) ^ (this._z | 0);
-        hash = (hash * 397) ^ (this._w | 0);
+        const x = parseInt(this._x.toString().replace(/\W/g, ""));
+        const y = parseInt(this._y.toString().replace(/\W/g, ""));
+        const z = parseInt(this._z.toString().replace(/\W/g, ""));
+        const w = parseInt(this._w.toString().replace(/\W/g, ""));
+
+        let hash = x;
+        hash = (hash * 397) ^ y;
+        hash = (hash * 397) ^ z;
+        hash = (hash * 397) ^ w;
         return hash;
     }
 
