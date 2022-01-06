@@ -1,3 +1,6 @@
+# 4.2.1
+- HotFix shadow sampler issue following Chromium Update ([Sebavan](https://github.com/sebavan))
+
 # 4.2.0
 
 ## Major updates
