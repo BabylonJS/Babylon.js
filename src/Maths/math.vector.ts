@@ -12,7 +12,7 @@ type TransformNode = import('../Meshes/transformNode').TransformNode;
 
 var _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
-}
+};
 
 /**
  * Class representing a vector containing 2 coordinates
