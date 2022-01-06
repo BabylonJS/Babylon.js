@@ -6933,6 +6933,7 @@ declare module BABYLON {
          * Resets the material define values
          */
         reset(): void;
+        private _setDefaultValue;
         /**
          * Converts the material define values to a string
          * @returns - String of material define information
@@ -27513,6 +27514,359 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class representing an isovector a vector containing 2 INTEGER coordinates
+     * x axis is horizontal
+     * y axis is 60 deg counter clockwise from positive y axis
+     * @hidden
+     */
+    export class _IsoVector {
+        /** defines the first coordinate */
+        x: number;
+        /** defines the second coordinate */
+        y: number;
+        /**
+         * Creates a new isovector from the given x and y coordinates
+         * @param x defines the first coordinate, must be an integer
+         * @param y defines the second coordinate, must be an integer
+         */
+        constructor(
+        /** defines the first coordinate */
+        x?: number, 
+        /** defines the second coordinate */
+        y?: number);
+        /**
+         * Gets a new IsoVector copied from the IsoVector
+         * @returns a new IsoVector
+         */
+        clone(): _IsoVector;
+        /**
+         * Rotates one IsoVector 60 degrees counter clockwise about another
+         * Please note that this is an in place operation
+         * @param other an IsoVector a center of rotation
+         * @returns the rotated IsoVector
+         */
+        rotate60About(other: _IsoVector): this;
+        /**
+         * Rotates one IsoVector 60 degrees clockwise about another
+         * Please note that this is an in place operation
+         * @param other an IsoVector as center of rotation
+         * @returns the rotated IsoVector
+         */
+        rotateNeg60About(other: _IsoVector): this;
+        /**
+         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
+         * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
+         * Please note that this is an in place operation
+         * @param m integer a measure a Primary triangle of order (m, n) m > n
+         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
+         * @returns the rotated IsoVector
+         */
+        rotate120(m: number, n: number): this;
+        /**
+         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
+         * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
+         * Please note that this is an in place operation
+         * @param m integer a measure a Primary triangle of order (m, n) m > n
+         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
+         * @returns the rotated IsoVector
+         */
+        rotateNeg120(m: number, n: number): this;
+        /**
+         * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
+         * @param origin an IsoVector
+         * @returns Point as a Vector3
+         */
+        toCartesianOrigin(origin: _IsoVector, isoGridSize: number): Vector3;
+        /**
+         * Gets a new IsoVector(0, 0)
+         * @returns a new IsoVector
+         */
+        static Zero(): _IsoVector;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class representing data for one face OAB of an equilateral icosahedron
+     * When O is the isovector (0, 0), A is isovector (m, n)
+     * @hidden
+     */
+    export class _PrimaryIsoTriangle {
+        m: number;
+        n: number;
+        cartesian: Vector3[];
+        vertices: _IsoVector[];
+        max: number[];
+        min: number[];
+        vecToIdx: {
+            [key: string]: number;
+        };
+        vertByDist: {
+            [key: string]: number[];
+        };
+        closestTo: number[][];
+        innerFacets: string[][];
+        isoVecsABOB: _IsoVector[][];
+        isoVecsOBOA: _IsoVector[][];
+        isoVecsBAOA: _IsoVector[][];
+        vertexTypes: number[][];
+        coau: number;
+        cobu: number;
+        coav: number;
+        cobv: number;
+        IDATA: PolyhedronData;
+        /**
+        * Creates the PrimaryIsoTriangle Triangle OAB
+        * @param m an integer
+        * @param n an integer
+        */
+        setIndices(): void;
+        calcCoeffs(): void;
+        createInnerFacets(): void;
+        edgeVecsABOB(): void;
+        mapABOBtoOBOA(): void;
+        mapABOBtoBAOA(): void;
+        MapToFace(faceNb: number, geodesicData: PolyhedronData): void;
+        /**Creates a primary triangle
+         * @param m
+         * @param n
+         * @hidden
+         */
+        build(m: number, n: number): this;
+    }
+    /** Builds Polyhedron Data
+    * @hidden
+    */
+    export class PolyhedronData {
+        name: string;
+        category: string;
+        vertex: number[][];
+        face: number[][];
+        edgematch: (number | string)[][];
+        constructor(name: string, category: string, vertex: number[][], face: number[][]);
+    }
+    /**
+     * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
+     */
+    export class GeodesicData extends PolyhedronData {
+        /**
+         * @hidden
+         */
+        edgematch: (number | string)[][];
+        /**
+         * @hidden
+         */
+        adjacentFaces: number[][];
+        /**
+         * @hidden
+         */
+        sharedNodes: number;
+        /**
+         * @hidden
+         */
+        poleNodes: number;
+        /**
+         * @hidden
+         */
+        innerToData(face: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        orderData(primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        setOrder(m: number, faces: number[]): number[];
+        /**
+         * @hidden
+         */
+        toGoldbergPolyhedronData(): PolyhedronData;
+        /**Builds the data for a Geodesic Polyhedron from a primary triangle
+         * @param primTri the primary triangle
+         * @hidden
+         */
+        static BuildGeodesicData(primTri: _PrimaryIsoTriangle): GeodesicData;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the set of goldberg data used to create the polygon
+     */
+    export type GoldbergData = {
+        /**
+         * The list of Goldberg faces colors
+         */
+        faceColors: Color4[];
+        /**
+         * The list of Goldberg faces centers
+         */
+        faceCenters: Vector3[];
+        /**
+         * The list of Goldberg faces Z axis
+         */
+        faceZaxis: Vector3[];
+        /**
+         * The list of Goldberg faces Y axis
+         */
+        faceXaxis: Vector3[];
+        /**
+         * The list of Goldberg faces X axis
+         */
+        faceYaxis: Vector3[];
+        /**
+         * Defines the number of shared faces
+         */
+        nbSharedFaces: number;
+        /**
+         * Defines the number of unshared faces
+         */
+        nbUnsharedFaces: number;
+        /**
+         * Defines the total number of goldberg faces
+         */
+        nbFaces: number;
+        /**
+         * Defines the number of goldberg faces at the pole
+         */
+        nbFacesAtPole: number;
+        /**
+         * Defines the number of adjacent faces per goldberg faces
+         */
+        adjacentFaces: number[][];
+    };
+    /**
+     * Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+     */
+    export class GoldbergMesh extends Mesh {
+        /**
+         * Defines the specific Goldberg data used in this mesh construction.
+         */
+        goldbergData: GoldbergData;
+        /**
+         * Gets the related Goldberg face from pole infos
+         * @param poleOrShared Defines the pole index or the shared face index if the fromPole parameter is passed in
+         * @param fromPole Defines an optional pole index to find the related info from
+         * @returns the goldberg face number
+         */
+        relatedGoldbergFace(poleOrShared: number, fromPole?: number): number;
+        private _changeGoldbergFaceColors;
+        /**
+         * Set new goldberg face colors
+         * @param colorRange the new color to apply to the mesh
+         */
+        setGoldbergFaceColors(colorRange: (number | Color4)[][]): void;
+        /**
+         * Updates new goldberg face colors
+         * @param colorRange the new color to apply to the mesh
+         */
+        updateGoldbergFaceColors(colorRange: (number | Color4)[][]): void;
+        private _changeGoldbergFaceUVs;
+        /**
+         * set new goldberg face UVs
+         * @param uvRange the new UVs to apply to the mesh
+         */
+        setGoldbergFaceUVs(uvRange: (number | Vector2)[][]): void;
+        /**
+         * Updates new goldberg face UVs
+         * @param uvRange the new UVs to apply to the mesh
+         */
+        updateGoldbergFaceUVs(uvRange: (number | Vector2)[][]): void;
+        /**
+         * Places a mesh on a particular face of the goldberg polygon
+         * @param mesh Defines the mesh to position
+         * @param face Defines the face to position onto
+         * @param position Defines the position relative to the face we are positioning the mesh onto
+         */
+        placeOnGoldbergFaceAt(mesh: Mesh, face: number, position: Vector3): void;
+        /**
+         * Serialize current mesh
+         * @param serializationObject defines the object which will receive the serialization data
+         */
+        serialize(serializationObject: any): void;
+        /**
+        * Parses a serialized goldberg mesh
+        * @param parsedMesh the serialized mesh
+        * @param scene the scene to create the goldberg mesh in
+        * @returns the created goldberg mesh
+        */
+        static Parse(parsedMesh: any, scene: Scene): GoldbergMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the set of data required to create goldberg vertex data.
+     */
+    export type GoldbergVertexDataOption = {
+        /**
+         * the size of the Goldberg, optional default 1
+         */
+        size?: number;
+        /**
+         * allows stretching in the x direction, optional, default size
+         */
+        sizeX?: number;
+        /**
+         * allows stretching in the y direction, optional, default size
+         */
+        sizeY?: number;
+        /**
+         * allows stretching in the z direction, optional, default size
+         */
+        sizeZ?: number;
+        /**
+         * optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         */
+        sideOrientation?: number;
+    };
+    /**
+     * Defines the set of data required to create a goldberg mesh.
+     */
+    export type GoldbergCreationOption = {
+        /**
+         * number of horizontal steps along an isogrid
+         */
+        m?: number;
+        /**
+         * number of angled steps along an isogrid
+         */
+        n?: number;
+        /**
+         * defines if the mesh must be flagged as updatable
+         */
+        updatable?: boolean;
+    } & GoldbergVertexDataOption;
+    /**
+     * Creates the Mesh for a Goldberg Polyhedron
+     * @param name defines the name of the mesh
+     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+     * @param goldBergData polyhedronData defining the Goldberg polyhedron
+     * @returns GoldbergSphere mesh
+     */
+    export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, goldbergData: PolyhedronData): VertexData;
+    /**
+     * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+     * @param name defines the name of the mesh
+     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+     * @param scene defines the hosting scene
+     * @returns Goldberg mesh
+     */
+    export function CreateGoldberg(name: string, options: GoldbergCreationOption, scene?: Nullable<Scene>): GoldbergMesh;
+}
+declare module BABYLON {
+    /**
      * Mesh representing the ground
      */
     export class GroundMesh extends Mesh {
@@ -28011,13 +28365,15 @@ declare module BABYLON {
              */
             function CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
             /**
-             * Extends a mesh to a Goldberg mesh
-             * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
-             * @param mesh the mesh to convert
-             * @returns the extended mesh
-             * @deprecated Please use ExtendMeshToGoldberg instead
+             * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+             * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+             * @param name defines the name of the mesh
+             * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+             * @param scene defines the hosting scene
+             * @returns Goldberg mesh
+             * @deprecated Please use MeshBuilder instead
              */
-            function ExtendToGoldberg(mesh: Mesh): Mesh;
+            function CreateGoldberg(name: string, options: GoldbergCreationOption, scene?: Nullable<Scene>): GoldbergMesh;
         }
     /** @hidden */
     export const _injectLTSMesh: (Mesh: TypeofMesh) => void;
@@ -30039,6 +30395,8 @@ declare module BABYLON {
         /** @hidden */
         static _GroundMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /** @hidden */
+        static _GoldbergMeshParser: (parsedMesh: any, scene: Scene) => GoldbergMesh;
+        /** @hidden */
         static _LinesMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /**
          * Returns a new Mesh object parsed from the source provided.
@@ -30163,193 +30521,6 @@ declare module BABYLON {
     export const CapsuleBuilder: {
         CreateCapsule: typeof CreateCapsule;
     };
-}
-declare module BABYLON {
-    /**
-     * Class representing an isovector a vector containing 2 INTEGER coordinates
-     * x axis is horizontal
-     * y axis is 60 deg counter clockwise from positive y axis
-     * @hidden
-     */
-    export class _IsoVector {
-        /** defines the first coordinate */
-        x: number;
-        /** defines the second coordinate */
-        y: number;
-        /**
-         * Creates a new isovector from the given x and y coordinates
-         * @param x defines the first coordinate, must be an integer
-         * @param y defines the second coordinate, must be an integer
-         */
-        constructor(
-        /** defines the first coordinate */
-        x?: number, 
-        /** defines the second coordinate */
-        y?: number);
-        /**
-         * Gets a new IsoVector copied from the IsoVector
-         * @returns a new IsoVector
-         */
-        clone(): _IsoVector;
-        /**
-         * Rotates one IsoVector 60 degrees counter clockwise about another
-         * Please note that this is an in place operation
-         * @param other an IsoVector a center of rotation
-         * @returns the rotated IsoVector
-         */
-        rotate60About(other: _IsoVector): this;
-        /**
-         * Rotates one IsoVector 60 degrees clockwise about another
-         * Please note that this is an in place operation
-         * @param other an IsoVector as center of rotation
-         * @returns the rotated IsoVector
-         */
-        rotateNeg60About(other: _IsoVector): this;
-        /**
-         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
-         * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
-         * Please note that this is an in place operation
-         * @param m integer a measure a Primary triangle of order (m, n) m > n
-         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
-         * @returns the rotated IsoVector
-         */
-        rotate120(m: number, n: number): this;
-        /**
-         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
-         * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
-         * Please note that this is an in place operation
-         * @param m integer a measure a Primary triangle of order (m, n) m > n
-         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
-         * @returns the rotated IsoVector
-         */
-        rotateNeg120(m: number, n: number): this;
-        /**
-         * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
-         * @param origin an IsoVector
-         * @returns Point as a Vector3
-         */
-        toCartesianOrigin(origin: _IsoVector, isoGridSize: number): Vector3;
-        /**
-         * Gets a new IsoVector(0, 0)
-         * @returns a new IsoVector
-         */
-        static Zero(): _IsoVector;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class representing data for one face OAB of an equilateral icosahedron
-     * When O is the isovector (0, 0), A is isovector (m, n)
-     * @hidden
-     */
-    export class _PrimaryIsoTriangle {
-        m: number;
-        n: number;
-        cartesian: Vector3[];
-        vertices: _IsoVector[];
-        max: number[];
-        min: number[];
-        vecToIdx: {
-            [key: string]: number;
-        };
-        vertByDist: {
-            [key: string]: number[];
-        };
-        closestTo: number[][];
-        innerFacets: string[][];
-        isoVecsABOB: _IsoVector[][];
-        isoVecsOBOA: _IsoVector[][];
-        isoVecsBAOA: _IsoVector[][];
-        vertexTypes: number[][];
-        coau: number;
-        cobu: number;
-        coav: number;
-        cobv: number;
-        IDATA: PolyhedronData;
-        /**
-        * Creates the PrimaryIsoTriangle Triangle OAB
-        * @param m an integer
-        * @param n an integer
-        */
-        setIndices(): void;
-        calcCoeffs(): void;
-        createInnerFacets(): void;
-        edgeVecsABOB(): void;
-        mapABOBtoOBOA(): void;
-        mapABOBtoBAOA(): void;
-        MapToFace(faceNb: number, geodesicData: PolyhedronData): void;
-        /**Creates a primary triangle
-         * @param m
-         * @param n
-         * @hidden
-         */
-        build(m: number, n: number): this;
-    }
-    /** Builds Polyhedron Data
-    * @hidden
-    */
-    export class PolyhedronData {
-        name: string;
-        category: string;
-        vertex: number[][];
-        face: number[][];
-        edgematch: (number | string)[][];
-        constructor(name: string, category: string, vertex: number[][], face: number[][]);
-    }
-    /**
-     * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
-     */
-    export class GeodesicData extends PolyhedronData {
-        /**
-         * @hidden
-         */
-        edgematch: (number | string)[][];
-        /**
-         * @hidden
-         */
-        adjacentFaces: number[][];
-        /**
-         * @hidden
-         */
-        sharedNodes: number;
-        /**
-         * @hidden
-         */
-        poleNodes: number;
-        /**
-         * @hidden
-         */
-        innerToData(face: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        orderData(primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        setOrder(m: number, faces: number[]): number[];
-        /**
-         * @hidden
-         */
-        toGoldbergData(): PolyhedronData;
-        /**Builds the data for a Geodesic Polyhedron from a primary triangle
-         * @param primTri the primary triangle
-         * @hidden
-         */
-        static BuildGeodesicData(primTri: _PrimaryIsoTriangle): GeodesicData;
-    }
 }
 declare module BABYLON {
     /**
@@ -31985,16 +32156,21 @@ declare module BABYLON {
         };
         protected _enable(enable: boolean): void;
         /**
+         * Helper function to mark defines as being dirty.
+         */
+        protected readonly markAllDefinesAsDirty: () => void;
+        /**
          * Creates a new material plugin
          * @param material parent material of the plugin
          * @param name name of the plugin
          * @param priority priority of the plugin
          * @param defines list of defines used by the plugin. The value of the property is the default value for this property
          * @param addToPluginList true to add the plugin to the list of plugins managed by the material plugin manager of the material (default: true)
+         * @param enable true to enable the plugin (it is handy if the plugin does not handle properties to switch its current activation)
          */
         constructor(material: Material, name: string, priority: number, defines?: {
             [key: string]: any;
-        }, addToPluginList?: boolean);
+        }, addToPluginList?: boolean, enable?: boolean);
         /**
          * Gets the current class name useful for serialization or dynamic coding.
          * @returns The class name.
@@ -54893,7 +55069,6 @@ declare module BABYLON {
         private _referenceSpace;
         private _baseLayerWrapper;
         private _baseLayerRTTProvider;
-        private _sessionEnded;
         private _xrNavigator;
         private _sessionMode;
         /**
@@ -54937,6 +55112,14 @@ declare module BABYLON {
          * or get the offset the player is currently at.
          */
         viewerReferenceSpace: XRReferenceSpace;
+        /**
+         * Are we currently in the XR loop?
+         */
+        inXRFrameLoop: boolean;
+        /**
+         * Are we in an XR session?
+         */
+        inXRSession: boolean;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -55066,6 +55249,12 @@ declare module BABYLON {
          * @returns a promise that resolves once the framerate has been set
          */
         updateTargetFrameRate(rate: number): Promise<void>;
+        /**
+         * Run a callback in the xr render loop
+         * @param callback the callback to call when in XR Frame
+         * @param ignoreIfNotInSession if no session is currently running, run it first thing on the next session
+         */
+        runInXRFrame(callback: () => void, ignoreIfNotInSession?: boolean): void;
         /**
          * Check if fixed foveation is supported on this device
          */
@@ -80232,64 +80421,6 @@ declare module BABYLON {
         frontUVs?: Vector4;
         backUVs?: Vector4;
     }, scene?: Nullable<Scene>): Mesh;
-}
-declare module BABYLON {
-    /**
-     * Creates the Mesh for a Goldberg Polyhedron
-     * @param name defines the name of the mesh
-     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
-     * * m number of horizontal steps along an isogrid
-     * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg, optional default 1
-     * * sizeX allows stretching in the x direction, optional, default size
-     * * sizeY allows stretching in the y direction, optional, default size
-     * * sizeZ allows stretching in the z direction, optional, default size
-     * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-     * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
-     * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param goldBergData polyhedronData defining the Goldberg polyhedron
-     * @returns GoldbergSphere mesh
-     */
-    export function CreateGoldbergVertexData(options: {
-        size?: number;
-        sizeX?: number;
-        sizeY?: number;
-        sizeZ?: number;
-        sideOrientation?: number;
-    }, goldbergData: PolyhedronData): VertexData;
-    /**
-     * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
-     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
-     * @param name defines the name of the mesh
-     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
-     * * m number of horizontal steps along an isogrid
-     * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg, optional default 1
-     * * sizeX allows stretching in the x direction, optional, default size
-     * * sizeY allows stretching in the y direction, optional, default size
-     * * sizeZ allows stretching in the z direction, optional, default size
-     * * updatable defines if the mesh must be flagged as updatable
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @param scene defines the hosting scene
-     * @returns Goldberg mesh
-     */
-    export function CreateGoldberg(name: string, options: {
-        m?: number;
-        n?: number;
-        size?: number;
-        sizeX?: number;
-        sizeY?: number;
-        sizeZ?: number;
-        updatable?: boolean;
-        sideOrientation?: number;
-    }, scene?: Nullable<Scene>): Mesh;
-    /**
-     * Function to use when extending the mesh class to a Goldberg class
-     */
-    export const ExtendMeshToGoldberg: (mesh: Mesh) => Mesh;
 }
 declare module BABYLON {
     /**
