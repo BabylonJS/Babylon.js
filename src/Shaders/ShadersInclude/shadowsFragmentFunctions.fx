@@ -349,7 +349,7 @@
 
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
         #define inline
-        float computeShadowWithPCF1(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCF1(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -369,7 +369,7 @@
         // This uses a well distributed taps to allow a gaussian distribution covering a 3*3 kernel
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
         #define inline
-        float computeShadowWithPCF3(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCF3(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -410,7 +410,7 @@
         // This uses a well distributed taps to allow a gaussian distribution covering a 5*5 kernel
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
         #define inline
-        float computeShadowWithPCF5(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCF5(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -657,7 +657,7 @@
         // This is heavily inspired from http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
         // and http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
         #define inline
-        float computeShadowWithPCSS(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers)
+        float computeShadowWithPCSS(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -718,19 +718,19 @@
         }
 
         #define inline
-        float computeShadowWithPCSS16(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCSS16(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
         {
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 16, PoissonSamplers32);
         }
 
         #define inline
-        float computeShadowWithPCSS32(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCSS32(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
         {
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 32, PoissonSamplers32);
         }
 
         #define inline
-        float computeShadowWithPCSS64(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithPCSS64(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
         {
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 32, 64, PoissonSamplers64);
         }
