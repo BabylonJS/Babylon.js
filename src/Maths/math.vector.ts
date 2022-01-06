@@ -4750,14 +4750,18 @@ export class Matrix {
         return "Matrix";
     }
 
+    private _extractAsInt(value: number) {
+        return parseInt(value.toString().replace(/\W/g, ""));
+    }
+
     /**
      * Gets the hash code of the current matrix
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = this._m[0] | 0;
+        let hash = this._extractAsInt(this._m[0]);
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ (this._m[i] | 0);
+            hash = (hash * 397) ^ this._extractAsInt(this._m[i]);
         }
         return hash;
     }
