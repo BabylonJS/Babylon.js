@@ -218,10 +218,7 @@ export class MaterialDefines {
      * Resets the material define values
      */
     public reset(): void {
-        for (let index = 0; index < this._keys.length; index++) {
-            const prop = this._keys[index];
-            this._setDefaultValue(prop);
-        }
+        this._keys.forEach(prop => this._setDefaultValue(prop));
     }
 
     private _setDefaultValue(prop: string): void {
