@@ -1333,7 +1333,7 @@ export class Camera extends Node {
         var camera = SerializationHelper.Parse(construct, parsedCamera, scene);
 
         // Parent
-        if (parsedCamera.parentId) {
+        if (parsedCamera.parentId !== undefined) {
             camera._waitingParentId = parsedCamera.parentId;
         }
 

@@ -51,8 +51,13 @@ varying vec4 vColor;
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
 	#include<instancesVertex>
     #include<bonesVertex>
@@ -120,4 +125,6 @@ void main(void)
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

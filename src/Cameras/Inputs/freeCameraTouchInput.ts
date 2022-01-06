@@ -19,14 +19,14 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
     /**
      * Defines the touch sensibility for rotation.
-     * The higher the faster.
+     * The lower the faster.
      */
     @serialize()
     public touchAngularSensibility: number = 200000.0;
 
     /**
      * Defines the touch sensibility for move.
-     * The higher the faster.
+     * The lower the faster.
      */
     @serialize()
     public touchMoveSensibility: number = 250.0;
@@ -54,7 +54,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
          * Define if mouse events can be treated as touch events
          */
         public allowMouse = false
-    ) { }
+    ) {}
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -133,7 +133,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
         }
 
-        this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+        this._observer = this.camera
+            .getScene()
+            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
@@ -183,12 +185,12 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         }
 
         var camera = this.camera;
-        camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
         if (rotateCamera) {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
+            camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
         } else {
             var speed = camera._computeLocalCameraSpeed();
             var direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);

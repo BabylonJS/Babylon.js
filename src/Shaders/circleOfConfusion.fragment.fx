@@ -11,6 +11,9 @@ uniform vec2 cameraMinMaxZ;
 uniform float focusDistance;
 uniform float cocPrecalculation;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     float depth = texture2D(depthSampler, vUV).r;

@@ -366,7 +366,7 @@
         },
         {
             "title": "Highlights",
-            "renderCount": 2,
+            "renderCount": 5,
             "scriptToRun": "/Demos/Highlights/highlights.js",
             "functionToCall": "CreateHighlightsScene",
             "referenceImage": "highlights.png",
@@ -410,8 +410,7 @@
             "title": "Self shadowing",
             "scriptToRun": "/Demos/SelfShadowing/shadows.js",
             "functionToCall": "CreateShadowsTestScene",
-            "referenceImage": "selfShadowing.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "selfShadowing.png"
         },
         {
             "title": "Advanced shadows",
@@ -913,7 +912,7 @@
         },
         {
             "title": "GlowLayer",
-            "renderCount": 2,
+            "renderCount": 5,
             "playgroundId": "#LRFB2D#1",
             "referenceImage": "GlowLayer.png"
         },
@@ -1385,6 +1384,25 @@
             "title": "Baked Vertex Animation",
             "playgroundId": "#14WJWW#11",
             "referenceImage": "bakedVertexAnimation.png"
+        },
+        {
+            "title": "Bones and morphs computation order",
+            "renderCount": 40,
+            "playgroundId": "#WGZLGJ#4040",
+            "referenceImage": "bonesMorphsCompute.png",
+            "errorRatio": 1
+        },
+        {
+            "title": "DepthRenderer rhs",
+            "playgroundId": "#1PHYB0#138",
+            "renderCount": 5,
+            "referenceImage": "depthRendererRHS.png"
+        },
+        {
+            "title": "Test updateTextureData",
+            "playgroundId": "#EVX1DH#80",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "testUpdateTextureData.png"
         }
     ]
 }

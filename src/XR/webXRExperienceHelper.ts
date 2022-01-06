@@ -5,7 +5,7 @@ import { Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
-import { WebXRFeaturesManager } from "./webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
@@ -121,12 +121,19 @@ export class WebXRExperienceHelper implements IDisposable {
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
             await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
-            await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
-            await this.sessionManager.updateRenderStateAsync({
+            const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
+
+            const xrRenderState: XRRenderStateInit = {
                 depthFar: this.camera.maxZ,
                 depthNear: this.camera.minZ,
-                baseLayer: renderTarget.xrLayer!,
-            });
+            };
+
+            // The layers feature will have already initialized the xr session's layers on session init.
+            if (!this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
+                xrRenderState.baseLayer = baseLayer;
+            }
+
+            this.sessionManager.updateRenderState(xrRenderState);
             // run the render loop
             this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings
@@ -143,9 +150,16 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Kept here, TODO - check if needed
                 this.scene.autoClear = false;
                 this.camera.compensateOnFirstFrame = false;
+                // reset the camera's position to the origin
+                this.camera.position.set(0, 0, 0);
+                this.camera.rotationQuaternion.set(0, 0, 0, 1);
             }
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {
+                // when using the back button and not the exit button (default on mobile), the session is ending but the EXITING state was not set
+                if (this.state !== WebXRState.EXITING_XR) {
+                    this._setState(WebXRState.EXITING_XR);
+                }
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
                 this.camera.rigCameras.forEach((c) => {
                     c.outputRenderTarget = null;

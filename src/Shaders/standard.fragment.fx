@@ -1,6 +1,8 @@
 ﻿uniform sampler2D textureSampler;
 varying vec2 vUV;
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 #if defined(PASS_POST_PROCESS)
 void main(void)
 {

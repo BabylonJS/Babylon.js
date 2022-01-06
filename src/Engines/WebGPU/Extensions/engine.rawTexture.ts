@@ -56,7 +56,7 @@ WebGPUEngine.prototype.updateRawTexture = function (texture: Nullable<InternalTe
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -124,7 +124,7 @@ WebGPUEngine.prototype.updateRawCubeTexture = function (texture: InternalTexture
         data.push(new Uint8Array(faceData.buffer, faceData.byteOffset, faceData.byteLength));
     }
 
-    this._textureHelper.updateCubeTextures(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, invertY, false, 0, 0, this._uploadEncoder);
+    this._textureHelper.updateCubeTextures(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, invertY, false, 0, 0);
     if (texture.generateMipMaps) {
         this._generateMipmaps(texture, this._uploadEncoder);
     }
@@ -177,7 +177,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (url: string, scen
                     }
                     allFaces.push(new Uint8Array(mipFaceData.buffer, mipFaceData.byteOffset, mipFaceData.byteLength));
                 }
-                this._textureHelper.updateCubeTextures(allFaces, gpuTextureWrapper.underlyingResource!, mipSize, mipSize, gpuTextureWrapper.format, invertY, false, 0, 0, this._uploadEncoder);
+                this._textureHelper.updateCubeTextures(allFaces, gpuTextureWrapper.underlyingResource!, mipSize, mipSize, gpuTextureWrapper.format, invertY, false, 0, 0);
             }
         }
         else {
@@ -251,7 +251,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function (texture: InternalTexture, 
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -308,7 +308,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function (texture: InternalText
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }

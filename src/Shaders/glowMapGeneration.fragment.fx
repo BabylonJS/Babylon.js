@@ -24,6 +24,9 @@ uniform sampler2D emissiveSampler;
 
 uniform vec4 glowColor;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 

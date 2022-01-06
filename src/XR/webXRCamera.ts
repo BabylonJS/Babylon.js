@@ -248,18 +248,10 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Update viewport
-            if (this._xrSessionManager.session.renderState.baseLayer) {
-                var viewport = this._xrSessionManager.session.renderState.baseLayer.getViewport(view);
-                var width = this._xrSessionManager.session.renderState.baseLayer.framebufferWidth;
-                var height = this._xrSessionManager.session.renderState.baseLayer.framebufferHeight;
-                currentRig.viewport.width = viewport.width / width;
-                currentRig.viewport.height = viewport.height / height;
-                currentRig.viewport.x = viewport.x / width;
-                currentRig.viewport.y = viewport.y / height;
-            }
+            this._xrSessionManager.trySetViewportForView(currentRig.viewport, view);
 
             // Set cameras to render to the session's render target
-            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForEye(view.eye);
+            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForView(view);
         });
     }
 

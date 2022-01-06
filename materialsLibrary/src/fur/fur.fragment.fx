@@ -50,7 +50,13 @@ float Rand(vec3 rv) {
 	return fract(sin(x) * 43758.5453);
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
 	#include<clipPlaneFragment>
 	
@@ -133,4 +139,5 @@ void main(void) {
 
 #include<imageProcessingCompatibility>
 
+#define CUSTOM_FRAGMENT_MAIN_END
 }

@@ -146,7 +146,7 @@ export abstract class AbstractScene {
 
     /**
     * All of the animation groups added to this scene
-    * @see https://doc.babylonjs.com/how_to/group
+    * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
     */
     public animationGroups = new Array<AnimationGroup>();
 

@@ -65,6 +65,8 @@ void main(void)
 void main(void)
 {
     glFragColor = vec4(0.);
-    discard;
+    if (true) { // do not remove, else you will get a "warning: code is unreachable" error!
+        discard;
+    }
 }
 #endif

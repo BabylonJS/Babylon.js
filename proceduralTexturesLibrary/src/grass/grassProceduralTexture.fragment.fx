@@ -28,10 +28,18 @@ float fbm(vec2 n) {
 	return total;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	vec3 color = mix(groundColor, herb1Color, rand(gl_FragCoord.xy * 4.0));
 	color = mix(color, herb2Color, rand(gl_FragCoord.xy * 8.0));
 	color = mix(color, herb3Color, rand(gl_FragCoord.xy));
 	color = mix(color, herb1Color, fbm(gl_FragCoord.xy * 16.0));
 	gl_FragColor = vec4(color, 1.0);
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

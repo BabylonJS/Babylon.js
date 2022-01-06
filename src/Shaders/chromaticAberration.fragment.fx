@@ -12,6 +12,9 @@ uniform float screen_height;
 // varyings
 varying vec2 vUV;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec2 centered_screen_pos = vec2(vUV.x - centerPosition.x, vUV.y - centerPosition.y);

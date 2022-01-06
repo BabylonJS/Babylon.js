@@ -26,7 +26,7 @@
         },
         {
             "title": "sphere with custom shader to display wireframe using glow layer",
-            "renderCount": 2,
+            "renderCount": 5,
             "playgroundId": "#Y05E2C#6"
         },
         {
@@ -168,6 +168,21 @@
             "title": "change texture of material",
             "renderCount": 10,
             "playgroundId": "#7PN9PH#2"
+        },
+        {
+            "title": "screen space curvature",
+            "renderCount": 5,
+            "playgroundId": "#YF8D42#22"
+        },
+        {
+            "title": "digital rain",
+            "renderCount": 8,
+            "playgroundId": "#2I28SC#36"
+        },
+        {
+            "title": "ascii art",
+            "renderCount": 10,
+            "playgroundId": "#2I28SC#25"
         }
     ]
 }

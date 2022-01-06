@@ -7,6 +7,9 @@ uniform vec2 screenSize;
 uniform vec2 direction;
 uniform float blurWidth;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	float weights[7];

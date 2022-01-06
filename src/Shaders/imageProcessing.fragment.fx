@@ -8,6 +8,9 @@ uniform sampler2D textureSampler;
 
 #include<imageProcessingFunctions>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec4 result = texture2D(textureSampler, vUV);
