@@ -20,11 +20,10 @@ interface IPerformanceViewerComponentProps {
     scene: Scene;
 }
 
-// aribitrary window size
+// arbitrary window size
 const initialWindowSize = { width: 1024, height: 512 };
 
-// Note this should be false when committed until the feature is fully working.
-const isEnabled = false;
+const isEnabled = true;
 
 export enum IPerfMetadataCategory {
     Count = "Count",
@@ -111,7 +110,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
             setIsOpen(false);
             setIsLoadedFromCsv(true);
             performanceCollector?.stop();
-            const isValid = performanceCollector?.loadFromFileData(data, true);
+            const isValid = performanceCollector?.loadFromFileData(data);
             if (!isValid) {
                 // if our data isnt valid we close the window.
                 setIsOpen(false);
