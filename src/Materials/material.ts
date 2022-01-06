@@ -214,6 +214,9 @@ export class Material implements IAnimatable {
     @serialize()
     public uniqueId: number;
 
+    /** @hidden */
+    public _loadedUniqueId: string;
+
     /**
      * The name of the material
      */
@@ -1653,7 +1656,7 @@ export class Material implements IAnimatable {
         const serializationObject = SerializationHelper.Serialize(this);
 
         serializationObject.stencil = this.stencil.serialize();
-
+        serializationObject.uniqueId = this.uniqueId;
         return serializationObject;
     }
 
@@ -1677,6 +1680,8 @@ export class Material implements IAnimatable {
         }
 
         var materialType = Tools.Instantiate(parsedMaterial.customType);
-        return materialType.Parse(parsedMaterial, scene, rootUrl);
+        const material =  materialType.Parse(parsedMaterial, scene, rootUrl);
+        material._loadedUniqueId = parsedMaterial.uniqueId;
+        return material;
     }
 }

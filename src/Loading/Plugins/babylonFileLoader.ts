@@ -49,14 +49,14 @@ export class BabylonFileLoaderConfiguration {
 
 var tempIndexContainer: {[key: string]: Node} = {};
 
-var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
+var parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
         return null;
     }
 
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
         var parsedMaterial = parsedData.materials[index];
-        if (parsedMaterial.id === id) {
+        if (predicate(parsedMaterial)) {
             return Material.Parse(parsedMaterial, scene, rootUrl);
         }
     }
@@ -547,7 +547,8 @@ SceneLoader.RegisterPlugin({
             var hierarchyIds = new Array<number>();
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 var loadedSkeletonsIds = [];
-                var loadedMaterialsIds = [];
+                var loadedMaterialsIds : string[] = [];
+                const loadedMaterialsUniqueIds : string[] = [];
                 var index: number;
                 var cache: number;
                 for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -589,21 +590,35 @@ SceneLoader.RegisterPlugin({
                         }
 
                         // Material ?
-                        if (parsedMesh.materialId) {
-                            var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
+                        if (parsedMesh.materialUniqueId || parsedMesh.materialId) {
+                            // if we have a unique ID, look up and store in loadedMaterialsUniqueIds, else use laodedMaterialsIds
+                            const materialArray = parsedMesh.materialUniqueId ? loadedMaterialsUniqueIds : loadedMaterialsIds;
+                            var materialFound = (materialArray.indexOf(parsedMesh.materialUniqueId || parsedMesh.materialId) !== -1);
                             if (materialFound === false && parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
                                 for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
-                                    var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                    if (parsedMultiMaterial.id === parsedMesh.materialId) {
-                                        for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
-                                            var subMatId = parsedMultiMaterial.materials[matIndex];
-                                            loadedMaterialsIds.push(subMatId);
-                                            var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
-                                            if (mat) {
-                                                log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    const parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
+                                    if ((parsedMesh.materialUniqueId && parsedMultiMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMultiMaterial.id === parsedMesh.materialId) {
+                                        if (parsedMultiMaterial.materialsUniqueIds) { // if the materials inside the multimat are stored by unique id
+                                            for (var matIndex = 0, matCache = parsedMultiMaterial.materialsUniqueIds.length; matIndex < matCache; matIndex++) {
+                                                const subMatUniqueId = parsedMultiMaterial.materialsUniqueIds[matIndex];
+                                                loadedMaterialsUniqueIds.push(subMatUniqueId);
+                                                var mat = parseMaterialByPredicate((parsedMaterial) => parsedMaterial.uniqueId === subMatUniqueId, parsedData, scene, rootUrl);
+                                                if (mat) {
+                                                    log += "\n\tMaterial " + mat.toString(fullDetails);
+                                                }
+                                            }
+                                            
+                                        } else { // if the mats are stored by id instead
+                                            for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
+                                                var subMatId = parsedMultiMaterial.materials[matIndex];
+                                                materialArray.push(subMatId);
+                                                var mat = parseMaterialByPredicate((parsedMaterial) => parsedMaterial.id === subMatId, parsedData, scene, rootUrl);
+                                                if (mat) {
+                                                    log += "\n\tMaterial " + mat.toString(fullDetails);
+                                                }
                                             }
                                         }
-                                        loadedMaterialsIds.push(parsedMultiMaterial.id);
+                                        materialArray.push(parsedMultiMaterial.uniqueId || parsedMultiMaterial.id);
                                         var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
                                         if (mmat) {
                                             materialFound = true;
@@ -615,8 +630,8 @@ SceneLoader.RegisterPlugin({
                             }
 
                             if (materialFound === false) {
-                                loadedMaterialsIds.push(parsedMesh.materialId);
-                                var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                materialArray.push(parsedMesh.parsedMesh.materialUniqueId || parsedMesh.materialId);
+                                var mat = parseMaterialByPredicate((parsedMaterial) => (parsedMesh.MaterialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId || parsedMaterial.id === parsedMesh.materialId), parsedData, scene, rootUrl);
                                 if (!mat) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {

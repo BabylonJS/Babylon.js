@@ -1868,6 +1868,7 @@ export class StandardMaterial extends PushMaterial {
         const serializationObject = SerializationHelper.Serialize(this);
 
         serializationObject.stencil = this.stencil.serialize();
+        serializationObject.uniqueId = this.uniqueId;
 
         return serializationObject;
     }
