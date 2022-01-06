@@ -5893,11 +5893,13 @@ declare module BABYLON {
          */
         set hasAlpha(value: boolean);
         get hasAlpha(): boolean;
+        private _getAlphaFromRGB;
         /**
          * Defines if the alpha value should be determined via the rgb values.
          * If true the luminance of the pixel might be used to find the corresponding alpha value.
          */
-        getAlphaFromRGB: boolean;
+        set getAlphaFromRGB(value: boolean);
+        get getAlphaFromRGB(): boolean;
         /**
          * Intensity or strength of the texture.
          * It is commonly used by materials to fine tune the intensity of the texture
@@ -8848,7 +8850,7 @@ declare module BABYLON {
         /** @hidden */
         _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void;
         /** @hidden */
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh, invertTriangles?: boolean): void;
         /** @hidden */
         _getResponse(pos: Vector3, vel: Vector3): void;
     }
@@ -30107,6 +30109,8 @@ declare module BABYLON {
         addInstance(instance: InstancedMesh): void;
         /** @hidden */
         removeInstance(instance: InstancedMesh): void;
+        /** @hidden */
+        _shouldConvertRHS(): boolean;
     }
 }
 declare module BABYLON {
@@ -36711,6 +36715,8 @@ declare module BABYLON {
         _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh;
         /** @hidden */
         _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh;
+        /** @hidden */
+        _shouldConvertRHS(): boolean;
         /** @hidden */
         _checkCollision(collider: Collider): AbstractMesh;
         /** @hidden */
@@ -74748,6 +74754,10 @@ declare module BABYLON {
          * The create custom shape handler function to be called when using BABYLON.PhysicsImposter.CustomImpostor
          */
         onCreateCustomShape: (impostor: PhysicsImpostor) => any;
+        /**
+         * The create custom mesh impostor handler function to support building custom mesh impostor vertex data (Ex: Ammo.btSmoothTriangleMesh)
+         */
+        onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
         private _isImpostorInContact;
         private _isImpostorPairInContact;
         private _stepSimulation;

@@ -400,7 +400,7 @@ export class Collider {
                 const p1 = pts[i];
                 const p2 = pts[i + 1];
                 const p3 = pts[i + 2];
-                
+
                 if (invertTriangles) {
                     this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
                 } else {
