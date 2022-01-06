@@ -53,7 +53,6 @@ export class Vector2 {
     public getHashCode(): number {
         const x = _ExtractAsInt(this.x);
         const y = _ExtractAsInt(this.y);
-        
         let hash = x;
         hash = (hash * 397) ^ y;
         return hash;
