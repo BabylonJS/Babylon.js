@@ -188,18 +188,20 @@ export class MultiMaterial extends Material {
 
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
         if (Tags) {
             serializationObject.tags = Tags.GetTags(this);
         }
+        serializationObject.materialsUniqueIds = [];
         serializationObject.materials = [];
 
         for (var matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {
             var subMat = this.subMaterials[matIndex];
 
             if (subMat) {
-                serializationObject.materials.push(subMat.id);
+                serializationObject.materialsUniqueIds.push(subMat.uniqueId);
             } else {
-                serializationObject.materials.push(null);
+                serializationObject.materialsUniqueIds.push(null);
             }
         }
 
@@ -245,21 +247,32 @@ export class MultiMaterial extends Material {
         var multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
 
         multiMaterial.id = parsedMultiMaterial.id;
+        multiMaterial._loadedUniqueId = parsedMultiMaterial.uniqueId;
 
         if (Tags) {
             Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
         }
 
-        for (var matIndex = 0; matIndex < parsedMultiMaterial.materials.length; matIndex++) {
-            var subMatId = parsedMultiMaterial.materials[matIndex];
-
-            if (subMatId) {
-                // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
-                // is why this lookup should use getLastMaterialByID instead of getMaterialByID
-                multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId));
-            } else {
-                multiMaterial.subMaterials.push(null);
-            }
+        if (parsedMultiMaterial.materialsUniqueIds) {
+            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: any) => {
+                if (subMatId) {
+                    // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
+                    // is why this lookup should use getLastMaterialByUniqueId
+                    multiMaterial.subMaterials.push(scene.getLastMaterialByUniqueId(subMatId));
+                } else {
+                    multiMaterial.subMaterials.push(null);
+                }
+            });
+        } else {
+            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: any) => {
+                if (subMatId) {
+                    // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
+                    // is why this lookup should use getLastMaterialByID instead of getMaterialByID
+                    multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId));
+                } else {
+                    multiMaterial.subMaterials.push(null);
+                }
+            });
         }
 
         return multiMaterial;
