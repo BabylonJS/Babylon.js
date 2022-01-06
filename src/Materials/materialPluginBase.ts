@@ -2,6 +2,7 @@ import { SerializationHelper, serialize } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { MaterialPluginManager } from "./materialPluginManager";
 import { SmartArray } from "../Misc/smartArray";
+import { Constants } from "../Engines/constants";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -49,6 +50,11 @@ export class MaterialPluginBase {
     }
 
     /**
+     * Helper function to mark defines as being dirty.
+     */
+    protected readonly markAllDefinesAsDirty: () => void;
+
+    /**
      * Creates a new material plugin
      * @param material parent material of the plugin
      * @param name name of the plugin
@@ -76,6 +82,8 @@ export class MaterialPluginBase {
         if (enable) {
             this._enable(true);
         }
+
+        this.markAllDefinesAsDirty = material._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag];
     }
 
     /**
