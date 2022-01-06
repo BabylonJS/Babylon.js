@@ -1698,6 +1698,7 @@ export class Control {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
