@@ -108,7 +108,13 @@ varying vec3 vNormalW;
     }
 #endif
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
 
     vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
@@ -305,4 +311,6 @@ void main(void) {
 #endif
 
     gl_FragColor = color;
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

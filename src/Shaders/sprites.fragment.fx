@@ -9,7 +9,13 @@ uniform sampler2D diffuseSampler;
 // Fog
 #include<fogFragmentDeclaration>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	vec4 color = texture2D(diffuseSampler, vUV);
 
 	if (alphaTest) 
@@ -25,4 +31,6 @@ void main(void) {
 	gl_FragColor = color;
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

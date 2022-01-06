@@ -592,7 +592,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
-     * @see https://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
+     * @see https://doc.babylonjs.com/divingDeeper/cameras/layerMasksAndMultiCam
      */
     public get layerMask(): number {
         return this._internalAbstractMeshDataInfo._layerMask;
@@ -1013,14 +1013,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
      /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
+     * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
      */
-    public resetDrawCache(): void {
+    public resetDrawCache(passId?: number): void {
         if (!this.subMeshes) {
              return;
         }
 
         for (const subMesh of this.subMeshes) {
-            subMesh.resetDrawCache();
+            subMesh.resetDrawCache(passId);
         }
     }
 
@@ -1684,7 +1685,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.indexStart + subMesh.indexCount,
             subMesh.verticesStart,
             !!subMesh.getMaterial(),
-            this
+            this,
+            this._shouldConvertRHS()
         );
         return this;
     }
@@ -1705,6 +1707,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             this._collideForSubMesh(subMesh, transformMatrix, collider);
         }
         return this;
+    }
+
+    /** @hidden */
+    public _shouldConvertRHS() {
+        return false;
     }
 
     /** @hidden */

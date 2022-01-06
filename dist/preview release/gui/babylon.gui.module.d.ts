@@ -248,6 +248,11 @@ declare module "babylonjs-gui/2D/math2D" {
          */
         static Identity(): Matrix2D;
         /**
+         * Creates an identity matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix2D): void;
+        /**
          * Creates a translation matrix and stores it in a target matrix
          * @param x defines the x coordinate of the translation
          * @param y defines the y coordinate of the translation
@@ -837,7 +842,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
-        private _descendentsOnlyPadding;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -898,6 +903,10 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -1144,8 +1153,8 @@ declare module "babylonjs-gui/2D/controls/control" {
          * Gets or sets a value indicating the padding should work like in CSS.
          * Basically, it will add the padding amount on each side of the parent control for its children.
          */
-        get descendentsOnlyPadding(): boolean;
-        set descendentsOnlyPadding(value: boolean);
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1685,7 +1694,11 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         /**
          * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
          */
-        Ellipsis = 2
+        Ellipsis = 2,
+        /**
+         * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+         */
+        WordWrapEllipsis = 3
     }
     /**
      * Class used to create text block control
@@ -1818,11 +1831,13 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         /** @hidden */
         _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
         protected _applyStates(context: ICanvasRenderingContext): void;
-        protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[];
+        protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: ICanvasRenderingContext): object;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: ICanvasRenderingContext): object[];
+        protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: ICanvasRenderingContext): object[];
         protected _renderLines(context: ICanvasRenderingContext): void;
+        private _computeHeightForLinesOf;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -2038,6 +2053,7 @@ declare module "babylonjs-gui/2D/controls/button" {
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
     import { Image } from "babylonjs-gui/2D/controls/image";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to create 2D buttons
      */
@@ -2089,6 +2105,13 @@ declare module "babylonjs-gui/2D/controls/button" {
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /** @hidden */
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void;
+        /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -7377,6 +7400,11 @@ declare module BABYLON.GUI {
          */
         static Identity(): Matrix2D;
         /**
+         * Creates an identity matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix2D): void;
+        /**
          * Creates a translation matrix and stores it in a target matrix
          * @param x defines the x coordinate of the translation
          * @param y defines the y coordinate of the translation
@@ -7939,7 +7967,7 @@ declare module BABYLON.GUI {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
-        private _descendentsOnlyPadding;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -8000,6 +8028,10 @@ declare module BABYLON.GUI {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -8246,8 +8278,8 @@ declare module BABYLON.GUI {
          * Gets or sets a value indicating the padding should work like in CSS.
          * Basically, it will add the padding amount on each side of the parent control for its children.
          */
-        get descendentsOnlyPadding(): boolean;
-        set descendentsOnlyPadding(value: boolean);
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -8772,7 +8804,11 @@ declare module BABYLON.GUI {
         /**
          * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
          */
-        Ellipsis = 2
+        Ellipsis = 2,
+        /**
+         * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+         */
+        WordWrapEllipsis = 3
     }
     /**
      * Class used to create text block control
@@ -8905,11 +8941,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
-        protected _breakLines(refWidth: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _breakLines(refWidth: number, refHeight: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _renderLines(context: BABYLON.ICanvasRenderingContext): void;
+        private _computeHeightForLinesOf;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -9164,6 +9202,13 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
+        /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button

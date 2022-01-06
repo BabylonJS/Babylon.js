@@ -9,7 +9,13 @@ uniform vec2 meshPositionOnScreen;
 
 varying vec2 vUV;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
     vec2 tc = vUV;
 	vec2 deltaTexCoord = (tc - meshPositionOnScreen.xy);
     deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;
@@ -28,4 +34,6 @@ void main(void) {
 
     vec4 realColor = texture2D(textureSampler, vUV);
     gl_FragColor = ((vec4((vec3(color.r, color.g, color.b) * exposure), 1)) + (realColor * (1.5 - 0.4)));
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

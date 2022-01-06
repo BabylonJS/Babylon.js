@@ -96,6 +96,7 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Fragment_Begin: string;
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
+        Fragment_MainEnd: string;
         Fragment_Custom_Diffuse: string;
         Fragment_Before_Lights: string;
         Fragment_Before_Fog: string;
@@ -134,6 +135,7 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Fragment_Begin(shaderPart: string): CustomMaterial;
         Fragment_Definitions(shaderPart: string): CustomMaterial;
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
+        Fragment_MainEnd(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
         Fragment_Before_Lights(shaderPart: string): CustomMaterial;
@@ -161,6 +163,7 @@ declare module "babylonjs-materials/custom/pbrCustomMaterial" {
         Fragment_Begin: string;
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
+        Fragment_MainEnd: string;
         Fragment_Custom_Albedo: string;
         Fragment_Before_Lights: string;
         Fragment_Custom_MetallicRoughness: string;
@@ -210,6 +213,7 @@ declare module "babylonjs-materials/custom/pbrCustomMaterial" {
         Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_FinalColorComposition(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainEnd(shaderPart: string): PBRCustomMaterial;
         Vertex_Begin(shaderPart: string): PBRCustomMaterial;
         Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
         Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
@@ -1672,6 +1676,7 @@ declare module BABYLON {
         Fragment_Begin: string;
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
+        Fragment_MainEnd: string;
         Fragment_Custom_Diffuse: string;
         Fragment_Before_Lights: string;
         Fragment_Before_Fog: string;
@@ -1710,6 +1715,7 @@ declare module BABYLON {
         Fragment_Begin(shaderPart: string): CustomMaterial;
         Fragment_Definitions(shaderPart: string): CustomMaterial;
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
+        Fragment_MainEnd(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
         Fragment_Before_Lights(shaderPart: string): CustomMaterial;
@@ -1730,6 +1736,7 @@ declare module BABYLON {
         Fragment_Begin: string;
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
+        Fragment_MainEnd: string;
         Fragment_Custom_Albedo: string;
         Fragment_Before_Lights: string;
         Fragment_Custom_MetallicRoughness: string;
@@ -1779,6 +1786,7 @@ declare module BABYLON {
         Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_FinalColorComposition(shaderPart: string): PBRCustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainEnd(shaderPart: string): PBRCustomMaterial;
         Vertex_Begin(shaderPart: string): PBRCustomMaterial;
         Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
         Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;

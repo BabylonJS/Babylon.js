@@ -6,13 +6,17 @@ import { useEffect, useState } from "react";
 import { ColorPickerLineComponent } from "../../../../sharedUiComponents/lines/colorPickerComponent";
 import { faSquare, faCheckSquare } from "@fortawesome/free-solid-svg-icons";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { Observable } from "babylonjs/Misc/observable";
+import { IPerfMinMax, IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
+import { Engine } from "babylonjs/Engines/engine";
 
 interface IPerformanceViewerSidebarComponentProps {
     collector: PerformanceViewerCollector;
+    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
 }
 
 export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSidebarComponentProps) => {
-    const { collector } = props;
+    const { collector, onVisibleRangeChangedObservable } = props;
     // Map from id to IPerfMetadata information
     const [metadataMap, setMetadataMap] = useState<Map<string, IPerfMetadata>>();
     // Map from category to all the ids belonging to that category
@@ -21,6 +25,21 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
     const [metadataCategoryChecked, setMetadataCategoryChecked] = useState<Map<string, number>>();
     // List of ordered categories
     const [metadataCategories, setMetadataCategories] = useState<string[]>();
+    // Min/Max/Current values of the ids
+    const [valueMap, setValueMap] = useState<Map<string, IPerfMinMax>>();
+
+    useEffect(() => {
+        if (!onVisibleRangeChangedObservable) {
+            return;
+        }
+        const observer = (props: IVisibleRangeChangedObservableProps) => {
+            setValueMap(props.valueMap);
+        }
+        onVisibleRangeChangedObservable.add(observer);
+        return () => {
+            onVisibleRangeChangedObservable.removeCallback(observer);
+        }
+    }, [onVisibleRangeChangedObservable]);
 
     useEffect(() => {
         const onUpdateMetadata = (metadata: Map<string, IPerfMetadata>) => {
@@ -79,12 +98,13 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                             <span className="category">{category}</span>
                             <CheckBoxLineComponent isSelected={() => metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onSelect={onCheckAllChange(category)} faIcons={{enabled: faCheckSquare, disabled: faSquare}} />
                           </div>
-                        : <div className="version-header header sidebar-item" key={"header-version"}>
+                        : <div className="version-header sidebar-item" key={"header-version"}>
                             <span className="category">Version:</span>
-                            <span className="value">100</span>
+                            <span className="value">{Engine.Version}</span>
                         </div>}
                     {metadataCategoryId?.get(category)?.map((id) => {
                         const metadata = metadataMap?.get(id);
+                        const range = valueMap?.get(id);
                         return metadata && <div key={`perf-sidebar-item-${id}`} className="sidebar-item measure">
                             {/* div with check box, color picker and category name */}
                             <div className="category">
@@ -93,9 +113,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                                 <span className="sidebar-item-label">{id}</span>
                             </div>
                             {/* div with category value */}
-                            <div className="value">
-                                100
-                            </div>
+                            {range && <div className="value"> { ((range.min + range.max) / 2).toFixed(2) } </div>}
                         </div>
                     })}
                 </div>

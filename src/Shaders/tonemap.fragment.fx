@@ -20,6 +20,9 @@ float Luminance(vec3 c)
     return dot(c, vec3(0.22, 0.707, 0.071));
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) 
 {
     vec3 colour = texture2D(textureSampler, vUV).rgb;

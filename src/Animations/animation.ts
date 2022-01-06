@@ -1099,6 +1099,15 @@ export class Animation {
                         }
                         key.values.push(animationKey.outTangent);
                     }
+                    if (animationKey.interpolation !== undefined) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        if (animationKey.outTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.interpolation);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_QUATERNION:
                 case Animation.ANIMATIONTYPE_MATRIX:
@@ -1114,6 +1123,15 @@ export class Animation {
                             key.values.push(undefined);
                         }
                         key.values.push(animationKey.outTangent.asArray());
+                    }
+                    if (animationKey.interpolation !== undefined) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        if (animationKey.outTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.interpolation);
                     }
                     break;
             }
@@ -1223,15 +1241,19 @@ export class Animation {
             var key = parsedAnimation.keys[index];
             let inTangent: any = undefined;
             let outTangent: any = undefined;
+            let interpolation: any = undefined;
 
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     data = key.values[0];
-                    if (key.values.length >= 1) {
+                    if (key.values.length >= 2) {
                         inTangent = key.values[1];
                     }
-                    if (key.values.length >= 2) {
+                    if (key.values.length >= 3) {
                         outTangent = key.values[2];
+                    }
+                    if (key.values.length >= 4) {
+                        interpolation = key.values[3];
                     }
                     break;
                 case Animation.ANIMATIONTYPE_QUATERNION:
@@ -1248,9 +1270,15 @@ export class Animation {
                             outTangent = _outTangent;
                         }
                     }
+                    if (key.values.length >= 13) {
+                        interpolation = key.values[12];
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_MATRIX:
                     data = Matrix.FromArray(key.values);
+                    if (key.values.length >= 17) {
+                        interpolation = key.values[16];
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     data = Color3.FromArray(key.values);
@@ -1259,6 +1287,9 @@ export class Animation {
                     }
                     if (key.values[4]) {
                         outTangent = Color3.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        interpolation = key.values[5];
                     }
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
@@ -1269,6 +1300,9 @@ export class Animation {
                     if (key.values[5]) {
                         outTangent = Color4.FromArray(key.values[5]);
                     }
+                    if (key.values[6]) {
+                        interpolation = Color4.FromArray(key.values[6]);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:
@@ -1278,6 +1312,9 @@ export class Animation {
                     }
                     if (key.values[4]) {
                         outTangent = Vector3.FromArray(key.values[4]);
+                    }
+                    if (key.values[5]) {
+                        interpolation = key.values[5];
                     }
                     break;
             }
@@ -1291,6 +1328,9 @@ export class Animation {
             }
             if (outTangent != undefined) {
                 keyData.outTangent = outTangent;
+            }
+            if (interpolation != undefined) {
+                keyData.interpolation = interpolation;
             }
             keys.push(keyData);
         }
@@ -1330,6 +1370,9 @@ export class Animation {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
+                        if (serializationObject.animations) {
+                            serializationObject = serializationObject.animations;
+                        }
 
                         if (serializationObject.length) {
                             let output = new Array<Animation>();

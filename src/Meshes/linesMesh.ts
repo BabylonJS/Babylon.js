@@ -112,7 +112,7 @@ export class LinesMesh extends Mesh {
         if (material) {
             this.material = material;
         } else {
-            this._lineMaterial = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+            this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
         }
     }
 
@@ -143,6 +143,7 @@ export class LinesMesh extends Mesh {
      */
     public set material(value: Material) {
         this._lineMaterial = value;
+        this._lineMaterial.fillMode = Material.LineListDrawMode;
     }
 
     /**
@@ -218,7 +219,7 @@ export class LinesMesh extends Mesh {
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */

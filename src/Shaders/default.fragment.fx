@@ -472,4 +472,6 @@ color.rgb = max(color.rgb, 0.);
 	}
 #endif
 
+#define CUSTOM_FRAGMENT_MAIN_END
+
 }

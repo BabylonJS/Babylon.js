@@ -67,7 +67,13 @@ uniform vec2 diffuse8Infos;
 // Fog
 #include<fogFragmentDeclaration>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 	// Clip plane
 	#include<clipPlaneFragment>
 
@@ -166,4 +172,6 @@ void main(void) {
 	gl_FragColor = color;
 
 #include<imageProcessingCompatibility>
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }
