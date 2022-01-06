@@ -371,6 +371,7 @@
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
+- Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
