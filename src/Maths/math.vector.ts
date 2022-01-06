@@ -10,6 +10,10 @@ import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
 type TransformNode = import('../Meshes/transformNode').TransformNode;
 
+var _ExtractAsInt = (value: number) => {
+    return parseInt(value.toString().replace(/\W/g, ""));
+}
+
 /**
  * Class representing a vector containing 2 coordinates
  */
@@ -47,8 +51,8 @@ export class Vector2 {
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        const x = parseInt(this.x.toString().replace(/\W/g, ""));
-        const y = parseInt(this.y.toString().replace(/\W/g, ""));
+        const x = _ExtractAsInt(this.x);
+        const y = _ExtractAsInt(this.y);
         
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -839,9 +843,9 @@ export class Vector3 {
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        const x = parseInt(this._x.toString().replace(/\W/g, ""));
-        const y = parseInt(this._y.toString().replace(/\W/g, ""));
-        const z = parseInt(this._z.toString().replace(/\W/g, ""));
+        const x = _ExtractAsInt(this._x);
+        const y = _ExtractAsInt(this._y);
+        const z = _ExtractAsInt(this._z);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -2480,10 +2484,10 @@ export class Vector4 {
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        const x = parseInt(this.x.toString().replace(/\W/g, ""));
-        const y = parseInt(this.y.toString().replace(/\W/g, ""));
-        const z = parseInt(this.z.toString().replace(/\W/g, ""));
-        const w = parseInt(this.w.toString().replace(/\W/g, ""));
+        const x = _ExtractAsInt(this.x);
+        const y = _ExtractAsInt(this.y);
+        const z = _ExtractAsInt(this.z);
+        const w = _ExtractAsInt(this.w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -3319,10 +3323,10 @@ export class Quaternion {
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        const x = parseInt(this._x.toString().replace(/\W/g, ""));
-        const y = parseInt(this._y.toString().replace(/\W/g, ""));
-        const z = parseInt(this._z.toString().replace(/\W/g, ""));
-        const w = parseInt(this._w.toString().replace(/\W/g, ""));
+        const x = _ExtractAsInt(this._x);
+        const y = _ExtractAsInt(this._y);
+        const z = _ExtractAsInt(this._z);
+        const w = _ExtractAsInt(this._w);
 
         let hash = x;
         hash = (hash * 397) ^ y;
@@ -4750,18 +4754,14 @@ export class Matrix {
         return "Matrix";
     }
 
-    private _extractAsInt(value: number) {
-        return parseInt(value.toString().replace(/\W/g, ""));
-    }
-
     /**
      * Gets the hash code of the current matrix
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = this._extractAsInt(this._m[0]);
+        let hash = _ExtractAsInt(this._m[0]);
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ this._extractAsInt(this._m[i]);
+            hash = (hash * 397) ^ _ExtractAsInt(this._m[i]);
         }
         return hash;
     }
