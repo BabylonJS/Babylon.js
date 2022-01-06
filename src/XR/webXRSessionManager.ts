@@ -131,7 +131,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * @returns Promise which resolves after it exits XR
      */
     public exitXRAsync() {
-        if (this.session && !this.inXRSession) {
+        if (this.session && this.inXRSession) {
             this.inXRSession = false;
             return this.session.end().catch((e) => {
                 Logger.Warn("Could not end XR session.");
