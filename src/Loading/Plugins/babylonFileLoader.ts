@@ -595,28 +595,21 @@ SceneLoader.RegisterPlugin({
                             const materialArray = parsedMesh.materialUniqueId ? loadedMaterialsUniqueIds : loadedMaterialsIds;
                             var materialFound = (materialArray.indexOf(parsedMesh.materialUniqueId || parsedMesh.materialId) !== -1);
                             if (materialFound === false && parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
+                                // Loads a submaterial of a multimaterial
+                                const loadSubMaterial = (subMatId: string, predicate: (parsedMaterial: any) => boolean) => {
+                                    materialArray.push(subMatId);
+                                    var mat = parseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
+                                    if (mat) {
+                                        log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    }
+                                }
                                 for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
                                     const parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
                                     if ((parsedMesh.materialUniqueId && parsedMultiMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMultiMaterial.id === parsedMesh.materialId) {
                                         if (parsedMultiMaterial.materialsUniqueIds) { // if the materials inside the multimat are stored by unique id
-                                            for (var matIndex = 0, matCache = parsedMultiMaterial.materialsUniqueIds.length; matIndex < matCache; matIndex++) {
-                                                const subMatUniqueId = parsedMultiMaterial.materialsUniqueIds[matIndex];
-                                                loadedMaterialsUniqueIds.push(subMatUniqueId);
-                                                var mat = parseMaterialByPredicate((parsedMaterial) => parsedMaterial.uniqueId === subMatUniqueId, parsedData, scene, rootUrl);
-                                                if (mat) {
-                                                    log += "\n\tMaterial " + mat.toString(fullDetails);
-                                                }
-                                            }
-                                            
+                                            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: string) => loadSubMaterial(subMatId, parsedMaterial => parsedMaterial.uniqueId === subMatId));
                                         } else { // if the mats are stored by id instead
-                                            for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
-                                                var subMatId = parsedMultiMaterial.materials[matIndex];
-                                                materialArray.push(subMatId);
-                                                var mat = parseMaterialByPredicate((parsedMaterial) => parsedMaterial.id === subMatId, parsedData, scene, rootUrl);
-                                                if (mat) {
-                                                    log += "\n\tMaterial " + mat.toString(fullDetails);
-                                                }
-                                            }
+                                            parsedMultiMaterial.materials.forEach((subMatId: string) => loadSubMaterial(subMatId, parsedMaterial => parsedMaterial.id === subMatId));
                                         }
                                         materialArray.push(parsedMultiMaterial.uniqueId || parsedMultiMaterial.id);
                                         var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
