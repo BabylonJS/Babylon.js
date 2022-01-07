@@ -14,7 +14,6 @@ declare const _native: INative;
 /** @hidden */
 export class InternalDeviceSourceManager implements IDisposable {
     // Public Members
-    /** @hidden */
     public readonly onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
         this.getDevices().forEach((device) => {
             if (device) {
@@ -23,10 +22,8 @@ export class InternalDeviceSourceManager implements IDisposable {
         });
     });
 
-    /** @hidden */
     public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
 
-    /** @hidden */
     public readonly onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
 
     // Private Members
@@ -36,7 +33,6 @@ export class InternalDeviceSourceManager implements IDisposable {
 
     private _oninputChangedObserver: Nullable<Observer<IDeviceEvent>>;
 
-    /** @hidden */
     public static _Create(engine: Engine): InternalDeviceSourceManager {
         if (!engine._deviceSourceManager) {
             engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
@@ -73,7 +69,6 @@ export class InternalDeviceSourceManager implements IDisposable {
     }
 
     // Public Functions
-    /** @hidden */
     public getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> => {
         if (deviceSlot === undefined) {
             if (this._firstDevice[deviceType] === undefined) {
@@ -96,12 +91,10 @@ export class InternalDeviceSourceManager implements IDisposable {
         return this._devices[deviceType][deviceSlot];
     }
 
-    /** @hidden */
     public getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => {
         return this._devices[deviceType].filter((source) => { return !!source; });
     }
 
-    /** @hidden */
     public getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => {
         const deviceArray = new Array<DeviceSource<DeviceType>>();
         this._devices.forEach((deviceSet) => {
@@ -111,8 +104,7 @@ export class InternalDeviceSourceManager implements IDisposable {
         return deviceArray;
     }
 
-    /** @hidden */
-    public dispose() {
+    public dispose(): void {
         this.onDeviceConnectedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();
@@ -124,7 +116,7 @@ export class InternalDeviceSourceManager implements IDisposable {
      * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    private _addDevice(deviceType: DeviceType, deviceSlot: number) {
+    private _addDevice(deviceType: DeviceType, deviceSlot: number): void {
         if (!this._devices[deviceType]) {
             this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
         }
@@ -140,7 +132,7 @@ export class InternalDeviceSourceManager implements IDisposable {
      * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    private _removeDevice(deviceType: DeviceType, deviceSlot: number) {
+    private _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
         if (this._devices[deviceType]?.[deviceSlot]) {
             delete this._devices[deviceType][deviceSlot];
         }
@@ -152,7 +144,7 @@ export class InternalDeviceSourceManager implements IDisposable {
      * Updates array storing first connected device of each type
      * @param type Type of Device
      */
-    private _updateFirstDevices(type: DeviceType) {
+    private _updateFirstDevices(type: DeviceType): void {
         switch (type) {
             case DeviceType.Keyboard:
             case DeviceType.Mouse:

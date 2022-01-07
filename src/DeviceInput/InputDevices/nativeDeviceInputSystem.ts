@@ -53,7 +53,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
      * @param deviceType Type of device to check for
      * @returns bool with status of device's existence
      */
-    public isDeviceAvailable(deviceType: DeviceType) {
+    public isDeviceAvailable(deviceType: DeviceType): boolean {
         //TODO: FIx native side first
         return (deviceType === DeviceType.Mouse || deviceType === DeviceType.Touch);
     }
