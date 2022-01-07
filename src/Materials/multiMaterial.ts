@@ -253,26 +253,21 @@ export class MultiMaterial extends Material {
             Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
         }
 
+        const addSubMaterial = (subMatId: string, getMaterialFunction: (id: string) => Nullable<Material>) => {
+            if (subMatId) {
+                multiMaterial.subMaterials.push(getMaterialFunction(subMatId));
+            } else {
+                multiMaterial.subMaterials.push(null);
+            }
+        }
+
+        // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
+        // is why this lookup should use getLastMaterialByID instead of getMaterialByID
         if (parsedMultiMaterial.materialsUniqueIds) {
-            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: any) => {
-                if (subMatId) {
-                    // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
-                    // is why this lookup should use getLastMaterialByUniqueId
-                    multiMaterial.subMaterials.push(scene.getLastMaterialByUniqueId(subMatId));
-                } else {
-                    multiMaterial.subMaterials.push(null);
-                }
-            });
+            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: any) => addSubMaterial(subMatId, (uniqueId) => scene.getLastMaterialByUniqueId(uniqueId)));
         } else {
-            parsedMultiMaterial.materials.forEach((subMatId: any) => {
-                if (subMatId) {
-                    // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
-                    // is why this lookup should use getLastMaterialByID instead of getMaterialByID
-                    multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId));
-                } else {
-                    multiMaterial.subMaterials.push(null);
-                }
-            });
+            parsedMultiMaterial.materials.forEach((subMatId: any) => addSubMaterial(subMatId, (id) => scene.getLastMaterialById(id)));
+            
         }
 
         return multiMaterial;
