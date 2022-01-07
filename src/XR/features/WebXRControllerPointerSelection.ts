@@ -591,10 +591,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
         xrController.onDisposeObservable.addOnce(() => {
             this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-            if (controllerData.pick && downTriggered && !this._options.disablePointerUpOnTouchOut) {
-                this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                controllerData.finalPointerUpTriggered = true;
-            }
+            this._xrSessionManager.runInXRFrame(() => {
+                if (controllerData.pick && !controllerData.finalPointerUpTriggered && downTriggered && !this._options.disablePointerUpOnTouchOut) {
+                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                    controllerData.finalPointerUpTriggered = true;
+                }
+            });
         });
     }
 

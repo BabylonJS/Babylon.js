@@ -10,10 +10,10 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { Container } from "babylonjs-gui/2D/controls/container";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -49,10 +49,9 @@ interface ICommonControlPropertyGridComponentProps {
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     private _width = this.props.control.width;
     private _height = this.props.control.height;
-    private _responsive: boolean = false;
+
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
-        this._responsive = DataStorage.ReadBoolean("Responsive", true);
     }
 
     private _updateAlignment(alignment: string, value: number) {
@@ -66,8 +65,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
-        //check if it contains either a px or a % sign
-        let percentage = this._responsive;
+
+        // checking the previous value unit to see what it was.
+        const vau = (this.props.control as any)["_" +propertyName];
+        let percentage = (vau as ValueAndUnit).isPercentage;
+        
+        // now checking if the new string contains either a px or a % sign in case we need to change the unit.
         let negative = value.charAt(0) === "-";
         if (value.charAt(value.length - 1) === "%") {
             percentage = true;
@@ -174,6 +177,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         lockObject={this.props.lockObject}
                         label="X"
                         target={control}
+                        delayInput={true}
                         propertyName="left"
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -183,6 +187,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={control}
+                        delayInput={true}
                         propertyName="top"
                         onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -196,6 +201,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         lockObject={this.props.lockObject}
                         label="W"
                         target={this}
+                        delayInput={true}
                         propertyName="_width"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
@@ -219,6 +225,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         lockObject={this.props.lockObject}
                         label="H"
                         target={this}
+                        delayInput={true}
                         propertyName="_height"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
@@ -247,6 +254,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="B"
                         target={control}
                         propertyName="paddingBottom"
+                        delayInput={true}
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingBottom", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -256,6 +264,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="T"
                         target={control}
                         propertyName="paddingTop"
+                        delayInput={true}
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingTop", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -269,6 +278,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="L"
                         target={control}
                         propertyName="paddingLeft"
+                        delayInput={true}
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingLeft", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -277,6 +287,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         lockObject={this.props.lockObject}
                         label="R"
                         target={control}
+                        delayInput={true}
                         propertyName="paddingRight"
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingRight", newValue); this._markChildrenAsDirty(); }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}

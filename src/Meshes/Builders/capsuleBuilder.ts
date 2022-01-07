@@ -7,7 +7,7 @@ import { Scene } from "../../scene";
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
  * @param options the constructors options used to shape the mesh.
  * @returns the capsule VertexData
- * @see https://doc.babylonjs.com/how_to/capsule_shape
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/capsule
  */
 export function CreateCapsuleVertexData(
     options: ICreateCapsuleOptions = {

@@ -82,6 +82,8 @@
 }
 
 .diagram-container {
+    position: relative;
+    display: grid;
     grid-row: 1;
     grid-column: 4;
     background: #5f5b60;
@@ -92,6 +94,19 @@
         display: none;
         width: 100%;
         height: 100%;
+    }
+
+    .ge-scalePoint {
+        width: 10px;
+        height: 10px;
+        background: transparent;
+        outline: rgb(125, 125, 125) 2px solid;
+    }
+
+    .ge-pivotPoint {
+        width: 30px;
+        height: 30px;
+        background: transparent;
     }
 }
 

@@ -7,7 +7,13 @@ uniform vec4 color;
 
 #include<clipPlaneFragmentDeclaration>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
 
 #ifdef VERTEXCOLOR
@@ -15,4 +21,6 @@ void main(void) {
 #else
 	gl_FragColor = color;
 #endif
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

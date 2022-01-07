@@ -16,7 +16,13 @@ varying vec4 vColor;
 
 #include<fogVertexDeclaration>
 
-void main(void) {	
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
+void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+	
 	vec3 viewPos = (view * vec4(position.xyz, 1.0)).xyz; 
 	vec2 cornerPos;
 	
@@ -51,4 +57,6 @@ void main(void) {
 #ifdef FOG
 	vFogDistance = viewPos;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

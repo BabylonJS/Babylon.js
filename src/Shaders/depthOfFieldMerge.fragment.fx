@@ -11,6 +11,9 @@ uniform sampler2D blurStep1;
 uniform sampler2D blurStep2;
 #endif
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     float coc = texture2D(circleOfConfusionSampler, vUV).r;

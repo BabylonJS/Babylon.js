@@ -36,6 +36,10 @@ interface IPerformanceViewerStrategyParameter {
      * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
      */
     category?: string;
+    /**
+     * Starts hidden
+     */
+    hidden?: boolean;
 }
 
 /**
@@ -47,6 +51,7 @@ export class PerformanceViewerCollector {
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
     private _hasLoadedData: boolean;
+    private _isStarted: boolean;
     private readonly _customEventObservable: Observable<IPerfCustomEvent>;
     private readonly _eventRestoreSet: Set<string>;
 
@@ -183,7 +188,7 @@ export class PerformanceViewerCollector {
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
     public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
-        for (const {strategyCallback, category} of strategyCallbacks) {
+        for (const {strategyCallback, category, hidden} of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
@@ -194,7 +199,8 @@ export class PerformanceViewerCollector {
 
             this._datasetMeta.set(strategy.id, {
                 color: this._getHexColorFromId(strategy.id),
-                category
+                category,
+                hidden
             });
 
             this._strategies.set(strategy.id, strategy);
@@ -349,9 +355,10 @@ export class PerformanceViewerCollector {
      * Given a string containing file data, this function parses the file data into the datasets object.
      * It returns a boolean to indicate if this object was successfully loaded with the data.
      * @param data string content representing the file data.
+     * @param keepDatasetMeta if it should use reuse the existing dataset metadata
      * @returns true if the data was successfully loaded, false otherwise.
      */
-    public loadFromFileData(data: string): boolean {
+    public loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean {
         const lines =
             data.replace(carriageReturnRegex, '').split('\n')
                 .map((line) => (
@@ -418,13 +425,17 @@ export class PerformanceViewerCollector {
         this.datasets.ids = parsedDatasets.ids;
         this.datasets.data = parsedDatasets.data;
         this.datasets.startingIndices = parsedDatasets.startingIndices;
-        this._datasetMeta.clear();
+        if (!keepDatasetMeta) {
+            this._datasetMeta.clear();
+        }
         this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
 
         // populate metadata.
-        for (const id of this.datasets.ids) {
-            this._datasetMeta.set(id, {color: this._getHexColorFromId(id)});
+        if (!keepDatasetMeta) {
+            for (const id of this.datasets.ids) {
+                this._datasetMeta.set(id, {color: this._getHexColorFromId(id)});
+            }
         }
         this.metadataObservable.notifyObservers(this._datasetMeta);
         this._hasLoadedData = true;
@@ -473,10 +484,13 @@ export class PerformanceViewerCollector {
         if (!shouldPreserve) {
             this.datasets.data = new DynamicFloat32Array(initialArraySize);
             this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
+            this._startingTimestamp = PrecisionDate.Now;
+        } else if (this._startingTimestamp === undefined) {
+            this._startingTimestamp = PrecisionDate.Now;
         }
-        this._startingTimestamp = PrecisionDate.Now;
         this._scene.onAfterRenderObservable.add(this._collectDataAtFrame);
         this._restoreStringEvents();
+        this._isStarted = true;
     }
 
     /**
@@ -484,6 +498,14 @@ export class PerformanceViewerCollector {
      */
     public stop() {
         this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._isStarted = false;
+    }
+
+    /**
+     * Returns if the perf collector has been started or not.
+     */
+    public get isStarted() : boolean {
+        return this._isStarted;
     }
 
     /**
@@ -497,6 +519,7 @@ export class PerformanceViewerCollector {
         });
         this.datasetObservable.clear();
         this.metadataObservable.clear();
+        this._isStarted = false;
         (<any>this.datasets) = null;
     }
 }

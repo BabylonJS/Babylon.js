@@ -2,6 +2,9 @@
 varying vec2 vUV;
 uniform samplerCube textureSampler;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) 
 {
 	vec2 uv = vUV * 2.0 - 1.0;

@@ -49,3 +49,5 @@ uniform mat4 reflectionMatrix;
 uniform vec4 vDetailInfos;
 uniform mat4 detailMatrix;
 #endif
+
+#define ADDITIONAL_VERTEX_DECLARATION

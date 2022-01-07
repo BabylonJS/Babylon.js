@@ -27,8 +27,8 @@ REM - - - - - - - - - - - - - - - PVRTC - - - - - - - - - - - - - - -
 REM PVRTC must be square on iOS
 IF EXIST %2-pvrtc.ktx GOTO DXT
 
-SET format=PVRTC1_2_RGB
-if %3 == 'Y' SET format=PVRTC1_2
+SET format=PVRTCI_2BPP_RGB
+if %3 == 'Y' SET format=PVRTCI_2BPP_RGBA
 
 SET quality=pvrtcfastest
 if %4 == 'Q' SET quality=pvrtcbest

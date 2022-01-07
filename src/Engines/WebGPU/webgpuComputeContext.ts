@@ -87,12 +87,12 @@ export class WebGPUComputeContext implements IComputeContext {
                             Logger.Error(`computeDispatch: The texture (name=${texture.name}, uniqueId=${texture.uniqueId}) is not a storage texture!`, 50);
                         }
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
-                            entries[indexInGroupEntries].resource = hardwareTexture.view!;
+                            entries[indexInGroupEntries].resource = hardwareTexture.viewForWriting!;
                         } else {
                             binding.indexInGroupEntries = entries.length;
                             entries.push({
                                 binding: index,
-                                resource: hardwareTexture.view!,
+                                resource: hardwareTexture.viewForWriting!,
                             });
                         }
                         break;
