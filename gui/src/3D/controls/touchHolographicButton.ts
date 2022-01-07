@@ -262,7 +262,7 @@ export class TouchHolographicButton extends TouchButton3D {
             if (this._frontPlate && this._isNearPressed) {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
-                    let interactionHeight = this._getInteractionHeight(position, this._backPlate.position) / scale.z;
+                    let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
                     interactionHeight = Scalar.Clamp(interactionHeight - (this._backPlateDepth / 2), 0.2 * this._frontPlateDepth, this._frontPlateDepth);
 
                     this._frontPlate.scaling.z = interactionHeight;
