@@ -27,7 +27,6 @@ import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 
-declare type InternalDeviceSourceManager = import("../DeviceInput/InputDevices/internalDeviceSourceManager").InternalDeviceSourceManager;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -389,11 +388,6 @@ export class Engine extends ThinEngine {
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
-
-    /**
-     * @hidden
-     */
-    public _deviceSourceManager: InternalDeviceSourceManager;
 
     // Observables
 
@@ -1821,11 +1815,6 @@ export class Engine extends ThinEngine {
 
         //WebVR
         this.disableVR();
-
-        // DeviceSourceManager
-        if (this._deviceSourceManager) {
-            this._deviceSourceManager.dispose();
-        }
 
         // Events
         if (IsWindowObjectExist()) {

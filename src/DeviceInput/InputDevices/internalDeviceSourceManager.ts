@@ -1,4 +1,3 @@
-import { Engine } from '../../Engines/engine';
 import { IDisposable } from '../../scene';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
@@ -8,8 +7,16 @@ import { NativeDeviceInputSystem } from './nativeDeviceInputSystem';
 import { WebDeviceInputSystem } from './webDeviceInputSystem';
 import { DeviceSource } from './deviceSource';
 import { INative } from '../../Engines/Native/nativeInterfaces';
+import { Engine } from '../../Engines/engine';
 
 declare const _native: INative;
+
+declare module "../../Engines/engine" {
+    interface Engine {
+        /** @hidden */
+        _deviceSourceManager: InternalDeviceSourceManager;
+    }
+}
 
 /** @hidden */
 export class InternalDeviceSourceManager implements IDisposable {
@@ -36,6 +43,10 @@ export class InternalDeviceSourceManager implements IDisposable {
     public static _Create(engine: Engine): InternalDeviceSourceManager {
         if (!engine._deviceSourceManager) {
             engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
+
+            engine.onDisposeObservable.add(() => {
+                engine._deviceSourceManager.dispose();
+            });
         }
         return engine._deviceSourceManager;
     }

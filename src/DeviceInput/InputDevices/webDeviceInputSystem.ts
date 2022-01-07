@@ -8,6 +8,9 @@ import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
 import { IDeviceEvent, IDeviceInputSystem } from "./inputInterfaces";
 
+const MAX_KEYCODES = 255;
+const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
+
 /** @hidden */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
@@ -42,7 +45,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
     private _engine: Engine;
-    private _usingSafari: boolean = Tools.IsSafari();
+    private readonly _usingSafari: boolean = Tools.IsSafari();
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
 
@@ -58,7 +61,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _wheelEventName: string;
 
     private _mouseId = -1;
-    private _isUsingFirefox = DomManagement.IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
+    private readonly _isUsingFirefox = DomManagement.IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number>;
@@ -68,11 +71,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
-
-    /** Max number of keycodes */
-    public static MAX_KEYCODES: number = 255;
-    /** Max number of pointer inputs */
-    public static MAX_POINTER_INPUTS: number = Object.keys(PointerInput).length / 2;
 
     private _eventPrefix: string;
 
@@ -210,7 +208,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number): void {
         this._pointerActive = true;
-        this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystem.MAX_POINTER_INPUTS);
+        this._registerDevice(deviceType, deviceSlot, MAX_POINTER_INPUTS);
         const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
         pointer[0] = currentX;
         pointer[1] = currentY;
@@ -262,7 +260,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._keyboardDownEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystem.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -283,7 +281,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._keyboardUpEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystem.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -654,7 +652,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystem.MAX_POINTER_INPUTS);
+                this._registerDevice(deviceType, deviceSlot, MAX_POINTER_INPUTS);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
