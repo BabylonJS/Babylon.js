@@ -40,7 +40,13 @@ varying vec4 vColor;
 // Fog
 #include<fogFragmentDeclaration>
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
@@ -102,4 +108,5 @@ void main(void) {
 
 #include<imageProcessingCompatibility>
 
+#define CUSTOM_FRAGMENT_MAIN_END
 }

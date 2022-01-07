@@ -212,6 +212,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     render() {
         const texture = this.props.texture;
+        const textureAsRTT = texture as RenderTargetTexture;
 
         var samplingMode = [
             { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
@@ -252,6 +253,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const otype = this.findTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
         const textureClass = texture instanceof MultiRenderTarget ? "MultiRenderTarget" : texture instanceof RenderTargetTexture ? "RenderTargetTexture" : texture.getClassName();
         const count = texture instanceof MultiRenderTarget ? texture.count : -1;
+        const oformatDepthStencil = texture.isRenderTarget && textureAsRTT.renderTarget?._depthStencilTexture ? this.findTextureFormat(textureAsRTT.renderTarget._depthStencilTexture.format) : null;
 
         let extension = "";
         let url = (texture as Texture).url;
@@ -344,10 +346,16 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Class" value={textureClass} />
                     {count >= 0 && <TextLineComponent label="Number of textures" value={count.toString()} />}
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
+                    <CheckBoxLineComponent label="Get alpha from RGB"
+                        isSelected={() => texture.getAlphaFromRGB}
+                        onSelect={(value) => texture.getAlphaFromRGB = value}/>
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
+                    { texture.isRenderTarget &&
+                        <TextLineComponent label="Depth/stencil texture format" value={oformatDepthStencil?.label ?? "no"} />
+                    }
                     {texture instanceof Texture && <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />}
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent

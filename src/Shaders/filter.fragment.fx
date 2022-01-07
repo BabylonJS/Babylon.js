@@ -4,6 +4,9 @@ uniform sampler2D textureSampler;
 
 uniform mat4 kernelMatrix;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 	vec3 baseColor = texture2D(textureSampler, vUV).rgb;

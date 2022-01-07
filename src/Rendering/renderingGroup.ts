@@ -151,7 +151,11 @@ export class RenderingGroup {
         if (this._transparentSubMeshes.length !== 0 || this._scene.useOrderIndependentTransparency) {
             engine.setStencilBuffer(stencilState);
             if (this._scene.useOrderIndependentTransparency) {
-                this._scene.depthPeelingRenderer!.render(this._transparentSubMeshes);
+                const excludedMeshes = this._scene.depthPeelingRenderer!.render(this._transparentSubMeshes);
+                if (excludedMeshes.length) {
+                    // Render leftover meshes that could not be processed by depth peeling
+                    this._renderTransparent(excludedMeshes);
+                }
             } else {
                 this._renderTransparent(this._transparentSubMeshes);
             }

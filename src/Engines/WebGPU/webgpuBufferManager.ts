@@ -31,7 +31,7 @@ export class WebGPUBufferManager {
         return this._device.createBuffer(verticesBufferDescriptor);
     }
 
-    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer {
+    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): WebGPUDataBuffer {
         const isView = (viewOrSize as ArrayBufferView).byteLength !== undefined;
         const buffer = this.createRawBuffer(viewOrSize, flags);
         const dataBuffer = new WebGPUDataBuffer(buffer);

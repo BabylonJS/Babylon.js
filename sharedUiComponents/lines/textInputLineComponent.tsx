@@ -15,6 +15,7 @@ interface ITextInputLineComponentProps {
     iconLabel?: string;
     noUnderline?: boolean;
     numbersOnly?: boolean;
+    delayInput?: boolean
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
@@ -81,7 +82,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
         this.setState({ value: value });
 
-        if (this.props.propertyName) {
+        if (this.props.propertyName && !this.props.delayInput) {
             this.props.target[this.props.propertyName] = value;
         }
 
@@ -100,7 +101,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 <div className={"value" + (this.props.noUnderline === true ? " noUnderline" : "")}>
                     <input
                         value={this.state.value}
-                        onBlur={() => (this.props.lockObject.lock = false)}
+                        onBlur={() => {
+                            this.props.lockObject.lock = false;
+                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" );
+                        }}
                         onFocus={() => (this.props.lockObject.lock = true)}
                         onChange={(evt) => this.updateValue(evt.target.value)}
                     />

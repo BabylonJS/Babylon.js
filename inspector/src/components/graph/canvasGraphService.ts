@@ -11,10 +11,12 @@ import {
     TimestampUnit,
     ITooltipPreprocessedInformation,
     IPerfTooltipHoverPosition,
+    IVisibleRangeChangedObservableProps,
 } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+import { Observable } from "babylonjs/Misc/observable";
 
 const defaultColor = "#000";
 const axisColor = "#c0c4c8";
@@ -84,6 +86,12 @@ const tooltipDebounceTime = 32;
 // time in ms to wait between draws
 const drawThrottleTime = 15;
 
+// What distance percentage in the x axis between two points makes us break the line and draw a "no data" box instead
+const maxXDistancePercBetweenLinePoints = 0.10;  
+
+// Color used to draw the rectangle that indicates no collection of data
+const noDataRectangleColor = "#aaaaaa";
+
 /**
  * This function will debounce calls to functions.
  *
@@ -139,6 +147,7 @@ export class CanvasGraphService {
     private _tickerItems: IPerfTicker[];
     private _preprocessedTooltipInfo: ITooltipPreprocessedInformation;
     private _numberOfTickers: number;
+    private _onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
 
     private readonly _addonFontLineHeight: number;
     private readonly _defaultLineHeight: number;
@@ -169,6 +178,7 @@ export class CanvasGraphService {
         this._tickerItems = [];
         this._preprocessedTooltipInfo = { focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0 };
         this._numberOfTickers = 0;
+        this._onVisibleRangeChangedObservable = settings.onVisibleRangeChangedObservable;
 
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({ text: "", color: "" });
@@ -353,8 +363,15 @@ export class CanvasGraphService {
                     prevPoint = [drawableTime, drawableValue];
                 }
 
-                ctx.moveTo(prevPoint[0], prevPoint[1]);
-                ctx.lineTo(drawableTime, drawableValue);
+                const xDifference = drawableTime - prevPoint[0];
+                const skipLine = xDifference > maxXDistancePercBetweenLinePoints*(right-left);
+                if (skipLine) {
+                    ctx.fillStyle = noDataRectangleColor;
+                    ctx.fillRect(prevPoint[0], top, xDifference, bottom-top);
+                } else {
+                    ctx.moveTo(prevPoint[0], prevPoint[1]);
+                    ctx.lineTo(drawableTime, drawableValue);
+                }
                 prevPoint[0] = drawableTime;
                 prevPoint[1] = drawableValue;
             }
@@ -377,6 +394,7 @@ export class CanvasGraphService {
         // create the ticker objects for each of the non hidden items.
         let longestText: string = "";
         this._numberOfTickers = 0;
+        const valueMap = new Map<string, IPerfMinMax>();
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -385,6 +403,11 @@ export class CanvasGraphService {
             const valueMinMax = this._getMinMax(bounds, idOffset);
             const latestValue = this.datasets.data.at(this.datasets.startingIndices.at(bounds.end - 1) + PerformanceViewerCollector.SliceDataOffset + idOffset);
             const text = `${id}: ${latestValue.toFixed(2)} (max: ${valueMinMax.max.toFixed(2)}, min: ${valueMinMax.min.toFixed(2)})`;
+            valueMap.set(id, {
+                min: valueMinMax.min,
+                max: valueMinMax.max,
+                current: latestValue
+            });
             if (text.length > longestText.length) {
                 longestText = text;
             }
@@ -394,6 +417,7 @@ export class CanvasGraphService {
             this._tickerItems[this._numberOfTickers].text = text;
             this._numberOfTickers++;
         });
+        this._onVisibleRangeChangedObservable?.notifyObservers({valueMap});
 
         ctx.save();
         ctx.font = graphAddonFont;
@@ -410,17 +434,6 @@ export class CanvasGraphService {
             this._tickerTextCache.width = width;
         }
 
-        drawableArea.right -= width;
-
-        const textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
-
-        const x = drawableArea.right + tickerHorizontalPadding;
-        let y = drawableArea.top + textHeight;
-        for (let i = 0; i < this._numberOfTickers; i++) {
-            const tickerItem = this._tickerItems[i];
-            ctx.fillText(tickerItem.text, x, y);
-            y += textHeight;
-        }
         ctx.restore();
     }
 

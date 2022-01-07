@@ -665,8 +665,6 @@ declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
-    export type FramePortData = {};
-    export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export enum ConstraintDirection {
         NONE = 0,
         X = 2,
@@ -678,7 +676,7 @@ declare module GUIEDITOR {
         private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _textureMesh;
+        _textureMesh: BABYLON.Mesh;
         _scene: BABYLON.Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
@@ -686,7 +684,6 @@ declare module GUIEDITOR {
         private _constraintDirection;
         private _forcePanning;
         private _forceZooming;
-        private _forceMoving;
         private _forceSelecting;
         private _outlines;
         private _panning;
@@ -695,17 +692,25 @@ declare module GUIEDITOR {
         private _isOverGUINode;
         private _clipboard;
         private _selectAll;
-        private _camera;
+        _camera: BABYLON.ArcRotateCamera;
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
         private _engine;
         private _liveRenderObserver;
         private _guiRenderObserver;
+        private _mainSelection;
+        private _selectionDepth;
+        private _doubleClick;
+        private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
+        private _getParentWithDepth;
+        private _getMaxParent;
         constructor(props: IWorkbenchComponentProps);
+        determineMouseSelection(selection: BABYLON.Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
         private updateHitTest;
         private updateHitTestForSelection;
@@ -723,6 +728,7 @@ declare module GUIEDITOR {
         resizeGuiTexture(newvalue: BABYLON.Vector2): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
+        private _isMainSelectionParent;
         createNewGuiNode(guiControl: Control): Control;
         private parent;
         private _convertToPixels;
@@ -732,6 +738,7 @@ declare module GUIEDITOR {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
+        convertToPercentage(guiControl: Control, includeScale: boolean): void;
         onMove(evt: React.PointerEvent): void;
         getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
@@ -740,7 +747,7 @@ declare module GUIEDITOR {
         createGUICanvas(): void;
         synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
-        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
+        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, x?: number, y?: number): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
         zoomWheel(p: BABYLON.PointerInfo, e: BABYLON.EventState, camera: BABYLON.ArcRotateCamera): number;
         zooming(delta: number, scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, ref: BABYLON.Vector3): void;
@@ -766,6 +773,78 @@ declare module GUIEDITOR {
          * Gets or set if the lock is engaged
          */
         lock: boolean;
+    }
+}
+declare module GUIEDITOR {
+    export interface IGuiGizmoProps {
+        globalState: GlobalState;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
+        scalePoints: HTMLDivElement[];
+        private _scalePointIndex;
+        private _pointerData;
+        private _htmlPoints;
+        private _matrixCache;
+        private _responsive;
+        constructor(props: IGuiGizmoProps);
+        componentDidMount(): void;
+        /**
+         * Update the gizmo's corners positions
+         * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+         */
+        updateGizmo(force?: boolean): void;
+        private _resetMatrixArray;
+        /**
+         * This function calculates a local matrix for a node, including it's full transformation and pivot point
+         *
+         * @param node the node to calculate the matrix for
+         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+         * @returns a new matrix for the control
+         */
+        private _getNodeMatrix;
+        /**
+         * Using the node's tree, calculate its world matrix and return it
+         * @param node the node to calculate the matrix for
+         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+         * @returns the world matrix for this node
+         */
+        private _nodeToRTTWorldMatrix;
+        private _nodeToRTTSpace;
+        private _rttToLocalNodeSpace;
+        private _rttToCanvasSpace;
+        private _plane;
+        private _mousePointerToRTTSpace;
+        /**
+         * Get the scaling of a specific GUI control
+         * @param node the node for which we are getting the scaling
+         * @param relative should we return only the relative scaling (relative to the parent)
+         * @returns an X,Y vector of the scaling
+         */
+        getScale(node: Control, relative?: boolean): BABYLON.Vector2;
+        getRotation(node: Control, relative?: boolean): number;
+        createBaseGizmo(): void;
+        onUp(evt?: React.PointerEvent): void;
+        private _onUp;
+        onMove(evt: React.PointerEvent): void;
+        private _initH;
+        private _initW;
+        private _initX;
+        private _initY;
+        private _onMove;
+        /**
+         * Calculate the 4 corners in node space
+         * @param node The node to use
+         */
+        private _nodeToCorners;
+        /**
+         * Computer the node's width, height, top and left, using the 4 corners
+         * @param node the node we use
+         */
+        private _updateNodeFromCorners;
+        private _rotate;
+        private _setNodeCorner;
+        private _setMousePosition;
+        render(): null;
     }
 }
 declare module GUIEDITOR {
@@ -799,6 +878,7 @@ declare module GUIEDITOR {
         controlCamera: boolean;
         selectionLock: boolean;
         workbench: WorkbenchComponent;
+        guiGizmo: GuiGizmoComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onFitToWindowObservable: BABYLON.Observable<void>;
@@ -816,6 +896,7 @@ declare module GUIEDITOR {
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
         onWindowResizeObservable: BABYLON.Observable<void>;
+        onGizmoUpdateRequireObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -943,6 +1024,7 @@ declare module GUIEDITOR {
         onEnter?: (newValue: number) => void;
         icon?: string;
         iconLabel?: string;
+        defaultValue?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -1007,6 +1089,7 @@ declare module GUIEDITOR {
         iconLabel?: string;
         noUnderline?: boolean;
         numbersOnly?: boolean;
+        delayInput?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -1208,7 +1291,6 @@ declare module GUIEDITOR {
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
         private _width;
         private _height;
-        private _responsive;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
@@ -1485,7 +1567,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -1726,7 +1808,6 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
-        private _moving;
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
@@ -1747,6 +1828,7 @@ declare module GUIEDITOR {
         private _rightWidth;
         private _toolBarIconSize;
         private _popUpWindow;
+        private _draggedItem;
         componentDidMount(): void;
         constructor(props: IGraphEditorProps);
         showWaitScreen(): void;

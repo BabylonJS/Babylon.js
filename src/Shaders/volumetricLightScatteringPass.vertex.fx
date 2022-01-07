@@ -23,6 +23,9 @@ attribute vec2 uv2;
 #endif
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;

@@ -39,6 +39,9 @@ attribute vec2 uv2;
 
 #include<clipPlaneVertexDeclaration>
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
 vec3 positionUpdated = position;

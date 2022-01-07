@@ -98,6 +98,7 @@ export class TouchHolographicButton extends TouchButton3D {
             return;
         }
         if (!this._tooltipFade) {
+            const rightHandedScene = this._backPlate._scene.useRightHandedSystem;
             // Create tooltip with mesh and text
             this._tooltipMesh = CreatePlane("", { size: 1 }, this._backPlate._scene);
             var tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
@@ -106,10 +107,9 @@ export class TouchHolographicButton extends TouchButton3D {
             tooltipBackground.material = mat;
             tooltipBackground.isPickable = false;
             this._tooltipMesh.addChild(tooltipBackground);
-            tooltipBackground.position.z = 0.05;
+            tooltipBackground.position = Vector3.Forward(rightHandedScene).scale(0.05);
             this._tooltipMesh.scaling.y = 1 / 3;
-            this._tooltipMesh.position.y = 0.7;
-            this._tooltipMesh.position.z = -0.15;
+            this._tooltipMesh.position = Vector3.Up().scale(0.7).add(Vector3.Forward(rightHandedScene).scale(-0.15));
             this._tooltipMesh.isPickable = false;
             this._tooltipMesh.parent = this._backPlate;
 
@@ -246,15 +246,15 @@ export class TouchHolographicButton extends TouchButton3D {
         this.pointerDownAnimation = () => {
             if (this._frontPlate && !this._isNearPressed) {
                 this._frontPlate.scaling.z = this._frontPlateDepth * 0.2;
-                this._frontPlate.position.z = (this._frontPlateDepth - (0.2 * this._frontPlateDepth)) / 2;
-                this._textPlate.position.z = -(this._backPlateDepth + (0.2 * this._frontPlateDepth)) / 2;
+                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - (0.2 * this._frontPlateDepth)) / 2);
+                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + (0.2 * this._frontPlateDepth)) / 2);
             }
         };
         this.pointerUpAnimation = () => {
             if (this._frontPlate) {
                 this._frontPlate.scaling.z = this._frontPlateDepth;
-                this._frontPlate.position.z = (this._frontPlateDepth - this._frontPlateDepth) / 2;
-                this._textPlate.position.z = -(this._backPlateDepth + this._frontPlateDepth) / 2;
+                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - this._frontPlateDepth) / 2);
+                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + this._frontPlateDepth) / 2);
             }
         };
 
@@ -266,8 +266,8 @@ export class TouchHolographicButton extends TouchButton3D {
                     interactionHeight = Scalar.Clamp(interactionHeight - (this._backPlateDepth / 2), 0.2 * this._frontPlateDepth, this._frontPlateDepth);
 
                     this._frontPlate.scaling.z = interactionHeight;
-                    this._frontPlate.position.z = (this._frontPlateDepth - interactionHeight) / 2;
-                    this._textPlate.position.z = -(this._backPlateDepth + interactionHeight) / 2;
+                    this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - interactionHeight) / 2);
+                    this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + interactionHeight) / 2);
                 }
             }
         });
@@ -322,7 +322,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.position.z = -this._frontPlateDepth / 2;
+        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
 
         SceneLoader.ImportMeshAsync(
             undefined,
@@ -351,13 +351,13 @@ export class TouchHolographicButton extends TouchButton3D {
             scene
         );
 
-        this._backPlate.position.z = this._backPlateDepth / 2;
+        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._backPlateDepth / 2);
         this._backPlate.isPickable = false;
 
         this._textPlate = <Mesh>super._createNode(scene);
         this._textPlate.name = `${this.name}_textPlate`;
         this._textPlate.isPickable = false;
-        this._textPlate.position.z = -this._frontPlateDepth / 2;
+        this._textPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
 
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);

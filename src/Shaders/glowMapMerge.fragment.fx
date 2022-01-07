@@ -8,7 +8,13 @@ uniform sampler2D textureSampler;
 // Offset
 uniform float offset;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
     vec4 baseColor = texture2D(textureSampler, vUV);
 
     #ifdef EMISSIVE
@@ -29,4 +35,6 @@ void main(void) {
     #endif
 
     gl_FragColor = baseColor;
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

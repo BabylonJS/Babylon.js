@@ -123,6 +123,28 @@ export class DepthRenderer {
             engine._debugPopGroup?.(1);
         });
 
+        this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
+            if (!mesh.isReady(false)) {
+                return false;
+            }
+            if (refreshRate === 0 && mesh.subMeshes) {
+                // full check: check that the effects are ready
+                for (let i = 0; i < mesh.subMeshes.length; ++i) {
+                    const subMesh = mesh.subMeshes[i];
+                    const renderingMesh = subMesh.getRenderingMesh();
+
+                    const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+                    const hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
+
+                    if (!this.isReady(subMesh, hardwareInstancedRendering)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        };
+
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
             var renderingMesh = subMesh.getRenderingMesh();
@@ -140,7 +162,7 @@ export class DepthRenderer {
             // Culling
             const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
             let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
-            if (scene.useRightHandedSystem && !detNeg || !scene.useRightHandedSystem && detNeg) {
+            if (detNeg) {
                 sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
             }
             let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;

@@ -10112,7 +10112,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#workbench-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro-condensed\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
+exports.push([module.i, "#workbench-canvas {\n  grid-column: 1;\n  grid-row: 1;\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro-condensed\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -10130,7 +10130,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n  .diagram-container .ge-scalePoint {\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .diagram-container .ge-pivotPoint {\n    width: 30px;\n    height: 30px;\n    background: transparent; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -42422,6 +42422,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs/gizmoPivotIcon.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/gizmoPivotIcon.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ccircle class='cls-1' cx='15' cy='15' r='8.98'/%3E%3Cpath d='M15,6.9A8.1,8.1,0,1,0,23.1,15,8.1,8.1,0,0,0,15,6.9Zm6.86,7.49H15.63V8.14A6.89,6.89,0,0,1,21.86,14.39ZM14.41,8.14v6.25H8.14A6.89,6.89,0,0,1,14.41,8.14ZM8.14,15.61h6.27v6.25A6.89,6.89,0,0,1,8.14,15.61Zm7.49,6.25V15.61h6.23A6.89,6.89,0,0,1,15.63,21.86Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/gridIcon.svg":
 /*!***********************************!*\
   !*** ../public/imgs/gridIcon.svg ***!
@@ -42606,17 +42617,6 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,11a.61.61,0,0,1,.61.61v2.83h2.83a.61.61,0,0,1,0,1.22H15.61v2.83a.61.61,0,0,1-1.22,0V15.61H11.56a.61.61,0,1,1,0-1.22h2.83V11.56A.61.61,0,0,1,15,11Z' style='fill:%23333'/%3E%3Cpath d='M7.71,10.34a2.63,2.63,0,0,1,2.63-2.63h9.32a2.63,2.63,0,0,1,2.63,2.63v9.32a2.63,2.63,0,0,1-2.63,2.63H10.34a2.63,2.63,0,0,1-2.63-2.63Zm2.63-1.41a1.41,1.41,0,0,0-1.41,1.41v9.32a1.41,1.41,0,0,0,1.41,1.41h9.32a1.41,1.41,0,0,0,1.41-1.41V10.34a1.41,1.41,0,0,0-1.41-1.41Z' style='fill:%23333'/%3E%3C/svg%3E"
-
-/***/ }),
-
-/***/ "../public/imgs/moveIcon.svg":
-/*!***********************************!*\
-  !*** ../public/imgs/moveIcon.svg ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M22.64,15.2a.61.61,0,0,1-.85,0L20.6,14v3a.6.6,0,1,1-1.2,0V14L18.21,15.2a.61.61,0,0,1-.85,0,.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0l2.21,2.21A.6.6,0,0,1,22.64,15.2Z' style='fill:%23fff'/%3E%3Cpath d='M15.2,21.79a.61.61,0,0,1,0,.85.6.6,0,0,1-.86,0l-2.21-2.21a.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0,.61.61,0,0,1,0,.85L14,19.4h3a.6.6,0,1,1,0,1.2H14Z' style='fill:%23fff'/%3E%3Cpath d='M24.8,22.64a.61.61,0,0,1,0-.85L26,20.6H23a.6.6,0,1,1,0-1.2h3L24.8,18.21a.61.61,0,0,1,0-.85.6.6,0,0,1,.86,0l2.21,2.21a.6.6,0,0,1,0,.86l-2.21,2.21A.6.6,0,0,1,24.8,22.64Z' style='fill:%23fff'/%3E%3Cpath d='M22.64,24.8a.61.61,0,0,0-.85,0L20.6,26V23a.6.6,0,1,0-1.2,0v3L18.21,24.8a.61.61,0,0,0-.85,0,.6.6,0,0,0,0,.86l2.21,2.21a.6.6,0,0,0,.86,0l2.21-2.21A.6.6,0,0,0,22.64,24.8Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42847,7 +42847,6 @@ var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../pub
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
 var canvasFitIcon = __webpack_require__(/*! ../../public/imgs/canvasFitIcon.svg */ "../public/imgs/canvasFitIcon.svg");
-var moveIcon = __webpack_require__(/*! ../../public/imgs/moveIcon.svg */ "../public/imgs/moveIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42856,33 +42855,22 @@ var CommandBarComponent = /** @class */ (function (_super) {
         _this._panning = false;
         _this._zooming = false;
         _this._selecting = true;
-        _this._moving = false;
         props.globalState.onPanObservable.add(function () {
             _this._panning = !_this._panning;
             _this._zooming = false;
             _this._selecting = false;
-            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onSelectionButtonObservable.add(function () {
             _this._selecting = !_this._selecting;
             _this._panning = false;
             _this._zooming = false;
-            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onZoomObservable.add(function () {
             _this._zooming = !_this._zooming;
             _this._panning = false;
             _this._selecting = false;
-            _this._moving = false;
-            _this.forceUpdate();
-        });
-        props.globalState.onMoveObservable.add(function () {
-            _this._zooming = false;
-            _this._panning = false;
-            _this._selecting = false;
-            _this._moving = !_this._moving;
             _this.forceUpdate();
         });
         props.globalState.onOutlinesObservable.add(function () {
@@ -42937,8 +42925,13 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             label: "Copy Selected",
                             onClick: function () {
                                 _this.props.globalState.workbench.copyToClipboard();
-                                _this.props.globalState.workbench.pasteFromClipboard();
                             },
+                        },
+                        {
+                            label: "Paste",
+                            onClick: function () {
+                                _this.props.globalState.workbench.pasteFromClipboard();
+                            }
                         },
                         {
                             label: "Delete Selected",
@@ -42970,10 +42963,6 @@ var CommandBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () {
                         if (!_this._selecting)
                             _this.props.globalState.onSelectionButtonObservable.notifyObservers();
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () {
-                        if (!_this._moving)
-                            _this.props.globalState.onMoveObservable.notifyObservers();
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () {
                         if (!_this._panning)
@@ -43454,11 +43443,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
-/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 
 
 
@@ -43499,8 +43485,6 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._width = _this.props.control.width;
         _this._height = _this.props.control.height;
-        _this._responsive = false;
-        _this._responsive = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__["DataStorage"].ReadBoolean("Responsive", true);
         return _this;
     }
     CommonControlPropertyGridComponent.prototype._updateAlignment = function (alignment, value) {
@@ -43515,8 +43499,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     };
     CommonControlPropertyGridComponent.prototype._checkAndUpdateValues = function (propertyName, value) {
         var _a, _b;
-        //check if it contains either a px or a % sign
-        var percentage = this._responsive;
+        // checking the previous value unit to see what it was.
+        var vau = this.props.control["_" + propertyName];
+        var percentage = vau.isPercentage;
+        // now checking if the new string contains either a px or a % sign in case we need to change the unit.
         var negative = value.charAt(0) === "-";
         if (value.charAt(value.length - 1) === "%") {
             percentage = true;
@@ -43574,10 +43560,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM);
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, delayInput: true, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, delayInput: true, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: this, propertyName: "_width", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: this, delayInput: true, propertyName: "_width", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         if (control.typeName === "Image") {
                             control.autoScale = false;
                         }
@@ -43592,7 +43578,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._width = newValue;
                         _this._checkAndUpdateValues("width", _this._width.toString());
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", target: this, propertyName: "_height", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", target: this, delayInput: true, propertyName: "_height", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         if (control.typeName === "Image") {
                             control.autoScale = false;
                         }
@@ -43608,13 +43594,13 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._checkAndUpdateValues("height", _this._height.toString());
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Padding", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: control, propertyName: "paddingBottom", onChange: function (newValue) { _this._checkAndUpdateValues("paddingBottom", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: control, propertyName: "paddingTop", onChange: function (newValue) { _this._checkAndUpdateValues("paddingTop", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Padding", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: control, propertyName: "paddingBottom", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingBottom", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: control, propertyName: "paddingTop", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingTop", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: control, propertyName: "paddingLeft", onChange: function (newValue) { _this._checkAndUpdateValues("paddingLeft", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: control, propertyName: "paddingRight", onChange: function (newValue) { _this._checkAndUpdateValues("paddingRight", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: control, propertyName: "paddingLeft", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingLeft", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: control, delayInput: true, propertyName: "paddingRight", onChange: function (newValue) { _this._checkAndUpdateValues("paddingRight", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-shot" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_10__["CheckBoxLineComponent"], { iconLabel: "Padding does not affect the parameters of this control, only the descendants of this control.", icon: descendantsOnlyPaddingIcon, label: "", target: control, propertyName: "descendentsOnlyPadding", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_9__["CheckBoxLineComponent"], { iconLabel: "Padding does not affect the parameters of this control, only the descendants of this control.", icon: descendantsOnlyPaddingIcon, label: "", target: control, propertyName: "descendentsOnlyPadding", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "TRANSFORMATION", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
@@ -43627,10 +43613,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "APPEARANCE", value: " ", color: "grey" }),
             (control.color !== undefined && control.typeName !== "Image" &&
-                control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            control.background !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            control.background !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { lockObject: this.props.lockObject, iconLabel: "Alpha", icon: alphaIcon, label: "", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset X", icon: shadowOffsetXIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset Y", icon: shadowOffsetYIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -44750,7 +44736,7 @@ var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "STACKPANEL", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Clip children", icon: clipContentsIcon, label: "CLIP CHILDREN", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalMarginIcon, label: "VERTICAL", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "", icon: verticalMarginIcon, iconLabel: "spacing", target: stackPanel, propertyName: "spacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return stackPanel._markAsDirty(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "", icon: verticalMarginIcon, iconLabel: "spacing", target: stackPanel, propertyName: "spacing", defaultValue: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return stackPanel._markAsDirty(); } })));
     };
     return StackPanelPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44990,7 +44976,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             if (windowAsAny.Playground && oldId) {
                                 windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                     regex: new RegExp(oldId, "g"),
-                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId + ")",
                                 });
                             }
                             resolve(adt.snippetId);
@@ -45025,8 +45011,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     .then(function (snippetId) {
                     adt.snippetId = snippetId;
                     var alertMessage = "GUI saved with ID:  " + adt.snippetId;
-                    if (navigator.clipboard) {
-                        navigator.clipboard
+                    if (_this.props.globalState.hostWindow.navigator.clipboard) {
+                        _this.props.globalState.hostWindow.navigator.clipboard
                             .writeText(adt.snippetId)
                             .then(function () {
                             _this.props.globalState.hostWindow.alert(alertMessage + ". The ID was copied to your clipboard.");
@@ -47774,16 +47760,531 @@ var GUIEditorNodeMaterial = {
 
 /***/ }),
 
-/***/ "./diagram/workbench.tsx":
-/*!*******************************!*\
-  !*** ./diagram/workbench.tsx ***!
-  \*******************************/
-/*! exports provided: isFramePortData, ConstraintDirection, WorkbenchComponent */
+/***/ "./diagram/guiGizmo.tsx":
+/*!******************************!*\
+  !*** ./diagram/guiGizmo.tsx ***!
+  \******************************/
+/*! exports provided: GuiGizmoComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFramePortData", function() { return isFramePortData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuiGizmoComponent", function() { return GuiGizmoComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.axis */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
+var gizmoPivotIcon = __webpack_require__(/*! ../../public/imgs/gizmoPivotIcon.svg */ "../public/imgs/gizmoPivotIcon.svg");
+var roundFactor = 100;
+var round = function (value) { return Math.round(value * roundFactor) / roundFactor; };
+var GuiGizmoComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuiGizmoComponent, _super);
+    function GuiGizmoComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.scalePoints = [];
+        _this._scalePointIndex = -1;
+        _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
+        _this._onUp = function (evt) {
+            // cleanup on pointer up
+            _this._pointerData.pointerDown = false;
+            document.querySelectorAll(".ge-scalePoint").forEach(function (scalePoint) {
+                scalePoint.style.pointerEvents = "auto";
+            });
+            _this._scalePointIndex = -1;
+        };
+        _this._initH = 0;
+        _this._initW = 0;
+        _this._initX = 0;
+        _this._initY = 0;
+        _this._onMove = function () {
+            if (_this._pointerData.pointerDown) {
+                var scene = _this.props.globalState.workbench._scene;
+                var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+                if (selectedGuiNodes.length > 0) {
+                    var node = selectedGuiNodes[0];
+                    // get the mouse position in node space
+                    var inRTT = _this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
+                    var inNodeSpace = _this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
+                    // set the corner
+                    _this._setNodeCorner(node, inNodeSpace, _this._scalePointIndex);
+                    //convert to percentage
+                    if (_this._responsive) {
+                        _this.props.globalState.workbench.convertToPercentage(node, false);
+                    }
+                    _this.props.globalState.workbench._liveGuiTextureRerender = false;
+                    _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+                }
+            }
+        };
+        _this._setMousePosition = function (index) {
+            _this._pointerData.pointerDown = true;
+            _this._scalePointIndex = index;
+            document.querySelectorAll(".ge-scalePoint").forEach(function (scalePoint) {
+                scalePoint.style.pointerEvents = "none";
+            });
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            if (selectedGuiNodes.length > 0) {
+                var node = selectedGuiNodes[0];
+                _this._nodeToCorners(node);
+                _this._initW = node.widthInPixels;
+                _this._initH = node.heightInPixels;
+                _this._initY = node.topInPixels;
+                _this._initX = node.leftInPixels;
+            }
+        };
+        _this.props.globalState.guiGizmo = _this;
+        _this._responsive = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
+        _this._pointerData = { corners: [new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]()], pointerDown: false };
+        _this._htmlPoints = [new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]()];
+        _this._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity()];
+        // Set visibility
+        props.globalState.onSelectionChangedObservable.add(function (selection) {
+            if (selection) {
+                _this.scalePoints.forEach(function (scalePoint) {
+                    scalePoint.style.display = "flex";
+                });
+            }
+            else {
+                _this.scalePoints.forEach(function (scalePoint) {
+                    scalePoint.style.display = "none";
+                });
+            }
+            _this.updateGizmo(true);
+        });
+        _this.props.globalState.onResponsiveChangeObservable.add(function (value) {
+            _this._responsive = value;
+        });
+        _this.props.globalState.onGizmoUpdateRequireObservable.add(function () {
+            // TODO - no need to update on each frame.
+            _this.updateGizmo(true);
+        });
+        return _this;
+    }
+    GuiGizmoComponent.prototype.componentDidMount = function () { };
+    /**
+     * Update the gizmo's corners positions
+     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+     */
+    GuiGizmoComponent.prototype.updateGizmo = function (force) {
+        var _this = this;
+        var selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
+        if (selectedGuiNodes.length > 0 && (force || this._pointerData.pointerDown)) {
+            var node_1 = selectedGuiNodes[0];
+            // Calculating the offsets for each scale point.
+            var half = 1 / 2;
+            this._htmlPoints[0].x = -node_1.widthInPixels * half;
+            this._htmlPoints[0].y = node_1.heightInPixels * half;
+            this._htmlPoints[1].x = -node_1.widthInPixels * half;
+            this._htmlPoints[1].y = -node_1.heightInPixels * half;
+            this._htmlPoints[2].x = node_1.widthInPixels * half;
+            this._htmlPoints[2].y = -node_1.heightInPixels * half;
+            this._htmlPoints[3].x = node_1.widthInPixels * half;
+            this._htmlPoints[3].y = node_1.heightInPixels * half;
+            this._htmlPoints[4].x = -node_1.widthInPixels * half;
+            this._htmlPoints[5].y = -node_1.heightInPixels * half;
+            this._htmlPoints[6].x = node_1.widthInPixels * half;
+            this._htmlPoints[7].y = node_1.heightInPixels * half;
+            // Calculate the pivot point
+            var pivotX = (node_1.transformCenterX - 0.5) * 2;
+            var pivotY = (node_1.transformCenterY - 0.5) * 2;
+            this._htmlPoints[8].x = node_1.widthInPixels * half * pivotX;
+            this._htmlPoints[8].y = node_1.heightInPixels * half * pivotY;
+            this.scalePoints.forEach(function (scalePoint, index) {
+                // TODO optimize this - unify?
+                var result = _this._nodeToRTTSpace(node_1, _this._htmlPoints[index].x, _this._htmlPoints[index].y, undefined, false);
+                var finalResult = _this._rttToCanvasSpace(node_1, result.x, result.y);
+                var scene = _this.props.globalState.workbench._scene;
+                var engine = scene.getEngine();
+                // If the scale point is outside the viewport, do not render
+                scalePoint.style.display =
+                    finalResult.x < 0 || finalResult.x < 0 || finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
+                if (scalePoint.style.display === "flex") {
+                    scalePoint.style.left = finalResult.x + "px";
+                    scalePoint.style.top = finalResult.y + "px";
+                    var rotate = _this.getRotation(node_1) * (180 / Math.PI);
+                    scalePoint.style.transform = "translate(-50%, -50%) rotate(" + rotate + "deg)";
+                }
+            });
+        }
+    };
+    GuiGizmoComponent.prototype._resetMatrixArray = function () {
+        this._matrixCache.forEach(function (matrix) {
+            babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].IdentityToRef(matrix);
+        });
+    };
+    /**
+     * This function calculates a local matrix for a node, including it's full transformation and pivot point
+     *
+     * @param node the node to calculate the matrix for
+     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+     * @returns a new matrix for the control
+     */
+    GuiGizmoComponent.prototype._getNodeMatrix = function (node, useStoredValues) {
+        var size = this.props.globalState.guiTexture.getSize();
+        // parent should always be defined, but stay safe
+        var parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
+        var parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        var x = 0;
+        var y = 0;
+        var width = useStoredValues ? this._initW : node.widthInPixels;
+        var height = useStoredValues ? this._initH : node.heightInPixels;
+        var left = useStoredValues ? this._initX : node.leftInPixels;
+        var top = useStoredValues ? this._initY : node.topInPixels;
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                x = -(parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                x = (parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_CENTER:
+                x = 0;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
+                y = -(parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                y = (parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_CENTER:
+                y = 0;
+                break;
+        }
+        this._resetMatrixArray();
+        var m2d = this._matrixCache[0];
+        var translateTo = this._matrixCache[1];
+        // as this is used later it needs to persist
+        var resultMatrix = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity();
+        // the pivot point around which the object transforms
+        var offsetX = width * node.transformCenterX - width / 2;
+        var offsetY = height * node.transformCenterY - height / 2;
+        // pivot changes this point's position! but only in legacy pivot mode
+        if (!node.descendantsOnlyPadding) {
+            // TODO - padding needs to also take scaling into account?
+            offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * 1) / 2;
+            offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
+        }
+        // Set the translation
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].TranslationToRef(x + left, y + top, translateTo);
+        // without parents scaling and rotation, calculate world matrix for each
+        var rotation = this.getRotation(node, true);
+        var scaling = this.getScale(node, true);
+        // COmpose doesn't actually translate, but creates a form of pivot in a specific position
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
+        // actually compose the matrix
+        resultMatrix.multiplyToRef(m2d, resultMatrix);
+        resultMatrix.multiplyToRef(translateTo, resultMatrix);
+        return resultMatrix;
+    };
+    /**
+     * Using the node's tree, calculate its world matrix and return it
+     * @param node the node to calculate the matrix for
+     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+     * @returns the world matrix for this node
+     */
+    GuiGizmoComponent.prototype._nodeToRTTWorldMatrix = function (node, useStoredValuesIfPossible) {
+        var _this = this;
+        var listOfNodes = [node];
+        var parent = node.parent;
+        var child = node;
+        while (parent) {
+            if (parent.typeName === "Grid") {
+                var cellInfo = parent.getChildCellInfo(child);
+                var cell = parent.cells[cellInfo];
+                listOfNodes.push(cell);
+            }
+            listOfNodes.push(parent);
+            child = parent;
+            parent = parent.parent;
+        }
+        this._resetMatrixArray();
+        var matrices = listOfNodes.map(function (node, index) { return _this._getNodeMatrix(node, index === 0 && _this._pointerData.pointerDown && useStoredValuesIfPossible); });
+        return matrices.reduce(function (acc, cur) {
+            acc.multiplyToRef(cur, acc);
+            return acc;
+        }, this._matrixCache[2]);
+    };
+    GuiGizmoComponent.prototype._nodeToRTTSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
+        worldMatrix.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    GuiGizmoComponent.prototype._rttToLocalNodeSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
+        var inv = this._matrixCache[3];
+        worldMatrix.invertToRef(inv);
+        inv.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    GuiGizmoComponent.prototype._rttToCanvasSpace = function (node, x, y, reference) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var tmpVec = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"](x, 0, -y);
+        // Get the final projection in view space
+        var camera = this.props.globalState.workbench._camera;
+        var scene = this.props.globalState.workbench._scene;
+        var engine = scene.getEngine();
+        // TODO - to ref
+        var projected = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Project(tmpVec, babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Matrix"].Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+        // round to 1 decimal points
+        projected.x = round(projected.x);
+        projected.y = round(projected.y);
+        return projected;
+    };
+    GuiGizmoComponent.prototype._mousePointerToRTTSpace = function (node, x, y) {
+        var camera = this.props.globalState.workbench._camera;
+        var scene = this.props.globalState.workbench._scene;
+        var newPosition = this.props.globalState.workbench.getPosition(scene, camera, this._plane, x !== null && x !== void 0 ? x : scene.pointerX, y || scene.pointerY);
+        newPosition.z *= -1;
+        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](round(newPosition.x), round(newPosition.z));
+    };
+    /**
+     * Get the scaling of a specific GUI control
+     * @param node the node for which we are getting the scaling
+     * @param relative should we return only the relative scaling (relative to the parent)
+     * @returns an X,Y vector of the scaling
+     */
+    GuiGizmoComponent.prototype.getScale = function (node, relative) {
+        var x = node.scaleX;
+        var y = node.scaleY;
+        if (relative) {
+            return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
+        }
+        var parent = node.parent;
+        while (parent) {
+            x *= parent.scaleX;
+            y *= parent.scaleY;
+            parent = parent.parent;
+        }
+        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
+    };
+    GuiGizmoComponent.prototype.getRotation = function (node, relative) {
+        // Gets rotate of a control account for all of it's parents rotations
+        var rotation = node.rotation;
+        if (relative) {
+            return rotation;
+        }
+        var parent = node.parent;
+        while (parent) {
+            rotation += parent.rotation;
+            parent = parent.parent;
+        }
+        return rotation;
+    };
+    GuiGizmoComponent.prototype.createBaseGizmo = function () {
+        var _this = this;
+        var _a, _b;
+        // Get the canvas element from the DOM.
+        var canvas = this.props.globalState.hostDocument.getElementById("workbench-canvas");
+        var scalePointCursors = [
+            "nesw-resize",
+            "nwse-resize",
+            "nesw-resize",
+            "nwse-resize",
+            "ew-resize",
+            "ns-resize",
+            "ew-resize",
+            "ns-resize"
+        ];
+        var _loop_1 = function (i) {
+            var scalePoint = canvas.ownerDocument.createElement("div");
+            scalePoint.className = "ge-scalePoint";
+            (_a = canvas.parentElement) === null || _a === void 0 ? void 0 : _a.appendChild(scalePoint);
+            scalePoint.style.position = "absolute";
+            scalePoint.style.display = "none";
+            scalePoint.style.left = i * 100 + "px";
+            scalePoint.style.top = i * 100 + "px";
+            scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.style.cursor = scalePointCursors[i];
+            scalePoint.addEventListener("pointerdown", function () {
+                _this._setMousePosition(i);
+            });
+            scalePoint.ondragstart = function (evt) {
+                evt.preventDefault();
+            };
+            scalePoint.draggable = true;
+            scalePoint.addEventListener("pointerup", this_1._onUp);
+            this_1.scalePoints.push(scalePoint);
+        };
+        var this_1 = this;
+        for (var i = 0; i < 8; ++i) {
+            _loop_1(i);
+        }
+        // Create the pivot point which is special
+        var pivotPoint = canvas.ownerDocument.createElement("img");
+        pivotPoint.src = gizmoPivotIcon;
+        pivotPoint.className = "ge-pivotPoint";
+        (_b = canvas.parentElement) === null || _b === void 0 ? void 0 : _b.appendChild(pivotPoint);
+        pivotPoint.style.position = "absolute";
+        pivotPoint.style.display = "none";
+        this.scalePoints.push(pivotPoint);
+        pivotPoint.ondragstart = function (evt) {
+            evt.preventDefault();
+        };
+        pivotPoint.draggable = true;
+        this.updateGizmo();
+    };
+    GuiGizmoComponent.prototype.onUp = function (evt) {
+        this._onUp(evt);
+    };
+    GuiGizmoComponent.prototype.onMove = function (evt) {
+        this._onMove();
+    };
+    /**
+     * Calculate the 4 corners in node space
+     * @param node The node to use
+     */
+    GuiGizmoComponent.prototype._nodeToCorners = function (node) {
+        var half = 0.5;
+        this._pointerData.corners[0].x = -node.widthInPixels * half;
+        this._pointerData.corners[0].y = node.heightInPixels * half;
+        this._pointerData.corners[1].x = -node.widthInPixels * half;
+        this._pointerData.corners[1].y = -node.heightInPixels * half;
+        this._pointerData.corners[2].x = node.widthInPixels * half;
+        this._pointerData.corners[2].y = -node.heightInPixels * half;
+        this._pointerData.corners[3].x = node.widthInPixels * half;
+        this._pointerData.corners[3].y = node.heightInPixels * half;
+    };
+    /**
+     * Computer the node's width, height, top and left, using the 4 corners
+     * @param node the node we use
+     */
+    GuiGizmoComponent.prototype._updateNodeFromCorners = function (node) {
+        var upperLeft = this._pointerData.corners[1];
+        var lowerRight = this._pointerData.corners[3];
+        var width = lowerRight.x - upperLeft.x;
+        var height = lowerRight.y - upperLeft.y;
+        var left = this._scalePointIndex === 0 || this._scalePointIndex === 1;
+        var top = this._scalePointIndex === 1 || this._scalePointIndex === 2;
+        // calculate the center point
+        var localRotation = this.getRotation(node, true);
+        var localScaling = this.getScale(node, true);
+        var absoluteCenter = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](upperLeft.x + width * 0.5, upperLeft.y + height * 0.5);
+        var center = absoluteCenter.clone();
+        // move to pivot
+        center.multiplyInPlace(localScaling);
+        var cosRotation = Math.cos(localRotation);
+        var sinRotation = Math.sin(localRotation);
+        var cosRotation180 = Math.cos(localRotation + Math.PI);
+        var sinRotation180 = Math.sin(localRotation + Math.PI);
+        var widthDelta = (this._initW - width) * 0.5;
+        var heightDelta = (this._initH - height) * 0.5;
+        // alignment compensation
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
+                center.y += (left ? -widthDelta : absoluteCenter.x) * sinRotation;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                center.x += (left ? -widthDelta : absoluteCenter.x) * cosRotation;
+                center.y += (left ? widthDelta : -absoluteCenter.x) * sinRotation;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
+                center.y += (top ? -heightDelta : absoluteCenter.y) * cosRotation180;
+                center.x += (top ? -heightDelta : absoluteCenter.y) * sinRotation180;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                center.y += (top ? heightDelta : -absoluteCenter.y) * cosRotation180;
+                center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
+                break;
+        }
+        // rotate the center around 0,0
+        var rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
+        // round the values and set them
+        node.leftInPixels = round(this._initX + rotatedCenter.x);
+        node.topInPixels = round(this._initY + rotatedCenter.y);
+        node.widthInPixels = round(Math.max(10, width));
+        node.heightInPixels = round(Math.max(10, height));
+        if (node.typeName === "Image") {
+            node.autoScale = false;
+        }
+        else if (node.typeName === "TextBlock") {
+            node.resizeToFit = false;
+        }
+        if (this._responsive) {
+            this.props.globalState.workbench.convertToPercentage(node, true);
+        }
+    };
+    GuiGizmoComponent.prototype._rotate = function (x, y, centerX, centerY, angle) {
+        return {
+            x: (x - centerX) * Math.cos(angle) - (y - centerY) * Math.sin(angle) + centerX,
+            y: (x - centerX) * Math.sin(angle) + (y - centerY) * Math.cos(angle) + centerY,
+        };
+    };
+    GuiGizmoComponent.prototype._setNodeCorner = function (node, corner, cornerIndex) {
+        // are we in a fixed-axis situation
+        var fixedAxis = cornerIndex > 3;
+        // the actual corner to update. This relies on the fact that the corners are in a specific order
+        var toUpdate = cornerIndex % 4;
+        if (fixedAxis) {
+            // check which axis is fixed
+            if (cornerIndex === 4 || cornerIndex === 6) {
+                // set the corner's y axis correctly
+                corner.y = this._pointerData.corners[toUpdate].y;
+            }
+            else {
+                // set the corner's x axis correctly
+                corner.x = this._pointerData.corners[toUpdate].x;
+            }
+        }
+        this._pointerData.corners[toUpdate].copyFrom(corner);
+        // also update the other corners
+        var next = (cornerIndex + 1) % 4;
+        var prev = (cornerIndex + 3) % 4;
+        // Update the next and the previous points
+        if (toUpdate % 2 === 0) {
+            this._pointerData.corners[next].x = this._pointerData.corners[toUpdate].x;
+            this._pointerData.corners[prev].y = this._pointerData.corners[toUpdate].y;
+        }
+        else {
+            this._pointerData.corners[next].y = this._pointerData.corners[toUpdate].y;
+            this._pointerData.corners[prev].x = this._pointerData.corners[toUpdate].x;
+        }
+        // update the transformation accordingly
+        this._updateNodeFromCorners(node);
+    };
+    GuiGizmoComponent.prototype.render = function () {
+        return null;
+    };
+    return GuiGizmoComponent;
+}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./diagram/workbench.tsx":
+/*!*******************************!*\
+  !*** ./diagram/workbench.tsx ***!
+  \*******************************/
+/*! exports provided: ConstraintDirection, WorkbenchComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConstraintDirection", function() { return ConstraintDirection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WorkbenchComponent", function() { return WorkbenchComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
@@ -47820,13 +48321,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
-var isFramePortData = function (variableToCheck) {
-    if (variableToCheck) {
-        return variableToCheck !== undefined;
-    }
-    else
-        return false;
-};
 var ConstraintDirection;
 (function (ConstraintDirection) {
     ConstraintDirection[ConstraintDirection["NONE"] = 0] = "NONE";
@@ -47846,13 +48340,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
-        _this._forceMoving = false;
         _this._forceSelecting = true;
         _this._outlines = false;
         _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
         _this._cameraMaxRadiasFactor = 16384; // 2^13
+        _this._mainSelection = null;
+        _this._selectionDepth = 0;
+        _this._doubleClick = null;
+        _this._lockMainSelection = false;
+        _this._liveGuiTextureRerender = true;
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
             _this._altKeyIsPressed = evt.altKey;
@@ -47906,6 +48404,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.blurEvent = function () {
             _this._ctrlKeyIsPressed = false;
             _this._constraintDirection = ConstraintDirection.NONE;
+            _this.props.globalState.guiGizmo.onUp();
         };
         _this.isUp = true;
         _this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
@@ -47915,6 +48414,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this.changeSelectionHighlight(false);
                 _this._selectedGuiNodes = [];
                 _this._selectAll = false;
+                _this._mainSelection = null;
             }
             else {
                 if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"]) {
@@ -47931,6 +48431,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     else if (_this._selectedGuiNodes.length <= 1) {
                         _this.changeSelectionHighlight(false);
                         _this._selectedGuiNodes = [selection];
+                        if (!_this._lockMainSelection && selection != _this.props.globalState.guiTexture._rootContainer) {
+                            //incase the selection did not come from the canvas and mouse
+                            _this._mainSelection = selection;
+                        }
+                        _this._lockMainSelection = false;
                         _this._selectAll = false;
                     }
                     _this.changeSelectionHighlight(true);
@@ -47940,7 +48445,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         props.globalState.onPanObservable.add(function () {
             _this._forcePanning = !_this._forcePanning;
             _this._forceSelecting = false;
-            _this._forceMoving = false;
             _this._forceZooming = false;
             if (!_this._forcePanning) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
@@ -47951,40 +48455,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
             _this.artBoardBackground.isHitTestVisible = true;
         });
-        props.globalState.onMoveObservable.add(function () {
-            _this._forceMoving = !_this._forceMoving;
-            _this._forcePanning = false;
-            _this._forceZooming = false;
-            _this._forceSelecting = false;
-            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            if (!_this._forceSelecting) {
-                _this.updateHitTestForSelection(true);
-            }
-            if (!_this._forceMoving) {
-                _this.globalState.onSelectionButtonObservable.notifyObservers();
-            }
-            else {
-                _this._canvas.style.cursor = "move";
-            }
-            _this.artBoardBackground.isHitTestVisible = true;
-        });
         props.globalState.onSelectionButtonObservable.add(function () {
             _this._forceSelecting = !_this._forceSelecting;
             _this._forcePanning = false;
             _this._forceZooming = false;
-            _this._forceMoving = false;
             _this._canvas.style.cursor = "default";
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            if (_this._forceMoving) {
-                _this.updateHitTestForSelection(true);
-            }
             _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
             _this._forcePanning = false;
             _this._forceSelecting = false;
-            _this._forceMoving = false;
             if (!_this._forceZooming) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
@@ -48017,6 +48499,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.hostDocument.addEventListener("keydown", _this.keyEvent, false);
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
         props.globalState.onWindowResizeObservable.add(function () {
+            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             _this._engine.resize();
         });
         _this.props.globalState.workbench = _this;
@@ -48043,6 +48526,47 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    // given a control gets the parent up the tree selectionDepth times. Selection depth is altered as we go down the tree.
+    WorkbenchComponent.prototype._getParentWithDepth = function (control) {
+        --this._selectionDepth;
+        var parent = control;
+        for (var i = 0; i < this._selectionDepth; ++i) {
+            if (!parent.parent) {
+                break;
+            }
+            parent = parent.parent;
+        }
+        return parent;
+    };
+    //gets the higher parent of a given control.
+    WorkbenchComponent.prototype._getMaxParent = function (control, maxParent) {
+        var parent = control;
+        this._selectionDepth = 0;
+        while (parent.parent && parent.parent !== maxParent) {
+            parent = parent.parent;
+            ++this._selectionDepth;
+        }
+        return parent;
+    };
+    WorkbenchComponent.prototype.determineMouseSelection = function (selection) {
+        if (selection && this._selectedGuiNodes.length <= 1) {
+            // if we're still on the same main selection, got down the tree.
+            if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+                selection = this._getParentWithDepth(selection);
+            }
+            else { // get the start of our tree by getting our max parent and storing our main selected control
+                if (this._isMainSelectionParent(selection) && this._mainSelection) {
+                    selection = this._getParentWithDepth(selection);
+                }
+                else {
+                    selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
+                }
+                this._mainSelection = selection;
+            }
+        }
+        this._lockMainSelection = true;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
+    };
     WorkbenchComponent.prototype.updateHitTest = function (guiControl, value) {
         var _this = this;
         guiControl.isHitTestVisible = value;
@@ -48066,6 +48590,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
+        this._clipboard = [];
         if (this._selectAll) {
             var index_2 = 0;
             this.nodes.forEach(function (node) {
@@ -48210,11 +48735,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._selectedGuiNodes.forEach(function (node) {
             if (_this._outlines) {
                 node.isHighlighted = true;
-                node.highlightLineWidth = value ? 10 : 5;
+                node.highlightLineWidth = 5;
             }
             else {
-                node.isHighlighted = value;
-                node.highlightLineWidth = 10;
+                node.isHighlighted = value && node.typeName === "Grid";
+                node.highlightLineWidth = 5;
             }
         });
         this.updateHitTestForSelection(value);
@@ -48238,6 +48763,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
     };
+    //is the
+    WorkbenchComponent.prototype._isMainSelectionParent = function (control) {
+        do {
+            if (this._mainSelection === control) {
+                return true;
+            }
+            ;
+            control = (control === null || control === void 0 ? void 0 : control.parent) || null;
+        } while (control);
+        return false;
+    };
     WorkbenchComponent.prototype.createNewGuiNode = function (guiControl) {
         var _this = this;
         var onPointerUp = guiControl.onPointerUpObservable.add(function (evt) {
@@ -48247,7 +48783,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             if (!_this.isUp || evt.buttonIndex > 0)
                 return;
             if (_this._forceSelecting) {
-                _this.isSelected(true, guiControl);
+                // if this is our first click and the clicked control is a child the of the main selected control.
+                if (!_this._doubleClick && _this._isMainSelectionParent(guiControl)) {
+                    _this._doubleClick = guiControl;
+                    window.setTimeout(function () {
+                        _this._doubleClick = null;
+                    }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"].DoubleClickDelay);
+                }
+                else { //function will either select our new main control or contrue down the tree.
+                    _this.determineMouseSelection(guiControl);
+                    _this._doubleClick = null;
+                }
                 _this.isUp = false;
             }
         });
@@ -48389,6 +48935,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
         if (ignorClick === void 0) { ignorClick = false; }
+        this._liveGuiTextureRerender = false;
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
         if (this._setConstraintDirection) {
@@ -48417,32 +48964,41 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         guiControl.topInPixels += newY;
         //convert to percentage
         if (this._responsive) {
-            var ratioX = this._textureMesh.scaling.x;
-            var ratioY = this._textureMesh.scaling.z;
-            if (guiControl.parent) {
-                if (guiControl.parent.typeName === "Grid") {
-                    var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
-                    var cell = guiControl.parent.cells[cellInfo];
-                    ratioX = cell.widthInPixels;
-                    ratioY = cell.heightInPixels;
-                }
-                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
-                    var thickness = guiControl.parent.thickness * 2;
-                    ratioX = guiControl.parent._currentMeasure.width - thickness;
-                    ratioY = guiControl.parent._currentMeasure.height - thickness;
-                }
-                else {
-                    ratioX = guiControl.parent._currentMeasure.width;
-                    ratioY = guiControl.parent._currentMeasure.height;
-                }
-            }
-            var left = (guiControl.leftInPixels * 100) / ratioX;
-            var top_1 = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.left = left.toFixed(2) + "%";
-            guiControl.top = top_1.toFixed(2) + "%";
+            this.convertToPercentage(guiControl, false);
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
+    };
+    WorkbenchComponent.prototype.convertToPercentage = function (guiControl, includeScale) {
+        var ratioX = this._textureMesh.scaling.x;
+        var ratioY = this._textureMesh.scaling.z;
+        if (guiControl.parent) {
+            if (guiControl.parent.typeName === "Grid") {
+                var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
+                var cell = guiControl.parent.cells[cellInfo];
+                ratioX = cell.widthInPixels;
+                ratioY = cell.heightInPixels;
+            }
+            else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                var thickness = guiControl.parent.thickness * 2;
+                ratioX = guiControl.parent._currentMeasure.width - thickness;
+                ratioY = guiControl.parent._currentMeasure.height - thickness;
+            }
+            else {
+                ratioX = guiControl.parent._currentMeasure.width;
+                ratioY = guiControl.parent._currentMeasure.height;
+            }
+        }
+        var left = (guiControl.leftInPixels * 100) / ratioX;
+        var top = (guiControl.topInPixels * 100) / ratioY;
+        guiControl.left = left.toFixed(2) + "%";
+        guiControl.top = top.toFixed(2) + "%";
+        if (includeScale) {
+            var width = (guiControl.widthInPixels * 100) / ratioX;
+            var height = (guiControl.heightInPixels * 100) / ratioY;
+            guiControl.width = width.toFixed(2) + "%";
+            guiControl.height = height.toFixed(2) + "%";
+        }
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
@@ -48485,7 +49041,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        if (this._forceMoving) {
+        if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
@@ -48550,18 +49106,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
-            var doRerender_1 = true;
             this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(function () {
                 var _a;
-                if (doRerender_1) {
+                if (_this._liveGuiTextureRerender) {
                     (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
                 }
-                doRerender_1 = true;
+                _this._liveGuiTextureRerender = true;
             });
             this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(function () {
                 var _a;
                 (_a = _this.globalState.guiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
-                doRerender_1 = false;
+                _this._liveGuiTextureRerender = false;
             });
         }
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
@@ -48575,12 +49130,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
         var _this = this;
         if (this.globalState.liveGuiTexture) {
-            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(function (desc) {
                 var _a;
                 (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(desc);
                 _this.appendBlock(desc);
             });
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     };
     //Add map-like controls to an ArcRotate camera
@@ -48598,6 +49154,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var panningFn = function () {
             var pos = _this.getPosition(scene, camera, plane);
             _this.panning(pos, initialPos, camera.inertia, inertialPanning);
+            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
         };
         var inertialPanningFn = function () {
             if (inertialPanning.x !== 0 || inertialPanning.y !== 0 || inertialPanning.z !== 0) {
@@ -48639,6 +49196,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         scene.onPointerObservable.add(function (p, e) {
             _this._panning = false;
             removeObservers();
+            _this.props.globalState.guiGizmo.onUp();
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
@@ -48661,11 +49219,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 case "G":
                     _this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-                case "m": //move
-                case "M":
-                    if (!_this._forceMoving)
-                        _this.globalState.onMoveObservable.notifyObservers();
-                    break;
                 case "f": //fit to window
                 case "F":
                     _this.globalState.onFitToWindowObservable.notifyObservers();
@@ -48674,6 +49227,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     break;
             }
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["KeyboardEventTypes"].KEYDOWN);
+        scene.onAfterRenderObservable.add(function () { _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
         scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
@@ -48685,8 +49239,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
     };
     //Get pos on plane
-    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane) {
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
+    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane, x, y) {
+        if (x === void 0) { x = scene.pointerX; }
+        if (y === void 0) { y = scene.pointerY; }
+        var ray = scene.createPickingRay(x, y, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
         var distance = ray.intersectsPlane(plane);
         //not using this ray again, so modifying its vectors here is fine
         return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
@@ -48741,6 +49297,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         offset.scaleInPlace(inertiaComp);
         ref.addInPlace(offset);
         camera.inertialRadiusOffset += delta;
+        //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
@@ -48756,7 +49313,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); }, ref: this._rootContainer }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) {
+                if (_this.props.globalState.guiTexture) {
+                    _this.onMove(evt);
+                }
+                if (_this.props.globalState.guiGizmo) {
+                    _this.props.globalState.guiGizmo.onMove(evt);
+                }
+            }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) {
+                _this.onUp(evt);
+                _this.props.globalState.guiGizmo.onUp(evt);
+            }, ref: this._rootContainer }));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -48851,6 +49418,7 @@ var GlobalState = /** @class */ (function () {
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
@@ -48903,15 +49471,13 @@ var GUIEditor = /** @class */ (function () {
      */
     GUIEditor.Show = function (options) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var popupWindow, hostElement, globalState, graphEditor, error_1, popupWindow;
+            var hostElement, popupWindow, globalState, graphEditor, error_1, popupWindow;
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this._CurrentState) {
-                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
-                            if (popupWindow) {
-                                popupWindow.close();
-                            }
+                        hostElement = options.hostElement;
+                        // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
+                        if (this._CurrentState && hostElement) {
                             if (options.currentSnippetToken) {
                                 try {
                                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -48920,13 +49486,13 @@ var GUIEditor = /** @class */ (function () {
                                     //swallow and continue
                                 }
                             }
-                            if (options.liveGuiTexture) {
-                                this._CurrentState.liveGuiTexture = options.liveGuiTexture;
-                            }
                             return [2 /*return*/];
                         }
-                        hostElement = options.hostElement;
                         if (!hostElement) {
+                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                            if (popupWindow) {
+                                popupWindow.close();
+                            }
                             hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800);
                         }
                         globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();
@@ -48944,6 +49510,7 @@ var GUIEditor = /** @class */ (function () {
                         react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](graphEditor, hostElement);
                         if (!!globalState.guiTexture) return [3 /*break*/, 4];
                         globalState.workbench.createGUICanvas();
+                        globalState.guiGizmo.createBaseGizmo();
                         if (!options.currentSnippetToken) return [3 /*break*/, 4];
                         _a.label = 1;
                     case 1:
@@ -50830,6 +51397,9 @@ var FloatLineComponent = /** @class */ (function (_super) {
                 }
             }
         }
+        else if (this.props.defaultValue != null) {
+            valueAsNumber = this.props.defaultValue;
+        }
         this._localChange = true;
         this.setState({ value: valueString });
         if (isNaN(valueAsNumber)) {
@@ -50859,7 +51429,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             valueAsNumber = parseFloat(this.state.value);
         }
         var className = this.props.smallUI ? "short" : "value";
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             !this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
                 this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 (!this.props.icon || this.props.label != "") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
@@ -51314,7 +51884,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         this._localChange = true;
         var store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName];
         this.setState({ value: value });
-        if (this.props.propertyName) {
+        if (this.props.propertyName && !this.props.delayInput) {
             this.props.target[this.props.propertyName] = value;
         }
         this.raiseOnPropertyChanged(value, store);
@@ -51325,7 +51895,10 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             (!this.props.icon || (this.props.icon && this.props.label != "")) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return (_this.props.lockObject.lock = false); }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () {
+                        _this.props.lockObject.lock = false;
+                        _this.updateValue((_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "");
+                    }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
     return TextInputLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -51629,6 +52202,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
 /* harmony import */ var _components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/sceneExplorer/sceneExplorerComponent */ "./components/sceneExplorer/sceneExplorerComponent.tsx");
 /* harmony import */ var _components_commandBarComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/commandBarComponent */ "./components/commandBarComponent.tsx");
+/* harmony import */ var _diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagram/guiGizmo */ "./diagram/guiGizmo.tsx");
+
 
 
 
@@ -51823,8 +52398,16 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__["SceneExplorerComponent"], { globalState: this.props.globalState, noExpand: true }),
                 this.createToolbar(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container", onDrop: function (event) {
+                        if (_this._draggedItem != null) {
+                            _this.onCreate(_this._draggedItem);
+                        }
+                        _this._draggedItem = null;
+                    }, onDragOver: function (event) {
+                        event.preventDefault();
+                    } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__["GuiGizmoComponent"], { globalState: this.props.globalState })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["PropertyTabComponent"], { globalState: this.props.globalState })),
@@ -51968,6 +52551,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_6__["GUINodeTools"].CreateControlFromString(value);
         var newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.props.globalState.guiGizmo.onUp();
         this.forceUpdate();
     };
     WorkbenchEditor.prototype.createToolbar = function () {
@@ -51976,7 +52560,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "toolbarGrab" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blackLine" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-content sub1" }, this._items.map(function (m) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label" + (m.isActive ? " active" : ""), key: m.label, onClick: function () {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label" + (m.isActive ? " active" : ""), key: m.label, onDragStart: function (evt) { _this._draggedItem = m.label; }, onClick: function () {
                             if (!m.onClick) {
                                 _this.forceUpdate();
                                 return;
@@ -51986,7 +52570,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                             }
                         }, title: m.label },
                         !m.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label-text" }, (m.isActive ? "> " : "") + m.label),
-                        m.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon" },
+                        m.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon", draggable: true },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon, width: "40px", height: "40px" }))),
                         m.onCheck && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "toolbar-label-check", onChange: function (evt) {
                                 _this.forceUpdate();

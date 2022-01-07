@@ -51,7 +51,13 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 
 #ifdef REFLECTIONMAP_SKYBOX
     vPositionUVW = position;
@@ -143,4 +149,6 @@ void main(void) {
 #ifdef POINTSIZE
     gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }
