@@ -363,7 +363,7 @@ export class NormalMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.NormalMaterial";
         return serializationObject;
     }

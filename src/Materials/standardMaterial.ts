@@ -1861,19 +1861,6 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Serializes this material in a JSON representation
-     * @returns the serialized material object
-     */
-    public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
-
-        serializationObject.stencil = this.stencil.serialize();
-        serializationObject.uniqueId = this.uniqueId;
-
-        return serializationObject;
-    }
-
-    /**
      * Creates a standard material from parsed material data
      * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
