@@ -1425,10 +1425,10 @@ export class WebGPUTextureHelper {
 
         if (texture.isCube) {
             const gpuMSAATexture = this.createCubeTexture({ width, height }, false, false, texture.invertY, false, gpuTextureWrapper.format, samples, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages, gpuTextureWrapper.textureAdditionalUsages);
-            gpuTextureWrapper.setMSAATexture(gpuMSAATexture);
+            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
         } else {
             const gpuMSAATexture = this.createTexture({ width, height, layers: layerCount }, false, false, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, samples, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages, gpuTextureWrapper.textureAdditionalUsages);
-            gpuTextureWrapper.setMSAATexture(gpuMSAATexture);
+            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
         }
     }
 
