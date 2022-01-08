@@ -6,12 +6,18 @@ import { VertexData } from "../mesh.vertexData";
 
 /**
  * Creates the VertexData for a tiled plane
- * @param options an object used to set the following optional parameters for the box, required but can be empty
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
+ * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
   * * pattern a limited pattern arrangement depending on the number
+  * * size of the box
+  * * width of the box, overwrites size
+  * * height of the box, overwrites size
   * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
   * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
   * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+  * * alignVertical places whole tiles aligned to the center, left or right of a column 
   * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
   * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
  * @returns the VertexData of the tiled plane
@@ -413,22 +419,21 @@ export function CreateTiledPlaneVertexData(options: { pattern?: number, tileSize
 
 /**
  * Creates a tiled plane mesh
- * * The parameter `pattern` will, depending on value, do nothing or
- * * * flip (reflect about central vertical) alternate tiles across and up
- * * * flip every tile on alternate rows
- * * * rotate (180 degs) alternate tiles across and up
- * * * rotate every tile on alternate rows
- * * * flip and rotate alternate tiles across and up
- * * * flip and rotate every tile on alternate rows
- * * The parameter `tileSize` sets the size (float) of each tile side (default 1)
- * * You can set some different tile dimensions by using the parameters `tileWidth` and `tileHeight` (both by default have the same value of `tileSize`)
- * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
- * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
- * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
- * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @see https://doc.babylonjs.com/how_to/set_shapes#box
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
  * @param name defines the name of the mesh
- * @param options defines the options used to create the mesh
+ * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
+  * * pattern a limited pattern arrangement depending on the number
+  * * size of the box
+  * * width of the box, overwrites size
+  * * height of the box, overwrites size
+  * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+  * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+  * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+  * * alignVertical places whole tiles aligned to the center, left or right of a column 
+  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
  * @param scene defines the hosting scene
  * @returns the box mesh
  */
