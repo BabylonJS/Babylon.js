@@ -91,7 +91,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         const caps = EngineStore.LastCreatedEngine.getCaps();
 
-        return (caps.supportTransformFeedbacks) || caps.supportComputeShaders;
+        return caps.supportTransformFeedbacks || caps.supportComputeShaders;
     }
 
     /**
