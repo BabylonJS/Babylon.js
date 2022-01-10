@@ -215,7 +215,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", this.blurEvent, false);
 
         props.globalState.onWindowResizeObservable.add(() => {
-            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             this._engine.resize();
         });
 
@@ -912,7 +912,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const panningFn = () => {
             const pos = this.getPosition(scene, camera, plane);
             this.panning(pos, initialPos, camera.inertia, inertialPanning);
-            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
         };
 
         const inertialPanningFn = () => {
@@ -920,6 +919,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 camera.target.addInPlace(inertialPanning);
                 inertialPanning.scaleInPlace(camera.inertia);
                 this.zeroIfClose(inertialPanning);
+                this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             }
         };
 
@@ -989,7 +989,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }, KeyboardEventTypes.KEYDOWN);
 
-        scene.onAfterRenderObservable.add(() => { this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers() });
+        scene.onAfterRenderObservable.add(() => { if (this._camera.inertialRadiusOffset != 0) this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers() });
         scene.onPointerObservable.add(zoomFnScrollWheel, PointerEventTypes.POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
@@ -1065,7 +1065,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         ref.addInPlace(offset);
 
         camera.inertialRadiusOffset += delta;
-        //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
     //Sets x y or z of passed in vector to zero if less than Epsilon
