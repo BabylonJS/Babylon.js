@@ -2915,9 +2915,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var updatableNormals = false;
         var kindIndex: number;
         var kind: string;
+
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
             var vertexBuffer = <VertexBuffer>this.getVertexBuffer(kind);
+
+            // Check data consistency
+            const vertexData = vertexBuffer.getData();
+            if (vertexData instanceof Array || vertexData instanceof Float32Array) {
+                if (vertexData.length === 0) {
+                    continue;
+                }
+            }
 
             if (kind === VertexBuffer.NormalKind) {
                 updatableNormals = vertexBuffer.isUpdatable();
@@ -2944,6 +2953,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
                 kind = kinds[kindIndex];
+                if (!vbs[kind]) {
+                    continue;
+                }
+
                 var stride = vbs[kind].getStrideSize();
 
                 for (var offset = 0; offset < stride; offset++) {
@@ -2995,6 +3008,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Updating vertex buffers
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
+
+            if (!newdata[kind]) {
+                continue;
+            }
+
             this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
         }
 
