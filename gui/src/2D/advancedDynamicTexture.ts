@@ -1149,8 +1149,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false, invertY?: boolean): AdvancedDynamicTexture {
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
-        var material = new StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
+        // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
+        // TODO: find a better solution for material serialization
+        const uniqueId = mesh.getScene().getUniqueId();
+        var result = new AdvancedDynamicTexture(`AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`, width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+        var material = new StandardMaterial(`AdvancedDynamicTextureMaterial for ${mesh.name} [${uniqueId}]`, mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
         material.specularColor = Color3.Black();
