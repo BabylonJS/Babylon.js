@@ -55,9 +55,6 @@
     }
     .toolbar-label {
         color:white;
-        padding: 5px;
-        padding-left: 7px;
-        height: 35px;
         font-size: 18px;
         display: grid;
         align-items: center;
@@ -78,6 +75,10 @@
                 display: block;
             }
         } 
+    }
+    .toolbar-icon {
+        width: 40px;
+        height: 40px;
     }
 }
 

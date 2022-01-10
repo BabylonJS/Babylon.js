@@ -609,29 +609,6 @@ export class WebGPUTextureHelper {
         return !!(texture as InternalTexture).dispose;
     }
 
-    public static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
-        switch (compareFunction) {
-            case Constants.ALWAYS:
-                return WebGPUConstants.CompareFunction.Always;
-            case Constants.EQUAL:
-                return WebGPUConstants.CompareFunction.Equal;
-            case Constants.GREATER:
-                return WebGPUConstants.CompareFunction.Greater;
-            case Constants.GEQUAL:
-                return WebGPUConstants.CompareFunction.GreaterEqual;
-            case Constants.LESS:
-                return WebGPUConstants.CompareFunction.Less;
-            case Constants.LEQUAL:
-                return WebGPUConstants.CompareFunction.LessEqual;
-            case Constants.NEVER:
-                return WebGPUConstants.CompareFunction.Never;
-            case Constants.NOTEQUAL:
-                return WebGPUConstants.CompareFunction.NotEqual;
-            default:
-                return WebGPUConstants.CompareFunction.Less;
-        }
-    }
-
     public static IsImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
         return (imageBitmap as ImageBitmap).close !== undefined;
     }
@@ -1191,7 +1168,7 @@ export class WebGPUTextureHelper {
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
 
         if (!isCompressedFormat) {
-            // we don't know in advance if the texture will be updated with copyImageBitmapToTexture (which requires to have those flags), so we need to force the flags all the times
+            // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
             additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst;
         }
 
@@ -1232,7 +1209,7 @@ export class WebGPUTextureHelper {
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
 
         if (!isCompressedFormat) {
-            // we don't know in advance if the texture will be updated with copyImageBitmapToTexture (which requires to have those flags), so we need to force the flags all the times
+            // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
             additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst;
         }
 
@@ -1448,10 +1425,10 @@ export class WebGPUTextureHelper {
 
         if (texture.isCube) {
             const gpuMSAATexture = this.createCubeTexture({ width, height }, false, false, texture.invertY, false, gpuTextureWrapper.format, samples, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages, gpuTextureWrapper.textureAdditionalUsages);
-            gpuTextureWrapper.setMSAATexture(gpuMSAATexture);
+            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
         } else {
             const gpuMSAATexture = this.createTexture({ width, height, layers: layerCount }, false, false, texture.invertY, false, texture.is3D, gpuTextureWrapper.format, samples, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages, gpuTextureWrapper.textureAdditionalUsages);
-            gpuTextureWrapper.setMSAATexture(gpuMSAATexture);
+            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
         }
     }
 

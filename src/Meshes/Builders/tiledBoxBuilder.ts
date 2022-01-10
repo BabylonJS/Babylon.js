@@ -8,12 +8,22 @@ import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
 
 /**
  * Creates the VertexData for a tiled box
- * @param options an object used to set the following optional parameters for the box, required but can be empty
-  * * faceTiles sets the pattern, tile size and number of tiles for a face
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
+ * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
+  * * pattern sets the rotation or reflection pattern for the tiles,
+  * * size of the box
+  * * width of the box, overwrites size
+  * * height of the box, overwrites size
+  * * depth of the box, overwrites size
+  * * tileSize sets the size of a tile
+  * * tileWidth sets the tile width and overwrites tileSize
+  * * tileHeight sets the tile width and overwrites tileSize
   * * faceUV an array of 6 Vector4 elements used to set different images to each box side
   * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+  * * alignVertical places whole tiles aligned to the center, left or right of a column
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
- * @returns the VertexData of the box
+ * @returns the VertexData of the TiledBox
  */
 export function CreateTiledBoxVertexData(options: { pattern?: number, size?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, faceUV?: Vector4[], faceColors?: Color4[], alignHorizontal?: number, alignVertical?: number, sideOrientation?: number }): VertexData {
     var nbFaces = 6;
@@ -214,14 +224,23 @@ export function CreateTiledBoxVertexData(options: { pattern?: number, size?: num
 }
 
 /**
- * Creates a box mesh
- * faceTiles sets the pattern, tile size and number of tiles for a face     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
- * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
- * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
- * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
- * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * Creates a tiled box mesh
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
  * @param name defines the name of the mesh
- * @param options defines the options used to create the mesh
+ * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
+  * * pattern sets the rotation or reflection pattern for the tiles,
+  * * size of the box
+  * * width of the box, overwrites size
+  * * height of the box, overwrites size
+  * * depth of the box, overwrites size
+  * * tileSize sets the size of a tile
+  * * tileWidth sets the tile width and overwrites tileSize
+  * * tileHeight sets the tile width and overwrites tileSize
+  * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+  * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+  * * alignVertical places whole tiles aligned to the center, left or right of a column
+  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * @param scene defines the hosting scene
  * @returns the box mesh
  */
@@ -240,7 +259,7 @@ export function CreateTiledBox(name: string, options: { pattern?: number, width?
 
 /**
  * Class containing static functions to help procedurally build meshes
- * @deprecated use CreateTildeBox instead
+ * @deprecated use CreateTiledBox instead
  */
 export const TiledBoxBuilder = {
     CreateTiledBox
