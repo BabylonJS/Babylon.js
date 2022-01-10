@@ -35,6 +35,7 @@ import { Plane } from "../Maths/math.plane";
 import { TransformNode } from "./transformNode";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
+declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
@@ -3699,6 +3700,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /** @hidden */
+    public static _GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
+        throw _WarnImport("GoldbergMesh");
+    };
+
+    /** @hidden */
     public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         throw _WarnImport("LinesMesh");
     };
@@ -3717,6 +3723,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = Mesh._LinesMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GoldbergMesh") {
+            mesh = Mesh._GoldbergMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
         }
@@ -4500,6 +4508,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             instance._indexInSourceMeshInstanceArray = -1;
             this.instances.pop();
         }
+    }
+
+    /** @hidden */
+    public _shouldConvertRHS() {
+        return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
     }
 }
 

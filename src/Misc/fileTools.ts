@@ -79,7 +79,9 @@ export const FileToolsOptions: {
     PreprocessUrl: (url: string) => string;
 } = {
     /**
-     * Gets or sets the retry strategy to apply when an error happens while loading an asset
+     * Gets or sets the retry strategy to apply when an error happens while loading an asset.
+     * When defining this function, return the wait time before trying again or return -1 to
+     * stop retrying and error out.
      */
     DefaultRetryStrategy: RetryStrategy.ExponentialBackoff(),
 

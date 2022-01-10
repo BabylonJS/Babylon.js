@@ -766,6 +766,7 @@ interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
 interface GPUImageCopyExternalImage {
     source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
     origin?: GPUOrigin2D; /* default={} */
+    flipY?: boolean; /* default=false */
 }
 
 interface GPUProgrammablePassEncoder {

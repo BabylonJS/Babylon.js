@@ -11,15 +11,14 @@ import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 enum StatePosition {
-    //DepthBias = 0, // not used, so remove it to improve perf
-    //DepthBiasClamp = 1, // not used, so remove it to improve perf
     StencilReadMask = 0,
     StencilWriteMask = 1,
+    //DepthBiasClamp = 1, // not used, so remove it to improve perf
     DepthBias = 2,
     DepthBiasSlopeScale = 3,
-    MRTAttachments1 = 4,
-    MRTAttachments2 = 5,
-    DepthStencilState = 6,
+    DepthStencilState = 4,
+    MRTAttachments1 = 5,
+    MRTAttachments2 = 6,
     RasterizationState = 7,
     ColorStates = 8,
     ShaderStage = 9,
@@ -171,6 +170,10 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtTextureCount: number = 0;
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
+        if (sampleCount > 1) {
+            // WebGPU only supports 1 or 4
+            sampleCount = 4;
+        }
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
@@ -1015,7 +1018,6 @@ export abstract class WebGPUCacheRenderPipeline {
                 depthBias: this._depthBias,
                 depthBiasClamp: this._depthBiasClamp,
                 depthBiasSlopeScale: this._depthBiasSlopeScale,
-                /*clampDepth*/
             },
         });
     }
