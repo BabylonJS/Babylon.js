@@ -206,11 +206,18 @@ export class ThinEngine {
         return description;
     }
 
+    /** @hidden */
+    protected _name = "WebGL";
+
     /**
-     * Returns the name of the engine
+     * Gets or sets the name of the engine
      */
     public get name(): string {
-        return "WebGL";
+        return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
     }
 
     /**
@@ -1089,6 +1096,7 @@ export class ThinEngine {
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
             supportSRGBBuffers: false,
+            supportTransformFeedbacks: this._webGLVersion > 1
         };
 
         // Infos
