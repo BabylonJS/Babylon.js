@@ -5080,6 +5080,7 @@ declare module BABYLON {
     }
     /**
      * Represents a 3D path made up of multiple 3D points
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/path3D
      */
     export class Path3D {
         /**
@@ -27858,6 +27859,7 @@ declare module BABYLON {
     /**
      * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
      * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/goldberg_poly
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * @param scene defines the hosting scene
@@ -39414,6 +39416,7 @@ declare module BABYLON {
          * @param axis2 defines the second axis
          * @param axis3 defines the third axis
          * @returns a new Vector3
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
          */
         static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3;
         /**
@@ -44545,7 +44548,7 @@ declare module BABYLON {
         /**
          * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
          * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-         * See @TODO WEBGPU DOC PAGE for more details
+         * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
          */
         get compatibilityMode(): boolean;
         set compatibilityMode(mode: boolean);
@@ -46788,7 +46791,7 @@ declare module BABYLON {
          * @param options defines the options used to create the texture
          * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
          * @param source source type of the texture
-         * @returns a new render target texture stored in an InternalTexture
+         * @returns a new internal texture
          */
         _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation?: boolean, source?: InternalTextureSource): InternalTexture;
         /** @hidden */
@@ -64379,6 +64382,7 @@ declare module BABYLON {
 declare module BABYLON.Debug {
     /**
          * The Axes viewer will show 3 axes in a specific point in space
+         * @see https://doc.babylonjs.com/toolsAndResources/utilities/World_Axes
          */
     export class AxesViewer {
         private _xAxis;
@@ -67430,14 +67434,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export interface IWebGPUPipelineContextVertexInputsCache {
-        indexBuffer: Nullable<GPUBuffer>;
-        indexOffset: number;
-        vertexStartSlot: number;
-        vertexBuffers: GPUBuffer[];
-        vertexOffsets: number[];
-    }
-    /** @hidden */
     export interface IWebGPURenderPipelineStageDescriptor {
         vertexStage: GPUProgrammableStage;
         fragmentStage?: GPUProgrammableStage;
@@ -67987,7 +67983,6 @@ declare module BABYLON {
         textureAdditionalUsages: number;
         constructor(existingTexture?: Nullable<GPUTexture>);
         set(hardwareTexture: GPUTexture): void;
-        setMSAATexture(hardwareTexture: GPUTexture): void;
         setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
         createView(descriptor?: GPUTextureViewDescriptor, createViewForWriting?: boolean): void;
         reset(): void;
@@ -68046,7 +68041,6 @@ declare module BABYLON {
         private static _GetBlockInformationFromFormat;
         private static _IsHardwareTexture;
         private static _IsInternalTexture;
-        static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction;
         static IsImageBitmap(imageBitmap: ImageBitmap | {
             width: number;
             height: number;
@@ -68107,6 +68101,7 @@ declare module BABYLON {
         private static _GetWrappingMode;
         private static _GetSamplerWrappingDescriptor;
         private static _GetSamplerDescriptor;
+        static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction;
         getSampler(sampler: TextureSampler, bypassCache?: boolean, hash?: number): GPUSampler;
     }
 }
@@ -68241,7 +68236,7 @@ declare module BABYLON {
     /** @hidden */
     class NodeState {
         values: {
-            [name: number]: NodeState;
+            [id: number]: NodeState;
         };
         pipeline: GPURenderPipeline;
         constructor();
@@ -68367,8 +68362,8 @@ declare module BABYLON {
         buffers: {
             [name: string]: Nullable<WebGPUDataBuffer>;
         };
-        materialContextUpdateId: number;
         indirectDrawBuffer?: GPUBuffer;
+        private _materialContextUpdateId;
         private _bufferManager;
         private _useInstancing;
         private _indirectDrawData?;
@@ -68844,7 +68839,7 @@ declare module BABYLON {
         /**
          * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
          * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-         * See @TODO WEBGPU DOC PAGE for more details
+         * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
          */
         get compatibilityMode(): boolean;
         set compatibilityMode(mode: boolean);
@@ -69039,7 +69034,7 @@ declare module BABYLON {
          */
         getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
         /**
-         * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+         * Activates an effect, making it the current one (ie. the one used for rendering)
          * @param effect defines the effect to activate
          */
         enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
@@ -69069,7 +69064,7 @@ declare module BABYLON {
          * @param options defines the options used to create the texture
          * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
          * @param source source type of the texture
-         * @returns a new render target texture stored in an InternalTexture
+         * @returns a new internal texture
          */
         _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation?: boolean, source?: InternalTextureSource): InternalTexture;
         /**
@@ -79904,12 +79899,18 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Creates the VertexData for a tiled plane
-     * @param options an object used to set the following optional parameters for the box, required but can be empty
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
+     * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
       * * pattern a limited pattern arrangement depending on the number
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
       * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
       * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
       * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the tiled plane
@@ -79930,22 +79931,21 @@ declare module BABYLON {
     }): VertexData;
     /**
      * Creates a tiled plane mesh
-     * * The parameter `pattern` will, depending on value, do nothing or
-     * * * flip (reflect about central vertical) alternate tiles across and up
-     * * * flip every tile on alternate rows
-     * * * rotate (180 degs) alternate tiles across and up
-     * * * rotate every tile on alternate rows
-     * * * flip and rotate alternate tiles across and up
-     * * * flip and rotate every tile on alternate rows
-     * * The parameter `tileSize` sets the size (float) of each tile side (default 1)
-     * * You can set some different tile dimensions by using the parameters `tileWidth` and `tileHeight` (both by default have the same value of `tileSize`)
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @see https://doc.babylonjs.com/how_to/set_shapes#box
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
      * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
+     * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
+      * * pattern a limited pattern arrangement depending on the number
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
+      * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+      * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+      * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
+      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
@@ -79975,12 +79975,22 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Creates the VertexData for a tiled box
-     * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * faceTiles sets the pattern, tile size and number of tiles for a face
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
+     * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
+      * * pattern sets the rotation or reflection pattern for the tiles,
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
+      * * depth of the box, overwrites size
+      * * tileSize sets the size of a tile
+      * * tileWidth sets the tile width and overwrites tileSize
+      * * tileHeight sets the tile width and overwrites tileSize
       * * faceUV an array of 6 Vector4 elements used to set different images to each box side
       * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @returns the VertexData of the box
+     * @returns the VertexData of the TiledBox
      */
     export function CreateTiledBoxVertexData(options: {
         pattern?: number;
@@ -79998,14 +80008,23 @@ declare module BABYLON {
         sideOrientation?: number;
     }): VertexData;
     /**
-     * Creates a box mesh
-     * faceTiles sets the pattern, tile size and number of tiles for a face     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
-     * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+     * Creates a tiled box mesh
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
      * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
+     * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
+      * * pattern sets the rotation or reflection pattern for the tiles,
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
+      * * depth of the box, overwrites size
+      * * tileSize sets the size of a tile
+      * * tileWidth sets the tile width and overwrites tileSize
+      * * tileHeight sets the tile width and overwrites tileSize
+      * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+      * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
+      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
@@ -80026,7 +80045,7 @@ declare module BABYLON {
     }, scene?: Nullable<Scene>): Mesh;
     /**
      * Class containing static functions to help procedurally build meshes
-     * @deprecated use CreateTildeBox instead
+     * @deprecated use CreateTiledBox instead
      */
     export const TiledBoxBuilder: {
         CreateTiledBox: typeof CreateTiledBox;
@@ -80388,6 +80407,7 @@ declare module BABYLON {
     /**
      * Creates the Mesh for a Geodesic Polyhedron
      * @see https://en.wikipedia.org/wiki/Geodesic_polyhedron
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/geodesic_poly
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
