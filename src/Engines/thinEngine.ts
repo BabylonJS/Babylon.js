@@ -208,7 +208,7 @@ export class ThinEngine {
 
     /** @hidden */
     protected _name = "WebGL";
-    
+
     /**
      * Gets or sets the name of the engine
      */
