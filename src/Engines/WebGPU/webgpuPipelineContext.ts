@@ -8,16 +8,6 @@ import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, ICo
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */
-export interface IWebGPUPipelineContextVertexInputsCache {
-    indexBuffer: Nullable<GPUBuffer>;
-    indexOffset: number;
-
-    vertexStartSlot: number;
-    vertexBuffers: GPUBuffer[];
-    vertexOffsets: number[];
-}
-
-/** @hidden */
 export interface IWebGPURenderPipelineStageDescriptor {
     vertexStage: GPUProgrammableStage;
     fragmentStage?: GPUProgrammableStage;
