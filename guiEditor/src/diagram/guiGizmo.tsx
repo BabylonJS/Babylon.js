@@ -121,10 +121,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             this._responsive = value;
         });
 
-        this.props.globalState.onPropertyGridUpdateRequiredObservable.add(() => {
-            this.updateGizmo(true);
-        });
-
         this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
             this.updateGizmo(true);
         });
