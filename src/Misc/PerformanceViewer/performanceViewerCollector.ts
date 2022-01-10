@@ -201,7 +201,7 @@ export class PerformanceViewerCollector {
             this.datasets.ids.push(strategy.id);
 
             if (category) {
-                category = category.replace(exportedDataSeparator, "");
+                category = category.replace(new RegExp(exportedDataSeparator, "g"), "");
             }
 
             this._datasetMeta.set(strategy.id, {
@@ -392,7 +392,7 @@ export class PerformanceViewerCollector {
             return false;
         }
 
-        let idCategoryMap : Map<string, string> = new Map<string, string>();
+        const idCategoryMap : Map<string, string> = new Map<string, string>();
 
         // populate the ids.
         for (let i = PerformanceViewerCollector.SliceDataOffset; i < firstLine.length; i++) {
