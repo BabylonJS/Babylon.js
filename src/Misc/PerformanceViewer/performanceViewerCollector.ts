@@ -95,7 +95,7 @@ export class PerformanceViewerCollector {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
-            startingIndices: new DynamicFloat32Array(initialArraySize)
+            startingIndices: new DynamicFloat32Array(initialArraySize),
         };
         this._strategies = new Map<string, IPerfViewerCollectionStrategy>();
         this._datasetMeta = new Map<string, IPerfMetadata>();
@@ -154,15 +154,15 @@ export class PerformanceViewerCollector {
                 dispose: () => {
                     scene.onAfterRenderObservable.remove(afterRenderObserver);
                     this._customEventObservable.remove(stringObserver);
-                }
+                },
             };
         };
         const event: IPerfCustomEvent = {
-            name
+            name,
         };
 
         this._eventRestoreSet.add(name);
-        this.addCollectionStrategies({strategyCallback: strategy, category});
+        this.addCollectionStrategies({ strategyCallback: strategy, category });
 
         return event;
     }
@@ -191,7 +191,7 @@ export class PerformanceViewerCollector {
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
     public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
-        for (let {strategyCallback, category, hidden} of strategyCallbacks) {
+        for (let { strategyCallback, category, hidden } of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
@@ -207,7 +207,7 @@ export class PerformanceViewerCollector {
             this._datasetMeta.set(strategy.id, {
                 color: this._getHexColorFromId(strategy.id),
                 category,
-                hidden
+                hidden,
             });
 
             this._strategies.set(strategy.id, strategy);
@@ -232,7 +232,7 @@ export class PerformanceViewerCollector {
         // then we build the string octet by octet.
         let hex = "#";
         for (let i = 0; i < numberOfBitsInHexcode; i += 8) {
-            const octet = (hash >> i) & 0xFF;
+            const octet = (hash >> i) & 0xff;
             hex += (hexPadding + octet.toString(16)).substr(-2);
         }
 
@@ -253,7 +253,8 @@ export class PerformanceViewerCollector {
 
         if (numberOfIndices > 0) {
             const previousStartingIndex = this.datasets.startingIndices.at(numberOfIndices - 1);
-            startingIndex = previousStartingIndex + this.datasets.data.at(previousStartingIndex + PerformanceViewerCollector.NumberOfPointsOffset) + PerformanceViewerCollector.SliceDataOffset;
+            startingIndex =
+                previousStartingIndex + this.datasets.data.at(previousStartingIndex + PerformanceViewerCollector.NumberOfPointsOffset) + PerformanceViewerCollector.SliceDataOffset;
         }
 
         this.datasets.startingIndices.push(startingIndex);
@@ -282,7 +283,7 @@ export class PerformanceViewerCollector {
 
             this.datasetObservable.notifyObservers(slice);
         }
-    }
+    };
 
     /**
      * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
@@ -310,7 +311,6 @@ export class PerformanceViewerCollector {
         if (this.datasetObservable.hasObservers()) {
             this.datasetObservable.notifyObservers(slice);
         }
-
     }
 
     /**
@@ -366,13 +366,11 @@ export class PerformanceViewerCollector {
      * @returns true if the data was successfully loaded, false otherwise.
      */
     public loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean {
-        const lines =
-            data.replace(carriageReturnRegex, '').split('\n')
-                .map((line) => (
-                    line.split(',')
-                        .filter((s) =>  s.length > 0)
-                ))
-                .filter((line) => line.length > 0);
+        const lines = data
+            .replace(carriageReturnRegex, "")
+            .split("\n")
+            .map((line) => line.split(",").filter((s) => s.length > 0))
+            .filter((line) => line.length > 0);
         const timestampIndex = 0;
         const numPointsIndex = PerformanceViewerCollector.NumberOfPointsOffset;
         if (lines.length < 2) {
@@ -382,7 +380,7 @@ export class PerformanceViewerCollector {
         const parsedDatasets: IPerfDatasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
-            startingIndices: new DynamicFloat32Array(initialArraySize)
+            startingIndices: new DynamicFloat32Array(initialArraySize),
         };
 
         // parse first line seperately to populate ids!
@@ -392,7 +390,7 @@ export class PerformanceViewerCollector {
             return false;
         }
 
-        const idCategoryMap : Map<string, string> = new Map<string, string>();
+        const idCategoryMap: Map<string, string> = new Map<string, string>();
 
         // populate the ids.
         for (let i = PerformanceViewerCollector.SliceDataOffset; i < firstLine.length; i++) {
@@ -447,7 +445,7 @@ export class PerformanceViewerCollector {
             for (const id of this.datasets.ids) {
                 const category = idCategoryMap.get(id);
 
-                this._datasetMeta.set(id, {category, color: this._getHexColorFromId(id)});
+                this._datasetMeta.set(id, { category, color: this._getHexColorFromId(id) });
             }
         }
         this.metadataObservable.notifyObservers(this._datasetMeta);
@@ -467,7 +465,7 @@ export class PerformanceViewerCollector {
             if (this._datasetMeta) {
                 const meta = this._datasetMeta.get(this.datasets.ids[i]);
                 if (meta?.category) {
-                    csvContent += `${exportedDataSeparator}${meta.category}`
+                    csvContent += `${exportedDataSeparator}${meta.category}`;
                 }
             }
         }
@@ -493,7 +491,7 @@ export class PerformanceViewerCollector {
         }
 
         const fileName = `${new Date().toISOString()}-perfdata.csv`;
-        Tools.Download(new Blob([csvContent], {type: "text/csv"}), fileName);
+        Tools.Download(new Blob([csvContent], { type: "text/csv" }), fileName);
     }
     /**
      * Starts the realtime collection of data.
@@ -523,7 +521,7 @@ export class PerformanceViewerCollector {
     /**
      * Returns if the perf collector has been started or not.
      */
-    public get isStarted() : boolean {
+    public get isStarted(): boolean {
         return this._isStarted;
     }
 
