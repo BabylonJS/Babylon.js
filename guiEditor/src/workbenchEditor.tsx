@@ -48,7 +48,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
-    private _toolBarIconSize = 55;
+    private _toolBarIconSize = 40;
 
     private _popUpWindow: Window;
     private _draggedItem: Nullable<string>;

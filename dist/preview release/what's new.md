@@ -12,6 +12,7 @@
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
 - Official support of WebGPU ([Popov72](https://github.com/Popov72))
+- Enabled Performance Profiler ([carolhmj](https://github.com/carolhmj))
 
 ## Updates
 
@@ -373,6 +374,7 @@
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
+- Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
