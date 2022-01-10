@@ -251,6 +251,7 @@
 - Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
 - glTF serializer now supports `KHR_materials_clearcoat` ([drigax](https://github.com/drigax))
 - Fixed bug where characters that didn't fit into a single UTF-16 code point were not correctly encoded in .glb exports ([darraghjburke](https://github.com/darraghjburke))
+- Serialize and parse now use unique IDs for materials, so duplicate names won't cause problems. Still supports parsing id for back compat ([darraghjburke](https://github.com/darraghjburke))
 
 ## Bugs
 
