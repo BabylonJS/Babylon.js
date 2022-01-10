@@ -822,6 +822,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this.globalState.guiTexture.rootContainer.clipChildren = false;
         this.globalState.guiTexture.useInvalidateRectOptimization = false;
+        this.globalState.guiTexture.onEndRenderObservable.add(() => this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers());
         this._textureMesh.showBoundingBox = true;
         this.artBoardBackground = new Rectangle("Art-Board-Background");
         this.artBoardBackground.width = "100%";
