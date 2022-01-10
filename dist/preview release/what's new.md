@@ -12,6 +12,7 @@
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
 - Official support of WebGPU ([Popov72](https://github.com/Popov72))
+- Enabled Performance Profiler ([carolhmj](https://github.com/carolhmj))
 
 ## Updates
 
