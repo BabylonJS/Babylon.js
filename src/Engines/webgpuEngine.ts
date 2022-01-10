@@ -439,13 +439,6 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Returns the name of the engine
-     */
-    public get name(): string {
-        return "WebGPU";
-    }
-
-    /**
      * Returns a string describing the current engine
      */
     public get description(): string {
@@ -512,6 +505,7 @@ export class WebGPUEngine extends Engine {
      */
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
+        this._name = "WebGPU";
 
         (this.isNDCHalfZRange as any) = true;
         (this.hasOriginBottomLeft as any)  = false;
@@ -789,6 +783,7 @@ export class WebGPUEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: true,
             supportSRGBBuffers: true,
+            supportTransformFeedbacks: false
         };
 
         this._caps.parallelShaderCompile = null as any;
