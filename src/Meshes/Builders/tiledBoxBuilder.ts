@@ -10,7 +10,7 @@ import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
  * Creates the VertexData for a tiled box
  * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
  * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
-  * * pattern sets the rotation or reflection pattern for the tiles, 
+  * * pattern sets the rotation or reflection pattern for the tiles,
   * * size of the box
   * * width of the box, overwrites size
   * * height of the box, overwrites size
@@ -19,9 +19,9 @@ import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
   * * tileWidth sets the tile width and overwrites tileSize
   * * tileHeight sets the tile width and overwrites tileSize
   * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-  * * faceColors an array of 6 Color3 elements used to set different colors to each box side 
+  * * faceColors an array of 6 Color3 elements used to set different colors to each box side
   * * alignHorizontal places whole tiles aligned to the center, left or right of a row
-  * * alignVertical places whole tiles aligned to the center, left or right of a column 
+  * * alignVertical places whole tiles aligned to the center, left or right of a column
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * @returns the VertexData of the TiledBox
  */
@@ -228,7 +228,7 @@ export function CreateTiledBoxVertexData(options: { pattern?: number, size?: num
  * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
  * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
-  * * pattern sets the rotation or reflection pattern for the tiles, 
+  * * pattern sets the rotation or reflection pattern for the tiles,
   * * size of the box
   * * width of the box, overwrites size
   * * height of the box, overwrites size
@@ -237,9 +237,9 @@ export function CreateTiledBoxVertexData(options: { pattern?: number, size?: num
   * * tileWidth sets the tile width and overwrites tileSize
   * * tileHeight sets the tile width and overwrites tileSize
   * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-  * * faceColors an array of 6 Color3 elements used to set different colors to each box side 
+  * * faceColors an array of 6 Color3 elements used to set different colors to each box side
   * * alignHorizontal places whole tiles aligned to the center, left or right of a row
-  * * alignVertical places whole tiles aligned to the center, left or right of a column 
+  * * alignVertical places whole tiles aligned to the center, left or right of a column
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * @param scene defines the hosting scene
  * @returns the box mesh

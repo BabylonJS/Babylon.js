@@ -17,7 +17,7 @@ import { VertexData } from "../mesh.vertexData";
   * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
   * * alignHorizontal places whole tiles aligned to the center, left or right of a row
-  * * alignVertical places whole tiles aligned to the center, left or right of a column 
+  * * alignVertical places whole tiles aligned to the center, left or right of a column
   * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
   * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
  * @returns the VertexData of the tiled plane
@@ -431,7 +431,7 @@ export function CreateTiledPlaneVertexData(options: { pattern?: number, tileSize
   * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
   * * alignHorizontal places whole tiles aligned to the center, left or right of a row
-  * * alignVertical places whole tiles aligned to the center, left or right of a column 
+  * * alignVertical places whole tiles aligned to the center, left or right of a column
   * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
   * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
  * @param scene defines the hosting scene
