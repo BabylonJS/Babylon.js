@@ -12,16 +12,16 @@ var Versions = {
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
         "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"
     ],    
-    "4.2.0": [
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/babylon.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/gui/babylon.gui.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/inspector/babylon.inspector.bundle.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/nodeEditor/babylon.nodeEditor.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/materialsLibrary/babylonjs.materials.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/loaders/babylonjs.loaders.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/serializers/babylonjs.serializers.min.js"
+    "4.2.1": [
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/babylon.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/gui/babylon.gui.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/inspector/babylon.inspector.bundle.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/nodeEditor/babylon.nodeEditor.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/materialsLibrary/babylonjs.materials.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/loaders/babylonjs.loaders.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/serializers/babylonjs.serializers.min.js"
     ],
     "4.1.0": [
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.1.0/dist/babylon.js",
