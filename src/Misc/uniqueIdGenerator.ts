@@ -3,7 +3,7 @@
  */
 export class UniqueIdGenerator {
     // Statics
-    private static _UniqueIdCounter = 0;
+    private static _UniqueIdCounter = 1;
 
     /**
      * Gets an unique (relatively to the current scene) Id
