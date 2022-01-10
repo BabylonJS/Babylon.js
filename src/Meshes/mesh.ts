@@ -2567,8 +2567,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public setMaterialByUniqueId(uniqueId: string): Mesh {
-        var materials = this.getScene().materials;
-        var index: number;
+        const materials = this.getScene().materials;
+        let index: number;
         for (index = materials.length - 1; index > -1; index--) {
             if (materials[index]._loadedUniqueId === uniqueId) {
                 this.material = materials[index];

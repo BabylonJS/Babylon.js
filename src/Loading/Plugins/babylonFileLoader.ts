@@ -591,7 +591,7 @@ SceneLoader.RegisterPlugin({
 
                         // Material ?
                         if (parsedMesh.materialUniqueId || parsedMesh.materialId) {
-                            // if we have a unique ID, look up and store in loadedMaterialsUniqueIds, else use laodedMaterialsIds
+                            // if we have a unique ID, look up and store in loadedMaterialsUniqueIds, else use loadedMaterialsIds
                             const materialArray = parsedMesh.materialUniqueId ? loadedMaterialsUniqueIds : loadedMaterialsIds;
                             var materialFound = (materialArray.indexOf(parsedMesh.materialUniqueId || parsedMesh.materialId) !== -1);
                             if (materialFound === false && parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {

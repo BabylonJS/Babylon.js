@@ -2803,7 +2803,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @return the last material with the given uniqueId or null if none found.
      */
      public getLastMaterialByUniqueId(uniqueId: string): Nullable<Material> {
-        for (var index = this.materials.length - 1; index >= 0; index--) {
+        for (let index = this.materials.length - 1; index >= 0; index--) {
             if (this.materials[index]._loadedUniqueId === uniqueId) {
                 return this.materials[index];
             }
