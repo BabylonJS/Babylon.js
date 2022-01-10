@@ -55,7 +55,7 @@ class Rect {
     public get width() {
         return this.right - this.left;
     }
-    
+
     public get height() {
         return this.bottom - this.top;
     }
@@ -140,7 +140,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
      */
     updateGizmo(force?: boolean) {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-        console.log("update gizmo");
         if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging != -1)) {
             // Calculating the offsets for each scale point.
             const half = 1 / 2;
@@ -543,7 +542,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _beginDraggingScalePoint = (scalePointIndex: number) => {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-        this.setState({scalePointDragging: scalePointIndex});
+        this.setState({ scalePointDragging: scalePointIndex });
         if (selectedGuiNodes.length > 0) {
             const node = selectedGuiNodes[0];
             this._localBounds = this._computeLocalBounds(node);
