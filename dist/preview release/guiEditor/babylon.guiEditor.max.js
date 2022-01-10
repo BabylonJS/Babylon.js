@@ -10130,7 +10130,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n  .diagram-container .ge-scalePoint {\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .diagram-container .ge-pivotPoint {\n    width: 30px;\n    height: 30px;\n    background: transparent; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n  .diagram-container .ge-scalePoint {\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .diagram-container .ge-pivotPoint {\n    width: 30px;\n    height: 30px;\n    background: transparent; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -44976,7 +44976,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             if (windowAsAny.Playground && oldId) {
                                 windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                     regex: new RegExp(oldId, "g"),
-                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId + ")",
                                 });
                             }
                             resolve(adt.snippetId);
@@ -45011,8 +45011,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     .then(function (snippetId) {
                     adt.snippetId = snippetId;
                     var alertMessage = "GUI saved with ID:  " + adt.snippetId;
-                    if (navigator.clipboard) {
-                        navigator.clipboard
+                    if (_this.props.globalState.hostWindow.navigator.clipboard) {
+                        _this.props.globalState.hostWindow.navigator.clipboard
                             .writeText(adt.snippetId)
                             .then(function () {
                             _this.props.globalState.hostWindow.alert(alertMessage + ". The ID was copied to your clipboard.");
@@ -47823,6 +47823,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                     if (_this._responsive) {
                         _this.props.globalState.workbench.convertToPercentage(node, false);
                     }
+                    _this.props.globalState.workbench._liveGuiTextureRerender = false;
                     _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
                 }
             }
@@ -48095,7 +48096,17 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a, _b;
         // Get the canvas element from the DOM.
-        var canvas = document.getElementById("workbench-canvas");
+        var canvas = this.props.globalState.hostDocument.getElementById("workbench-canvas");
+        var scalePointCursors = [
+            "nesw-resize",
+            "nwse-resize",
+            "nesw-resize",
+            "nwse-resize",
+            "ew-resize",
+            "ns-resize",
+            "ew-resize",
+            "ns-resize"
+        ];
         var _loop_1 = function (i) {
             var scalePoint = canvas.ownerDocument.createElement("div");
             scalePoint.className = "ge-scalePoint";
@@ -48105,6 +48116,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             scalePoint.style.left = i * 100 + "px";
             scalePoint.style.top = i * 100 + "px";
             scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.style.cursor = scalePointCursors[i];
             scalePoint.addEventListener("pointerdown", function () {
                 _this._setMousePosition(i);
             });
@@ -48338,6 +48350,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._selectionDepth = 0;
         _this._doubleClick = null;
         _this._lockMainSelection = false;
+        _this._liveGuiTextureRerender = true;
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
             _this._altKeyIsPressed = evt.altKey;
@@ -48922,6 +48935,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
         if (ignorClick === void 0) { ignorClick = false; }
+        this._liveGuiTextureRerender = false;
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
         if (this._setConstraintDirection) {
@@ -49092,18 +49106,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
-            var doRerender_1 = true;
             this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(function () {
                 var _a;
-                if (doRerender_1) {
+                if (_this._liveGuiTextureRerender) {
                     (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
                 }
-                doRerender_1 = true;
+                _this._liveGuiTextureRerender = true;
             });
             this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(function () {
                 var _a;
                 (_a = _this.globalState.guiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
-                doRerender_1 = false;
+                _this._liveGuiTextureRerender = false;
             });
         }
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
@@ -49117,12 +49130,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
         var _this = this;
         if (this.globalState.liveGuiTexture) {
-            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(function (desc) {
                 var _a;
                 (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(desc);
                 _this.appendBlock(desc);
             });
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     };
     //Add map-like controls to an ArcRotate camera
@@ -49457,15 +49471,13 @@ var GUIEditor = /** @class */ (function () {
      */
     GUIEditor.Show = function (options) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var popupWindow, hostElement, globalState, graphEditor, error_1, popupWindow;
+            var hostElement, popupWindow, globalState, graphEditor, error_1, popupWindow;
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this._CurrentState) {
-                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
-                            if (popupWindow) {
-                                popupWindow.close();
-                            }
+                        hostElement = options.hostElement;
+                        // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
+                        if (this._CurrentState && hostElement) {
                             if (options.currentSnippetToken) {
                                 try {
                                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -49474,13 +49486,13 @@ var GUIEditor = /** @class */ (function () {
                                     //swallow and continue
                                 }
                             }
-                            if (options.liveGuiTexture) {
-                                this._CurrentState.liveGuiTexture = options.liveGuiTexture;
-                            }
                             return [2 /*return*/];
                         }
-                        hostElement = options.hostElement;
                         if (!hostElement) {
+                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                            if (popupWindow) {
+                                popupWindow.close();
+                            }
                             hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800);
                         }
                         globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();
@@ -52229,7 +52241,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._leftWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadNumber("LeftWidth", 200);
         _this._rightWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadNumber("RightWidth", 300);
-        _this._toolBarIconSize = 55;
+        _this._toolBarIconSize = 40;
         _this.handlePopUp = function () {
             _this.setState({
                 showPreviewPopUp: true,

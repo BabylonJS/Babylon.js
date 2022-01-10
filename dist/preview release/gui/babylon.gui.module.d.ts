@@ -1694,7 +1694,11 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         /**
          * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
          */
-        Ellipsis = 2
+        Ellipsis = 2,
+        /**
+         * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+         */
+        WordWrapEllipsis = 3
     }
     /**
      * Class used to create text block control
@@ -1827,11 +1831,13 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         /** @hidden */
         _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void;
         protected _applyStates(context: ICanvasRenderingContext): void;
-        protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[];
+        protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: ICanvasRenderingContext): object;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: ICanvasRenderingContext): object[];
+        protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: ICanvasRenderingContext): object[];
         protected _renderLines(context: ICanvasRenderingContext): void;
+        private _computeHeightForLinesOf;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -2047,6 +2053,7 @@ declare module "babylonjs-gui/2D/controls/button" {
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
     import { Image } from "babylonjs-gui/2D/controls/image";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+    import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
      * Class used to create 2D buttons
      */
@@ -2098,6 +2105,13 @@ declare module "babylonjs-gui/2D/controls/button" {
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /** @hidden */
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void;
+        /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -8790,7 +8804,11 @@ declare module BABYLON.GUI {
         /**
          * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
          */
-        Ellipsis = 2
+        Ellipsis = 2,
+        /**
+         * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+         */
+        WordWrapEllipsis = 3
     }
     /**
      * Class used to create text block control
@@ -8923,11 +8941,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
-        protected _breakLines(refWidth: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _breakLines(refWidth: number, refHeight: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _renderLines(context: BABYLON.ICanvasRenderingContext): void;
+        private _computeHeightForLinesOf;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -9182,6 +9202,13 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
+        /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button

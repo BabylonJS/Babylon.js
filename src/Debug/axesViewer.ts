@@ -8,6 +8,7 @@ import { Color3 } from '../Maths/math.color';
 
 /**
      * The Axes viewer will show 3 axes in a specific point in space
+     * @see https://doc.babylonjs.com/toolsAndResources/utilities/World_Axes
      */
 export class AxesViewer {
     private _xAxis: TransformNode;

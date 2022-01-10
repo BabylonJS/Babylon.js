@@ -306,7 +306,18 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
 
     createBaseGizmo() {
         // Get the canvas element from the DOM.
-        const canvas = document.getElementById("workbench-canvas") as HTMLCanvasElement;
+        const canvas = this.props.globalState.hostDocument.getElementById("workbench-canvas") as HTMLCanvasElement;
+
+        const scalePointCursors = [
+            "nesw-resize",
+            "nwse-resize",
+            "nesw-resize",
+            "nwse-resize",
+            "ew-resize",
+            "ns-resize",
+            "ew-resize",
+            "ns-resize"
+        ];
 
         for (let i = 0; i < 8; ++i) {
             let scalePoint = canvas.ownerDocument!.createElement("div");
@@ -317,6 +328,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
             scalePoint.style.left = i * 100 + "px";
             scalePoint.style.top = i * 100 + "px";
             scalePoint.style.transform = "translate(-50%, -50%)";
+            scalePoint.style.cursor = scalePointCursors[i];
             scalePoint.addEventListener("pointerdown", () => {
                 this._setMousePosition(i);
             });
@@ -380,6 +392,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
                 if (this._responsive) {
                     this.props.globalState.workbench.convertToPercentage(node, false);
                 }
+                this.props.globalState.workbench._liveGuiTextureRerender = false;
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
         }

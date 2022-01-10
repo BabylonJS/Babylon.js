@@ -1391,6 +1391,18 @@
             "playgroundId": "#WGZLGJ#4040",
             "referenceImage": "bonesMorphsCompute.png",
             "errorRatio": 1
+        },
+        {
+            "title": "DepthRenderer rhs",
+            "playgroundId": "#1PHYB0#138",
+            "renderCount": 5,
+            "referenceImage": "depthRendererRHS.png"
+        },
+        {
+            "title": "Test updateTextureData",
+            "playgroundId": "#EVX1DH#80",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "testUpdateTextureData.png"
         }
     ]
 }

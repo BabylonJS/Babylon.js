@@ -2,6 +2,7 @@ import { SerializationHelper, serialize } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { MaterialPluginManager } from "./materialPluginManager";
 import { SmartArray } from "../Misc/smartArray";
+import { Constants } from "../Engines/constants";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -49,14 +50,20 @@ export class MaterialPluginBase {
     }
 
     /**
+     * Helper function to mark defines as being dirty.
+     */
+    protected readonly markAllDefinesAsDirty: () => void;
+
+    /**
      * Creates a new material plugin
      * @param material parent material of the plugin
      * @param name name of the plugin
      * @param priority priority of the plugin
      * @param defines list of defines used by the plugin. The value of the property is the default value for this property
      * @param addToPluginList true to add the plugin to the list of plugins managed by the material plugin manager of the material (default: true)
+     * @param enable true to enable the plugin (it is handy if the plugin does not handle properties to switch its current activation)
      */
-    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true) {
+    constructor(material: Material, name: string, priority: number, defines?: { [key: string]: any }, addToPluginList = true, enable = false) {
         this._material = material;
         this.name = name;
         this.priority = priority;
@@ -71,6 +78,12 @@ export class MaterialPluginBase {
         if (addToPluginList) {
             this._pluginManager._addPlugin(this);
         }
+
+        if (enable) {
+            this._enable(true);
+        }
+
+        this.markAllDefinesAsDirty = material._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag];
     }
 
     /**
