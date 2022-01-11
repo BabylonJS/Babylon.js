@@ -87,7 +87,7 @@ const tooltipDebounceTime = 32;
 const drawThrottleTime = 15;
 
 // What distance percentage in the x axis between two points makes us break the line and draw a "no data" box instead
-const maxXDistancePercBetweenLinePoints = 0.10;  
+const maxXDistancePercBetweenLinePoints = 0.1;
 
 // Color used to draw the rectangle that indicates no collection of data
 const noDataRectangleColor = "#aaaaaa";
@@ -344,36 +344,51 @@ export class CanvasGraphService {
                 ctx.globalAlpha = backgroundLineAlpha;
             }
 
-            let prevPoint: [number, number] | undefined;
-            for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
-                const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
+            // If the min and max of the range are the same, draw a line on the middle of the range
+            if (Math.abs(valueMinMax.max - valueMinMax.min) < 0.001) {
+                const startIndex = this._datasetBounds.start;
+                const endIndex = this._datasetBounds.end - 1;
 
-                if (idOffset >= numPoints) {
-                    continue;
+                const timestampStart = this.datasets.data.at(this.datasets.startingIndices.at(startIndex));
+                const timestampEnd = this.datasets.data.at(this.datasets.startingIndices.at(endIndex));
+
+                const xStart = this._getPixelForNumber(timestampStart, this._globalTimeMinMax, left, right - left, false);
+                const xEnd = this._getPixelForNumber(timestampEnd, this._globalTimeMinMax, left, right - left, false);
+
+                ctx.moveTo(xStart, (bottom + top) / 2);
+                ctx.lineTo(xEnd, (bottom + top) / 2);
+            } else {
+                let prevPoint: [number, number] | undefined;
+                for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
+                    const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
+
+                    if (idOffset >= numPoints) {
+                        continue;
+                    }
+
+                    const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
+                    const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
+                    const value = this.datasets.data.at(valueIndex);
+
+                    const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
+                    const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+
+                    if (prevPoint === undefined) {
+                        prevPoint = [drawableTime, drawableValue];
+                    }
+
+                    const xDifference = drawableTime - prevPoint[0];
+                    const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
+                    if (skipLine) {
+                        ctx.fillStyle = noDataRectangleColor;
+                        ctx.fillRect(prevPoint[0], top, xDifference, bottom - top);
+                    } else {
+                        ctx.moveTo(prevPoint[0], prevPoint[1]);
+                        ctx.lineTo(drawableTime, drawableValue);
+                    }
+                    prevPoint[0] = drawableTime;
+                    prevPoint[1] = drawableValue;
                 }
-
-                const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
-                const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
-                const value = this.datasets.data.at(valueIndex);
-
-                const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
-                const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
-
-                if (prevPoint === undefined) {
-                    prevPoint = [drawableTime, drawableValue];
-                }
-
-                const xDifference = drawableTime - prevPoint[0];
-                const skipLine = xDifference > maxXDistancePercBetweenLinePoints*(right-left);
-                if (skipLine) {
-                    ctx.fillStyle = noDataRectangleColor;
-                    ctx.fillRect(prevPoint[0], top, xDifference, bottom-top);
-                } else {
-                    ctx.moveTo(prevPoint[0], prevPoint[1]);
-                    ctx.lineTo(drawableTime, drawableValue);
-                }
-                prevPoint[0] = drawableTime;
-                prevPoint[1] = drawableValue;
             }
             ctx.stroke();
         });
@@ -406,7 +421,7 @@ export class CanvasGraphService {
             valueMap.set(id, {
                 min: valueMinMax.min,
                 max: valueMinMax.max,
-                current: latestValue
+                current: latestValue,
             });
             if (text.length > longestText.length) {
                 longestText = text;
@@ -417,7 +432,7 @@ export class CanvasGraphService {
             this._tickerItems[this._numberOfTickers].text = text;
             this._numberOfTickers++;
         });
-        this._onVisibleRangeChangedObservable?.notifyObservers({valueMap});
+        this._onVisibleRangeChangedObservable?.notifyObservers({ valueMap });
 
         ctx.save();
         ctx.font = graphAddonFont;
