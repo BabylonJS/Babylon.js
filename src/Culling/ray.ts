@@ -17,6 +17,8 @@ declare type Mesh = import("../Meshes/mesh").Mesh;
  */
 export class Ray {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
+    public static EnableDistantPicking = false;
+    private static _rayDistant = Ray.Zero();
     private _tmpRay: Ray;
 
     /**
@@ -463,7 +465,27 @@ export class Ray {
      * @returns this ray updated
      */
     public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray {
-        this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
+        if (Ray.EnableDistantPicking) {
+            // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
+            // multiplying view/projection/world and doing invert will result in loss of float precision in the matrix.
+            // One way to fix it is to compute the ray with world at identity then transform the ray in object space. 
+            // This is slower (2 matrix inverts instead of 1) but precision is preserved.
+            // This is hidden behind `EnableDistantPicking` flag (default is false)
+            if (!Ray._rayDistant) {
+                Ray._rayDistant = Ray.Zero();
+            }
+
+            Ray._rayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
+
+            if (world) {
+                var tm = TmpVectors.Matrix[0];
+                world.invertToRef(tm);
+                Ray.TransformToRef(Ray._rayDistant, tm, this);
+            }
+        } else {
+            this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
+        }
+        
         return this;
     }
 
@@ -631,18 +653,7 @@ Scene.prototype.createPickingRayToRef = function (x: number, y: number, world: N
     x = x / engine.getHardwareScalingLevel() - viewport.x;
     y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
 
-    // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
-    // multiplying view/projection/world and doing invert will result in loss of float precision in the matrix.
-    // One way to fix it is to compute the ray with world at identity then transform the ray in object space. 
-    // This is slower (2 matrix inverts instead of 1) but precision is preserved.
-    let tmpRay = world ? Ray.Zero() : result;
-    tmpRay.update(x, y, viewport.width, viewport.height, Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
-
-    if (world) {
-        var tm = TmpVectors.Matrix[0];
-        world.invertToRef(tm);
-        Ray.TransformToRef(tmpRay, tm, result);
-    }
+    result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
     return this;
 };
 
