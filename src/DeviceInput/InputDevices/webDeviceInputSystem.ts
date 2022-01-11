@@ -434,6 +434,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
+            else if (deviceType === DeviceType.Touch) {
+                this.onDeviceConnected(deviceType, deviceSlot);
+            }
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
@@ -555,6 +558,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 }
 
                 this.onInputChanged(deviceEvent);
+
+                if (deviceType === DeviceType.Touch) {
+                    this.onDeviceDisconnected(deviceType, deviceSlot);
+                }
             }
         });
 
@@ -637,6 +644,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this.onInputChanged(deviceEvent);
 
                         this._activeTouchIds[deviceSlot] = -1;
+                        this.onDeviceDisconnected(DeviceType.Touch, deviceSlot);
                     }
                 }
             }
