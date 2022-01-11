@@ -468,7 +468,7 @@ export class Ray {
         if (Ray.EnableDistantPicking) {
             // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
             // multiplying view/projection/world and doing invert will result in loss of float precision in the matrix.
-            // One way to fix it is to compute the ray with world at identity then transform the ray in object space. 
+            // One way to fix it is to compute the ray with world at identity then transform the ray in object space.
             // This is slower (2 matrix inverts instead of 1) but precision is preserved.
             // This is hidden behind `EnableDistantPicking` flag (default is false)
             if (!Ray._rayDistant) {
@@ -477,11 +477,9 @@ export class Ray {
 
             Ray._rayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
 
-            if (world) {
-                var tm = TmpVectors.Matrix[0];
-                world.invertToRef(tm);
-                Ray.TransformToRef(Ray._rayDistant, tm, this);
-            }
+            var tm = TmpVectors.Matrix[0];
+            world.invertToRef(tm);
+            Ray.TransformToRef(Ray._rayDistant, tm, this);
         } else {
             this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
         }
