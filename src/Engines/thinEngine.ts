@@ -161,7 +161,7 @@ export interface EngineOptions extends WebGLContextAttributes {
     /**
      * If sRGB Buffer support is not set during construction, use this value to force a specific state
      * This is added due to an issue when processing textures in chrome/edge/firefox
-     * This will not influence NativeEngine and WebGPUEngine which sets the behavior to true during construction.
+     * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
 }
@@ -706,6 +706,8 @@ export class ThinEngine {
 
         options = options || {};
 
+        this._creationOptions = options;
+
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
@@ -935,7 +937,6 @@ export class ThinEngine {
         //     }
         // }
 
-        this._creationOptions = options;
         const versionToLog = `Babylon.js v${ThinEngine.Version}`;
         console.log(versionToLog + ` - ${this.description}`);
 
