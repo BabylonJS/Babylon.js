@@ -183,14 +183,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-beta.1";
+        return "babylonjs@5.0.0-beta.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-beta.1";
+        return "5.0.0-beta.3";
     }
 
     /**
@@ -206,11 +206,18 @@ export class ThinEngine {
         return description;
     }
 
+    /** @hidden */
+    protected _name = "WebGL";
+
     /**
-     * Returns the name of the engine
+     * Gets or sets the name of the engine
      */
     public get name(): string {
-        return "WebGL";
+        return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
     }
 
     /**
@@ -1089,6 +1096,7 @@ export class ThinEngine {
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
             supportSRGBBuffers: false,
+            supportTransformFeedbacks: this._webGLVersion > 1
         };
 
         // Infos
@@ -3462,7 +3470,7 @@ export class ThinEngine {
      * @param options defines the options used to create the texture
      * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
      * @param source source type of the texture
-     * @returns a new render target texture stored in an InternalTexture
+     * @returns a new internal texture
      */
      public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation = true, source = InternalTextureSource.Unknown): InternalTexture {
         const fullOptions: InternalTextureCreationOptions = {};
