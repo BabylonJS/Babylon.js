@@ -682,7 +682,6 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
 
 Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean) {
     let ray = rayFunction(world);
-    //console.log("Got Ray fn ", ray);
 
     let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
     if (!result || !result.hit) {
