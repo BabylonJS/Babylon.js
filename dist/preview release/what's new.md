@@ -47,6 +47,7 @@
 - Spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the corresponding `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
+- Improved scene picking precision with huge values in world matrices when `Ray.EnableDistantPicking` flag is true ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
@@ -64,7 +65,9 @@
 - Added `mapPanning` on `ArcRotateCamera` ([Hypnosss](https://github.com/Hypnosss))
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
-- Added `onCreateCustomMeshImpostor` handler for creating custom mesh impostors to support Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomMeshImpostor` handler for creating mesh impostors with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomConvexHullImpostor` handler for creating convex hull imposters with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
+
 
 ### Engine
 
@@ -75,6 +78,7 @@
 - Added `IAudioEngineOptions` interface to provide the audio engine with a pre-defined Audio Context and audio destination node. ([Vandy](https://github.com/svanderbeck11))
 - Added support for cannon-es method `world.removeBody()`. Falls back to cannon method `remove()`. ([Faber](https://https://github.com/Faber-smythe))
 - Added support for ZOffset Unit as we currently only supported factor. ([Sebavan](https://github.com/sebavan/)
+- Added the option to force the state of sRGB Buffer support ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
@@ -375,6 +379,7 @@
 - Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
+- Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
