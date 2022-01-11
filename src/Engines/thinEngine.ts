@@ -1271,7 +1271,6 @@ export class ThinEngine {
             // When the issue in angle/chrome is fixed the flag should be taken into account only when it is explicitly defined
             this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && !!(this._creationOptions && this._creationOptions.forceSRGBBufferSupportState);
         }
-        console.log(this._caps.supportSRGBBuffers);
 
         // Depth buffer
         this._depthCullingState.depthTest = true;
