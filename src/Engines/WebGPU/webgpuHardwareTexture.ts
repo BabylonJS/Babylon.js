@@ -73,10 +73,6 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture = hardwareTexture;
     }
 
-    public setMSAATexture(hardwareTexture: GPUTexture): void {
-        this._webgpuMSAATexture = hardwareTexture;
-    }
-
     public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
         generateMipMaps = textureSource === InternalTextureSource.RenderTarget ? false : generateMipMaps;
 

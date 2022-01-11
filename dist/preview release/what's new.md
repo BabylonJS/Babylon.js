@@ -12,6 +12,7 @@
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
 - Official support of WebGPU ([Popov72](https://github.com/Popov72))
+- Enabled Performance Profiler ([carolhmj](https://github.com/carolhmj))
 
 ## Updates
 
@@ -64,6 +65,8 @@
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
 - Added `onCreateCustomMeshImpostor` handler for creating custom mesh impostors to support Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomMeshImpostor` handler for creating mesh impostors with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomConvexHullImpostor` handler for creating convex hull imposters with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
 - Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
@@ -374,6 +377,8 @@
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
+- Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
+- Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

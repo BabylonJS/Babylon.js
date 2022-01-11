@@ -564,7 +564,8 @@ export class Ray {
         nearScreenSource.x = (sourceX / viewportWidth) * 2 - 1;
         nearScreenSource.y = -((sourceY / viewportHeight) * 2 - 1);
         nearScreenSource.z = -1.0;
-        var farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0);
+        // far Z need to be close but < to 1 or camera projection matrix with maxZ = 0 will NaN
+        var farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
         const nearVec3 = TmpVectors.Vector3[2];
         const farVec3 = TmpVectors.Vector3[3];
         Vector3._UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
