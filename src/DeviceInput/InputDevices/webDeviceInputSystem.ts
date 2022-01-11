@@ -44,7 +44,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
-    private _engine: Engine;
+    private readonly _engine: Engine;
     private readonly _usingSafari: boolean = Tools.IsSafari();
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
