@@ -248,6 +248,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                 scalePoints: [...this.state.scalePoints],
             });
         }
+        else {
+            this.forceUpdate();
+        }
     }
 
     private _resetMatrixArray() {
@@ -590,10 +593,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         } else {
             pivot = this.state.canvasBounds.center;
         }
-
         const initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
         const nodes : INodeRotationData[] = [];
         selectedGuiNodes.forEach(node => {
+            const centerOfNode = selectedGuiNodes.length === 1 ? new Vector2(node.transformCenterX, node.transformCenterX) : new Vector2(node.leftInPixels, node.topInPixels);
             nodes.push({
                 angleToPivot: Math.atan2(0,0),
                 initialRotation: node.rotation,
@@ -647,14 +650,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         return <img className="pivot-point" src={gizmoPivotIcon} style={style} key={index} />;
                     }
                     // compute which cursor icon to use on hover
-                    const angleInRadians = defaultScalePointRotations[index] * (Math.PI / 180) + scalePoint.rotation;
-                    const increment = Math.PI / 4;
-                    let angleAdjusted = angleInRadians % (Math.PI * 2);
-                    if (angleAdjusted < 0) angleAdjusted += Math.PI * 2;
-                    let cursorIndex = Math.round(angleInRadians / increment);
-                    if (cursorIndex > 7) cursorIndex += 8;
+                    const angleOfCursor = (defaultScalePointRotations[index]  + scalePoint.rotation);
+                    let angleAdjusted = angleOfCursor % (360);
+                    if (angleAdjusted < 0) angleAdjusted += 360;
+                    const increment = 45;
+                    let cursorIndex = Math.round(angleAdjusted / increment) % 8;
                     const cursor = scalePointCursors[cursorIndex];
-                    const rotateStyle = {
+
+                    const rotateClickAreaStyle = {
                         top: 5 + 7 * scalePoint.verticalPosition,
                         left: 5 + 7 * scalePoint.horizontalPosition
                     }
@@ -666,9 +669,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                     return (
                         <div key={index} style={style} className="scale-point-container">
                             <div
-                                className="rotate-point"
+                                className="rotate-click-area"
                                 onPointerDown={() => this._beginRotate()}
-                                style={rotateStyle}
+                                style={rotateClickAreaStyle}
                             ></div>
                             <div
                             className="scale-click-area"
