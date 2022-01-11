@@ -100,7 +100,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const scalePoints: IScalePoint[] = [];
         for (let horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
             for (let vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
-                const isPivot = horizontal == ScalePointPosition.Center && vertical == ScalePointPosition.Center;
+                const isPivot = horizontal === ScalePointPosition.Center && vertical === ScalePointPosition.Center;
                 scalePoints.push({ position: new Vector2(), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot });
             }
         }
@@ -136,7 +136,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
      */
     updateGizmo(force?: boolean) {
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-        if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging != -1)) {
+        if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging !== -1)) {
             // Calculating the offsets for each scale point.
             const half = 1 / 2;
             const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
@@ -188,7 +188,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         canvasBounds.bottom = canvas.y;
                     }
                     // if we have a single control selected, put scale points at its edges, and rotate based on the rotation of the control
-                    if (selectedGuiNodes.length == 1) {
+                    if (selectedGuiNodes.length === 1) {
                         scalePoint.position.x = canvas.x;
                         scalePoint.position.y = canvas.y;
                         scalePoint.rotation = this.getRotation(node) * (180 / Math.PI);
@@ -330,7 +330,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             parent = parent.parent;
         }
         this._resetMatrixArray();
-        const matrices = listOfNodes.map((node, index) => this._getNodeMatrix(node, index === 0 && this.state.scalePointDragging != -1 && useStoredValuesIfPossible));
+        const matrices = listOfNodes.map((node, index) => this._getNodeMatrix(node, index === 0 && this.state.scalePointDragging !== -1 && useStoredValuesIfPossible));
         return matrices.reduce((acc, cur) => {
             acc.multiplyToRef(cur, acc);
             return acc;
@@ -429,10 +429,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         this._onMove();
     }
     private _onMove = () => {
-        if (this.state.scalePointDragging != -1) {
+        if (this.state.scalePointDragging !== -1) {
             const scene = this.props.globalState.workbench._scene;
             const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-            if (selectedGuiNodes.length == 1) {
+            if (selectedGuiNodes.length === 1) {
                 const node = selectedGuiNodes[0];
                 const inRTT = this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
                 const inNodeSpace = this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
@@ -461,16 +461,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _dragLocalBounds(toPosition: Vector2) {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
-        if (scalePoint.horizontalPosition == ScalePointPosition.Left) {
+        if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
             this._localBounds.left = toPosition.x;
         }
-        if (scalePoint.horizontalPosition == ScalePointPosition.Right) {
+        if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
             this._localBounds.right = toPosition.x;
         }
-        if (scalePoint.verticalPosition == ScalePointPosition.Left) {
+        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
             this._localBounds.top = toPosition.y;
         }
-        if (scalePoint.verticalPosition == ScalePointPosition.Bottom) {
+        if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
             this._localBounds.bottom = toPosition.y;
         }
     }
@@ -479,8 +479,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const width = this._localBounds.right - this._localBounds.left;
         const height = this._localBounds.bottom - this._localBounds.top;
         const scalePoint = this.state.scalePoints[scalePointIndex];
-        const left = scalePoint.horizontalPosition == ScalePointPosition.Left && scalePoint.verticalPosition != ScalePointPosition.Center;
-        const top = scalePoint.verticalPosition == ScalePointPosition.Top && scalePoint.horizontalPosition != ScalePointPosition.Center;
+        const left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
+        const top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
         // calculate the center point
         const localRotation = this.getRotation(node, true);
         const localScaling = this.getScale(node, true);
@@ -551,7 +551,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     render() {
         // don't render if we don't have anything selected, or if we're currently dragging
-        if (this.props.globalState.workbench.selectedGuiNodes.length == 0 || this.state.scalePointDragging != -1) return null;
+        if (this.props.globalState.workbench.selectedGuiNodes.length === 0 || this.state.scalePointDragging !== -1) return null;
         return (
             <div className="gizmo">
                 {lines.map((line, index) => {
@@ -579,7 +579,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         left: `${scalePoint.position.x}px`,
                         top: `${scalePoint.position.y}px`,
                         transform: "translate(-50%, -50%) rotate(" + scalePoint.rotation + "deg)",
-                        pointerEvents: this.state.scalePointDragging == -1 && !scalePoint.isPivot ? "auto" : "none",
+                        pointerEvents: this.state.scalePointDragging === -1 && !scalePoint.isPivot ? "auto" : "none",
                     };
                     if (scalePoint.isPivot) {
                         if (this.props.globalState.workbench.selectedGuiNodes.length > 1) {
