@@ -249,15 +249,13 @@
             background: transparent;
             outline: rgb(125, 125, 125) 2px solid;
         }
-        .rotate-point {
-            background-color: rgb(255, 0, 0);
+        .rotate-click-area {
             cursor: pointer;
             width: 20px;
             height: 20px;
             position: absolute;
         }
         .scale-click-area {
-            background-color: rgb(0, 0, 255);
             cursor: pointer;
             width: 20px;
             height: 20px;
