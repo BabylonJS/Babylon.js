@@ -547,6 +547,7 @@ SceneLoader.RegisterPlugin({
             var hierarchyIds = new Array<number>();
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 var loadedSkeletonsIds = [];
+                var loadedMorphTargetsIds = [];
                 var loadedMaterialsIds = [];
                 var index: number;
                 var cache: number;
@@ -628,7 +629,7 @@ SceneLoader.RegisterPlugin({
                         // Skeleton ?
                         if (parsedMesh.skeletonId > -1 && parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
                             var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
-                            if (skeletonAlreadyLoaded === false) {
+                            if (!skeletonAlreadyLoaded) {
                                 for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     var parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
@@ -642,9 +643,17 @@ SceneLoader.RegisterPlugin({
                         }
 
                         // Morph targets ?
-                        if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-                            for (var managerData of parsedData.morphTargetManagers) {
-                                MorphTargetManager.Parse(managerData, scene);
+                        if (parsedMesh.morphTargetManagerId > -1 && parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                            var morphTargetAlreadyLoaded = (loadedMorphTargetsIds.indexOf(parsedMesh.morphTargetManagerId) > -1);
+                            if (!morphTargetAlreadyLoaded) {
+                                for (var morphTargetIndex = 0, morphTargetCache = parsedData.morphTargetManagers.length; morphTargetIndex < morphTargetCache; morphTargetIndex++) {
+                                    var parsedMorphTarget = parsedData.morphTargetManagers[morphTargetIndex];
+                                    if (parsedMorphTarget.id === parsedMesh.morphTargetManagerId) {
+                                        var morphTarget = MorphTargetManager.Parse(parsedMorphTarget, scene);
+                                        loadedMorphTargetsIds.push(morphTarget.uniqueId);
+                                        log += "\n\Morph target " + morphTarget.toString();
+                                    }
+                                }
                             }
                         }
 
