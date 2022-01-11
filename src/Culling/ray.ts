@@ -17,6 +17,7 @@ declare type Mesh = import("../Meshes/mesh").Mesh;
  */
 export class Ray {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
+    /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
     public static EnableDistantPicking = false;
     private static _rayDistant = Ray.Zero();
     private _tmpRay: Ray;
@@ -483,7 +484,7 @@ export class Ray {
         } else {
             this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
         }
-        
+
         return this;
     }
 
