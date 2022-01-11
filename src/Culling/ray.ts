@@ -565,7 +565,7 @@ export class Ray {
         nearScreenSource.y = -((sourceY / viewportHeight) * 2 - 1);
         nearScreenSource.z = -1.0;
         // far Z need to be close but < to 1 or camera projection matrix with maxZ = 0 will NaN
-        var farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
+        var farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-16);
         const nearVec3 = TmpVectors.Vector3[2];
         const farVec3 = TmpVectors.Vector3[3];
         Vector3._UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
@@ -631,7 +631,18 @@ Scene.prototype.createPickingRayToRef = function (x: number, y: number, world: N
     x = x / engine.getHardwareScalingLevel() - viewport.x;
     y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
 
-    result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
+    // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
+    // multiplying view/projection/world and doing invert will result in loss of float precision in the matrix.
+    // One way to fix it is to compute the ray with world at identity then transform the ray in object space. 
+    // This is slower (2 matrix inverts instead of 1) but precision is preserved.
+    let tmpRay = world ? Ray.Zero() : result;
+    tmpRay.update(x, y, viewport.width, viewport.height, Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix());
+
+    if (world) {
+        var tm = TmpVectors.Matrix[0];
+        world.invertToRef(tm);
+        Ray.TransformToRef(tmpRay, tm, result);
+    }
     return this;
 };
 
@@ -671,6 +682,7 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
 
 Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean) {
     let ray = rayFunction(world);
+    //console.log("Got Ray fn ", ray);
 
     let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
     if (!result || !result.hit) {
