@@ -17,6 +17,9 @@ declare type Mesh = import("../Meshes/mesh").Mesh;
  */
 export class Ray {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
+    /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+    public static EnableDistantPicking = false;
+    private static _rayDistant = Ray.Zero();
     private _tmpRay: Ray;
 
     /**
@@ -463,7 +466,25 @@ export class Ray {
      * @returns this ray updated
      */
     public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray {
-        this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
+        if (Ray.EnableDistantPicking) {
+            // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
+            // multiplying view/projection/world and doing invert will result in loss of float precision in the matrix.
+            // One way to fix it is to compute the ray with world at identity then transform the ray in object space.
+            // This is slower (2 matrix inverts instead of 1) but precision is preserved.
+            // This is hidden behind `EnableDistantPicking` flag (default is false)
+            if (!Ray._rayDistant) {
+                Ray._rayDistant = Ray.Zero();
+            }
+
+            Ray._rayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
+
+            var tm = TmpVectors.Matrix[0];
+            world.invertToRef(tm);
+            Ray.TransformToRef(Ray._rayDistant, tm, this);
+        } else {
+            this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
+        }
+
         return this;
     }
 

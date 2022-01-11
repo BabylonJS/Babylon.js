@@ -157,6 +157,13 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines whether to adapt to the device's viewport characteristics (default: false)
      */
     adaptToDeviceRatio?: boolean;
+
+    /**
+     * If sRGB Buffer support is not set during construction, use this value to force a specific state
+     * This is added due to an issue when processing textures in chrome/edge/firefox
+     * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
+     */
+    forceSRGBBufferSupportState?: boolean;
 }
 
 /**
@@ -311,7 +318,7 @@ export class ThinEngine {
     /**
      * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
      */
-     public readonly hasOriginBottomLeft = true;
+    public readonly hasOriginBottomLeft = true;
 
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
@@ -699,6 +706,8 @@ export class ThinEngine {
 
         options = options || {};
 
+        this._creationOptions = options;
+
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
@@ -928,7 +937,6 @@ export class ThinEngine {
         //     }
         // }
 
-        this._creationOptions = options;
         const versionToLog = `Babylon.js v${ThinEngine.Version}`;
         console.log(versionToLog + ` - ${this.description}`);
 
@@ -1246,17 +1254,23 @@ export class ThinEngine {
         }
 
         // sRGB buffers
-        if (this._webGLVersion > 1) {
-            this._caps.supportSRGBBuffers = true;
-        } else {
-            const sRGBExtension = this._gl.getExtension('EXT_sRGB');
-
-            if (sRGBExtension != null) {
+        // only run this if not already set to true (in the constructor, for example)
+        if (!this._caps.supportSRGBBuffers) {
+            if (this._webGLVersion > 1) {
                 this._caps.supportSRGBBuffers = true;
-                this._gl.SRGB = sRGBExtension.SRGB_EXT;
-                this._gl.SRGB8 = sRGBExtension.SRGB_ALPHA_EXT;
-                this._gl.SRGB8_ALPHA8 = sRGBExtension.SRGB_ALPHA_EXT;
+            } else {
+                const sRGBExtension = this._gl.getExtension('EXT_sRGB');
+
+                if (sRGBExtension != null) {
+                    this._caps.supportSRGBBuffers = true;
+                    this._gl.SRGB = sRGBExtension.SRGB_EXT;
+                    this._gl.SRGB8 = sRGBExtension.SRGB_ALPHA_EXT;
+                    this._gl.SRGB8_ALPHA8 = sRGBExtension.SRGB_ALPHA_EXT;
+                }
             }
+            // take into account the forced state that was provided in options
+            // When the issue in angle/chrome is fixed the flag should be taken into account only when it is explicitly defined
+            this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && !!(this._creationOptions && this._creationOptions.forceSRGBBufferSupportState);
         }
 
         // Depth buffer
@@ -3472,7 +3486,7 @@ export class ThinEngine {
      * @param source source type of the texture
      * @returns a new internal texture
      */
-     public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation = true, source = InternalTextureSource.Unknown): InternalTexture {
+    public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation = true, source = InternalTextureSource.Unknown): InternalTexture {
         const fullOptions: InternalTextureCreationOptions = {};
 
         if (options !== undefined && typeof options === "object") {

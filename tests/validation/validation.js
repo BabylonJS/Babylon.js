@@ -531,7 +531,7 @@ function init(_engineName, useReverseDepthBuffer, useNonCompatibilityMode) {
             engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
         });
     } else {
-        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
+        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false, forceSRGBBufferSupportState: true });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
         engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;
