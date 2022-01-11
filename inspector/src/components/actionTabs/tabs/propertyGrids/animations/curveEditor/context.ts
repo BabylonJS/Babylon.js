@@ -84,6 +84,11 @@ export class Context {
 
     onSelectToActivated = new Observable<{ from: number; to: number }>();
 
+    lockLastFrameValue: boolean = false;
+    lockLastFrameFrame: boolean = false;
+
+    // value frame inTangent outTangent
+    onActiveKeyDataChanged = new Observable<number>();
     public prepare() {
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {
