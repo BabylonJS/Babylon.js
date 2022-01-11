@@ -19,6 +19,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     private _impostors: Array<PhysicsImpostor> = [];
     private _joints: Array<PhysicsImpostorJoint> = [];
     private _subTimeStep: number = 0;
+    private _uniqueIdCounter = 0;
 
     /**
      * Gets the gravity vector used by the simulation
@@ -118,7 +119,8 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param impostor the impostor to add
      */
     public addImpostor(impostor: PhysicsImpostor) {
-        impostor.uniqueId = this._impostors.push(impostor);
+        this._impostors.push(impostor);
+        impostor.uniqueId = this._uniqueIdCounter++;
         //if no parent, generate the body
         if (!impostor.parent) {
             this._physicsPlugin.generatePhysicsBody(impostor);
