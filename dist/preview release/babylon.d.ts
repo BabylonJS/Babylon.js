@@ -1020,10 +1020,6 @@ declare module BABYLON {
          */
         onInputChanged: (deviceEvent: IDeviceEvent) => void;
         /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
@@ -12052,6 +12048,9 @@ declare module BABYLON {
         /** length of the ray */
         length: number;
         private static readonly _TmpVector3;
+        /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+        static EnableDistantPicking: boolean;
+        private static _rayDistant;
         private _tmpRay;
         /**
          * Creates a new ray
@@ -43777,402 +43776,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class to wrap DeviceInputSystem data into an event object
-     */
-    export class DeviceEventFactory {
-        /**
-         * Create device input events based on provided type and slot
-         *
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object
-         */
-        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent;
-        /**
-         * Creates pointer event
-         *
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Pointer)
-         */
-        private static _createPointerEvent;
-        /**
-         * Create Mouse Wheel Event
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Wheel)
-         */
-        private static _createWheelEvent;
-        /**
-         * Create Mouse Event
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Mouse)
-         */
-        private static _createMouseEvent;
-        /**
-         * Create Keyboard Event
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Keyboard)
-         */
-        private static _createKeyboardEvent;
-        /**
-         * Add parameters for non-character keys (Ctrl, Alt, Meta, Shift)
-         * @param evt Event object to add parameters to
-         * @param deviceInputSystem DeviceInputSystem to pull values from
-         */
-        private static _checkNonCharacterKeys;
-        /**
-         * Create base event object
-         * @param elementToAttachTo Value to use as event target
-         * @returns
-         */
-        private static _createEvent;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
-        private readonly _nativeInput;
-        constructor(nativeInput?: INativeInput);
-        /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of all the observables
-         */
-        dispose(): void;
-        /**
-         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
-         * @returns Object with dummy functions
-         */
-        private _createDummyNativeInput;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
-        /** onDeviceConnected property */
-        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
-        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
-        private _inputs;
-        private _gamepads;
-        private _keyboardActive;
-        private _pointerActive;
-        private _elementToAttachTo;
-        private _engine;
-        private _usingSafari;
-        private _onDeviceConnected;
-        private _keyboardDownEvent;
-        private _keyboardUpEvent;
-        private _keyboardBlurEvent;
-        private _pointerMoveEvent;
-        private _pointerDownEvent;
-        private _pointerUpEvent;
-        private _pointerWheelEvent;
-        private _pointerBlurEvent;
-        private _wheelEventName;
-        private _mouseId;
-        private _isUsingFirefox;
-        private _activeTouchIds;
-        private _rollingTouchId;
-        private _pointerInputClearObserver;
-        private _gamepadConnectedEvent;
-        private _gamepadDisconnectedEvent;
-        /** Max number of keycodes */
-        static MAX_KEYCODES: number;
-        /** Max number of pointer inputs */
-        static MAX_POINTER_INPUTS: number;
-        private _eventPrefix;
-        constructor(engine: Engine);
-        /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of all the eventlisteners
-         */
-        dispose(): void;
-        /**
-         * Checks for existing connections to devices and register them, if necessary
-         * Currently handles gamepads and mouse
-         */
-        private _checkForConnectedDevices;
-        /**
-         * Add a gamepad to the DeviceInputSystem
-         * @param gamepad A single DOM Gamepad object
-         */
-        private _addGamePad;
-        /**
-         * Add pointer device to DeviceInputSystem
-         * @param deviceType Type of Pointer to add
-         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
-         * @param currentX Current X at point of adding
-         * @param currentY Current Y at point of adding
-         */
-        private _addPointerDevice;
-        /**
-         * Add device and inputs to device array
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param numberOfInputs Number of input entries to create for given device
-         */
-        private _registerDevice;
-        /**
-         * Given a specific device name, remove that device from the device map
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _unregisterDevice;
-        /**
-         * Handle all actions that come from keyboard interaction
-         */
-        private _handleKeyActions;
-        /**
-         * Handle all actions that come from pointer interaction
-         */
-        private _handlePointerActions;
-        /**
-         * Handle all actions that come from gamepad interaction
-         */
-        private _handleGamepadActions;
-        /**
-         * Update all non-event based devices with each frame
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         */
-        private _updateDevice;
-        /**
-         * Gets DeviceType from the device name
-         * @param deviceName Name of Device from DeviceInputSystem
-         * @returns DeviceType enum value
-         */
-        private _getGamepadDeviceType;
-        /**
-         * Get DeviceType from a given pointer/mouse/touch event.
-         * @param evt PointerEvent to evaluate
-         * @returns DeviceType interpreted from event
-         */
-        private _getPointerType;
-        /**
-         * Remove events from active input element
-         */
-        private _removeEvents;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class will take all inputs from Keyboard, Pointer, and
-     * any Gamepads and provide a polling system that all devices
-     * will use.  This class assumes that there will only be one
-     * pointer device and one keyboard.
-     */
-    export class DeviceInputSystem {
-        /**
-         * Observable for devices being connected
-         */
-        readonly onDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable for devices being disconnected
-         */
-        readonly onDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable for changes to device input
-         */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
-        private _deviceInputSystem;
-        /** @hidden */
-        static _Create(engine: Engine): DeviceInputSystem;
-        /**
-         * DeviceInputSystem constructor
-         * @param deviceInputSystem Web or Native implementation of DeviceInputSystem
-         */
-        constructor(deviceInputSystem: IDeviceInputSystem);
-        /**
-         * Configure events to talk with DeviceInputSystem
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check if there's an instance of device on given DeviceInputSystem
-         * @param deviceType Enum specifiying device type
-         * @returns
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of DeviceInputSystem sub-elements
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Type to handle enforcement of inputs
-     */
-    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
-}
-declare module BABYLON {
-    /**
-     * Class that handles all input for a specific device
-     */
-    export class DeviceSource<T extends DeviceType> {
-        /** Type of device */
-        readonly deviceType: DeviceType;
-        /** "Slot" or index that device is referenced in */
-        readonly deviceSlot: number;
-        /**
-         * Observable to handle device input changes per device
-         */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
-        private readonly _deviceInputSystem;
-        /**
-         * Default Constructor
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        constructor(deviceInputSystem: DeviceInputSystem, 
-        /** Type of device */
-        deviceType: DeviceType, 
-        /** "Slot" or index that device is referenced in */
-        deviceSlot?: number);
-        /**
-         * Get input for specific input
-         * @param inputIndex index of specific input on device
-         * @returns Input value from DeviceInputSystem
-         */
-        getInput(inputIndex: DeviceInput<T>): number;
-    }
-    /**
-     * Class to keep track of devices
-     */
-    export class DeviceSourceManager implements IDisposable {
-        /**
-         * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
-         */
-        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-        /**
-         * Observable to be triggered when after a device is disconnected
-         */
-        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
-        private readonly _devices;
-        private readonly _firstDevice;
-        private readonly _deviceInputSystem;
-        /**
-         * Default Constructor
-         * @param engine engine to pull input element from
-         */
-        constructor(engine: Engine);
-        /**
-         * Gets a DeviceSource, given a type and slot
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @returns DeviceSource object
-         */
-        getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>>;
-        /**
-         * Gets an array of DeviceSource objects for a given device type
-         * @param deviceType Enum specifying device type
-         * @returns Array of DeviceSource objects
-         */
-        getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>>;
-        /**
-         * Returns a read-only list of all available devices
-         * @returns Read-only array with active devices
-         */
-        getDevices(): ReadonlyArray<DeviceSource<DeviceType>>;
-        /**
-         * Dispose of DeviceInputSystem and other parts
-         */
-        dispose(): void;
-        /**
-         * Function to add device name to device list
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _addDevice;
-        /**
-         * Function to remove device name to device list
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _removeDevice;
-        /**
-         * Updates array storing first connected device of each type
-         * @param type Type of Device
-         */
-        private _updateFirstDevices;
-    }
-}
-declare module BABYLON {
-    /**
      * Defines the interface used by display changed events
      */
     export interface IDisplayChangedEventArgs {
@@ -44458,10 +44061,6 @@ declare module BABYLON {
          * Gets a boolean indicating if the pointer is currently locked
          */
         isPointerLock: boolean;
-        /**
-         * Stores instance of DeviceInputSystem
-         */
-        deviceInputSystem: DeviceInputSystem;
         /**
          * Observable event triggered each time the rendering canvas is resized
          */
@@ -45192,6 +44791,8 @@ declare module BABYLON {
         supportComputeShaders: boolean;
         /** Defines if sRGB texture formats are supported */
         supportSRGBBuffers: boolean;
+        /** Defines if transform feedbacks are supported */
+        supportTransformFeedbacks: boolean;
     }
 }
 declare module BABYLON {
@@ -45738,6 +45339,12 @@ declare module BABYLON {
          * Defines whether to adapt to the device's viewport characteristics (default: false)
          */
         adaptToDeviceRatio?: boolean;
+        /**
+         * If sRGB Buffer support is not set during construction, use this value to force a specific state
+         * This is added due to an issue when processing textures in chrome/edge/firefox
+         * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
+         */
+        forceSRGBBufferSupportState?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -45769,10 +45376,13 @@ declare module BABYLON {
          * Returns a string describing the current engine
          */
         get description(): string;
+        /** @hidden */
+        protected _name: string;
         /**
-         * Returns the name of the engine
+         * Gets or sets the name of the engine
          */
         get name(): string;
+        set name(value: string);
         /**
          * Returns the version of the engine
          */
@@ -48487,6 +48097,352 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Type to handle enforcement of inputs
+     */
+    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
+}
+declare module BABYLON {
+    /**
+     * Class that handles all input for a specific device
+     */
+    export class DeviceSource<T extends DeviceType> {
+        /** Type of device */
+        readonly deviceType: DeviceType;
+        /** "Slot" or index that device is referenced in */
+        readonly deviceSlot: number;
+        /**
+         * Observable to handle device input changes per device
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        private readonly _deviceInputSystem;
+        /**
+         * Default Constructor
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        constructor(deviceInputSystem: IDeviceInputSystem, 
+        /** Type of device */
+        deviceType: DeviceType, 
+        /** "Slot" or index that device is referenced in */
+        deviceSlot?: number);
+        /**
+         * Get input for specific input
+         * @param inputIndex index of specific input on device
+         * @returns Input value from DeviceInputSystem
+         */
+        getInput(inputIndex: DeviceInput<T>): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class to wrap DeviceInputSystem data into an event object
+     */
+    export class DeviceEventFactory {
+        /**
+         * Create device input events based on provided type and slot
+         *
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object
+         */
+        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent;
+        /**
+         * Creates pointer event
+         *
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Pointer)
+         */
+        private static _createPointerEvent;
+        /**
+         * Create Mouse Wheel Event
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Wheel)
+         */
+        private static _createWheelEvent;
+        /**
+         * Create Mouse Event
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Mouse)
+         */
+        private static _createMouseEvent;
+        /**
+         * Create Keyboard Event
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Keyboard)
+         */
+        private static _createKeyboardEvent;
+        /**
+         * Add parameters for non-character keys (Ctrl, Alt, Meta, Shift)
+         * @param evt Event object to add parameters to
+         * @param deviceInputSystem DeviceInputSystem to pull values from
+         */
+        private static _checkNonCharacterKeys;
+        /**
+         * Create base event object
+         * @param elementToAttachTo Value to use as event target
+         * @returns
+         */
+        private static _createEvent;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class NativeDeviceInputSystem implements IDeviceInputSystem {
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        private readonly _nativeInput;
+        constructor(nativeInput?: INativeInput);
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the observables
+         */
+        dispose(): void;
+        /**
+         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
+         * @returns Object with dummy functions
+         */
+        private _createDummyNativeInput;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebDeviceInputSystem implements IDeviceInputSystem {
+        /** onDeviceConnected property */
+        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
+        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        private _inputs;
+        private _gamepads;
+        private _keyboardActive;
+        private _pointerActive;
+        private _elementToAttachTo;
+        private readonly _engine;
+        private readonly _usingSafari;
+        private _onDeviceConnected;
+        private _keyboardDownEvent;
+        private _keyboardUpEvent;
+        private _keyboardBlurEvent;
+        private _pointerMoveEvent;
+        private _pointerDownEvent;
+        private _pointerUpEvent;
+        private _pointerWheelEvent;
+        private _pointerBlurEvent;
+        private _wheelEventName;
+        private _mouseId;
+        private readonly _isUsingFirefox;
+        private _activeTouchIds;
+        private _maxTouchPoints;
+        private _pointerInputClearObserver;
+        private _gamepadConnectedEvent;
+        private _gamepadDisconnectedEvent;
+        private _eventPrefix;
+        constructor(engine: Engine);
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the eventlisteners
+         */
+        dispose(): void;
+        /**
+         * Configures events to work with an engine's active element
+         */
+        private _configureEvents;
+        /**
+         * Checks for existing connections to devices and register them, if necessary
+         * Currently handles gamepads and mouse
+         */
+        private _checkForConnectedDevices;
+        /**
+         * Add a gamepad to the DeviceInputSystem
+         * @param gamepad A single DOM Gamepad object
+         */
+        private _addGamePad;
+        /**
+         * Add pointer device to DeviceInputSystem
+         * @param deviceType Type of Pointer to add
+         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+         * @param currentX Current X at point of adding
+         * @param currentY Current Y at point of adding
+         */
+        private _addPointerDevice;
+        /**
+         * Add device and inputs to device array
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param numberOfInputs Number of input entries to create for given device
+         */
+        private _registerDevice;
+        /**
+         * Given a specific device name, remove that device from the device map
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _unregisterDevice;
+        /**
+         * Handle all actions that come from keyboard interaction
+         */
+        private _handleKeyActions;
+        /**
+         * Handle all actions that come from pointer interaction
+         */
+        private _handlePointerActions;
+        /**
+         * Handle all actions that come from gamepad interaction
+         */
+        private _handleGamepadActions;
+        /**
+         * Update all non-event based devices with each frame
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         */
+        private _updateDevice;
+        /**
+         * Gets DeviceType from the device name
+         * @param deviceName Name of Device from DeviceInputSystem
+         * @returns DeviceType enum value
+         */
+        private _getGamepadDeviceType;
+        /**
+         * Get DeviceType from a given pointer/mouse/touch event.
+         * @param evt PointerEvent to evaluate
+         * @returns DeviceType interpreted from event
+         */
+        private _getPointerType;
+        /**
+         * Remove events from active input element
+         */
+        private _removeEvents;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /** @hidden */
+            _deviceSourceManager: InternalDeviceSourceManager;
+        }
+    /** @hidden */
+    export class InternalDeviceSourceManager implements IDisposable {
+        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+        private readonly _devices;
+        private readonly _firstDevice;
+        private readonly _deviceInputSystem;
+        private _oninputChangedObserver;
+        static _Create(engine: Engine): InternalDeviceSourceManager;
+        private constructor();
+        getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number | undefined) => Nullable<DeviceSource<T>>;
+        getDeviceSources: <T extends DeviceType>(deviceType: T) => readonly DeviceSource<T>[];
+        getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        dispose(): void;
+        /**
+         * Function to add device name to device list
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _addDevice;
+        /**
+         * Function to remove device name to device list
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _removeDevice;
+        /**
+         * Updates array storing first connected device of each type
+         * @param type Type of Device
+         */
+        private _updateFirstDevices;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class to keep track of devices
+     */
+    export class DeviceSourceManager {
+        /**
+         * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
+         */
+        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+        /**
+         * Observable to be triggered when a device's input is changed
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        /**
+         * Observable to be triggered when after a device is disconnected
+         */
+        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+        private _deviceSourceManager;
+        /**
+         * Gets a DeviceSource, given a type and slot
+         */
+        getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number) => Nullable<DeviceSource<T>>;
+        /**
+         * Gets an array of DeviceSource objects for a given device type
+         */
+        getDeviceSources: <T extends DeviceType>(deviceType: T) => ReadonlyArray<DeviceSource<T>>;
+        /**
+         * Returns a read-only list of all available devices
+         */
+        getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        /**
+         * Default constructor
+         * @param engine Used to get canvas (if applicable)
+         */
+        constructor(engine: Engine);
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to manage all inputs for the scene.
      */
     export class InputManager {
@@ -48532,7 +48488,7 @@ declare module BABYLON {
         private _onKeyDown;
         private _onKeyUp;
         private _scene;
-        private _deviceInputSystem;
+        private _deviceSourceManager;
         /**
          * Creates a new InputManager
          * @param scene defines the hosting scene
@@ -68816,10 +68772,6 @@ declare module BABYLON {
         /** Gets the currently enabled extensions on the WebGPU device */
         get enabledExtensions(): Immutable<GPUFeatureName[]>;
         /**
-         * Returns the name of the engine
-         */
-        get name(): string;
-        /**
          * Returns a string describing the current engine
          */
         get description(): string;
@@ -74619,6 +74571,7 @@ declare module BABYLON {
         private _impostors;
         private _joints;
         private _subTimeStep;
+        private _uniqueIdCounter;
         /**
          * Gets the gravity vector used by the simulation
          */
@@ -74939,9 +74892,13 @@ declare module BABYLON {
          */
         onCreateCustomShape: (impostor: PhysicsImpostor) => any;
         /**
-         * The create custom mesh impostor handler function to support building custom mesh impostor vertex data (Ex: Ammo.btSmoothTriangleMesh)
+         * The create custom mesh impostor handler function to support building custom mesh impostor vertex data
          */
         onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
+        /**
+         * The create custom convex hull impostor handler function to support building custom convex hull impostor vertex data
+         */
+        onCreateCustomConvexHullImpostor: (impostor: PhysicsImpostor) => any;
         private _isImpostorInContact;
         private _isImpostorPairInContact;
         private _stepSimulation;
