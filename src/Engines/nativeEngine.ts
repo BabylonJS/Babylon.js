@@ -846,6 +846,7 @@ export class NativeEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: false,
             supportSRGBBuffers: true,
+            supportTransformFeedbacks: false
         };
 
         this._features = {

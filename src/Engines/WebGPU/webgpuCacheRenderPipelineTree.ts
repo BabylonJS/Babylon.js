@@ -4,7 +4,7 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
 /** @hidden */
 class NodeState {
-    public values: { [name: number]: NodeState };
+    public values: { [id: number]: NodeState };
     public pipeline: GPURenderPipeline;
 
     constructor() {

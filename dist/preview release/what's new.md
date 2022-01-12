@@ -11,6 +11,8 @@
 - Added support for Order Independent Transparency on simple scenes. `scene.useOrderIndependentTransparency = true` now makes transparent meshes shade correctly when stacked onto each other. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
+- Official support of WebGPU ([Popov72](https://github.com/Popov72))
+- Enabled Performance Profiler ([carolhmj](https://github.com/carolhmj))
 
 ## Updates
 
@@ -32,7 +34,7 @@
 - Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added `encapsulate` and `encapsulateBoundingInfo` methods to `BoundingInfo`. ([Tolo789](https://github.com/Tolo789))
 - Added `onLoadObservable` to the `TextureDome` class(es) ([RaananW](https://github.com/RaananW))
-- Modified `InputManager` to use `DeviceInputSystem` ([PolygonalSun](https://github.com/PolygonalSun))
+- Modified `InputManager` to use `DeviceSourceManager` ([PolygonalSun](https://github.com/PolygonalSun))
 - Added a [helper class](https://doc.babylonjs.com/typedoc/classes/babylon.debug.directionallightfrustumviewer) to display the frustum of a directional light ([Popov72](https://github.com/Popov72))
 - Improved collision detection performance ([ottoville](https://github.com/ottoville/))
 - Added new helper functions for `Quaternion.FromLookDirection` and `Matrix.LookDirection` ([Alex-MSFT](https://github.com/Alex-MSFT))
@@ -45,6 +47,7 @@
 - Spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the corresponding `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
+- Improved scene picking precision with huge values in world matrices when `Ray.EnableDistantPicking` flag is true ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
@@ -63,6 +66,9 @@
 - Added resetLastInteractionTime() to the auto rotate behavior ([RaananW](https://github.com/RaananW))
 - Update `addContainerTask` and `addMeshTask` signatures on `AssetsManager` to allow receiving a File as the sceneFilename argument. ([carolhmj](https://github.com/carolhmj))
 - Added `onCreateCustomMeshImpostor` handler for creating custom mesh impostors to support Ammo.btSmoothTriangleMesh. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomMeshImpostor` handler for creating mesh impostors with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
+- Added `onCreateCustomConvexHullImpostor` handler for creating convex hull imposters with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
+- Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -73,6 +79,7 @@
 - Added `IAudioEngineOptions` interface to provide the audio engine with a pre-defined Audio Context and audio destination node. ([Vandy](https://github.com/svanderbeck11))
 - Added support for cannon-es method `world.removeBody()`. Falls back to cannon method `remove()`. ([Faber](https://https://github.com/Faber-smythe))
 - Added support for ZOffset Unit as we currently only supported factor. ([Sebavan](https://github.com/sebavan/)
+- Added the option to force the state of sRGB Buffer support ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
@@ -177,6 +184,7 @@
 - Added support for full screen UI and rig cameras ([#11544](https://github.com/BabylonJS/Babylon.js/issues/11544)) ([RaananW](https://github.com/RaananW))
 - Added ValueAndUnit change observable and Grid to listen for changes ([brianzinn](https://github.com/brianzinn))
 - Added `closeShape` and `closePath` as extra options parameters in `ExtrudeShape` and `ExtrudeShapeCustom` ([JohnK](https://github.com/BabylonJSGuide))
+- Added `markAsDirty` and `markAllAsDirty` public functions on `Control` ([carolhmj](https://github.com/carolhmj))
 
 ### Behaviors
 
@@ -228,6 +236,7 @@
 - Add the `WebXRLayers` feature to support rendering to an `XRProjectionLayer` ([#10588](https://github.com/BabylonJS/Babylon.js/issues/10588)) ([rgerd](https://github.com/rgerd))
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 - Add `NativeXRPlugin` and `NativeXRFrame` to improve XR performance on BabylonNative ([rgerd](https://github.com/rgerd))
+- Reset XR Camera's orientation when entering an AR session for consistent experience ([RaananW](https://github.com/RaananW))
 
 ### Gizmos
 
@@ -370,6 +379,9 @@
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
+- Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
+- Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
+- Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

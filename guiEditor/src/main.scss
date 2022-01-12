@@ -55,9 +55,6 @@
     }
     .toolbar-label {
         color:white;
-        padding: 5px;
-        padding-left: 7px;
-        height: 35px;
         font-size: 18px;
         display: grid;
         align-items: center;
@@ -79,6 +76,10 @@
             }
         } 
     }
+    .toolbar-icon {
+        width: 40px;
+        height: 40px;
+    }
 }
 
 .diagram-container {
@@ -94,19 +95,6 @@
         display: none;
         width: 100%;
         height: 100%;
-    }
-
-    .ge-scalePoint {
-        width: 10px;
-        height: 10px;
-        background: transparent;
-        outline: rgb(125, 125, 125) 2px solid;
-    }
-
-    .ge-pivotPoint {
-        width: 30px;
-        height: 30px;
-        background: transparent;
     }
 }
 
@@ -238,5 +226,32 @@
                 }
             }
         }
+    }
+}
+.gizmo {
+    width: 0;
+    height: 0;
+    .bounding-box-line {
+        background-color: black;
+        position: absolute;
+        line-height: 1px;
+        height: 1px;
+        pointer-events: none;
+    }
+    .scale-point {
+        position: absolute;
+        transform: "translate(-50%,-50%)";
+        top: 20px;
+        left: 20px;
+        width: 10px;
+        height: 10px;
+        background: transparent;
+        outline: rgb(125, 125, 125) 2px solid;
+    }
+    .pivot-point {
+        width: 30px;
+        height: 30px;
+        background: transparent;
+        position: absolute;
     }
 }

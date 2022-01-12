@@ -332,6 +332,7 @@ export class Path2 {
 
 /**
  * Represents a 3D path made up of multiple 3D points
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/path3D
  */
 export class Path3D {
     private _curve = new Array<Vector3>();

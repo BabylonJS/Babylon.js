@@ -1685,7 +1685,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.indexStart + subMesh.indexCount,
             subMesh.verticesStart,
             !!subMesh.getMaterial(),
-            this
+            this,
+            this._shouldConvertRHS()
         );
         return this;
     }
@@ -1706,6 +1707,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             this._collideForSubMesh(subMesh, transformMatrix, collider);
         }
         return this;
+    }
+
+    /** @hidden */
+    public _shouldConvertRHS() {
+        return false;
     }
 
     /** @hidden */
