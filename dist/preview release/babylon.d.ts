@@ -12048,8 +12048,6 @@ declare module BABYLON {
         /** length of the ray */
         length: number;
         private static readonly _TmpVector3;
-        /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
-        static EnableDistantPicking: boolean;
         private static _rayDistant;
         private _tmpRay;
         /**
@@ -12150,9 +12148,10 @@ declare module BABYLON {
          * @param world world matrix
          * @param view view matrix
          * @param projection projection matrix
+         * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
          * @returns this ray updated
          */
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, enableDistantPicking?: boolean): Ray;
         /**
          * Creates a ray with origin and direction of 0,0,0
          * @returns the new ray
@@ -12217,11 +12216,11 @@ declare module BABYLON {
             /** @hidden */
             _pickWithRayInverseMatrix: Matrix;
             /** @hidden */
-            _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            _internalPick(rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
             /** @hidden */
-            _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
+            _internalMultiPick(rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
             /** @hidden */
-            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
+            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
         }
 }
 declare module BABYLON {
@@ -36187,6 +36186,7 @@ declare module BABYLON {
         _materialForRenderPass: Array<Material | undefined>;
         _positions: Nullable<Vector3[]>;
         _meshCollisionData: _MeshCollisionData;
+        _enableDistantPicking: boolean;
     }
     /**
      * Class used to store all common mesh properties
@@ -36435,6 +36435,9 @@ declare module BABYLON {
         /** Gets or sets a boolean indicating that this mesh will allow fog to be rendered on it (true by default) */
         get applyFog(): boolean;
         set applyFog(value: boolean);
+        /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+        get enableDistantPicking(): boolean;
+        set enableDistantPicking(value: boolean);
         /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes selection (true by default) */
         useOctreeForRenderingSelection: boolean;
         /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes picking (true by default) */
@@ -51329,9 +51332,10 @@ declare module BABYLON {
          * @param result defines the ray where to store the picking ray
          * @param camera defines the camera to use for the picking
          * @param cameraViewSpace defines if picking will be done in view space (false by default)
+         * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
          * @returns the current scene
          */
-        createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean): Scene;
+        createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean, enableDistantPicking?: boolean): Scene;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)

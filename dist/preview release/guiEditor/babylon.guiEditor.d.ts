@@ -807,6 +807,7 @@ declare module GUIEDITOR {
         canvasBounds: Rect;
         scalePoints: IScalePoint[];
         scalePointDragging: number;
+        isRotating: boolean;
     }
     export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
         private _matrixCache;
@@ -816,6 +817,7 @@ declare module GUIEDITOR {
         private _initX;
         private _initY;
         private _localBounds;
+        private _rotation;
         constructor(props: IGuiGizmoProps);
         componentDidMount(): void;
         /**
@@ -861,6 +863,7 @@ declare module GUIEDITOR {
         private _dragLocalBounds;
         private _updateNodeFromLocalBounds;
         private _beginDraggingScalePoint;
+        private _beginRotate;
         render(): JSX.Element | null;
     }
 }

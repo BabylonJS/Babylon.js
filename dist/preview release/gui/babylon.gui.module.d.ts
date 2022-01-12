@@ -1298,6 +1298,15 @@ declare module "babylonjs-gui/2D/controls/control" {
          * @returns the ascendant or null if not found
          */
         getAscendantOfClass(className: string): Nullable<Control>;
+        /**
+         * Mark control element as dirty
+         * @param force force non visible elements to be marked too
+         */
+        markAsDirty(force: false): void;
+        /**
+         * Mark the element and its children as dirty
+         */
+        markAllAsDirty(): void;
         /** @hidden */
         _resetFontCache(): void;
         /**
@@ -4348,6 +4357,7 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Scene } from "babylonjs/scene";
+    import { Observable } from "babylonjs/Misc/observable";
     import { Button3D } from "babylonjs-gui/3D/controls/button3D";
     /**
      * Class used to create a touchable button in 3D
@@ -4356,6 +4366,13 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
         private _collisionMesh;
         private _collidableFrontDirection;
         protected _isNearPressed: boolean;
+        private _isToggleButton;
+        private _toggleState;
+        private _toggleButtonCallback;
+        /**
+         * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
+         */
+        onToggleObservable: Observable<boolean>;
         /**
          * Creates a new touchable button
          * @param name defines the control name
@@ -4376,6 +4393,19 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
          * @param collisionMesh the new collision mesh for the button
          */
         set collisionMesh(collisionMesh: Mesh);
+        /**
+         * Setter for if this TouchButton3D should be treated as a toggle button
+         * @param value If this TouchHolographicButton should act like a toggle button
+         */
+        set isToggleButton(value: boolean);
+        get isToggleButton(): boolean;
+        /**
+         * A public entrypoint to set the toggle state of the TouchHolographicButton. Only works if 'isToggleButton' is true
+         * @param newState The new state to set the TouchHolographicButton's toggle state to
+         */
+        set isToggled(newState: boolean);
+        get isToggled(): boolean;
+        protected _onToggle(newState: boolean): void;
         private _isInteractionInFrontOfButton;
         protected _getInteractionHeight(interactionPos: Vector3, basePos: Vector3): number;
         /** @hidden */
@@ -5079,6 +5109,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { FluentMaterial } from "babylonjs-gui/3D/materials/fluent/fluentMaterial";
     import { FluentButtonMaterial } from "babylonjs-gui/3D/materials/fluentButton/fluentButtonMaterial";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { TouchButton3D } from "babylonjs-gui/3D/controls/touchButton3D";
@@ -5109,6 +5140,8 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         private _pointerHoverObserver;
         private _frontPlateDepth;
         private _backPlateDepth;
+        private _backplateColor;
+        private _backplateToggledColor;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -5139,7 +5172,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         /**
          * Gets the back material used by this button
          */
-        get backMaterial(): StandardMaterial;
+        get backMaterial(): FluentMaterial;
         /**
          * Gets the front material used by this button
          */
@@ -5168,6 +5201,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
         private _createBackMaterial;
         private _createFrontMaterial;
         private _createPlateMaterial;
+        protected _onToggle(newState: boolean): void;
         protected _affectMaterial(mesh: Mesh): void;
         /**
          * Releases all associated resources
@@ -5931,7 +5965,6 @@ declare module "babylonjs-gui/3D/controls/nearMenu" {
          */
         private static PIN_ICON_FILENAME;
         private _pinButton;
-        private _pinMaterial;
         private _dragObserver;
         private _defaultBehavior;
         /**
@@ -6999,43 +7032,6 @@ declare module "babylonjs-gui/3D/controls/touchMeshButton3D" {
         protected _affectMaterial(mesh: AbstractMesh): void;
     }
 }
-declare module "babylonjs-gui/3D/controls/touchToggleButton3D" {
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-    import { Mesh } from "babylonjs/Meshes/mesh";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { Scene } from "babylonjs/scene";
-    import { TransformNode } from "babylonjs/Meshes/transformNode";
-    import { Vector3 } from "babylonjs/Maths/math.vector";
-    import { TouchButton3D } from "babylonjs-gui/3D/controls/touchButton3D";
-    /**
-     * Class used as base class for touch-enabled toggleable buttons
-     */
-    export class TouchToggleButton3D extends TouchButton3D {
-        private _isPressed;
-        /**
-         * An event triggered when the button is toggled on
-         */
-        onToggleOnObservable: Observable<Vector3>;
-        /**
-         * An event triggered when the button is toggled off
-         */
-        onToggleOffObservable: Observable<Vector3>;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         * @param collisionMesh defines the mesh to track near interactions with
-         */
-        constructor(name?: string, collisionMesh?: Mesh);
-        private _onToggle;
-        protected _getTypeName(): string;
-        protected _createNode(scene: Scene): TransformNode;
-        protected _affectMaterial(mesh: AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-    }
-}
 declare module "babylonjs-gui/3D/controls/holographicBackplate" {
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Mesh } from "babylonjs/Meshes/mesh";
@@ -7106,7 +7102,6 @@ declare module "babylonjs-gui/3D/controls/index" {
     export * from "babylonjs-gui/3D/controls/touchMeshButton3D";
     export * from "babylonjs-gui/3D/controls/touchHolographicButton";
     export * from "babylonjs-gui/3D/controls/touchHolographicMenu";
-    export * from "babylonjs-gui/3D/controls/touchToggleButton3D";
     export * from "babylonjs-gui/3D/controls/volumeBasedPanel";
     export * from "babylonjs-gui/3D/controls/holographicBackplate";
 }
@@ -8423,6 +8418,15 @@ declare module BABYLON.GUI {
          * @returns the ascendant or null if not found
          */
         getAscendantOfClass(className: string): BABYLON.Nullable<Control>;
+        /**
+         * Mark control element as dirty
+         * @param force force non visible elements to be marked too
+         */
+        markAsDirty(force: false): void;
+        /**
+         * Mark the element and its children as dirty
+         */
+        markAllAsDirty(): void;
         /** @hidden */
         _resetFontCache(): void;
         /**
@@ -11254,6 +11258,13 @@ declare module BABYLON.GUI {
         private _collisionMesh;
         private _collidableFrontDirection;
         protected _isNearPressed: boolean;
+        private _isToggleButton;
+        private _toggleState;
+        private _toggleButtonCallback;
+        /**
+         * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
+         */
+        onToggleObservable: BABYLON.Observable<boolean>;
         /**
          * Creates a new touchable button
          * @param name defines the control name
@@ -11274,6 +11285,19 @@ declare module BABYLON.GUI {
          * @param collisionMesh the new collision mesh for the button
          */
         set collisionMesh(collisionMesh: BABYLON.Mesh);
+        /**
+         * Setter for if this TouchButton3D should be treated as a toggle button
+         * @param value If this TouchHolographicButton should act like a toggle button
+         */
+        set isToggleButton(value: boolean);
+        get isToggleButton(): boolean;
+        /**
+         * A public entrypoint to set the toggle state of the TouchHolographicButton. Only works if 'isToggleButton' is true
+         * @param newState The new state to set the TouchHolographicButton's toggle state to
+         */
+        set isToggled(newState: boolean);
+        get isToggled(): boolean;
+        protected _onToggle(newState: boolean): void;
         private _isInteractionInFrontOfButton;
         protected _getInteractionHeight(interactionPos: BABYLON.Vector3, basePos: BABYLON.Vector3): number;
         /** @hidden */
@@ -11943,6 +11967,8 @@ declare module BABYLON.GUI {
         private _pointerHoverObserver;
         private _frontPlateDepth;
         private _backPlateDepth;
+        private _backplateColor;
+        private _backplateToggledColor;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -11973,7 +11999,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the back material used by this button
          */
-        get backMaterial(): BABYLON.StandardMaterial;
+        get backMaterial(): FluentMaterial;
         /**
          * Gets the front material used by this button
          */
@@ -12002,6 +12028,7 @@ declare module BABYLON.GUI {
         private _createBackMaterial;
         private _createFrontMaterial;
         private _createPlateMaterial;
+        protected _onToggle(newState: boolean): void;
         protected _affectMaterial(mesh: BABYLON.Mesh): void;
         /**
          * Releases all associated resources
@@ -12693,7 +12720,6 @@ declare module BABYLON.GUI {
          */
         private static PIN_ICON_FILENAME;
         private _pinButton;
-        private _pinMaterial;
         private _dragObserver;
         private _defaultBehavior;
         /**
@@ -13695,36 +13721,6 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used as base class for touch-enabled toggleable buttons
-     */
-    export class TouchToggleButton3D extends TouchButton3D {
-        private _isPressed;
-        /**
-         * An event triggered when the button is toggled on
-         */
-        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
-        /**
-         * An event triggered when the button is toggled off
-         */
-        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         * @param collisionMesh defines the mesh to track near interactions with
-         */
-        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
-        private _onToggle;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON.GUI {

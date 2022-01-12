@@ -10165,7 +10165,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo {\n  width: 0;\n  height: 0; }\n  .gizmo .bounding-box-line {\n    background-color: black;\n    position: absolute;\n    line-height: 1px;\n    height: 1px;\n    pointer-events: none; }\n  .gizmo .scale-point {\n    position: absolute;\n    transform: \"translate(-50%,-50%)\";\n    top: 20px;\n    left: 20px;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .pivot-point {\n    width: 30px;\n    height: 30px;\n    background: transparent;\n    position: absolute; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"AAAA;EACI,sBAAiB,EAAA;;AAGrB;EACI,aAAa;EACb,qCAAqC;EACrC,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,iCAAiC,EAAA;;AAGrC;EACI,aAAa;EACb,uBAAuB;EACvB,qBAAqB;EACrB,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,aAAa;EACb,YAAW;EACX,iCAAiC;EACjC,kBAAkB;EAClB,MAAM;EACN,OAAO,EAAA;EAZX;IAeQ,kBAAkB,EAAA;;AAI1B;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAGrB;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAIrB;EACI,mBAAmB;EACnB,oBAAoB;EACpB,cAAc;EACd,YAAY,EAAA;EAJhB;IAOQ,WAAY;IACZ,iBAAiB,EAAA;EARzB;IAWQ,YAAW;IACX,eAAe;IACf,aAAa;IACb,mBAAmB;IACnB,eAAe;IACf,iBAAiB;IACjB,+BAA+B;IAC/B,wBAAwB;IACxB,kBAAkB,EAAA;IAnB1B;MAsBY,iBAAiB;MACjB,eAAe,EAAA;IAvB3B;MA2BY,gCAAgC,EAAA;MA3B5C;QA6BgB,cAAc,EAAA;EA7B9B;IAkCQ,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,kBAAkB;EAClB,aAAa;EACb,WAAW;EACX,cAAc;EACd,mBAAmB;EACnB,WAAW;EACX,YAAY,EAAA;EAPhB;IAUQ,aAAa;IACb,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,oBAAoB;EACpB,cAAc;EACd,aAAa;EACb,sCAAsC;EACtC,2BAA2B;EAC3B,0CAA0C;EAC1C,gBAAgB,EAAA;EAPpB;IAUQ,WAAW;IACX,cAAc,EAAA;EAXtB;IAeQ,aAAa;IACb,uBAAuB;IACvB,qBAAqB;IACrB,YAAY;IACZ,qBAAqB;IACrB,eAAe,EAAA;IApBvB;MAuBY,mBAA6B;MAC7B,YAAY;MACZ,YAAY,EAAA;IAzBxB;MA6BY,mBAA6B;MAC7B,YAAY,EAAA;IA9BxB;MAkCY,wBAAwB;MACxB,kBAAkB,EAAA;;AAK9B;EACI,kBAAkB;EAClB,kBAAkB;EAClB,wBAAwB;EACxB,YAAY;EACZ,MAAM;EACN,OAAO;EAEP,kCAAkC;EAClC,mCAAmC;EACnC,YAAY;EACZ,eAAe;EAEf,aAAa;EACb,qBAAqB;EACrB,uBAAuB;EAEvB,iBAAiB;EAEjB,aAAa;EACb,kBAAkB,EAAA;;AAGtB;EACI,WAAW;EACX,cAAc;EACd,aAAa,EAAA;;AAGjB;EACI,kBAAkB;EAClB,WAAW;EACX,YAAY;EACZ,8BAAoC;EACpC,aAAa;EACb,mCAAmC;EACnC,MAAK,EAAA;EAPT;IAUQ,kBAAkB;IAClB,oBAAoB;IACpB,iBAAiB;IACjB,gBAAgB;IAChB,mBAAmB;IACnB,iBAAiB;IAEjB,aAAa;IACb,2BAA2B;IAC3B,0CAA0C,EAAA;IAnBlD;MAsBY,WAAW;MACX,cAAc;MACd,gBAAgB;MAChB,aAAa;MACb,eAAe;MACf,YAAY,EAAA;IA3BxB;MA+BY,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,2BAA2B;MAC3B,YAAY,EAAA;MApCxB;QAuCgB,eAAe;QACf,oBAAoB;QACpB,iBAAgB;QAChB,eAAe;QACf,uBAAuB;QACvB,aAAa;QACb,qBAAqB;QACrB,kBAAkB;QAClB,YAAY;QACZ,mBAAmB,EAAA;QAhDnC;UAmDoB,YAAY,EAAA;QAnDhC;UAuDoB,eAAe,EAAA;;AAMnC;EACI,QAAQ;EACR,SAAS,EAAA;EAFb;IAIQ,uBAAuB;IACvB,kBAAkB;IAClB,gBAAgB;IAChB,WAAW;IACX,oBAAoB,EAAA;EAR5B;IAWQ,kBAAkB;IAClB,iCAAiC;IACjC,SAAS;IACT,UAAU;IACV,WAAW;IACX,YAAY;IACZ,uBAAuB;IACvB,0BAAqC,EAAA;EAlB7C;IAqBQ,WAAW;IACX,YAAY;IACZ,uBAAuB;IACvB,kBAAkB,EAAA","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #5f5b60;\r\n    width: 100%;\r\n    height: 100%;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    width: 0;\r\n    height: 0;\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point {\r\n        position: absolute;\r\n        transform: \"translate(-50%,-50%)\";\r\n        top: 20px;\r\n        left: 20px;\r\n        width: 10px;\r\n        height: 10px;\r\n        background: transparent;\r\n        outline: rgb(125, 125, 125) 2px solid;\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo .bounding-box-line {\n  background-color: black;\n  position: absolute;\n  line-height: 1px;\n  height: 1px;\n  pointer-events: none; }\n\n.gizmo .scale-point-container {\n  position: absolute;\n  width: 30px;\n  height: 30px; }\n  .gizmo .scale-point-container .scale-point {\n    top: 10px;\n    left: 10px;\n    position: absolute;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .scale-point-container .rotate-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n  .gizmo .scale-point-container .scale-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n\n.gizmo .pivot-point {\n  width: 30px;\n  height: 30px;\n  background: transparent;\n  position: absolute; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #5f5b60;\r\n    width: 100%;\r\n    height: 100%;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point-container {\r\n        position: absolute;\r\n        width: 30px;\r\n        height: 30px;\r\n        .scale-point {\r\n            top: 10px;\r\n            left: 10px;\r\n            position: absolute;\r\n            width: 10px;\r\n            height: 10px;\r\n            background: transparent;\r\n            outline: rgb(125, 125, 125) 2px solid;\r\n        }\r\n        .rotate-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n        .scale-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -42321,6 +42321,46 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "../public/imgs sync recursive ^\\.\\/cursor_rotate.*\\.svg$":
+/*!******************************************************!*\
+  !*** ../public/imgs sync ^\.\/cursor_rotate.*\.svg$ ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var map = {
+	"./cursor_rotate0.svg": "../public/imgs/cursor_rotate0.svg",
+	"./cursor_rotate1.svg": "../public/imgs/cursor_rotate1.svg",
+	"./cursor_rotate2.svg": "../public/imgs/cursor_rotate2.svg",
+	"./cursor_rotate3.svg": "../public/imgs/cursor_rotate3.svg",
+	"./cursor_rotate4.svg": "../public/imgs/cursor_rotate4.svg",
+	"./cursor_rotate5.svg": "../public/imgs/cursor_rotate5.svg",
+	"./cursor_rotate6.svg": "../public/imgs/cursor_rotate6.svg",
+	"./cursor_rotate7.svg": "../public/imgs/cursor_rotate7.svg"
+};
+
+
+function webpackContext(req) {
+	var id = webpackContextResolve(req);
+	return __webpack_require__(id);
+}
+function webpackContextResolve(req) {
+	if(!__webpack_require__.o(map, req)) {
+		var e = new Error("Cannot find module '" + req + "'");
+		e.code = 'MODULE_NOT_FOUND';
+		throw e;
+	}
+	return map[req];
+}
+webpackContext.keys = function webpackContextKeys() {
+	return Object.keys(map);
+};
+webpackContext.resolve = webpackContextResolve;
+module.exports = webpackContext;
+webpackContext.id = "../public/imgs sync recursive ^\\.\\/cursor_rotate.*\\.svg$";
+
+/***/ }),
+
 /***/ "../public/imgs/adtIcon.svg":
 /*!**********************************!*\
   !*** ../public/imgs/adtIcon.svg ***!
@@ -42439,6 +42479,138 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M13.31,15.34a8.34,8.34,0,0,1,14.25,8.34c-1.35,3.7-4.91,5.16-7.47,3.3a3.82,3.82,0,0,1-1.52-3l-.08-.81,0-.32c-.1-.76-.26-1.1-.58-1.28a1.27,1.27,0,0,0-1.3,0l-.28.12-.15.06a3.12,3.12,0,0,1-2.07.34l-.17,0-.13,0C11.49,21.29,11.15,18.2,13.31,15.34Zm.8,5.48.1,0,.11,0a1.81,1.81,0,0,0,1.17-.19l.49-.21a2.47,2.47,0,0,1,3.68,2.21l0,.37.05.44,0,.34a2.75,2.75,0,0,0,1,2.16c1.86,1.35,4.52.25,5.61-2.73a7.11,7.11,0,0,0-12.12-7.19C12.59,18.33,12.8,20.38,14.11,20.82Zm9.16-1.63a1,1,0,1,1,2-.53,1,1,0,0,1-2,.53ZM23.68,22a1,1,0,1,1,1.24.72A1,1,0,0,1,23.68,22Zm-2-5.3a1,1,0,0,1,.72-1.25,1,1,0,1,1,.53,2A1,1,0,0,1,21.66,16.74Zm0,7.35a1,1,0,0,1,.72-1.25,1,1,0,0,1,.53,2A1,1,0,0,1,21.63,24.09ZM18.78,16a1,1,0,1,1,1.25.72A1,1,0,0,1,18.78,16Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate0.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate0.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M18.91,12.11l-.66-.66a8.14,8.14,0,0,0-11.5,0l-.66.66L4.68,10.7,3.39,15.51l4.82-1.29L6.8,12.81l.65-.65a7.16,7.16,0,0,1,10.1,0l.65.65-1.41,1.41,4.82,1.29L20.32,10.7Z'/%3E%3Cpath class='cls-1' d='M12.5,9.07a8.13,8.13,0,0,1,5.75,2.38l.66.66,1.41-1.41,1.29,4.81-4.82-1.29,1.41-1.41-.65-.65a7.15,7.15,0,0,0-10.1,0l-.65.65,1.41,1.41L3.39,15.51,4.68,10.7l1.41,1.41.66-.66A8.13,8.13,0,0,1,12.5,9.07m0-1a9.08,9.08,0,0,0-6.41,2.62l-.7-.7L4.16,8.77l-.44,1.67L2.43,15.25,2,16.93l1.67-.45,4.82-1.29,1.67-.45L8.91,13.52l-.7-.71a6.16,6.16,0,0,1,8.58,0l-.71.71-1.22,1.22,1.67.45,4.82,1.29,1.67.45-.45-1.68-1.29-4.81-.44-1.67L19.61,10l-.7.7A9.08,9.08,0,0,0,12.5,8.07Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate1.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate1.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M18.33,15.74v-.93a8.15,8.15,0,0,0-8.14-8.14H9.26v-2L5,7.17l4.31,2.5v-2h.93a7.14,7.14,0,0,1,7.14,7.14v.93h-2l2.5,4.31,2.49-4.31Z'/%3E%3Cpath class='cls-1' d='M9.26,4.68v2h.93a8.15,8.15,0,0,1,8.14,8.14v.93h2l-2.49,4.31-2.5-4.31h2v-.93a7.14,7.14,0,0,0-7.14-7.14H9.26v2L5,7.17,9.26,4.68m1-1.73-1.5.86L4.45,6.31,3,7.17,4.45,8l4.31,2.49,1.5.87V8.67a6.15,6.15,0,0,1,6.07,6.07H13.6l.87,1.5L17,20.55l.87,1.5.86-1.5,2.5-4.31.86-1.5H19.33a9.16,9.16,0,0,0-9.07-9.07V3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate2.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate2.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M12.89,18.91l.66-.66a8.14,8.14,0,0,0,0-11.5l-.66-.66L14.3,4.68,9.49,3.39l1.29,4.82L12.19,6.8l.65.65a7.16,7.16,0,0,1,0,10.1l-.65.65-1.41-1.41L9.49,21.61l4.81-1.29Z'/%3E%3Cpath class='cls-1' d='M9.49,3.39,14.3,4.68,12.89,6.09l.66.66a8.14,8.14,0,0,1,0,11.5l-.66.66,1.41,1.41L9.49,21.61l1.29-4.82,1.41,1.41.65-.65a7.16,7.16,0,0,0,0-10.1l-.65-.65L10.78,8.21,9.49,3.39M8.07,2l.45,1.67L9.81,8.47l.45,1.67,1.22-1.23.71-.7a6.16,6.16,0,0,1,0,8.58l-.71-.7-1.22-1.23-.45,1.67L8.52,21.35,8.07,23l1.68-.45,4.81-1.29,1.67-.44L15,19.61l-.7-.7a9.15,9.15,0,0,0,0-12.82l.7-.7,1.22-1.23-1.67-.44L9.75,2.43,8.07,2Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate3.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate3.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M9.26,18.33h.93a8.15,8.15,0,0,0,8.14-8.14V9.26h2L17.83,5l-2.5,4.31h2v.93a7.14,7.14,0,0,1-7.14,7.14H9.26v-2L5,17.83l4.31,2.49Z'/%3E%3Cpath class='cls-1' d='M17.83,5l2.49,4.31h-2v.93a8.15,8.15,0,0,1-8.14,8.14H9.26v2L5,17.83l4.31-2.5v2h.93a7.14,7.14,0,0,0,7.14-7.14V9.26h-2L17.83,5m0-2L17,4.45,14.47,8.76l-.87,1.5h2.73a6.15,6.15,0,0,1-6.07,6.07V13.6l-1.5.87L4.45,17,3,17.83l1.5.86,4.31,2.5,1.5.86V19.33a9.16,9.16,0,0,0,9.07-9.07h2.72l-.86-1.5-2.5-4.31L17.83,3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate4.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate4.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M6.09,12.89l.66.66a8.14,8.14,0,0,0,11.5,0l.66-.66,1.41,1.41,1.29-4.81-4.82,1.29,1.41,1.41-.65.65a7.16,7.16,0,0,1-10.1,0l-.65-.65,1.41-1.41L3.39,9.49,4.68,14.3Z'/%3E%3Cpath class='cls-1' d='M21.61,9.49,20.32,14.3l-1.41-1.41-.66.66a8.14,8.14,0,0,1-11.5,0l-.66-.66L4.68,14.3,3.39,9.49l4.82,1.29L6.8,12.19l.65.65a7.15,7.15,0,0,0,10.1,0l.65-.65-1.41-1.41,4.82-1.29M23,8.07l-1.67.45L16.53,9.81l-1.67.45,1.23,1.22.7.71a6.16,6.16,0,0,1-8.58,0l.7-.71,1.23-1.22L8.47,9.81,3.65,8.52,2,8.07l.45,1.68,1.29,4.81.44,1.67L5.39,15l.7-.7a9.15,9.15,0,0,0,12.82,0l.7.7,1.23,1.22.44-1.67,1.29-4.81L23,8.07Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate5.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate5.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M6.67,9.26v.93a8.15,8.15,0,0,0,8.14,8.14h.93v2l4.31-2.49-4.31-2.5v2h-.93a7.14,7.14,0,0,1-7.14-7.14V9.26h2L7.17,5,4.68,9.26Z'/%3E%3Cpath class='cls-1' d='M7.17,5l2.5,4.31h-2v.93a7.14,7.14,0,0,0,7.14,7.14h.93v-2l4.31,2.5-4.31,2.49v-2h-.93a8.15,8.15,0,0,1-8.14-8.14V9.26h-2L7.17,5m0-2-.86,1.5L3.81,8.76,3,10.26H5.67a9.16,9.16,0,0,0,9.07,9.07v2.72l1.5-.86,4.31-2.5,1.5-.86L20.55,17l-4.31-2.49-1.5-.87v2.73a6.15,6.15,0,0,1-6.07-6.07H11.4l-.87-1.5L8,4.45,7.17,3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate6.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate6.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M12.11,6.09l-.66.66a8.14,8.14,0,0,0,0,11.5l.66.66L10.7,20.32l4.81,1.29-1.29-4.82L12.81,18.2l-.65-.65a7.16,7.16,0,0,1,0-10.1l.65-.65,1.41,1.41,1.29-4.82L10.7,4.68Z'/%3E%3Cpath class='cls-1' d='M15.51,3.39,14.22,8.21,12.81,6.8l-.65.65a7.16,7.16,0,0,0,0,10.1l.65.65,1.41-1.41,1.29,4.82L10.7,20.32l1.41-1.41-.66-.66a8.14,8.14,0,0,1,0-11.5l.66-.66L10.7,4.68l4.81-1.29M16.93,2l-1.68.45L10.44,3.72l-1.67.44L10,5.39l.7.7a9.15,9.15,0,0,0,0,12.82l-.7.7L8.77,20.84l1.67.44,4.81,1.29,1.68.45-.45-1.67-1.29-4.82-.45-1.67-1.22,1.23-.71.7a6.16,6.16,0,0,1,0-8.58l.71.7,1.22,1.23.45-1.67,1.29-4.82L16.93,2Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate7.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate7.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M15.74,6.67h-.93a8.15,8.15,0,0,0-8.14,8.14v.93h-2l2.49,4.31,2.5-4.31h-2v-.93a7.14,7.14,0,0,1,7.14-7.14h.93v2l4.31-2.5L15.74,4.68Z'/%3E%3Cpath class='cls-1' d='M15.74,4.68l4.31,2.49-4.31,2.5v-2h-.93a7.14,7.14,0,0,0-7.14,7.14v.93h2l-2.5,4.31L4.68,15.74h2v-.93a8.15,8.15,0,0,1,8.14-8.14h.93v-2M14.74,3V5.67a9.16,9.16,0,0,0-9.07,9.07H3l.86,1.5,2.5,4.31.86,1.5L8,20.55l2.49-4.31.87-1.5H8.67a6.15,6.15,0,0,1,6.07-6.07V11.4l1.5-.87L20.55,8l1.5-.87-1.5-.86-4.31-2.5L14.74,3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleDiagonalLeft.svg":
+/*!***************************************************!*\
+  !*** ../public/imgs/cursor_scaleDiagonalLeft.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='7.51 11.04 6.22 6.22 11.04 7.51 9.63 8.92 16.08 15.37 17.48 13.96 18.77 18.77 13.96 17.48 15.37 16.08 8.92 9.63 7.51 11.04'/%3E%3Cpath class='cls-1' d='M6.22,6.22,11,7.51,9.63,8.92l6.45,6.45L17.49,14l1.29,4.82L14,17.49l1.41-1.41L8.92,9.63,7.51,11,6.22,6.22M4.81,4.81l.45,1.67L6.55,11.3,7,13l1.22-1.22.7-.7,5,5-.7.7L12,18l1.67.45,4.82,1.29,1.67.45-.45-1.67L18.45,13.7,18,12l-1.22,1.22-.7.7-5-5,.7-.7L13,7,11.3,6.55,6.48,5.26,4.81,4.81Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleDiagonalRight.svg":
+/*!****************************************************!*\
+  !*** ../public/imgs/cursor_scaleDiagonalRight.svg ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='17.48 11.04 18.77 6.22 13.96 7.51 15.37 8.92 8.92 15.37 7.51 13.96 6.22 18.77 11.04 17.48 9.63 16.08 16.08 9.63 17.48 11.04'/%3E%3Cpath class='cls-1' d='M18.78,6.22,17.49,11,16.08,9.63,9.63,16.08,11,17.49,6.22,18.78,7.51,14l1.41,1.41,6.45-6.45L14,7.51l4.82-1.29m1.41-1.41-1.67.45L13.7,6.55,12,7l1.22,1.22.7.7-5,5-.7-.7L7,12,6.55,13.7,5.26,18.52l-.45,1.67,1.67-.45,4.82-1.29L13,18l-1.22-1.22-.7-.7,5-5,.7.7L18,13l.45-1.67,1.29-4.82.45-1.67Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleHorizontal.svg":
+/*!*************************************************!*\
+  !*** ../public/imgs/cursor_scaleHorizontal.svg ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='7.94 10.01 3.63 12.5 7.94 14.99 7.94 13 17.06 13 17.06 14.99 21.38 12.5 17.06 10.01 17.06 12 7.94 12 7.94 10.01'/%3E%3Cpath class='cls-1' d='M7.94,10v2h9.12V10l4.31,2.49L17.06,15V13H7.94v2L3.63,12.5,7.94,10m1-1.74-1.5.87L3.13,11.63l-1.5.87,1.5.87,4.31,2.49,1.5.87V14h7.12v2.73l1.5-.87,4.31-2.49,1.5-.87-1.5-.87L17.56,9.14l-1.5-.87V11H8.94V8.27Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleVertical.svg":
+/*!***********************************************!*\
+  !*** ../public/imgs/cursor_scaleVertical.svg ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='14.99 7.94 12.5 3.63 10.01 7.94 12 7.94 12 17.06 10.01 17.06 12.5 21.38 14.99 17.06 13 17.06 13 7.94 14.99 7.94'/%3E%3Cpath class='cls-1' d='M12.5,3.63,15,7.94H13v9.12h2L12.5,21.37,10,17.06h2V7.94H10L12.5,3.63m0-2-.87,1.5L9.14,7.44l-.87,1.5H11v7.12H8.27l.87,1.5,2.49,4.31.87,1.5.87-1.5,2.49-4.31.87-1.5H14V8.94h2.73l-.87-1.5L13.37,3.13l-.87-1.5Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47911,7 +48083,22 @@ var lines = [
     [2, 8],
     [6, 8],
 ];
-var scalePointCursors = ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize", "ew-resize", "nwse-resize", "ns-resize", "nesw-resize"];
+// load in custom cursor icons
+var cursorScaleDiagonaLeft = "url(\"" + __webpack_require__(/*! ../../public/imgs/cursor_scaleDiagonalLeft.svg */ "../public/imgs/cursor_scaleDiagonalLeft.svg") + "\") 12 12, nwse-resize";
+var cursorScaleDiagonalRight = "url(\"" + __webpack_require__(/*! ../../public/imgs/cursor_scaleDiagonalRight.svg */ "../public/imgs/cursor_scaleDiagonalRight.svg") + "\") 12 12, nesw-resize";
+var cursorScaleHorizontal = "url(\"" + __webpack_require__(/*! ../../public/imgs/cursor_scaleHorizontal.svg */ "../public/imgs/cursor_scaleHorizontal.svg") + "\") 12 12, pointer";
+var cursorScaleVertical = "url(\"" + __webpack_require__(/*! ../../public/imgs/cursor_scaleVertical.svg */ "../public/imgs/cursor_scaleVertical.svg") + "\") 12 12, ns-resize";
+var scalePointCursors = [cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft, cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft];
+var rotateCursors = [];
+for (var idx = 0; idx < 8; idx++) {
+    rotateCursors.push("url(\"" + __webpack_require__("../public/imgs sync recursive ^\\.\\/cursor_rotate.*\\.svg$")("./cursor_rotate" + idx + ".svg") + "\") 12 12, pointer");
+}
+// used to calculate which cursor icon we should display for the scalepoints
+var defaultScalePointRotations = [
+    315, 0, 45,
+    270, 0, 90,
+    225, 180, 135,
+];
 var GuiGizmoComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuiGizmoComponent, _super);
     function GuiGizmoComponent(props) {
@@ -47924,12 +48111,12 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
         _this._onUp = function (evt) {
             // cleanup on pointer up
-            _this.setState({ scalePointDragging: -1 });
+            _this.setState({ scalePointDragging: -1, isRotating: false });
         };
         _this._onMove = function () {
+            var scene = _this.props.globalState.workbench._scene;
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
             if (_this.state.scalePointDragging !== -1) {
-                var scene = _this.props.globalState.workbench._scene;
-                var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
                 if (selectedGuiNodes.length === 1) {
                     var node = selectedGuiNodes[0];
                     var inRTT = _this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
@@ -47944,6 +48131,14 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                     _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
                 }
             }
+            if (_this.state.isRotating) {
+                selectedGuiNodes.forEach(function (node, index) {
+                    var nodeRotationData = _this._rotation.nodeRotations[index];
+                    var angle = Math.atan2(scene.pointerY - _this._rotation.pivot.y, scene.pointerX - _this._rotation.pivot.x);
+                    node.rotation = nodeRotationData + (angle - _this._rotation.initialAngleToPivot);
+                });
+                _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
         };
         _this._beginDraggingScalePoint = function (scalePointIndex) {
             var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
@@ -47957,12 +48152,38 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                 _this._initX = node.leftInPixels;
             }
         };
+        _this._beginRotate = function () {
+            var scene = _this.props.globalState.workbench._scene;
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            var pivot;
+            if (selectedGuiNodes.length === 1) {
+                var node = selectedGuiNodes[0];
+                var nodeSpace = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](node.transformCenterX, node.transformCenterY);
+                var rtt = _this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
+                var canvas = _this._rttToCanvasSpace(rtt.x, rtt.y);
+                pivot = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](canvas.x, canvas.y);
+            }
+            else {
+                pivot = _this.state.canvasBounds.center;
+            }
+            var initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
+            var nodeRotations = [];
+            selectedGuiNodes.forEach(function (node) {
+                nodeRotations.push(node.rotation);
+            });
+            _this._rotation = {
+                pivot: pivot,
+                initialAngleToPivot: initialAngleToPivot,
+                nodeRotations: nodeRotations
+            };
+            _this.setState({ isRotating: true });
+        };
         _this.props.globalState.guiGizmo = _this;
         _this._responsive = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
         _this._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity()];
         var scalePoints = [];
-        for (var horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
-            for (var vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
+        for (var vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
+            for (var horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
                 var isPivot = horizontal === ScalePointPosition.Center && vertical === ScalePointPosition.Center;
                 scalePoints.push({ position: new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot: isPivot });
             }
@@ -47972,6 +48193,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             canvasBounds: new Rect(0, 0, 0, 0),
             scalePoints: scalePoints,
             scalePointDragging: -1,
+            isRotating: false
         };
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             _this.updateGizmo(true);
@@ -48084,6 +48306,9 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                 canvasBounds: canvasBounds_1,
                 scalePoints: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], this.state.scalePoints, true),
             });
+        }
+        else {
+            this.forceUpdate();
         }
     };
     GuiGizmoComponent.prototype._resetMatrixArray = function () {
@@ -48370,7 +48595,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                     left: scalePoint.position.x + "px",
                     top: scalePoint.position.y + "px",
                     transform: "translate(-50%, -50%) rotate(" + scalePoint.rotation + "deg)",
-                    pointerEvents: _this.state.scalePointDragging === -1 && !scalePoint.isPivot ? "auto" : "none",
+                    pointerEvents: _this.state.scalePointDragging === -1 && !scalePoint.isPivot && !_this.state.isRotating ? "auto" : "none",
                 };
                 if (scalePoint.isPivot) {
                     if (_this.props.globalState.workbench.selectedGuiNodes.length > 1) {
@@ -48379,16 +48604,36 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                     return react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { className: "pivot-point", src: gizmoPivotIcon, style: style, key: index });
                 }
                 // compute which cursor icon to use on hover
-                var delta = scalePoint.position.subtract(_this.state.canvasBounds.center);
-                var increment = Math.PI / 4;
-                var angle = Math.atan2(delta.y, delta.x);
-                var cursorIndex = Math.round((angle / increment) % 8);
-                if (cursorIndex < 0)
-                    cursorIndex += 8;
-                style.cursor = scalePointCursors[cursorIndex];
-                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-point", key: index, style: style, draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
-                        _this._beginDraggingScalePoint(index);
-                    }, onPointerUp: _this._onUp }));
+                var angleOfCursor = (defaultScalePointRotations[index] + scalePoint.rotation);
+                var angleAdjusted = angleOfCursor % (360);
+                if (angleAdjusted < 0)
+                    angleAdjusted += 360;
+                var increment = 45;
+                var cursorIndex = Math.round(angleAdjusted / increment) % 8;
+                var cursor = scalePointCursors[cursorIndex];
+                var scalePointContainerSize = 30; // .scale-point-container width/height in px
+                var rotateClickAreaSize = 20; // .rotate-click-area width/height
+                var rotateClickAreaOffset = 7; // how much to offset the invisible rotate click area from the center
+                var rotateClickAreaStyle = {
+                    top: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.verticalPosition,
+                    left: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.horizontalPosition,
+                    cursor: rotateCursors[cursorIndex]
+                };
+                var scaleClickAreaSize = 20; // .scale-click-area width/height
+                var scaleClickAreaOffset = 5; // how much to offset the invisible scale click area from the center
+                var scaleClickAreaStyle = {
+                    top: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.verticalPosition,
+                    left: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.horizontalPosition,
+                    cursor: cursor
+                };
+                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { key: index, style: style, className: "scale-point-container" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "rotate-click-area", onPointerDown: function () { return _this._beginRotate(); }, style: rotateClickAreaStyle }),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-click-area", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
+                            _this._beginDraggingScalePoint(index);
+                        }, onPointerUp: _this._onUp, style: scaleClickAreaStyle }),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-point", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
+                            _this._beginDraggingScalePoint(index);
+                        }, onPointerUp: _this._onUp, style: { cursor: cursor } })));
             })));
     };
     return GuiGizmoComponent;
