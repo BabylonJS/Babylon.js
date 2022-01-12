@@ -229,8 +229,6 @@
     }
 }
 .gizmo {
-    width: 0;
-    height: 0;
     .bounding-box-line {
         background-color: black;
         position: absolute;
@@ -238,15 +236,29 @@
         height: 1px;
         pointer-events: none;
     }
-    .scale-point {
+    .scale-point-container {
         position: absolute;
-        transform: "translate(-50%,-50%)";
-        top: 20px;
-        left: 20px;
-        width: 10px;
-        height: 10px;
-        background: transparent;
-        outline: rgb(125, 125, 125) 2px solid;
+        width: 30px;
+        height: 30px;
+        .scale-point {
+            top: 10px;
+            left: 10px;
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: transparent;
+            outline: rgb(125, 125, 125) 2px solid;
+        }
+        .rotate-click-area {
+            width: 20px;
+            height: 20px;
+            position: absolute;
+        }
+        .scale-click-area {
+            width: 20px;
+            height: 20px;
+            position: absolute;
+        }
     }
     .pivot-point {
         width: 30px;
