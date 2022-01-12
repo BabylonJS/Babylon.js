@@ -686,8 +686,8 @@ SceneLoader.RegisterPlugin({
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId !== null) {
                         currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
-                        if (currentMesh.parent instanceof TransformNode) {
-                            const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent);
+                        if (currentMesh.parent?.getClassName() === "TransformNode") {
+                            const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent as TransformNode);
                             if (loadedTransformNodeIndex > -1) {
                                 loadedTransformNodes.splice(loadedTransformNodeIndex, 1);
                             }
