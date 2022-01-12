@@ -581,6 +581,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create texture to support 2D GUI elements
  * @see https://doc.babylonjs.com/how_to/gui
@@ -1701,8 +1702,10 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
-        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial", mesh.getScene());
+        // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
+        var uniqueId = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RandomGUID"])();
+        var result = new AdvancedDynamicTexture("AdvancedDynamicTexture for " + mesh.name + " [" + uniqueId + "]", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
+        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial for " + mesh.name + " [" + uniqueId + "]", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
         material.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
@@ -18361,7 +18364,8 @@ var HolographicSlate = /** @class */ (function (_super) {
         }
     };
     HolographicSlate.prototype._applyContentViewport = function () {
-        if (this._contentPlate.material && this._contentPlate.material.albedoTexture) {
+        var _a;
+        if (((_a = this._contentPlate) === null || _a === void 0 ? void 0 : _a.material) && this._contentPlate.material.albedoTexture) {
             var tex = this._contentPlate.material.albedoTexture;
             tex.uScale = this._contentScaleRatio;
             tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;

@@ -239,7 +239,7 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
         }
     };
 
-    if (url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
+    if (url.substr(0, 5) !== "blob:" && url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
         offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
     }
     else {

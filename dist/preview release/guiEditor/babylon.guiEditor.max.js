@@ -10165,7 +10165,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n  .diagram-container .ge-scalePoint {\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .diagram-container .ge-pivotPoint {\n    width: 30px;\n    height: 30px;\n    background: transparent; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #5f5b60;\r\n    width: 100%;\r\n    height: 100%;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n\r\n    .ge-scalePoint {\r\n        width: 10px;\r\n        height: 10px;\r\n        background: transparent;\r\n        outline: rgb(125, 125, 125) 2px solid;\r\n    }\r\n\r\n    .ge-pivotPoint {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo {\n  width: 0;\n  height: 0; }\n  .gizmo .bounding-box-line {\n    background-color: black;\n    position: absolute;\n    line-height: 1px;\n    height: 1px;\n    pointer-events: none; }\n  .gizmo .scale-point {\n    position: absolute;\n    transform: \"translate(-50%,-50%)\";\n    top: 20px;\n    left: 20px;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .pivot-point {\n    width: 30px;\n    height: 30px;\n    background: transparent;\n    position: absolute; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #5f5b60;\r\n    width: 100%;\r\n    height: 100%;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    width: 0;\r\n    height: 0;\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point {\r\n        position: absolute;\r\n        transform: \"translate(-50%,-50%)\";\r\n        top: 20px;\r\n        left: 20px;\r\n        width: 10px;\r\n        height: 10px;\r\n        background: transparent;\r\n        outline: rgb(125, 125, 125) 2px solid;\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -43679,7 +43679,7 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "TRANSFORMATION", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Trasnsform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Transform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -47862,38 +47862,80 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
 var gizmoPivotIcon = __webpack_require__(/*! ../../public/imgs/gizmoPivotIcon.svg */ "../public/imgs/gizmoPivotIcon.svg");
+// which side of the bounding box are we on?
+var ScalePointPosition;
+(function (ScalePointPosition) {
+    ScalePointPosition[ScalePointPosition["Top"] = -1] = "Top";
+    ScalePointPosition[ScalePointPosition["Left"] = -1] = "Left";
+    ScalePointPosition[ScalePointPosition["Center"] = 0] = "Center";
+    ScalePointPosition[ScalePointPosition["Right"] = 1] = "Right";
+    ScalePointPosition[ScalePointPosition["Bottom"] = 1] = "Bottom";
+})(ScalePointPosition || (ScalePointPosition = {}));
+var Rect = /** @class */ (function () {
+    function Rect(left, top, right, bottom) {
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+    }
+    Object.defineProperty(Rect.prototype, "center", {
+        get: function () {
+            var topLeft = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](this.left, this.top);
+            return topLeft.addInPlace(new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](this.right, this.bottom).subtractInPlace(topLeft).multiplyByFloats(0.5, 0.5));
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Rect.prototype, "width", {
+        get: function () {
+            return this.right - this.left;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Rect.prototype, "height", {
+        get: function () {
+            return this.bottom - this.top;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return Rect;
+}());
 var roundFactor = 100;
 var round = function (value) { return Math.round(value * roundFactor) / roundFactor; };
+// this defines the lines that link the corners, making up the bounding box
+var lines = [
+    [0, 2],
+    [0, 6],
+    [2, 8],
+    [6, 8],
+];
+var scalePointCursors = ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize", "ew-resize", "nwse-resize", "ns-resize", "nesw-resize"];
 var GuiGizmoComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuiGizmoComponent, _super);
     function GuiGizmoComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.scalePoints = [];
-        _this._scalePointIndex = -1;
-        _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
-        _this._onUp = function (evt) {
-            // cleanup on pointer up
-            _this._pointerData.pointerDown = false;
-            document.querySelectorAll(".ge-scalePoint").forEach(function (scalePoint) {
-                scalePoint.style.pointerEvents = "auto";
-            });
-            _this._scalePointIndex = -1;
-        };
+        // used for scaling computations
         _this._initH = 0;
         _this._initW = 0;
         _this._initX = 0;
         _this._initY = 0;
+        _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
+        _this._onUp = function (evt) {
+            // cleanup on pointer up
+            _this.setState({ scalePointDragging: -1 });
+        };
         _this._onMove = function () {
-            if (_this._pointerData.pointerDown) {
+            if (_this.state.scalePointDragging !== -1) {
                 var scene = _this.props.globalState.workbench._scene;
                 var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
-                if (selectedGuiNodes.length > 0) {
+                if (selectedGuiNodes.length === 1) {
                     var node = selectedGuiNodes[0];
-                    // get the mouse position in node space
                     var inRTT = _this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
                     var inNodeSpace = _this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
-                    // set the corner
-                    _this._setNodeCorner(node, inNodeSpace, _this._scalePointIndex);
+                    _this._dragLocalBounds(inNodeSpace);
+                    _this._updateNodeFromLocalBounds(node, _this.state.scalePointDragging);
                     //convert to percentage
                     if (_this._responsive) {
                         _this.props.globalState.workbench.convertToPercentage(node, false);
@@ -47903,16 +47945,12 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                 }
             }
         };
-        _this._setMousePosition = function (index) {
-            _this._pointerData.pointerDown = true;
-            _this._scalePointIndex = index;
-            document.querySelectorAll(".ge-scalePoint").forEach(function (scalePoint) {
-                scalePoint.style.pointerEvents = "none";
-            });
+        _this._beginDraggingScalePoint = function (scalePointIndex) {
             var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            _this.setState({ scalePointDragging: scalePointIndex });
             if (selectedGuiNodes.length > 0) {
                 var node = selectedGuiNodes[0];
-                _this._nodeToCorners(node);
+                _this._localBounds = _this._computeLocalBounds(node);
                 _this._initW = node.widthInPixels;
                 _this._initH = node.heightInPixels;
                 _this._initY = node.topInPixels;
@@ -47921,76 +47959,130 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         };
         _this.props.globalState.guiGizmo = _this;
         _this._responsive = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
-        _this._pointerData = { corners: [new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]()], pointerDown: false };
-        _this._htmlPoints = [new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]()];
         _this._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity()];
-        // Set visibility
+        var scalePoints = [];
+        for (var horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
+            for (var vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
+                var isPivot = horizontal === ScalePointPosition.Center && vertical === ScalePointPosition.Center;
+                scalePoints.push({ position: new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot: isPivot });
+            }
+        }
+        _this._localBounds = new Rect(0, 0, 0, 0);
+        _this.state = {
+            canvasBounds: new Rect(0, 0, 0, 0),
+            scalePoints: scalePoints,
+            scalePointDragging: -1,
+        };
         props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (selection) {
-                _this.scalePoints.forEach(function (scalePoint) {
-                    scalePoint.style.display = "flex";
-                });
-            }
-            else {
-                _this.scalePoints.forEach(function (scalePoint) {
-                    scalePoint.style.display = "none";
-                });
-            }
             _this.updateGizmo(true);
         });
         _this.props.globalState.onResponsiveChangeObservable.add(function (value) {
             _this._responsive = value;
         });
         _this.props.globalState.onGizmoUpdateRequireObservable.add(function () {
-            // TODO - no need to update on each frame.
             _this.updateGizmo(true);
         });
+        _this.updateGizmo(true);
         return _this;
     }
     GuiGizmoComponent.prototype.componentDidMount = function () { };
     /**
-     * Update the gizmo's corners positions
+     * Update the gizmo's positions
      * @param force should the update be forced. otherwise it will be updated only when the pointer is down
      */
     GuiGizmoComponent.prototype.updateGizmo = function (force) {
         var _this = this;
         var selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-        if (selectedGuiNodes.length > 0 && (force || this._pointerData.pointerDown)) {
-            var node_1 = selectedGuiNodes[0];
+        if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging !== -1)) {
             // Calculating the offsets for each scale point.
-            var half = 1 / 2;
-            this._htmlPoints[0].x = -node_1.widthInPixels * half;
-            this._htmlPoints[0].y = node_1.heightInPixels * half;
-            this._htmlPoints[1].x = -node_1.widthInPixels * half;
-            this._htmlPoints[1].y = -node_1.heightInPixels * half;
-            this._htmlPoints[2].x = node_1.widthInPixels * half;
-            this._htmlPoints[2].y = -node_1.heightInPixels * half;
-            this._htmlPoints[3].x = node_1.widthInPixels * half;
-            this._htmlPoints[3].y = node_1.heightInPixels * half;
-            this._htmlPoints[4].x = -node_1.widthInPixels * half;
-            this._htmlPoints[5].y = -node_1.heightInPixels * half;
-            this._htmlPoints[6].x = node_1.widthInPixels * half;
-            this._htmlPoints[7].y = node_1.heightInPixels * half;
-            // Calculate the pivot point
-            var pivotX = (node_1.transformCenterX - 0.5) * 2;
-            var pivotY = (node_1.transformCenterY - 0.5) * 2;
-            this._htmlPoints[8].x = node_1.widthInPixels * half * pivotX;
-            this._htmlPoints[8].y = node_1.heightInPixels * half * pivotY;
-            this.scalePoints.forEach(function (scalePoint, index) {
-                // TODO optimize this - unify?
-                var result = _this._nodeToRTTSpace(node_1, _this._htmlPoints[index].x, _this._htmlPoints[index].y, undefined, false);
-                var finalResult = _this._rttToCanvasSpace(node_1, result.x, result.y);
-                var scene = _this.props.globalState.workbench._scene;
-                var engine = scene.getEngine();
-                // If the scale point is outside the viewport, do not render
-                scalePoint.style.display =
-                    finalResult.x < 0 || finalResult.x < 0 || finalResult.x > engine.getRenderWidth() || finalResult.y > engine.getRenderHeight() ? "none" : "flex";
-                if (scalePoint.style.display === "flex") {
-                    scalePoint.style.left = finalResult.x + "px";
-                    scalePoint.style.top = finalResult.y + "px";
-                    var rotate = _this.getRotation(node_1) * (180 / Math.PI);
-                    scalePoint.style.transform = "translate(-50%, -50%) rotate(" + rotate + "deg)";
-                }
+            var half_1 = 1 / 2;
+            var canvasBounds_1 = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
+            selectedGuiNodes.forEach(function (node) {
+                var localBounds = _this._computeLocalBounds(node);
+                _this.state.scalePoints.forEach(function (scalePoint) {
+                    var nodeSpace = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+                    switch (scalePoint.horizontalPosition) {
+                        case ScalePointPosition.Left:
+                            nodeSpace.x = localBounds.left;
+                            break;
+                        case ScalePointPosition.Center:
+                            nodeSpace.x = localBounds.center.x;
+                            break;
+                        case ScalePointPosition.Right:
+                            nodeSpace.x = localBounds.right;
+                            break;
+                    }
+                    switch (scalePoint.verticalPosition) {
+                        case ScalePointPosition.Top:
+                            nodeSpace.y = localBounds.top;
+                            break;
+                        case ScalePointPosition.Center:
+                            nodeSpace.y = localBounds.center.y;
+                            break;
+                        case ScalePointPosition.Bottom:
+                            nodeSpace.y = localBounds.bottom;
+                            break;
+                    }
+                    if (scalePoint.isPivot) {
+                        // Calculate the pivot point
+                        var pivotX = (node.transformCenterX - 0.5) * 2;
+                        var pivotY = (node.transformCenterY - 0.5) * 2;
+                        nodeSpace.x = node.widthInPixels * half_1 * pivotX;
+                        nodeSpace.y = node.heightInPixels * half_1 * pivotY;
+                    }
+                    var rtt = _this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
+                    var canvas = _this._rttToCanvasSpace(rtt.x, rtt.y);
+                    if (canvas.x < canvasBounds_1.left) {
+                        canvasBounds_1.left = canvas.x;
+                    }
+                    if (canvas.x > canvasBounds_1.right) {
+                        canvasBounds_1.right = canvas.x;
+                    }
+                    if (canvas.y < canvasBounds_1.top) {
+                        canvasBounds_1.top = canvas.y;
+                    }
+                    if (canvas.y > canvasBounds_1.bottom) {
+                        canvasBounds_1.bottom = canvas.y;
+                    }
+                    // if we have a single control selected, put scale points at its edges, and rotate based on the rotation of the control
+                    if (selectedGuiNodes.length === 1) {
+                        scalePoint.position.x = canvas.x;
+                        scalePoint.position.y = canvas.y;
+                        scalePoint.rotation = _this.getRotation(node) * (180 / Math.PI);
+                    }
+                });
+            });
+            // if we are in multiselect mode, use the bounds to determine the scale point locations, and set rotation = 0
+            if (selectedGuiNodes.length > 1) {
+                this.state.scalePoints.forEach(function (scalePoint) {
+                    switch (scalePoint.verticalPosition) {
+                        case ScalePointPosition.Top:
+                            scalePoint.position.y = canvasBounds_1.top;
+                            break;
+                        case ScalePointPosition.Center:
+                            scalePoint.position.y = canvasBounds_1.center.y;
+                            break;
+                        case ScalePointPosition.Bottom:
+                            scalePoint.position.y = canvasBounds_1.bottom;
+                            break;
+                    }
+                    switch (scalePoint.horizontalPosition) {
+                        case ScalePointPosition.Left:
+                            scalePoint.position.x = canvasBounds_1.left;
+                            break;
+                        case ScalePointPosition.Center:
+                            scalePoint.position.x = canvasBounds_1.center.x;
+                            break;
+                        case ScalePointPosition.Right:
+                            scalePoint.position.x = canvasBounds_1.right;
+                            break;
+                    }
+                    scalePoint.rotation = 0;
+                });
+            }
+            this.setState({
+                canvasBounds: canvasBounds_1,
+                scalePoints: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], this.state.scalePoints, true),
             });
         }
     };
@@ -48087,7 +48179,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             parent = parent.parent;
         }
         this._resetMatrixArray();
-        var matrices = listOfNodes.map(function (node, index) { return _this._getNodeMatrix(node, index === 0 && _this._pointerData.pointerDown && useStoredValuesIfPossible); });
+        var matrices = listOfNodes.map(function (node, index) { return _this._getNodeMatrix(node, index === 0 && _this.state.scalePointDragging !== -1 && useStoredValuesIfPossible); });
         return matrices.reduce(function (acc, cur) {
             acc.multiplyToRef(cur, acc);
             return acc;
@@ -48113,8 +48205,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         reference.y = round(reference.y);
         return reference;
     };
-    GuiGizmoComponent.prototype._rttToCanvasSpace = function (node, x, y, reference) {
-        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+    GuiGizmoComponent.prototype._rttToCanvasSpace = function (x, y) {
         var tmpVec = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"](x, 0, -y);
         // Get the final projection in view space
         var camera = this.props.globalState.workbench._camera;
@@ -48167,95 +48258,46 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         }
         return rotation;
     };
-    GuiGizmoComponent.prototype.createBaseGizmo = function () {
-        var _this = this;
-        var _a, _b;
-        // Get the canvas element from the DOM.
-        var canvas = this.props.globalState.hostDocument.getElementById("workbench-canvas");
-        var scalePointCursors = [
-            "nesw-resize",
-            "nwse-resize",
-            "nesw-resize",
-            "nwse-resize",
-            "ew-resize",
-            "ns-resize",
-            "ew-resize",
-            "ns-resize"
-        ];
-        var _loop_1 = function (i) {
-            var scalePoint = canvas.ownerDocument.createElement("div");
-            scalePoint.className = "ge-scalePoint";
-            (_a = canvas.parentElement) === null || _a === void 0 ? void 0 : _a.appendChild(scalePoint);
-            scalePoint.style.position = "absolute";
-            scalePoint.style.display = "none";
-            scalePoint.style.left = i * 100 + "px";
-            scalePoint.style.top = i * 100 + "px";
-            scalePoint.style.transform = "translate(-50%, -50%)";
-            scalePoint.style.cursor = scalePointCursors[i];
-            scalePoint.addEventListener("pointerdown", function () {
-                _this._setMousePosition(i);
-            });
-            scalePoint.ondragstart = function (evt) {
-                evt.preventDefault();
-            };
-            scalePoint.draggable = true;
-            scalePoint.addEventListener("pointerup", this_1._onUp);
-            this_1.scalePoints.push(scalePoint);
-        };
-        var this_1 = this;
-        for (var i = 0; i < 8; ++i) {
-            _loop_1(i);
-        }
-        // Create the pivot point which is special
-        var pivotPoint = canvas.ownerDocument.createElement("img");
-        pivotPoint.src = gizmoPivotIcon;
-        pivotPoint.className = "ge-pivotPoint";
-        (_b = canvas.parentElement) === null || _b === void 0 ? void 0 : _b.appendChild(pivotPoint);
-        pivotPoint.style.position = "absolute";
-        pivotPoint.style.display = "none";
-        this.scalePoints.push(pivotPoint);
-        pivotPoint.ondragstart = function (evt) {
-            evt.preventDefault();
-        };
-        pivotPoint.draggable = true;
-        this.updateGizmo();
-    };
     GuiGizmoComponent.prototype.onUp = function (evt) {
         this._onUp(evt);
     };
     GuiGizmoComponent.prototype.onMove = function (evt) {
         this._onMove();
     };
-    /**
-     * Calculate the 4 corners in node space
-     * @param node The node to use
-     */
-    GuiGizmoComponent.prototype._nodeToCorners = function (node) {
-        var half = 0.5;
-        this._pointerData.corners[0].x = -node.widthInPixels * half;
-        this._pointerData.corners[0].y = node.heightInPixels * half;
-        this._pointerData.corners[1].x = -node.widthInPixels * half;
-        this._pointerData.corners[1].y = -node.heightInPixels * half;
-        this._pointerData.corners[2].x = node.widthInPixels * half;
-        this._pointerData.corners[2].y = -node.heightInPixels * half;
-        this._pointerData.corners[3].x = node.widthInPixels * half;
-        this._pointerData.corners[3].y = node.heightInPixels * half;
+    GuiGizmoComponent.prototype._rotate = function (x, y, centerX, centerY, angle) {
+        return {
+            x: (x - centerX) * Math.cos(angle) - (y - centerY) * Math.sin(angle) + centerX,
+            y: (x - centerX) * Math.sin(angle) + (y - centerY) * Math.cos(angle) + centerY,
+        };
     };
-    /**
-     * Computer the node's width, height, top and left, using the 4 corners
-     * @param node the node we use
-     */
-    GuiGizmoComponent.prototype._updateNodeFromCorners = function (node) {
-        var upperLeft = this._pointerData.corners[1];
-        var lowerRight = this._pointerData.corners[3];
-        var width = lowerRight.x - upperLeft.x;
-        var height = lowerRight.y - upperLeft.y;
-        var left = this._scalePointIndex === 0 || this._scalePointIndex === 1;
-        var top = this._scalePointIndex === 1 || this._scalePointIndex === 2;
+    GuiGizmoComponent.prototype._computeLocalBounds = function (node) {
+        return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
+    };
+    GuiGizmoComponent.prototype._dragLocalBounds = function (toPosition) {
+        var scalePoint = this.state.scalePoints[this.state.scalePointDragging];
+        if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
+            this._localBounds.left = toPosition.x;
+        }
+        if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
+            this._localBounds.right = toPosition.x;
+        }
+        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
+            this._localBounds.top = toPosition.y;
+        }
+        if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+            this._localBounds.bottom = toPosition.y;
+        }
+    };
+    GuiGizmoComponent.prototype._updateNodeFromLocalBounds = function (node, scalePointIndex) {
+        var width = this._localBounds.right - this._localBounds.left;
+        var height = this._localBounds.bottom - this._localBounds.top;
+        var scalePoint = this.state.scalePoints[scalePointIndex];
+        var left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
+        var top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
         // calculate the center point
         var localRotation = this.getRotation(node, true);
         var localScaling = this.getScale(node, true);
-        var absoluteCenter = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](upperLeft.x + width * 0.5, upperLeft.y + height * 0.5);
+        var absoluteCenter = this._localBounds.center;
         var center = absoluteCenter.clone();
         // move to pivot
         center.multiplyInPlace(localScaling);
@@ -48303,46 +48345,51 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             this.props.globalState.workbench.convertToPercentage(node, true);
         }
     };
-    GuiGizmoComponent.prototype._rotate = function (x, y, centerX, centerY, angle) {
-        return {
-            x: (x - centerX) * Math.cos(angle) - (y - centerY) * Math.sin(angle) + centerX,
-            y: (x - centerX) * Math.sin(angle) + (y - centerY) * Math.cos(angle) + centerY,
-        };
-    };
-    GuiGizmoComponent.prototype._setNodeCorner = function (node, corner, cornerIndex) {
-        // are we in a fixed-axis situation
-        var fixedAxis = cornerIndex > 3;
-        // the actual corner to update. This relies on the fact that the corners are in a specific order
-        var toUpdate = cornerIndex % 4;
-        if (fixedAxis) {
-            // check which axis is fixed
-            if (cornerIndex === 4 || cornerIndex === 6) {
-                // set the corner's y axis correctly
-                corner.y = this._pointerData.corners[toUpdate].y;
-            }
-            else {
-                // set the corner's x axis correctly
-                corner.x = this._pointerData.corners[toUpdate].x;
-            }
-        }
-        this._pointerData.corners[toUpdate].copyFrom(corner);
-        // also update the other corners
-        var next = (cornerIndex + 1) % 4;
-        var prev = (cornerIndex + 3) % 4;
-        // Update the next and the previous points
-        if (toUpdate % 2 === 0) {
-            this._pointerData.corners[next].x = this._pointerData.corners[toUpdate].x;
-            this._pointerData.corners[prev].y = this._pointerData.corners[toUpdate].y;
-        }
-        else {
-            this._pointerData.corners[next].y = this._pointerData.corners[toUpdate].y;
-            this._pointerData.corners[prev].x = this._pointerData.corners[toUpdate].x;
-        }
-        // update the transformation accordingly
-        this._updateNodeFromCorners(node);
-    };
     GuiGizmoComponent.prototype.render = function () {
-        return null;
+        var _this = this;
+        // don't render if we don't have anything selected, or if we're currently dragging
+        if (this.props.globalState.workbench.selectedGuiNodes.length === 0 || this.state.scalePointDragging !== -1)
+            return null;
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "gizmo" },
+            lines.map(function (line, index) {
+                var start = _this.state.scalePoints[line[0]];
+                var end = _this.state.scalePoints[line[1]];
+                // the vector between start and end
+                var delta = end.position.subtract(start.position);
+                var angle = Math.atan2(delta.y, delta.x);
+                var length = delta.length();
+                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "bounding-box-line", key: index, style: {
+                        left: start.position.x + delta.x / 2 + "px",
+                        top: start.position.y + delta.y / 2 + "px",
+                        width: length + "px",
+                        transform: "translate(-50%, -50%) rotate(" + angle + "rad)",
+                    } }));
+            }),
+            this.state.scalePoints.map(function (scalePoint, index) {
+                var style = {
+                    left: scalePoint.position.x + "px",
+                    top: scalePoint.position.y + "px",
+                    transform: "translate(-50%, -50%) rotate(" + scalePoint.rotation + "deg)",
+                    pointerEvents: _this.state.scalePointDragging === -1 && !scalePoint.isPivot ? "auto" : "none",
+                };
+                if (scalePoint.isPivot) {
+                    if (_this.props.globalState.workbench.selectedGuiNodes.length > 1) {
+                        return null;
+                    }
+                    return react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { className: "pivot-point", src: gizmoPivotIcon, style: style, key: index });
+                }
+                // compute which cursor icon to use on hover
+                var delta = scalePoint.position.subtract(_this.state.canvasBounds.center);
+                var increment = Math.PI / 4;
+                var angle = Math.atan2(delta.y, delta.x);
+                var cursorIndex = Math.round((angle / increment) % 8);
+                if (cursorIndex < 0)
+                    cursorIndex += 8;
+                style.cursor = scalePointCursors[cursorIndex];
+                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-point", key: index, style: style, draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
+                        _this._beginDraggingScalePoint(index);
+                    }, onPointerUp: _this._onUp }));
+            })));
     };
     return GuiGizmoComponent;
 }(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
@@ -48574,7 +48621,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.hostDocument.addEventListener("keydown", _this.keyEvent, false);
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
         props.globalState.onWindowResizeObservable.add(function () {
-            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             _this._engine.resize();
         });
         _this.props.globalState.workbench = _this;
@@ -49149,6 +49196,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this.globalState.guiTexture.rootContainer.clipChildren = false;
         this.globalState.guiTexture.useInvalidateRectOptimization = false;
+        this.globalState.guiTexture.onEndRenderObservable.add(function () { return _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
         this._textureMesh.showBoundingBox = true;
         this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
         this.artBoardBackground.width = "100%";
@@ -49229,13 +49277,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var panningFn = function () {
             var pos = _this.getPosition(scene, camera, plane);
             _this.panning(pos, initialPos, camera.inertia, inertialPanning);
-            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
         };
         var inertialPanningFn = function () {
             if (inertialPanning.x !== 0 || inertialPanning.y !== 0 || inertialPanning.z !== 0) {
                 camera.target.addInPlace(inertialPanning);
                 inertialPanning.scaleInPlace(camera.inertia);
                 _this.zeroIfClose(inertialPanning);
+                _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             }
         };
         var wheelPrecisionFn = function () {
@@ -49302,7 +49350,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     break;
             }
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["KeyboardEventTypes"].KEYDOWN);
-        scene.onAfterRenderObservable.add(function () { _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
+        scene.onAfterRenderObservable.add(function () { if (_this._camera.inertialRadiusOffset != 0)
+            _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
         scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
@@ -49372,7 +49421,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         offset.scaleInPlace(inertiaComp);
         ref.addInPlace(offset);
         camera.inertialRadiusOffset += delta;
-        //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
@@ -49585,7 +49633,6 @@ var GUIEditor = /** @class */ (function () {
                         react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](graphEditor, hostElement);
                         if (!!globalState.guiTexture) return [3 /*break*/, 4];
                         globalState.workbench.createGUICanvas();
-                        globalState.guiGizmo.createBaseGizmo();
                         if (!options.currentSnippetToken) return [3 /*break*/, 4];
                         _a.label = 1;
                     case 1:
