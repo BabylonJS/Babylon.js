@@ -65,6 +65,7 @@ interface IGuiGizmoState {
     canvasBounds: Rect;
     scalePoints: IScalePoint[];
     scalePointDragging: number;
+    isRotating: boolean;
 }
 
 const roundFactor = 100;
@@ -78,7 +79,22 @@ const lines = [
     [6, 8],
 ];
 
-const scalePointCursors = ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize", "ew-resize", "nwse-resize", "ns-resize", "nesw-resize"];
+// load in custom cursor icons
+const cursorScaleDiagonaLeft: string = `url("${require("../../public/imgs/cursor_scaleDiagonalLeft.svg")}") 12 12, nwse-resize`;
+const cursorScaleDiagonalRight: string = `url("${require("../../public/imgs/cursor_scaleDiagonalRight.svg")}") 12 12, nesw-resize`;
+const cursorScaleHorizontal: string = `url("${require("../../public/imgs/cursor_scaleHorizontal.svg")}") 12 12, pointer`;
+const cursorScaleVertical: string = `url("${require("../../public/imgs/cursor_scaleVertical.svg")}") 12 12, ns-resize`;
+const scalePointCursors = [cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft, cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft];
+const rotateCursors : string[] = [];
+for(let idx = 0; idx < 8; idx++) {
+    rotateCursors.push(`url("${require(`../../public/imgs/cursor_rotate${idx}.svg`)}") 12 12, pointer`);
+}
+// used to calculate which cursor icon we should display for the scalepoints
+const defaultScalePointRotations = [
+    315, 0, 45,
+    270, 0, 90,
+    225, 180, 135,
+]
 
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
     private _matrixCache: Matrix2D[];
@@ -91,6 +107,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
     private _initY = 0;
     private _localBounds: Rect;
 
+    private _rotation: {
+        pivot: Vector2
+        initialAngleToPivot: number,
+        nodeRotations: number[]
+    }
+
     constructor(props: IGuiGizmoProps) {
         super(props);
         this.props.globalState.guiGizmo = this;
@@ -98,8 +120,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         this._matrixCache = [Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity()];
 
         const scalePoints: IScalePoint[] = [];
-        for (let horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
-            for (let vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
+        for (let vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
+            for (let horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
                 const isPivot = horizontal === ScalePointPosition.Center && vertical === ScalePointPosition.Center;
                 scalePoints.push({ position: new Vector2(), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot });
             }
@@ -111,6 +133,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             canvasBounds: new Rect(0, 0, 0, 0),
             scalePoints,
             scalePointDragging: -1,
+            isRotating: false
         };
 
         props.globalState.onSelectionChangedObservable.add((selection) => {
@@ -227,6 +250,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                 canvasBounds,
                 scalePoints: [...this.state.scalePoints],
             });
+        }
+        else {
+            this.forceUpdate();
         }
     }
 
@@ -422,16 +448,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _onUp = (evt?: React.PointerEvent | PointerEvent) => {
         // cleanup on pointer up
-        this.setState({ scalePointDragging: -1 });
+        this.setState({ scalePointDragging: -1, isRotating: false });
     };
 
     public onMove(evt: React.PointerEvent) {
         this._onMove();
     }
     private _onMove = () => {
+        const scene = this.props.globalState.workbench._scene;
+        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (this.state.scalePointDragging !== -1) {
-            const scene = this.props.globalState.workbench._scene;
-            const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
             if (selectedGuiNodes.length === 1) {
                 const node = selectedGuiNodes[0];
                 const inRTT = this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
@@ -445,6 +471,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                 this.props.globalState.workbench._liveGuiTextureRerender = false;
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
+        }
+        if (this.state.isRotating) {
+            selectedGuiNodes.forEach((node, index) => {
+                const nodeRotationData = this._rotation.nodeRotations[index];
+                const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
+                node.rotation = nodeRotationData + (angle - this._rotation.initialAngleToPivot);
+            })
+            this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
     };
 
@@ -549,6 +583,32 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         }
     };
 
+    private _beginRotate = () => {
+        const scene = this.props.globalState.workbench._scene;
+        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
+        let pivot: Vector2;
+        if (selectedGuiNodes.length === 1) {
+            const node = selectedGuiNodes[0];
+            const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
+            const rtt = this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
+            const canvas = this._rttToCanvasSpace(rtt.x, rtt.y);
+            pivot = new Vector2(canvas.x, canvas.y);
+        } else {
+            pivot = this.state.canvasBounds.center;
+        }
+        const initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
+        const nodeRotations : number[] = [];
+        selectedGuiNodes.forEach(node => {
+            nodeRotations.push(node.rotation)
+        })
+        this._rotation = {
+            pivot,
+            initialAngleToPivot,
+            nodeRotations
+        }
+        this.setState({isRotating: true});
+    }
+
     render() {
         // don't render if we don't have anything selected, or if we're currently dragging
         if (this.props.globalState.workbench.selectedGuiNodes.length === 0 || this.state.scalePointDragging !== -1) return null;
@@ -579,7 +639,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         left: `${scalePoint.position.x}px`,
                         top: `${scalePoint.position.y}px`,
                         transform: "translate(-50%, -50%) rotate(" + scalePoint.rotation + "deg)",
-                        pointerEvents: this.state.scalePointDragging === -1 && !scalePoint.isPivot ? "auto" : "none",
+                        pointerEvents: this.state.scalePointDragging === -1 && !scalePoint.isPivot && !this.state.isRotating ? "auto" : "none",
                     };
                     if (scalePoint.isPivot) {
                         if (this.props.globalState.workbench.selectedGuiNodes.length > 1) {
@@ -588,24 +648,58 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         return <img className="pivot-point" src={gizmoPivotIcon} style={style} key={index} />;
                     }
                     // compute which cursor icon to use on hover
-                    const delta = scalePoint.position.subtract(this.state.canvasBounds.center);
-                    const increment = Math.PI / 4;
-                    const angle = Math.atan2(delta.y, delta.x);
-                    let cursorIndex = Math.round((angle / increment) % 8);
-                    if (cursorIndex < 0) cursorIndex += 8;
-                    style.cursor = scalePointCursors[cursorIndex];
+                    const angleOfCursor = (defaultScalePointRotations[index]  + scalePoint.rotation);
+                    let angleAdjusted = angleOfCursor % (360);
+                    if (angleAdjusted < 0) angleAdjusted += 360;
+                    const increment = 45;
+                    let cursorIndex = Math.round(angleAdjusted / increment) % 8;
+                    const cursor = scalePointCursors[cursorIndex];
+                    const scalePointContainerSize = 30; // .scale-point-container width/height in px
+                    const rotateClickAreaSize = 20; // .rotate-click-area width/height
+                    const rotateClickAreaOffset = 7; // how much to offset the invisible rotate click area from the center
+                    const rotateClickAreaStyle = {
+                        top: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.verticalPosition,
+                        left: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.horizontalPosition,
+                        cursor: rotateCursors[cursorIndex]
+                    }
+                    const scaleClickAreaSize = 20; // .scale-click-area width/height
+                    const scaleClickAreaOffset = 5; // how much to offset the invisible scale click area from the center
+                    const scaleClickAreaStyle = {
+                        top: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.verticalPosition,
+                        left: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.horizontalPosition,
+                        cursor
+                    }
                     return (
-                        <div
-                            className="scale-point"
-                            key={index}
-                            style={style}
+                        <div key={index} style={style} className="scale-point-container">
+                            <div
+                                className="rotate-click-area"
+                                onPointerDown={() => this._beginRotate()}
+                                style={rotateClickAreaStyle}
+                            >
+                            </div>
+                            <div
+                            className="scale-click-area"
                             draggable={true}
                             onDragStart={(evt) => evt.preventDefault()}
                             onPointerDown={() => {
                                 this._beginDraggingScalePoint(index);
                             }}
                             onPointerUp={this._onUp}
-                        ></div>
+                            style={scaleClickAreaStyle}
+                            >
+                            </div>
+                            <div
+                                className="scale-point"
+                                draggable={true}
+                                onDragStart={(evt) => evt.preventDefault()}
+                                onPointerDown={() => {
+                                    this._beginDraggingScalePoint(index);
+                                }}
+                                onPointerUp={this._onUp}
+                                style={{cursor}}
+                            >
+                            </div>
+                        </div>
                     );
                 })}
             </div>
