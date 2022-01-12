@@ -68,12 +68,6 @@ interface IGuiGizmoState {
     isRotating: boolean;
 }
 
-interface INodeRotationData {
-    initialRotation: number,
-    radiusToPivot: number,
-    angleToPivot: number
-}
-
 const roundFactor = 100;
 const round = (value: number) => Math.round(value * roundFactor) / roundFactor;
 
@@ -107,7 +101,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
     private _rotation: {
         pivot: Vector2
         initialAngleToPivot: number,
-        nodes: INodeRotationData[]
+        nodeRotations: number[]
     }
 
     constructor(props: IGuiGizmoProps) {
@@ -471,9 +465,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         }
         if (this.state.isRotating) {
             selectedGuiNodes.forEach((node, index) => {
-                const nodeRotationData = this._rotation.nodes[index];
+                const nodeRotationData = this._rotation.nodeRotations[index];
                 const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
-                node.rotation = nodeRotationData.initialRotation + (angle - this._rotation.initialAngleToPivot);
+                node.rotation = nodeRotationData + (angle - this._rotation.initialAngleToPivot);
             })
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
@@ -594,19 +588,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             pivot = this.state.canvasBounds.center;
         }
         const initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
-        const nodes : INodeRotationData[] = [];
+        const nodeRotations : number[] = [];
         selectedGuiNodes.forEach(node => {
-            const centerOfNode = selectedGuiNodes.length === 1 ? new Vector2(node.transformCenterX, node.transformCenterX) : new Vector2(node.leftInPixels, node.topInPixels);
-            nodes.push({
-                angleToPivot: Math.atan2(0,0),
-                initialRotation: node.rotation,
-                radiusToPivot: new Vector2().length() // TODO
-            })
+            nodeRotations.push(node.rotation)
         })
         this._rotation = {
             pivot,
             initialAngleToPivot,
-            nodes
+            nodeRotations
         }
         this.setState({isRotating: true});
     }
