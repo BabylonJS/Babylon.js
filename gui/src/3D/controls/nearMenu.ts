@@ -4,7 +4,6 @@ import { Nullable } from "babylonjs/types";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
 import { Observer } from "babylonjs/Misc/observable";
 import { Vector3 } from "babylonjs/Maths/math.vector";
@@ -25,7 +24,6 @@ export class NearMenu extends TouchHolographicMenu {
     private static PIN_ICON_FILENAME: string = "IconPin.png";
 
     private _pinButton: TouchHolographicButton;
-    private _pinMaterial: StandardMaterial;
     private _dragObserver: Nullable<
         Observer<{
             delta: Vector3;
@@ -53,11 +51,9 @@ export class NearMenu extends TouchHolographicMenu {
     public set isPinned(value: boolean) {
         this._isPinned = value;
 
-        if (this._isPinned) {
-            this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.4, 0.95);
+        if (value) {
             this._defaultBehavior.followBehaviorEnabled = false;
         } else {
-            this._pinMaterial.emissiveColor.copyFromFloats(0.08, 0.15, 0.55);
             this._defaultBehavior.followBehaviorEnabled = true;
         }
     }
@@ -67,13 +63,11 @@ export class NearMenu extends TouchHolographicMenu {
         control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
         control.parent = this;
         control._host = this._host;
-        control.onPointerClickObservable.add(() => (this.isPinned = !this.isPinned));
+        control.onToggleObservable.add((newState) => {this.isPinned = newState});
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
             control.scaling.scaleInPlace(TouchHolographicMenu.MENU_BUTTON_SCALE);
-            this._pinMaterial = control.backMaterial;
-            this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
 
             if (control.node) {
                 control.node.parent = parent;
