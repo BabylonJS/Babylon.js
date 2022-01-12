@@ -49,6 +49,12 @@ export class NearMenu extends TouchHolographicMenu {
     }
 
     public set isPinned(value: boolean) {
+        // Tell the pin button to toggle if this was called manually, for clean state control
+        if (this._pinButton.isToggled !== value) {
+            this._pinButton.isToggled = value;
+            return;
+        }
+
         this._isPinned = value;
 
         if (value) {
@@ -112,8 +118,7 @@ export class NearMenu extends TouchHolographicMenu {
 
         this._defaultBehavior = new DefaultBehavior();
         this._dragObserver = this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(() => {
-            // Tell the pin button to toggle on, for clean state control
-            this._pinButton.isToggled = true;
+            this.isPinned = true;
         });
 
         this.backPlateMargin = 1;
