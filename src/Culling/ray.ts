@@ -461,6 +461,7 @@ export class Ray {
      * @param world world matrix
      * @param view view matrix
      * @param projection projection matrix
+     * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
      * @returns this ray updated
      */
     public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, enableDistantPicking: boolean = false): Ray {
