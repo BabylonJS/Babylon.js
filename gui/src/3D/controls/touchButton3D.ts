@@ -6,6 +6,7 @@ import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
 import { TmpVectors } from "babylonjs/Maths/math.vector";
+import { Observable } from "babylonjs/Misc/observable";
 
 import { Button3D } from "./button3D";
 
@@ -18,6 +19,56 @@ export class TouchButton3D extends Button3D {
     // 'front' direction. If Vector3.Zero, there is no front and all directions of interaction are accepted
     private _collidableFrontDirection: Vector3;
     protected _isNearPressed = false;
+
+    private _isToggleButton = false;
+    private _toggleState = false;
+    private _toggleButtonCallback = (posVec: Vector3) => { this._onToggle(!this._toggleState, posVec); };
+
+    /**
+     * An event triggered when the button is toggled on. Only fired if 'isToggleButton' is true
+     */
+    public onToggleOnObservable = new Observable<Vector3>();
+
+    /**
+     * An event triggered when the button is toggled off. Only fired if 'isToggleButton' is true
+     */
+    public onToggleOffObservable = new Observable<Vector3>();
+
+    // If this TouchButton3D should be treated as a toggle button
+    public set isToggleButton(value: boolean) {
+        if (value === this._isToggleButton) {
+            return;
+        }
+
+        this._isToggleButton = value;
+
+        if (value) {
+            this.onPointerUpObservable.add(this._toggleButtonCallback);
+        }
+        else {
+            this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+
+            // Safety check, reset the button if it's toggled on but no longer a toggle button
+            if (this._toggleState) {
+                this._onToggle(false, Vector3.ZeroReadOnly);
+            }
+        }
+    }
+
+    public get isToggleButton() {
+        return this._isToggleButton;
+    }
+
+    protected _onToggle(newState: boolean, position: Vector3) {
+        this._toggleState = newState;
+
+        if (this._toggleState) {
+            this.onToggleOnObservable.notifyObservers(position);
+        }
+        else {
+            this.onToggleOffObservable.notifyObservers(position);
+        }
+    };
 
     /**
      * Creates a new touchable button
@@ -143,6 +194,11 @@ export class TouchButton3D extends Button3D {
      */
     public dispose() {
         super.dispose();
+
+        // Clean up toggle observables
+        this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+        this.onToggleOnObservable.clear();
+        this.onToggleOffObservable.clear();
 
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
