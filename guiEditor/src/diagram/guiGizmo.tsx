@@ -458,7 +458,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const scene = this.props.globalState.workbench._scene;
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (this.state.scalePointDragging !== -1) {
-            if (selectedGuiNodes.length == 1) {
+            if (selectedGuiNodes.length === 1) {
                 const node = selectedGuiNodes[0];
                 const inRTT = this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
                 const inNodeSpace = this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
@@ -587,7 +587,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const scene = this.props.globalState.workbench._scene;
         const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         let pivot: Vector2;
-        if (selectedGuiNodes.length == 1) {
+        if (selectedGuiNodes.length === 1) {
             const node = selectedGuiNodes[0];
             const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
             const rtt = this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
