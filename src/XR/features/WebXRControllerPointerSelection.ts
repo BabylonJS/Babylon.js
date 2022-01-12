@@ -188,6 +188,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // event support
             eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
             screenCoordinates?: { x: number; y: number };
+            pointerDownTriggered?: boolean;
             finalPointerUpTriggered?: boolean;
         };
     } = {};
@@ -524,6 +525,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     timer += this._scene.getEngine().getDeltaTime();
                     if (timer >= timeToSelect) {
                         this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                        // this pointerdown event is not setting the controllerData.pointerDownTriggered to avoid a pointerUp event when this feature is detached
                         downTriggered = true;
                         // pointer up right after down, if disable on touch out
                         if (this._options.disablePointerUpOnTouchOut) {
@@ -581,6 +583,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
             if (!downTriggered) {
                 this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                controllerData.pointerDownTriggered = true;
                 downTriggered = true;
                 if (this._options.disablePointerUpOnTouchOut) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
@@ -635,6 +638,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                                 this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                                 if (pressed) {
                                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                                    controllerData.pointerDownTriggered = true;
                                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
                                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                                 } else {
@@ -663,6 +667,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                    controllerData.pointerDownTriggered = true;
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                 }
@@ -719,17 +724,19 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             });
         }
 
+        if (!controllerData.finalPointerUpTriggered && controllerData.pointerDownTriggered) {
+            // Stay safe and fire a pointerup, in case it wasn't already triggered
+            const pointerEventInit: PointerEventInit = {
+                pointerId: controllerData.id,
+                pointerType: "xr",
+            };
+            this._xrSessionManager.runInXRFrame(() => {
+                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
+                this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+            });
+        }
         this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
             try {
-                if (!controllerData.finalPointerUpTriggered) {
-                    // Stay safe and fire a pointerup, in case it wasn't already triggered
-                    const pointerEventInit: PointerEventInit = {
-                        pointerId: controllerData.id,
-                        pointerType: "xr",
-                    };
-                    this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                    this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
-                }
 
                 controllerData.selectionMesh.dispose();
                 controllerData.laserPointer.dispose();
