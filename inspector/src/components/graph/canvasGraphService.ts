@@ -238,6 +238,7 @@ export class CanvasGraphService {
         this._position = null;
     }
 
+    prevPoint: [number, number] | undefined;
     /**
      * This method draws the data and sets up the appropriate scales.
      */
@@ -344,52 +345,42 @@ export class CanvasGraphService {
                 ctx.globalAlpha = backgroundLineAlpha;
             }
 
-            // If the min and max of the range are the same, draw a line on the middle of the range
-            if (Math.abs(valueMinMax.max - valueMinMax.min) < 0.001) {
-                const startIndex = this._datasetBounds.start;
-                const endIndex = this._datasetBounds.end - 1;
+            const smoothingFactor = 0.01;
+            for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
+                const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
-                const timestampStart = this.datasets.data.at(this.datasets.startingIndices.at(startIndex));
-                const timestampEnd = this.datasets.data.at(this.datasets.startingIndices.at(endIndex));
-
-                const xStart = this._getPixelForNumber(timestampStart, this._globalTimeMinMax, left, right - left, false);
-                const xEnd = this._getPixelForNumber(timestampEnd, this._globalTimeMinMax, left, right - left, false);
-
-                ctx.moveTo(xStart, (bottom + top) / 2);
-                ctx.lineTo(xEnd, (bottom + top) / 2);
-            } else {
-                let prevPoint: [number, number] | undefined;
-                for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
-                    const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
-
-                    if (idOffset >= numPoints) {
-                        continue;
-                    }
-
-                    const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
-                    const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
-                    const value = this.datasets.data.at(valueIndex);
-
-                    const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
-                    const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
-
-                    if (prevPoint === undefined) {
-                        prevPoint = [drawableTime, drawableValue];
-                    }
-
-                    const xDifference = drawableTime - prevPoint[0];
-                    const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
-                    if (skipLine) {
-                        ctx.fillStyle = noDataRectangleColor;
-                        ctx.fillRect(prevPoint[0], top, xDifference, bottom - top);
-                    } else {
-                        ctx.moveTo(prevPoint[0], prevPoint[1]);
-                        ctx.lineTo(drawableTime, drawableValue);
-                    }
-                    prevPoint[0] = drawableTime;
-                    prevPoint[1] = drawableValue;
+                if (idOffset >= numPoints) {
+                    continue;
                 }
+
+                const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
+                const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
+                const value = this.datasets.data.at(valueIndex);
+
+                const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
+                const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+
+                if (this.prevPoint === undefined) {
+                    this.prevPoint = [drawableTime, drawableValue];
+                }
+                const prevSmoothedValue = this.prevPoint[1];
+            
+                const smoothedDrawableValue = smoothingFactor * drawableValue + (1 - smoothingFactor) * prevSmoothedValue;
+                
+
+                const xDifference = drawableTime - this.prevPoint[0];
+                const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
+                if (skipLine) {
+                    ctx.fillStyle = noDataRectangleColor;
+                    ctx.fillRect(this.prevPoint[0], top, xDifference, bottom - top);
+                } else {
+                    ctx.moveTo(this.prevPoint[0], this.prevPoint[1]);
+                    ctx.lineTo(drawableTime, smoothedDrawableValue);
+                }
+                this.prevPoint[0] = drawableTime;
+                this.prevPoint[1] = smoothedDrawableValue;
             }
+
             ctx.stroke();
         });
 
@@ -702,7 +693,7 @@ export class CanvasGraphService {
     private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = max !== min ? (num - min) / (max - min) : 1;
+        let normalizedValue = Math.abs(max - min) > 0.001 ? (num - min) / (max - min) : 0.5;
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
