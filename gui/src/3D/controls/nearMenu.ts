@@ -63,6 +63,7 @@ export class NearMenu extends TouchHolographicMenu {
         control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
         control.parent = this;
         control._host = this._host;
+        control.isToggleButton = true;
         control.onToggleObservable.add((newState) => {this.isPinned = newState});
 
         if (this._host.utilityLayer) {
@@ -111,7 +112,8 @@ export class NearMenu extends TouchHolographicMenu {
 
         this._defaultBehavior = new DefaultBehavior();
         this._dragObserver = this._defaultBehavior.sixDofDragBehavior.onDragObservable.add(() => {
-            this.isPinned = true;
+            // Tell the pin button to toggle on, for clean state control
+            this._pinButton.isToggled = true;
         });
 
         this.backPlateMargin = 1;
