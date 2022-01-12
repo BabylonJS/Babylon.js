@@ -589,7 +589,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public useOctreeForPicking = true;
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
     public useOctreeForCollisions = true;
-
+    /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+    public enableDistantPicking = false;
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
      * @see https://doc.babylonjs.com/divingDeeper/cameras/layerMasksAndMultiCam
