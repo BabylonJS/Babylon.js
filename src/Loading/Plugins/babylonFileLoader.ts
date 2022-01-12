@@ -48,6 +48,7 @@ export class BabylonFileLoaderConfiguration {
 }
 
 var tempIndexContainer: {[key: string]: Node} = {};
+const tempMaterialIndexContainer: {[key: string]: Material} = {};
 
 var parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -126,6 +127,14 @@ var findParent = (parentId: any, scene: Scene) => {
 
     return parent;
 };
+
+const findMaterial = (materialId: any, scene: Scene) => {
+    if (typeof materialId !== "number") {
+        return scene.getLastMaterialById(materialId);
+    }
+
+    return tempMaterialIndexContainer[materialId];
+}
 
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     var container = new AssetContainer(scene);
@@ -232,6 +241,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMaterial = parsedData.materials[index];
                 var mat = Material.Parse(parsedMaterial, scene, rootUrl);
                 if (mat) {
+                    tempMaterialIndexContainer[parsedMaterial.uniqueId] = mat;
                     container.materials.push(mat);
                     mat._parentContainer = container;
                     log += (index === 0 ? "\n\tMaterials:" : "");
@@ -253,6 +263,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                 var parsedMultiMaterial = parsedData.multiMaterials[index];
                 var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                tempMaterialIndexContainer[parsedMultiMaterial.uniqueId] = mmat;
                 container.multiMaterials.push(mmat);
                 mmat._parentContainer = container;
 
@@ -417,6 +428,22 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 loadDetailLevels(scene, mesh);
             }
         }
+
+        // link multimats with materials
+        scene.multiMaterials.forEach(multimat => {
+                multimat._waitingSubMaterialsUniqueIds.forEach(subMaterial => {
+                    multimat.subMaterials.push(findMaterial(subMaterial, scene));
+                })
+                multimat._waitingSubMaterialsUniqueIds = [];
+        })
+
+        // link meshes with materials
+        scene.meshes.forEach(mesh => {
+            if (mesh._waitingMaterialId !== null) {
+                mesh.material = findMaterial(mesh._waitingMaterialId, scene);
+                mesh._waitingMaterialId = null;
+            }
+        });
 
         // link skeleton transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
@@ -613,6 +640,7 @@ SceneLoader.RegisterPlugin({
                                         }
                                         materialArray.push(parsedMultiMaterial.uniqueId || parsedMultiMaterial.id);
                                         var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                        tempMaterialIndexContainer[parsedMultiMaterial.uniqueId] = mmat;
                                         if (mmat) {
                                             materialFound = true;
                                             log += "\n\tMulti-Material " + mmat.toString(fullDetails);

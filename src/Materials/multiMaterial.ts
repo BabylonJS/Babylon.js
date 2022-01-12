@@ -14,6 +14,8 @@ import { RegisterClass } from '../Misc/typeStore';
  */
 export class MultiMaterial extends Material {
     private _subMaterials: Nullable<Material>[];
+    /** @hidden */
+    public _waitingSubMaterialsUniqueIds: string[] = [];
 
     /**
      * Gets or Sets the list of Materials used within the multi material.
@@ -200,8 +202,10 @@ export class MultiMaterial extends Material {
 
             if (subMat) {
                 serializationObject.materialsUniqueIds.push(subMat.uniqueId);
+                serializationObject.materials.push(subMat.id);
             } else {
                 serializationObject.materialsUniqueIds.push(null);
+                serializationObject.materials.push(null);
             }
         }
 
@@ -253,21 +257,10 @@ export class MultiMaterial extends Material {
             Tags.AddTagsTo(multiMaterial, parsedMultiMaterial.tags);
         }
 
-        const addSubMaterial = (subMatId: string, getMaterialFunction: (id: string) => Nullable<Material>) => {
-            if (subMatId) {
-                multiMaterial.subMaterials.push(getMaterialFunction(subMatId));
-            } else {
-                multiMaterial.subMaterials.push(null);
-            }
-        }
-
-        // If the same multimaterial is loaded twice, the 2nd multimaterial needs to reference the latest material by that id which
-        // is why this lookup should use getLastMaterialByID instead of getMaterialByID
         if (parsedMultiMaterial.materialsUniqueIds) {
-            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: any) => addSubMaterial(subMatId, (uniqueId) => scene.getLastMaterialByUniqueId(uniqueId)));
+            multiMaterial._waitingSubMaterialsUniqueIds = parsedMultiMaterial.materialsUniqueIds;
         } else {
-            parsedMultiMaterial.materials.forEach((subMatId: any) => addSubMaterial(subMatId, (id) => scene.getLastMaterialById(id)));
-            
+            parsedMultiMaterial.materialIds.forEach((subMatId: string) => multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId)));
         }
 
         return multiMaterial;

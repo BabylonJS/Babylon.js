@@ -2562,34 +2562,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Sets the mesh material by the material or multiMaterial `uniqueId` property
-     * @param uniqueId is a string identifying the material or the multiMaterial
-     * @returns the current mesh
-     */
-    public setMaterialByUniqueId(uniqueId: string): Mesh {
-        const materials = this.getScene().materials;
-        let index: number;
-        for (index = materials.length - 1; index > -1; index--) {
-            if (materials[index]._loadedUniqueId === uniqueId) {
-                this.material = materials[index];
-                return this;
-            }
-        }
-
-        // Multi
-        var multiMaterials = this.getScene().multiMaterials;
-        for (index = multiMaterials.length - 1; index > -1; index--) {
-            if (multiMaterials[index]._loadedUniqueId === uniqueId) {
-                this.material = multiMaterials[index];
-                return this;
-            }
-        }
-        return this;
-    }
-
-
-
-    /**
      * Returns as a new array populated with the mesh material and/or skeleton, if any.
      * @returns an array of IAnimatable
      */
@@ -3515,10 +3487,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this.material) {
             if (!this.material.doNotSerialize) {
                 serializationObject.materialUniqueId = this.material.uniqueId;
+                serializationObject.materialId = this.material.id; // back compat
             }
         } else {
             this.material = null;
             serializationObject.materialUniqueId = this._scene.defaultMaterial.uniqueId;
+            serializationObject.materialId = this._scene.defaultMaterial.id; // back compat
         }
 
         // Morph targets
@@ -3898,14 +3872,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Material
-        const materialUniqueId = parsedMesh.materialUniqueId;
-        const materialId = parsedMesh.materialId;
-        if (materialUniqueId) {
-            mesh.setMaterialByUniqueId(materialUniqueId);
-        }  else if (materialId) {
-            mesh.setMaterialById(materialId);
-        } else {
-            mesh.material = null;
+        if (parsedMesh.materialUniqueId) {
+            mesh._waitingMaterialId = parsedMesh.materialUniqueId;
+        }
+        else if (parsedMesh.materialId) {
+            mesh._waitingMaterialId = parsedMesh.materialId;
         }
 
         // Morph targets
