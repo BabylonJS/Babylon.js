@@ -29,36 +29,6 @@ export class TouchButton3D extends Button3D {
      */
     public onToggleObservable = new Observable<boolean>();
 
-    // If this TouchButton3D should be treated as a toggle button
-    public set isToggleButton(value: boolean) {
-        if (value === this._isToggleButton) {
-            return;
-        }
-
-        this._isToggleButton = value;
-
-        if (value) {
-            this.onPointerUpObservable.add(this._toggleButtonCallback);
-        }
-        else {
-            this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
-
-            // Safety check, reset the button if it's toggled on but no longer a toggle button
-            if (this._toggleState) {
-                this._onToggle(false);
-            }
-        }
-    }
-
-    public get isToggleButton() {
-        return this._isToggleButton;
-    }
-
-    protected _onToggle(newState: boolean) {
-        this._toggleState = newState;
-        this.onToggleObservable.notifyObservers(newState);
-    };
-
     /**
      * Creates a new touchable button
      * @param name defines the control name
@@ -126,6 +96,51 @@ export class TouchButton3D extends Button3D {
 
         this.collidableFrontDirection = collisionMesh.forward;
     }
+
+    /**
+     * Setter for if this TouchButton3D should be treated as a toggle button
+     * @param value If this TouchHolographicButton should act like a toggle button
+     */
+    public set isToggleButton(value: boolean) {
+        if (value === this._isToggleButton) {
+            return;
+        }
+
+        this._isToggleButton = value;
+
+        if (value) {
+            this.onPointerUpObservable.add(this._toggleButtonCallback);
+        }
+        else {
+            this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+
+            // Safety check, reset the button if it's toggled on but no longer a toggle button
+            if (this._toggleState) {
+                this._onToggle(false);
+            }
+        }
+    }
+    public get isToggleButton() {
+        return this._isToggleButton;
+    }
+
+    /**
+     * A public entrypoint to set the toggle state of the TouchHolographicButton. Only works if 'isToggleButton' is true
+     * @param newState The new state to set the TouchHolographicButton's toggle state to
+     */
+    public set isToggled(newState: boolean) {
+        if (this._isToggleButton && this._toggleState !== newState) {
+            this._onToggle(newState);
+        }
+    }
+    public get isToggled() {
+        return this._toggleState;
+    }
+
+    protected _onToggle(newState: boolean) {
+        this._toggleState = newState;
+        this.onToggleObservable.notifyObservers(newState);
+    };
 
     // Returns true if the collidable is in front of the button, or if the button has no front direction
     private _isInteractionInFrontOfButton(collidablePos: Vector3) {
