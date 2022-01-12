@@ -39,7 +39,7 @@ export class BoundingBoxGizmo extends Gizmo {
 
     private _lineBoundingBox: AbstractMesh;
     private _rotateHandlesParent: AbstractMesh;
-    private _scaleBoxesParent: AbstractMesh;
+    private _scaleHandlesParent: AbstractMesh;
     private _boundingDimensions = new Vector3(1, 1, 1);
     private _renderObserver: Nullable<Observer<Scene>> = null;
     private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
@@ -62,16 +62,16 @@ export class BoundingBoxGizmo extends Gizmo {
      */
     public rotationHandleSize = 0.05;
     /**
-     * The size of the scale boxes attached to the bounding box (Default: 0.1)
+     * The size of the scale handles attached to the bounding box (Default: 0.1)
      */
-    public scaleBoxSize = 0.1;
+    public scaleHandleSize = 0.002;
     /**
-     * If set, the rotation handles and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
+     * If set, the rotation handles and scale handles will increase in size based on the distance away from the camera to have a consistent screen size (Default: false)
      * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
      */
     public fixedDragMeshScreenSize = false;
     /**
-     * If set, the rotation handle and scale boxes will increase in size based on the size of the bounding box
+     * If set, the rotation handle and scale handles will increase in size based on the size of the bounding box
      * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
      */
     public fixedDragMeshBoundsSize = false;
@@ -80,17 +80,17 @@ export class BoundingBoxGizmo extends Gizmo {
      */
     public fixedDragMeshScreenSizeDistanceFactor = 10;
     /**
-     * Fired when a rotation handle or scale box is dragged
+     * Fired when a rotation handle or scale handle is dragged
      */
     public onDragStartObservable = new Observable<{}>();
     /**
-     * Fired when a scale box is dragged
+     * Fired when a scale handle is dragged
      */
-    public onScaleBoxDragObservable = new Observable<{}>();
+    public onScaleHandleDragObservable = new Observable<{}>();
     /**
-      * Fired when a scale box drag is ended
+      * Fired when a scale handle drag is ended
      */
-    public onScaleBoxDragEndObservable = new Observable<{}>();
+    public onScaleHandleDragEndObservable = new Observable<{}>();
     /**
      * Fired when a rotation handle is dragged
      */
@@ -115,7 +115,7 @@ export class BoundingBoxGizmo extends Gizmo {
     public set axisFactor(factor: Vector3) {
         this._axisFactor = factor;
         // update scale cube visibility
-        var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
+        var scaleHandles = this._scaleHandlesParent.getChildMeshes();
         var index = 0;
         for (var i = 0; i < 3; i++) {
             for (var j = 0; j < 3; j++) {
@@ -124,10 +124,10 @@ export class BoundingBoxGizmo extends Gizmo {
                     if (zeroAxisCount === 1 || zeroAxisCount === 3) {
                         continue;
                     }
-                    if (scaleBoxes[index]) {
+                    if (scaleHandles[index]) {
                         let dragAxis = new Vector3(i - 1, j - 1, k - 1);
                         dragAxis.multiplyInPlace(this._axisFactor);
-                        scaleBoxes[index].setEnabled(dragAxis.lengthSquared() > Epsilon);
+                        scaleHandles[index].setEnabled(dragAxis.lengthSquared() > Epsilon);
                     }
                     index++;
                 }
@@ -260,7 +260,7 @@ export class BoundingBoxGizmo extends Gizmo {
                         this.updateBoundingBox();
                     } else if (this.fixedDragMeshScreenSize || this.fixedDragMeshBoundsSize) {
                         this._updateRotationHandles();
-                        //this._updateScaleBoxes();
+                        this._updatescaleHandles();
                     }
 
                     // If drag mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
@@ -273,97 +273,54 @@ export class BoundingBoxGizmo extends Gizmo {
             });
 
         // Create scale cubes
-        this._scaleBoxesParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
-        this._scaleBoxesParent.rotationQuaternion = new Quaternion();
-        /* for (var i = 0; i < 3; i++) {
-            for (var j = 0; j < 3; j++) {
-                for (var k = 0; k < 3; k++) {
-                    // create box for relevant axis
-                    let zeroAxisCount = ((i === 1) ? 1 : 0) + ((j === 1) ? 1 : 0) + ((k === 1) ? 1 : 0);
-                    if (zeroAxisCount === 1 || zeroAxisCount === 3) {
-                        continue;
+        this._scaleHandlesParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+        this._scaleHandlesParent.rotationQuaternion = new Quaternion();
+
+        SceneLoader.ImportMeshAsync(
+            undefined,
+            BoundingBoxGizmo.MODEL_BASE_URL,
+            BoundingBoxGizmo.SCALE_HANDLE_MODEL_FILENAME,
+            gizmoLayer.utilityLayerScene)
+            .then((result) => {
+                if (!!result.meshes[1]) {
+                    for (var i = 0; i < 2; i++) {
+                        for (var j = 0; j < 2; j++) {
+                            for (var k = 0; k < 2; k++) {
+                                result.meshes[1].scaling.scaleInPlace(this.scaleHandleSize); // scale mesh before cloning
+                                let scaleHandleMesh = result.meshes[1].clone(`scaleHandle${i}`, this._scaleHandlesParent);
+                                scaleHandleMesh!.isNearGrabbable = true;
+
+                                this._createScaleHandleDragBehaviour(scaleHandleMesh!, i, j, k);
+                            }
+                        }
+                    }
+                    this._rootMesh.addChild(this._scaleHandlesParent);
+                }
+
+                // Update bounding box positions
+                this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(() => {
+                    // Only update the bounding box if scaling has changed
+                    if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
+                        this.updateBoundingBox();
+                    } else if (this.fixedDragMeshScreenSize || this.fixedDragMeshBoundsSize) {
+                        this._updateRotationHandles();
+                        this._updatescaleHandles();
                     }
 
-                    let box = CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
-                    box.material = this.coloredMaterial;
-                    box.metadata = zeroAxisCount === 2; // None homogenous scale handle
-                    box.isNearGrabbable = true;
-
-                    // Dragging logic
-                    let dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
-                    var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
-                    _dragBehavior.updateDragPlane = false;
-                    _dragBehavior.moveAttached = false;
-                    box.addBehavior(_dragBehavior);
-                    _dragBehavior.onDragObservable.add((event) => {
-                        this.onScaleBoxDragObservable.notifyObservers({});
-                        if (this.attachedMesh) {
-                            var originalParent = this.attachedMesh.parent;
-                            if (originalParent && ((originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
-                                Logger.Warn("BoundingBoxGizmo controls are not supported on child meshes with non-uniform parent scaling");
-                                return;
-                            }
-                            PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
-                            var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
-                            var deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
-                            if (zeroAxisCount === 2) {
-                                // scale on 1 axis when using the anchor box in the face middle
-                                deltaScale.x *= Math.abs(dragAxis.x);
-                                deltaScale.y *= Math.abs(dragAxis.y);
-                                deltaScale.z *= Math.abs(dragAxis.z);
-                            }
-                            deltaScale.scaleInPlace(this._scaleDragSpeed);
-                            deltaScale.multiplyInPlace(this._axisFactor);
-                            this.updateBoundingBox();
-                            if (this.scalePivot) {
-                                this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
-                                // Move anchor to desired pivot point (Bottom left corner + dimension/2)
-                                this._boundingDimensions.scaleToRef(0.5, this._tmpVector);
-                                Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
-                                this._anchorMesh.position.subtractInPlace(this._tmpVector);
-                                this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
-                                Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
-                                this._anchorMesh.position.addInPlace(this._tmpVector);
-                            } else {
-                                // Scale from the position of the opposite corner
-                                box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
-                                this._anchorMesh.position.subtractInPlace(this._tmpVector);
-                            }
-
-                            this._anchorMesh.addChild(this.attachedMesh);
-                            this._anchorMesh.scaling.addInPlace(deltaScale);
-                            if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
-                                this._anchorMesh.scaling.subtractInPlace(deltaScale);
-                            }
-                            this._anchorMesh.removeChild(this.attachedMesh);
-                            this.attachedMesh.setParent(originalParent);
-                            PivotTools._RestorePivotPoint(this.attachedMesh);
-                        }
-                        this._updateDummy();
-                    });
-
-                    // Selection/deselection
-                    _dragBehavior.onDragStartObservable.add(() => {
-                        this.onDragStartObservable.notifyObservers({});
-                        this._selectNode(box);
-                    });
-                    _dragBehavior.onDragEndObservable.add(() => {
-                        this.onScaleBoxDragEndObservable.notifyObservers({});
-                        this._selectNode(null);
-                        this._updateDummy();
-                    });
-
-                    this._scaleBoxesParent.addChild(box);
-                }
-            }
-        }
-        this._rootMesh.addChild(this._scaleBoxesParent); */
+                    // If drag mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
+                    if (this._dragMesh && this.attachedMesh && this.pointerDragBehavior.dragging) {
+                        this._lineBoundingBox.position.rotateByQuaternionToRef(this._rootMesh.rotationQuaternion!, this._tmpVector);
+                        this.attachedMesh.setAbsolutePosition(this._dragMesh.position.add(this._tmpVector.scale(-1)));
+                    }
+                });
+                this.updateBoundingBox();
+            });
 
         // Hover color change
         /* var pointerIds = new Array<AbstractMesh>();
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (!pointerIds[(<PointerEvent>pointerInfo.event).pointerId]) {
-                this._rotateHandlesParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes()).forEach((mesh) => {
+                this._rotateHandlesParent.getChildMeshes().concat(this._scaleHandlesParent.getChildMeshes()).forEach((mesh) => {
                     if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
                         pointerIds[(<PointerEvent>pointerInfo.event).pointerId] = mesh;
                         mesh.material = this.hoverColoredMaterial;
@@ -458,6 +415,74 @@ export class BoundingBoxGizmo extends Gizmo {
         return _dragBehavior;
     }
 
+    protected _createScaleHandleDragBehaviour(scaleHandleMesh: AbstractMesh, i: number, j: number, k: number, zeroAxisCount?: number) {
+        // Dragging logic
+        let dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
+        var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
+        _dragBehavior.updateDragPlane = false;
+        _dragBehavior.moveAttached = false;
+        scaleHandleMesh.addBehavior(_dragBehavior);
+        _dragBehavior.onDragObservable.add((event) => {
+            this.onScaleHandleDragObservable.notifyObservers({});
+            if (this.attachedMesh) {
+                var originalParent = this.attachedMesh.parent;
+                if (originalParent && ((originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
+                    Logger.Warn("BoundingBoxGizmo controls are not supported on child meshes with non-uniform parent scaling");
+                    return;
+                }
+                PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
+                var relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+                var deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
+                if (zeroAxisCount === 2) {
+                    // scale on 1 axis when using the anchor box in the face middle
+                    deltaScale.x *= Math.abs(dragAxis.x);
+                    deltaScale.y *= Math.abs(dragAxis.y);
+                    deltaScale.z *= Math.abs(dragAxis.z);
+                }
+                deltaScale.scaleInPlace(this._scaleDragSpeed);
+                deltaScale.multiplyInPlace(this._axisFactor);
+                this.updateBoundingBox();
+                if (this.scalePivot) {
+                    this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
+                    // Move anchor to desired pivot point (Bottom left corner + dimension/2)
+                    this._boundingDimensions.scaleToRef(0.5, this._tmpVector);
+                    Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
+                    this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                    this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
+                    Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
+                    this._anchorMesh.position.addInPlace(this._tmpVector);
+                } else {
+                    // Scale from the position of the opposite corner
+                    scaleHandleMesh.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
+                    this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                }
+
+                this._anchorMesh.addChild(this.attachedMesh);
+                this._anchorMesh.scaling.addInPlace(deltaScale);
+                if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
+                    this._anchorMesh.scaling.subtractInPlace(deltaScale);
+                }
+                this._anchorMesh.removeChild(this.attachedMesh);
+                this.attachedMesh.setParent(originalParent);
+                PivotTools._RestorePivotPoint(this.attachedMesh);
+            }
+            this._updateDummy();
+        });
+
+        // Selection/deselection
+        _dragBehavior.onDragStartObservable.add(() => {
+            this.onDragStartObservable.notifyObservers({});
+            this._selectNode(scaleHandleMesh);
+        });
+        _dragBehavior.onDragEndObservable.add(() => {
+            this.onScaleHandleDragEndObservable.notifyObservers({});
+            this._selectNode(null);
+            this._updateDummy();
+        });
+
+        return _dragBehavior;
+    }
+
     protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {
             // Reset anchor mesh to match attached mesh's scale
@@ -482,7 +507,7 @@ export class BoundingBoxGizmo extends Gizmo {
 
     private _selectNode(selectedMesh: Nullable<AbstractMesh>) {
         this._rotateHandlesParent.getChildMeshes()
-            .concat(this._scaleBoxesParent.getChildMeshes()).forEach((m) => {
+            .concat(this._scaleHandlesParent.getChildMeshes()).forEach((m) => {
                 m.isVisible = (!selectedMesh || m == selectedMesh);
             });
     }
@@ -532,7 +557,7 @@ export class BoundingBoxGizmo extends Gizmo {
             this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
             this._lineBoundingBox.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
             this._rotateHandlesParent.position.copyFrom(this._lineBoundingBox.position);
-            this._scaleBoxesParent.position.copyFrom(this._lineBoundingBox.position);
+            this._scaleHandlesParent.position.copyFrom(this._lineBoundingBox.position);
             this._lineBoundingBox.computeWorldMatrix();
             this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
 
@@ -550,7 +575,7 @@ export class BoundingBoxGizmo extends Gizmo {
         }
 
         this._updateRotationHandles();
-        //this._updateScaleBoxes();
+        this._updatescaleHandles();
 
         if (this.attachedMesh) {
             this._existingMeshScale.copyFrom(this.attachedMesh.scaling);
@@ -568,8 +593,7 @@ export class BoundingBoxGizmo extends Gizmo {
                         if (i == 0) {
                             rotateHandles[index].position.set(this._boundingDimensions.x / 2, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
                             rotateHandles[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            console.log(i, rotateHandles[index].rotation)
-                            rotateHandles[index].rotate(Vector3.Forward(), Math.PI / 2);
+                            // rotateHandles[index].rotate(Vector3.Forward(), 60);
                         }
                         if (i == 1) {
                             rotateHandles[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y / 2, this._boundingDimensions.z * k);
@@ -578,7 +602,7 @@ export class BoundingBoxGizmo extends Gizmo {
                         if (i == 2) {
                             rotateHandles[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * k, this._boundingDimensions.z / 2);
                             rotateHandles[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                            rotateHandles[index].rotate(Vector3.Right(), Math.PI / 2);
+                            // rotateHandles[index].rotate(Vector3.Left(), Math.PI / 2);
                         }
                         if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
                             rotateHandles[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
@@ -597,30 +621,32 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _updateScaleBoxes() {
-        var scaleBoxes = this._scaleBoxesParent.getChildMeshes();
+    private _updatescaleHandles() {
+        var scaleHandles = this._scaleHandlesParent.getChildMeshes();
         var index = 0;
-        for (var i = 0; i < 3; i++) {
-            for (var j = 0; j < 3; j++) {
-                for (var k = 0; k < 3; k++) {
-                    let zeroAxisCount = ((i === 1) ? 1 : 0) + ((j === 1) ? 1 : 0) + ((k === 1) ? 1 : 0);
-                    if (zeroAxisCount === 1 || zeroAxisCount === 3) {
-                        continue;
-                    }
-                    if (scaleBoxes[index]) {
-                        scaleBoxes[index].position.set(this._boundingDimensions.x * (i / 2), this._boundingDimensions.y * (j / 2), this._boundingDimensions.z * (k / 2));
-                        scaleBoxes[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-                        if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
-                            scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
-                            var distanceFromCamera = this.scaleBoxSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
-                            scaleBoxes[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
-                        } else if (this.fixedDragMeshBoundsSize) {
-                            scaleBoxes[index].scaling.set(this.scaleBoxSize * this._boundingDimensions.x, this.scaleBoxSize * this._boundingDimensions.y, this.scaleBoxSize * this._boundingDimensions.z);
-                        } else {
-                            scaleBoxes[index].scaling.set(this.scaleBoxSize, this.scaleBoxSize, this.scaleBoxSize);
+        if (!!scaleHandles.length) {
+            for (var i = 0; i < 2; i++) {
+                for (var j = 0; j < 2; j++) {
+                    for (var k = 0; k < 2; k++) {
+                        if (scaleHandles[index]) {
+                            scaleHandles[index].position.set(this._boundingDimensions.x * (i), this._boundingDimensions.y * (j), this._boundingDimensions.z * (k));
+
+                            scaleHandles[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                            if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
+                                scaleHandles[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
+                                var distanceFromCamera = this.scaleHandleSize * this._tmpVector.length() / this.fixedDragMeshScreenSizeDistanceFactor;
+                                scaleHandles[index].scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                            } else if (this.fixedDragMeshBoundsSize) {
+                                scaleHandles[index].scaling.set(this.scaleHandleSize * this._boundingDimensions.x, this.scaleHandleSize * this._boundingDimensions.y, this.scaleHandleSize * this._boundingDimensions.z);
+                            } else {
+                                scaleHandles[index].scaling = new Vector3(this.scaleHandleSize, this.scaleHandleSize, this.scaleHandleSize);
+                            }
                         }
+                        // scale the handles to match design tearsheet
+                        scaleHandles[index].scaling = new Vector3((i ? 1 : -1) * this.scaleHandleSize, (j ? 1 : -1) * this.scaleHandleSize, (k ? 1 : -1) * this.scaleHandleSize);
+                        
+                        index++;
                     }
-                    index++;
                 }
             }
         }
@@ -648,7 +674,7 @@ export class BoundingBoxGizmo extends Gizmo {
      * @param homogeneousScaling defines if scaling should only be homogeneous
      */
     public setEnabledScaling(enable: boolean, homogeneousScaling = false) {
-        this._scaleBoxesParent.getChildMeshes().forEach((m, i) => {
+        this._scaleHandlesParent.getChildMeshes().forEach((m, i) => {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
             if (homogeneousScaling && m.metadata === true) {
@@ -685,7 +711,7 @@ export class BoundingBoxGizmo extends Gizmo {
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
         this._lineBoundingBox.dispose();
         this._rotateHandlesParent.dispose();
-        this._scaleBoxesParent.dispose();
+        this._scaleHandlesParent.dispose();
         if (this._dragMesh) {
             this._dragMesh.dispose();
         }
