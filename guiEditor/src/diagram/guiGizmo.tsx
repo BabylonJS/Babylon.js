@@ -79,12 +79,21 @@ const lines = [
     [6, 8],
 ];
 
+// load in custom cursor icons
+const cursorScaleDiagonaLeft: string = `url("${require("../../public/imgs/cursor_scaleDiagonalLeft.svg")}") 12 12, nwse-resize`;
+const cursorScaleDiagonalRight: string = `url("${require("../../public/imgs/cursor_scaleDiagonalRight.svg")}") 12 12, nesw-resize`;
+const cursorScaleHorizontal: string = `url("${require("../../public/imgs/cursor_scaleHorizontal.svg")}") 12 12, pointer`;
+const cursorScaleVertical: string = `url("${require("../../public/imgs/cursor_scaleVertical.svg")}") 12 12, ns-resize`;
+const scalePointCursors = [cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft, cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft];
+const rotateCursors : string[] = [];
+for(let idx = 0; idx < 8; idx++) {
+    rotateCursors.push(`url("${require(`../../public/imgs/cursor_rotate${idx}.svg`)}") 12 12, pointer`);
+}
 // used to calculate which cursor icon we should display for the scalepoints
-const scalePointCursors = ["ew-resize", "nwse-resize", "ns-resize", "nesw-resize", "ew-resize", "nwse-resize", "ns-resize", "nesw-resize"];
 const defaultScalePointRotations = [
-    225, 270, 315,
-    180, 0, 0,
-    135, 90, 45,
+    315, 0, 45,
+    270, 0, 90,
+    225, 180, 135,
 ]
 
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
@@ -645,10 +654,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                     const increment = 45;
                     let cursorIndex = Math.round(angleAdjusted / increment) % 8;
                     const cursor = scalePointCursors[cursorIndex];
-
                     const rotateClickAreaStyle = {
                         top: 5 + 7 * scalePoint.verticalPosition,
-                        left: 5 + 7 * scalePoint.horizontalPosition
+                        left: 5 + 7 * scalePoint.horizontalPosition,
+                        cursor: rotateCursors[cursorIndex]
                     }
                     const scaleClickAreaStyle = {
                         top: 5 - 5 * scalePoint.verticalPosition,
@@ -661,7 +670,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                                 className="rotate-click-area"
                                 onPointerDown={() => this._beginRotate()}
                                 style={rotateClickAreaStyle}
-                            ></div>
+                            >
+                            </div>
                             <div
                             className="scale-click-area"
                             draggable={true}
@@ -682,7 +692,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                                 }}
                                 onPointerUp={this._onUp}
                                 style={{cursor}}
-                            ></div>
+                            >
+                            </div>
                         </div>
                     );
                 })}
