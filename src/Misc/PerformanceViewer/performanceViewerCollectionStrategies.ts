@@ -38,7 +38,7 @@ export class PerfCollectionStrategy {
         return (scene) => {
             const engine = scene.getEngine();
             return {
-                id: "fps",
+                id: "FPS",
                 getData: () => engine.getFps(),
                 dispose: defaultDisposeImpl,
             };
@@ -57,7 +57,7 @@ export class PerfCollectionStrategy {
                 value = update.cpuUtilization;
             });
             return {
-                id: "cpu utilization",
+                id: "CPU utilization",
                 getData: () => value,
                 dispose: () => scene.onComputePressureChanged.remove(computePressureObserver),
             };
@@ -71,7 +71,7 @@ export class PerfCollectionStrategy {
     public static TotalMeshesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "total meshes",
+                id: "Total meshes",
                 getData: () => scene.meshes.length,
                 dispose: defaultDisposeImpl,
             };
@@ -85,7 +85,7 @@ export class PerfCollectionStrategy {
     public static ActiveMeshesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "active meshes",
+                id: "Active meshes",
                 getData: () => scene.getActiveMeshes().length,
                 dispose: defaultDisposeImpl,
             };
@@ -99,7 +99,7 @@ export class PerfCollectionStrategy {
     public static ActiveIndicesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "active indices",
+                id: "Active indices",
                 getData: () => scene.getActiveIndices(),
                 dispose: defaultDisposeImpl,
             };
@@ -113,7 +113,7 @@ export class PerfCollectionStrategy {
     public static ActiveFacesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "active faces",
+                id: "Active faces",
                 getData: () => scene.getActiveIndices() / 3,
                 dispose: defaultDisposeImpl,
             };
@@ -127,7 +127,7 @@ export class PerfCollectionStrategy {
     public static ActiveBonesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "active bones",
+                id: "Active bones",
                 getData: () => scene.getActiveBones(),
                 dispose: defaultDisposeImpl,
             };
@@ -141,7 +141,7 @@ export class PerfCollectionStrategy {
     public static ActiveParticlesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "active particles",
+                id: "Active particles",
                 getData: () => scene.getActiveParticles(),
                 dispose: defaultDisposeImpl,
             };
@@ -164,7 +164,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "draw calls",
+                id: "Draw calls",
                 getData: () => drawCalls,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
@@ -181,7 +181,7 @@ export class PerfCollectionStrategy {
     public static TotalLightsStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "total lights",
+                id: "Total lights",
                 getData: () => scene.lights.length,
                 dispose: defaultDisposeImpl,
             };
@@ -195,7 +195,7 @@ export class PerfCollectionStrategy {
     public static TotalVerticesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "total vertices",
+                id: "Total vertices",
                 getData: () => scene.getTotalVertices(),
                 dispose: defaultDisposeImpl,
             };
@@ -209,7 +209,7 @@ export class PerfCollectionStrategy {
     public static TotalMaterialsStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "total materials",
+                id: "Total materials",
                 getData: () => scene.materials.length,
                 dispose: defaultDisposeImpl,
             };
@@ -223,7 +223,7 @@ export class PerfCollectionStrategy {
     public static TotalTexturesStrategy(): PerfStrategyInitialization {
         return (scene) => {
             return {
-                id: "total textures",
+                id: "Total textures",
                 getData: () => scene.textures.length,
                 dispose: defaultDisposeImpl,
             };
@@ -247,7 +247,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "absolute fps",
+                id: "Absolute FPS",
                 getData: () => 1000.0 / timeTaken,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
@@ -274,7 +274,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "meshes selection time",
+                id: "Meshes Selection",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeActiveMeshesEvaluationObservable.remove(onBeforeActiveMeshesObserver);
@@ -301,7 +301,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "render targets time",
+                id: "Render Targets",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeRenderTargetsRenderObservable.remove(onBeforeRenderTargetsObserver);
@@ -328,7 +328,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "particles time",
+                id: "Particles",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeParticlesRenderingObservable.remove(onBeforeParticlesObserver);
@@ -355,7 +355,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "sprites time",
+                id: "Sprites",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeSpritesRenderingObservable?.remove(onBeforeSpritesObserver);
@@ -382,7 +382,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "animations time",
+                id: "Animations",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
@@ -409,7 +409,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "physics time",
+                id: "Physics",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforePhysicsObservable?.remove(onBeforePhysicsObserver);
@@ -436,7 +436,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "render time",
+                id: "Render",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeDrawPhaseObservable.remove(onBeforeDrawPhaseObserver);
@@ -463,7 +463,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "total frame time",
+                id: "Frame Total",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
@@ -491,7 +491,7 @@ export class PerfCollectionStrategy {
             });
 
             return {
-                id: "inter-frame time",
+                id: "Inter-frame",
                 getData: () => timeTaken,
                 dispose: () => {
                     scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
@@ -510,7 +510,7 @@ export class PerfCollectionStrategy {
             const engineInstrumentation = new EngineInstrumentation(scene.getEngine());
             engineInstrumentation.captureGPUFrameTime = true;
             return {
-                id: "gpu frame time",
+                id: "GPU frame time",
                 getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.current * 0.000001, 0),
                 dispose: () => {
                     engineInstrumentation.dispose();

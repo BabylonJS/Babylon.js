@@ -1,7 +1,7 @@
 import * as WebGPUConstants from './webgpuConstants';
 import { Constants } from '../constants';
-import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { TextureSampler } from "../../Materials/Textures/textureSampler";
+import { Nullable } from "../../types";
 
 const filterToBits = [
     0 | 0 << 1 | 0 << 2, // not used
@@ -244,9 +244,32 @@ export class WebGPUCacheSampler {
         return {
             ...filterDescriptor,
             ...this._GetSamplerWrappingDescriptor(sampler),
-            compare: sampler._comparisonFunction ? WebGPUTextureHelper.GetCompareFunction(sampler._comparisonFunction) : undefined,
+            compare: sampler._comparisonFunction ? WebGPUCacheSampler.GetCompareFunction(sampler._comparisonFunction) : undefined,
             maxAnisotropy: filterDescriptor.anisotropyEnabled ? anisotropy : 1,
         };
+    }
+
+    public static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
+        switch (compareFunction) {
+            case Constants.ALWAYS:
+                return WebGPUConstants.CompareFunction.Always;
+            case Constants.EQUAL:
+                return WebGPUConstants.CompareFunction.Equal;
+            case Constants.GREATER:
+                return WebGPUConstants.CompareFunction.Greater;
+            case Constants.GEQUAL:
+                return WebGPUConstants.CompareFunction.GreaterEqual;
+            case Constants.LESS:
+                return WebGPUConstants.CompareFunction.Less;
+            case Constants.LEQUAL:
+                return WebGPUConstants.CompareFunction.LessEqual;
+            case Constants.NEVER:
+                return WebGPUConstants.CompareFunction.Never;
+            case Constants.NOTEQUAL:
+                return WebGPUConstants.CompareFunction.NotEqual;
+            default:
+                return WebGPUConstants.CompareFunction.Less;
+        }
     }
 
     public getSampler(sampler: TextureSampler, bypassCache = false, hash = 0): GPUSampler {

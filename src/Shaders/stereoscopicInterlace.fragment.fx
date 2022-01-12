@@ -5,6 +5,9 @@ uniform sampler2D camASampler;
 uniform sampler2D textureSampler;
 uniform vec2 stepSize;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     bool useCamA;

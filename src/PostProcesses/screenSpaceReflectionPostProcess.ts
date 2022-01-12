@@ -65,6 +65,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     private _enableSmoothReflections: boolean = false;
     private _reflectionSamples: number = 64;
     private _smoothSteps: number = 5;
+    private _isSceneRightHanded: boolean;
 
     /**
      * Gets a string identifying the name of the class
@@ -160,6 +161,8 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
             effect.setFloat("stepSize", this.step);
             effect.setFloat("roughnessFactor", this.roughnessFactor);
         };
+
+        this._isSceneRightHanded = scene.useRightHandedSystem;
     }
 
     /**
@@ -237,6 +240,9 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         }
         if (this._enableSmoothReflections) {
             defines.push("#define ENABLE_SMOOTH_REFLECTIONS");
+        }
+        if (this._isSceneRightHanded) {
+            defines.push("#define RIGHT_HANDED_SCENE");
         }
 
         defines.push("#define REFLECTION_SAMPLES " + (this._reflectionSamples >> 0));

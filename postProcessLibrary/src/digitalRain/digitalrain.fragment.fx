@@ -17,6 +17,9 @@ float getLuminance(vec3 color)
 }
 
 // Main functions.
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) 
 {
     float caracterSize = digitalRainFontInfos.x;

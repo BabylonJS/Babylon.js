@@ -1,10 +1,10 @@
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType } from "../InputDevices/deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "../Interfaces/inputInterfaces";
+import { DeviceType } from "./deviceEnums";
+import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 /** @hidden */
-export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
+export class NativeDeviceInputSystem implements IDeviceInputSystem {
     public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onInputChanged = (deviceEvent: IDeviceEvent) => { };
@@ -36,13 +36,6 @@ export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
         };
     }
 
-    /**
-     * Configures events to work with an engine's active element
-     */
-    public configureEvents(): void {
-        // Do nothing
-    }
-
     // Public functions
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
@@ -60,7 +53,7 @@ export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param deviceType Type of device to check for
      * @returns bool with status of device's existence
      */
-    public isDeviceAvailable(deviceType: DeviceType) {
+    public isDeviceAvailable(deviceType: DeviceType): boolean {
         //TODO: FIx native side first
         return (deviceType === DeviceType.Mouse || deviceType === DeviceType.Touch);
     }

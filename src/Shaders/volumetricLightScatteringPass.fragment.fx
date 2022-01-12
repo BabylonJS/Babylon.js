@@ -6,6 +6,9 @@ varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
 #if defined(ALPHATEST)

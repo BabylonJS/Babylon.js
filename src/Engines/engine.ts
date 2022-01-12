@@ -27,7 +27,6 @@ import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
 
-declare type DeviceInputSystem = import("../DeviceInput").DeviceInputSystem;
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -390,11 +389,6 @@ export class Engine extends ThinEngine {
      */
     public isPointerLock = false;
 
-    /**
-     * Stores instance of DeviceInputSystem
-     */
-    public deviceInputSystem: DeviceInputSystem;
-
     // Observables
 
     /**
@@ -513,7 +507,7 @@ export class Engine extends ThinEngine {
     /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-     * See @TODO WEBGPU DOC PAGE for more details
+     * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
      */
     public get compatibilityMode() {
         return this._compatibilityMode;
@@ -1821,11 +1815,6 @@ export class Engine extends ThinEngine {
 
         //WebVR
         this.disableVR();
-
-        // DeviceInputSystem
-        if (this.deviceInputSystem) {
-            this.deviceInputSystem.dispose();
-        }
 
         // Events
         if (IsWindowObjectExist()) {

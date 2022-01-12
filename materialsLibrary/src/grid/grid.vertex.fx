@@ -28,6 +28,9 @@ uniform mat4 opacityMatrix;
 uniform vec2 vOpacityInfos;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

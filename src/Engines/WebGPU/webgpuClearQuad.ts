@@ -10,6 +10,7 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
 import { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
+import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 import "../../Shaders/clearQuad.vertex";
 import "../../Shaders/clearQuad.fragment";
@@ -23,7 +24,8 @@ export class WebGPUClearQuad {
     private _effect: Effect;
     private _bindGroups: { [id: string]: GPUBindGroup[] } = {};
     private _depthTextureFormat: GPUTextureFormat | undefined;
-    private _bundleCache: { [key: number]: GPURenderBundle } = {};
+    private _bundleCache: { [key: string]: GPURenderBundle } = {};
+    private _keyTemp: number[] = [];
 
     public setDepthStencilFormat(format: GPUTextureFormat | undefined): void {
         this._depthTextureFormat = format;
@@ -34,8 +36,9 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setColorFormat(format);
     }
 
-    public setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void {
-        this._cacheRenderPipeline.setMRTAttachments(attachments, textureArray);
+    public setMRTAttachments(attachments: number[], textureArray: InternalTexture[], textureCount: number): void {
+        this._cacheRenderPipeline.setMRT(textureArray, textureCount);
+        this._cacheRenderPipeline.setMRTAttachments(attachments);
     }
 
     constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer) {
@@ -52,20 +55,30 @@ export class WebGPUClearQuad {
     public clear(renderPass: Nullable<GPURenderPassEncoder>, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount = 1): Nullable<GPURenderBundle> {
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder;
         let bundle: Nullable<GPURenderBundle> = null;
-        let bundleKey = 0;
+        let bundleKey: string;
 
         const isRTTPass = !!this._engine._currentRenderTarget;
 
         if (renderPass) {
             renderPass2 = renderPass;
         } else {
-            bundleKey = (clearColor ? clearColor.r + clearColor.g * 256 + clearColor.b * 256 * 256 + clearColor.a * 256 * 256 * 256 : 0) +
+            let idx = 0;
+            this._keyTemp.length = 0;
+            for (let i = 0; i < this._cacheRenderPipeline.colorFormats.length; ++i) {
+                this._keyTemp[idx++] = renderableTextureFormatToIndex[this._cacheRenderPipeline.colorFormats[i]];
+            }
+
+            const depthStencilFormatIndex = renderableTextureFormatToIndex[this._depthTextureFormat ?? 0];
+
+            this._keyTemp[idx] = (clearColor ? clearColor.r + clearColor.g * 256 + clearColor.b * 256 * 256 + clearColor.a * 256 * 256 * 256 : 0) +
                 (clearDepth ? 2 ** 32 : 0) +
                 (clearStencil ? 2 ** 33 : 0) +
                 (this._engine.useReverseDepthBuffer ? 2 ** 34 : 0) +
                 (isRTTPass ? 2 ** 35 : 0) +
-                sampleCount * (2 ** 36);
+                (sampleCount > 1 ? 2 ** 36 : 0) +
+                depthStencilFormatIndex * (2 ** 37);
 
+            bundleKey = this._keyTemp.join("_");
             bundle = this._bundleCache[bundleKey];
 
             if (bundle) {
@@ -80,7 +93,7 @@ export class WebGPUClearQuad {
         }
 
         this._cacheRenderPipeline.setDepthWriteEnabled(!!clearDepth);
-        this._cacheRenderPipeline.setStencilEnabled(!!clearStencil);
+        this._cacheRenderPipeline.setStencilEnabled(!!clearStencil && !!this._depthTextureFormat && WebGPUTextureHelper.HasStencilAspect(this._depthTextureFormat));
         this._cacheRenderPipeline.setStencilWriteMask(clearStencil ? 0xFF : 0);
         this._cacheRenderPipeline.setStencilCompare(clearStencil ? Constants.ALWAYS : Constants.NEVER);
         this._cacheRenderPipeline.setStencilPassOp(clearStencil ? Constants.REPLACE : Constants.KEEP);
@@ -150,7 +163,7 @@ export class WebGPUClearQuad {
 
         if (!renderPass) {
             bundle = (renderPass2 as GPURenderBundleEncoder).finish();
-            this._bundleCache[bundleKey] = bundle;
+            this._bundleCache[bundleKey!] = bundle;
         }
 
         return bundle;
