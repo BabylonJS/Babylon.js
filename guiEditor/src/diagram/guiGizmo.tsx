@@ -654,14 +654,19 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                     const increment = 45;
                     let cursorIndex = Math.round(angleAdjusted / increment) % 8;
                     const cursor = scalePointCursors[cursorIndex];
+                    const scalePointContainerSize = 30; // .scale-point-container width/height in px
+                    const rotateClickAreaSize = 20; // .rotate-click-area width/height
+                    const rotateClickAreaOffset = 7; // how much to offset the invisible rotate click area from the center
                     const rotateClickAreaStyle = {
-                        top: 5 + 7 * scalePoint.verticalPosition,
-                        left: 5 + 7 * scalePoint.horizontalPosition,
+                        top: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.verticalPosition,
+                        left: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.horizontalPosition,
                         cursor: rotateCursors[cursorIndex]
                     }
+                    const scaleClickAreaSize = 20; // .scale-click-area width/height
+                    const scaleClickAreaOffset = 5; // how much to offset the invisible scale click area from the center
                     const scaleClickAreaStyle = {
-                        top: 5 - 5 * scalePoint.verticalPosition,
-                        left: 5 - 5 * scalePoint.horizontalPosition,
+                        top: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.verticalPosition,
+                        left: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.horizontalPosition,
                         cursor
                     }
                     return (
