@@ -70,7 +70,7 @@ export class NearMenu extends TouchHolographicMenu {
         control.parent = this;
         control._host = this._host;
         control.isToggleButton = true;
-        control.onToggleObservable.add((newState) => {this.isPinned = newState});
+        control.onToggleObservable.add((newState) => { this.isPinned = newState; });
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
