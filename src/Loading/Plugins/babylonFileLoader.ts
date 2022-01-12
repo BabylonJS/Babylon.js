@@ -545,8 +545,19 @@ SceneLoader.RegisterPlugin({
             }
 
             var hierarchyIds = new Array<number>();
+
+            // Transform nodes (the overall idea is to load all of them as this is super fast and then get rid of the ones we don't need)
+            var loadedTransformNodes = [];
+            if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
+                for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                    const parsedTransformNode = parsedData.transformNodes[index];
+                    loadedTransformNodes.push(TransformNode.Parse(parsedTransformNode, scene, rootUrl));
+                }
+            }
+
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 var loadedSkeletonsIds = [];
+                var loadedMorphTargetsIds = [];
                 var loadedMaterialsIds = [];
                 var index: number;
                 var cache: number;
@@ -628,7 +639,7 @@ SceneLoader.RegisterPlugin({
                         // Skeleton ?
                         if (parsedMesh.skeletonId > -1 && parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
                             var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
-                            if (skeletonAlreadyLoaded === false) {
+                            if (!skeletonAlreadyLoaded) {
                                 for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     var parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
@@ -642,9 +653,17 @@ SceneLoader.RegisterPlugin({
                         }
 
                         // Morph targets ?
-                        if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-                            for (var managerData of parsedData.morphTargetManagers) {
-                                MorphTargetManager.Parse(managerData, scene);
+                        if (parsedMesh.morphTargetManagerId > -1 && parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                            var morphTargetAlreadyLoaded = (loadedMorphTargetsIds.indexOf(parsedMesh.morphTargetManagerId) > -1);
+                            if (!morphTargetAlreadyLoaded) {
+                                for (var morphTargetIndex = 0, morphTargetCache = parsedData.morphTargetManagers.length; morphTargetIndex < morphTargetCache; morphTargetIndex++) {
+                                    var parsedMorphTarget = parsedData.morphTargetManagers[morphTargetIndex];
+                                    if (parsedMorphTarget.id === parsedMesh.morphTargetManagerId) {
+                                        var morphTarget = MorphTargetManager.Parse(parsedMorphTarget, scene);
+                                        loadedMorphTargetsIds.push(morphTarget.uniqueId);
+                                        log += "\n\Morph target " + morphTarget.toString();
+                                    }
+                                }
                             }
                         }
 
@@ -655,16 +674,34 @@ SceneLoader.RegisterPlugin({
                 }
 
                 // Connecting parents and lods
+                for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                    var transformNode = scene.transformNodes[index];
+                    if (transformNode._waitingParentId !== null) {
+                        transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        transformNode._waitingParentId = null;
+                    }
+                }
                 var currentMesh: AbstractMesh;
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId !== null) {
                         currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        if (currentMesh.parent?.getClassName() === "TransformNode") {
+                            const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent as TransformNode);
+                            if (loadedTransformNodeIndex > -1) {
+                                loadedTransformNodes.splice(loadedTransformNodeIndex, 1);
+                            }
+                        }
                         currentMesh._waitingParentId = null;
                     }
                     if (currentMesh._waitingData.lods) {
                         loadDetailLevels(scene, currentMesh);
                     }
+                }
+
+                // Remove unused transform nodes
+                for (const transformNode of loadedTransformNodes) {
+                    transformNode.dispose();
                 }
 
                 // link skeleton transform nodes
