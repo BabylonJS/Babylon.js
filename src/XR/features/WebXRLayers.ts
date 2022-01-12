@@ -260,8 +260,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param wrappedLayer the new layer to add to the existing ones
      */
     public addXRSessionLayer(wrappedLayer: WebXRLayerWrapper) {
-        this._existingLayers.push(wrappedLayer);
-        this.setXRSessionLayers(this._existingLayers);
+        this.setXRSessionLayers([...this._existingLayers, wrappedLayer]);
     }
 
     /**
@@ -274,6 +273,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param wrappedLayers An array of WebXRLayerWrapper, usually returned from the WebXRLayers createLayer functions.
      */
     public setXRSessionLayers(wrappedLayers: Array<WebXRLayerWrapper>): void {
+        this._existingLayers = wrappedLayers;
         const renderStateInit: XRRenderStateInit = { ...this._xrSessionManager.session.renderState };
         // Clear out the layer-related fields.
         renderStateInit.baseLayer = undefined;
