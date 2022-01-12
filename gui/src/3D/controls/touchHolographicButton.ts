@@ -52,7 +52,7 @@ export class TouchHolographicButton extends TouchButton3D {
     private _frontPlateDepth = 0.5;
     private _backPlateDepth = 0.04;
     private _backplateColor = new Color3(0.08, 0.15, 0.55);
-    private _backplateToggledColor = new Color3(0.26, 0.55, 1.0);
+    private _backplateToggledColor = new Color3(0.25, 0.4, 0.95);
 
     // Tooltip
     private _tooltipFade: Nullable<FadeInOutBehavior>;
@@ -411,7 +411,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._plateMaterial.specularColor = Color3.Black();
     }
 
-    protected _onToggle(newState: boolean, position: Vector3) {
+    protected _onToggle(newState: boolean) {
         if (this._backMaterial) {
             if (newState) {
                 this._backMaterial.albedoColor = this._backplateToggledColor;
@@ -421,7 +421,7 @@ export class TouchHolographicButton extends TouchButton3D {
             }
         }
         
-        super._onToggle(newState, position);
+        super._onToggle(newState);
     }
 
     protected _affectMaterial(mesh: Mesh) {

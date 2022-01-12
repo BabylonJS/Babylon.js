@@ -22,17 +22,12 @@ export class TouchButton3D extends Button3D {
 
     private _isToggleButton = false;
     private _toggleState = false;
-    private _toggleButtonCallback = (posVec: Vector3) => { this._onToggle(!this._toggleState, posVec); };
+    private _toggleButtonCallback = () => { this._onToggle(!this._toggleState); };
 
     /**
-     * An event triggered when the button is toggled on. Only fired if 'isToggleButton' is true
+     * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
      */
-    public onToggleOnObservable = new Observable<Vector3>();
-
-    /**
-     * An event triggered when the button is toggled off. Only fired if 'isToggleButton' is true
-     */
-    public onToggleOffObservable = new Observable<Vector3>();
+    public onToggleObservable = new Observable<boolean>();
 
     // If this TouchButton3D should be treated as a toggle button
     public set isToggleButton(value: boolean) {
@@ -50,7 +45,7 @@ export class TouchButton3D extends Button3D {
 
             // Safety check, reset the button if it's toggled on but no longer a toggle button
             if (this._toggleState) {
-                this._onToggle(false, Vector3.ZeroReadOnly);
+                this._onToggle(false);
             }
         }
     }
@@ -59,15 +54,9 @@ export class TouchButton3D extends Button3D {
         return this._isToggleButton;
     }
 
-    protected _onToggle(newState: boolean, position: Vector3) {
+    protected _onToggle(newState: boolean) {
         this._toggleState = newState;
-
-        if (this._toggleState) {
-            this.onToggleOnObservable.notifyObservers(position);
-        }
-        else {
-            this.onToggleOffObservable.notifyObservers(position);
-        }
+        this.onToggleObservable.notifyObservers(newState);
     };
 
     /**
@@ -197,8 +186,7 @@ export class TouchButton3D extends Button3D {
 
         // Clean up toggle observables
         this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
-        this.onToggleOnObservable.clear();
-        this.onToggleOffObservable.clear();
+        this.onToggleObservable.clear();
 
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
