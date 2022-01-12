@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -562,6 +562,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./controls/control */ "./2D/controls/control.ts");
 /* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./measure */ "./2D/measure.ts");
+
 
 
 
@@ -1701,8 +1702,10 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
-        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial", mesh.getScene());
+        // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
+        var uniqueId = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RandomGUID"])();
+        var result = new AdvancedDynamicTexture("AdvancedDynamicTexture for " + mesh.name + " [" + uniqueId + "]", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
+        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial for " + mesh.name + " [" + uniqueId + "]", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
         material.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
@@ -1924,6 +1927,29 @@ var Button = /** @class */ (function (_super) {
             this.pointerUpAnimation();
         }
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
+    };
+    /**
+    * Serializes the current button
+    * @param serializationObject defines the JSON serialized object
+    */
+    Button.prototype.serialize = function (serializationObject) {
+        _super.prototype.serialize.call(this, serializationObject);
+        if (this._textBlock) {
+            serializationObject.textBlockName = this._textBlock.name;
+        }
+        if (this._image) {
+            serializationObject.imageName = this._image.name;
+        }
+    };
+    /** @hidden */
+    Button.prototype._parseFromContent = function (serializedObject, host) {
+        _super.prototype._parseFromContent.call(this, serializedObject, host);
+        if (serializedObject.textBlockName) {
+            this._textBlock = this.getChildByName(serializedObject.textBlockName);
+        }
+        if (serializedObject.imageName) {
+            this._image = this.getChildByName(serializedObject.imageName);
+        }
     };
     // Statics
     /**
@@ -5774,6 +5800,7 @@ var Control = /** @class */ (function () {
         }
     };
     Control.prototype._evaluateClippingState = function (parentMeasure) {
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
@@ -13941,6 +13968,10 @@ var TextWrapping;
      * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
      */
     TextWrapping[TextWrapping["Ellipsis"] = 2] = "Ellipsis";
+    /**
+     * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+     */
+    TextWrapping[TextWrapping["WordWrapEllipsis"] = 3] = "WordWrapEllipsis";
 })(TextWrapping || (TextWrapping = {}));
 /**
  * Class used to create text block control
@@ -14203,7 +14234,7 @@ var TextBlock = /** @class */ (function (_super) {
         }
         _super.prototype._processMeasures.call(this, parentMeasure, context);
         // Prepare lines
-        this._lines = this._breakLines(this._currentMeasure.width, context);
+        this._lines = this._breakLines(this._currentMeasure.width, this._currentMeasure.height, context);
         this.onLinesReadyObservable.notifyObservers(this);
         var maxLineWidth = 0;
         for (var i = 0; i < this._lines.length; i++) {
@@ -14295,7 +14326,7 @@ var TextBlock = /** @class */ (function (_super) {
             context.miterLimit = 2;
         }
     };
-    TextBlock.prototype._breakLines = function (refWidth, context) {
+    TextBlock.prototype._breakLines = function (refWidth, refHeight, context) {
         var lines = [];
         var _lines = this.text.split("\n");
         if (this._textWrapping === TextWrapping.Ellipsis) {
@@ -14310,9 +14341,15 @@ var TextBlock = /** @class */ (function (_super) {
                 lines.push.apply(lines, this._parseLineWordWrap(_line, refWidth, context));
             }
         }
-        else {
+        else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
             for (var _b = 0, _lines_3 = _lines; _b < _lines_3.length; _b++) {
                 var _line = _lines_3[_b];
+                lines.push.apply(lines, this._parseLineWordWrapEllipsis(_line, refWidth, refHeight, context));
+            }
+        }
+        else {
+            for (var _c = 0, _lines_4 = _lines; _c < _lines_4.length; _c++) {
+                var _line = _lines_4[_c];
                 lines.push(this._parseLine(_line, context));
             }
         }
@@ -14376,6 +14413,24 @@ var TextBlock = /** @class */ (function (_super) {
         lines.push({ text: line, width: lineWidth });
         return lines;
     };
+    TextBlock.prototype._parseLineWordWrapEllipsis = function (line, width, height, context) {
+        if (line === void 0) { line = ""; }
+        var lines = this._parseLineWordWrap(line, width, context);
+        for (var n = 1; n <= lines.length; n++) {
+            var currentHeight = this._computeHeightForLinesOf(n);
+            if (currentHeight > height && n > 1) {
+                var lastLine = lines[n - 2];
+                var currentLine = lines[n - 1];
+                lines[n - 2] = this._parseLineEllipsis("" + (lastLine.text + currentLine.text), width, context);
+                var linesToRemove = lines.length - n + 1;
+                for (var i = 0; i < linesToRemove; i++) {
+                    lines.pop();
+                }
+                return lines;
+            }
+        }
+        return lines;
+    };
     TextBlock.prototype._renderLines = function (context) {
         var height = this._currentMeasure.height;
         var rootY = 0;
@@ -14405,6 +14460,20 @@ var TextBlock = /** @class */ (function (_super) {
             rootY += this._fontOffset.height;
         }
     };
+    TextBlock.prototype._computeHeightForLinesOf = function (lineCount) {
+        var newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
+        if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
+            var lineSpacing = 0;
+            if (this._lineSpacing.isPixel) {
+                lineSpacing = this._lineSpacing.getValue(this._host);
+            }
+            else {
+                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+            }
+            newHeight += (lineCount - 1) * lineSpacing;
+        }
+        return newHeight;
+    };
     /**
      * Given a width constraint applied on the text block, find the expected height
      * @returns expected height
@@ -14412,26 +14481,15 @@ var TextBlock = /** @class */ (function (_super) {
     TextBlock.prototype.computeExpectedHeight = function () {
         var _a;
         if (this.text && this.widthInPixels) {
-            // Shoudl abstract platform instead of using LastCreatedEngine
+            // Should abstract platform instead of using LastCreatedEngine
             var context_1 = (_a = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine) === null || _a === void 0 ? void 0 : _a.createCanvas(0, 0).getContext("2d");
             if (context_1) {
                 this._applyStates(context_1);
                 if (!this._fontOffset) {
                     this._fontOffset = _control__WEBPACK_IMPORTED_MODULE_3__["Control"]._GetFontOffset(context_1.font);
                 }
-                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, context_1);
-                var newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lines.length;
-                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                    var lineSpacing = 0;
-                    if (this._lineSpacing.isPixel) {
-                        lineSpacing = this._lineSpacing.getValue(this._host);
-                    }
-                    else {
-                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
-                    }
-                    newHeight += (lines.length - 1) * lineSpacing;
-                }
-                return newHeight;
+                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, this.heightInPixels - this._paddingTopInPixels - this._paddingBottomInPixels, context_1);
+                return this._computeHeightForLinesOf(lines.length);
             }
         }
         return 0;
@@ -15400,6 +15458,18 @@ var Matrix2D = /** @class */ (function () {
      */
     Matrix2D.Identity = function () {
         return new Matrix2D(1, 0, 0, 1, 0, 0);
+    };
+    /**
+     * Creates an identity matrix and stores it in a target matrix
+     * @param result defines the target matrix
+     */
+    Matrix2D.IdentityToRef = function (result) {
+        result.m[0] = 1;
+        result.m[1] = 0;
+        result.m[2] = 0;
+        result.m[3] = 1;
+        result.m[4] = 0;
+        result.m[5] = 0;
     };
     /**
      * Creates a translation matrix and stores it in a target matrix
@@ -18294,7 +18364,8 @@ var HolographicSlate = /** @class */ (function (_super) {
         }
     };
     HolographicSlate.prototype._applyContentViewport = function () {
-        if (this._contentPlate.material && this._contentPlate.material.albedoTexture) {
+        var _a;
+        if (((_a = this._contentPlate) === null || _a === void 0 ? void 0 : _a.material) && this._contentPlate.material.albedoTexture) {
             var tex = this._contentPlate.material.albedoTexture;
             tex.uScale = this._contentScaleRatio;
             tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;
@@ -19713,7 +19784,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             if (_this._frontPlate && _this._isNearPressed) {
                 var scale = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
                 if (_this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
-                    var interactionHeight = _this._getInteractionHeight(position, _this._backPlate.position) / scale.z;
+                    var interactionHeight = _this._getInteractionHeight(position, _this._backPlate.getAbsolutePosition()) / scale.z;
                     interactionHeight = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(interactionHeight - (_this._backPlateDepth / 2), 0.2 * _this._frontPlateDepth, _this._frontPlateDepth);
                     _this._frontPlate.scaling.z = interactionHeight;
                     _this._frontPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._frontPlate._scene.useRightHandedSystem).scale((_this._frontPlateDepth - interactionHeight) / 2);

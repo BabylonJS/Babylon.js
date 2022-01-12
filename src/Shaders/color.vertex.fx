@@ -23,6 +23,9 @@ uniform mat4 viewProjection;
 varying vec4 vColor;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN

@@ -1,14 +1,18 @@
 import { Engine } from "../../Engines/engine";
 import { IEvent } from "../../Events/deviceInputEvents";
+import { DomManagement } from "../../Misc/domManagement";
 import { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType, PointerInput } from "../InputDevices/deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem } from "../Interfaces/inputInterfaces";
+import { DeviceType, PointerInput } from "./deviceEnums";
+import { IDeviceEvent, IDeviceInputSystem } from "./inputInterfaces";
+
+const MAX_KEYCODES = 255;
+const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
 /** @hidden */
-export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
+export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
     public set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void) {
         this._onDeviceConnected = callback;
@@ -40,8 +44,8 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
-    private _engine: Engine;
-    private _usingSafari: boolean = Tools.IsSafari();
+    private readonly _engine: Engine;
+    private readonly _usingSafari: boolean = Tools.IsSafari();
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
 
@@ -57,21 +61,16 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     private _wheelEventName: string;
 
     private _mouseId = -1;
-    private _isUsingFirefox = navigator && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
+    private readonly _isUsingFirefox = DomManagement.IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
-    private _activeTouchIds: Array<number> = [];
-    private _rollingTouchId: number = 0; // Rolling ID number to assign; emulates Chrome assignment
+    private _activeTouchIds: Array<number>;
+    private _maxTouchPoints: number = 0;
 
     private _pointerInputClearObserver: Nullable<Observer<Engine>> = null;
 
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
-
-    /** Max number of keycodes */
-    public static MAX_KEYCODES: number = 255;
-    /** Max number of pointer inputs */
-    public static MAX_POINTER_INPUTS: number = Object.keys(PointerInput).length / 2;
 
     private _eventPrefix: string;
 
@@ -83,30 +82,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
         this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
         this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
-        this.configureEvents();
-    }
-
-    /**
-     * Configures events to work with an engine's active element
-     */
-    public configureEvents() {
-        const inputElement = this._engine.getInputElement();
-        if (inputElement && this._elementToAttachTo !== inputElement) {
-            // If the engine's input element has changed, unregister events from previous element
-            if (this._elementToAttachTo) {
-                this._removeEvents();
-            }
-
-            this._elementToAttachTo = inputElement;
-            // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
-            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : this._engine.canvasTabIndex;
-            this._handleKeyActions();
-            this._handlePointerActions();
-            this._handleGamepadActions();
-
-            // Check for devices that are already connected but aren't registered. Currently, only checks for gamepads and mouse
-            this._checkForConnectedDevices();
-        }
+        this._configureEvents();
     }
 
     // Public functions
@@ -141,7 +117,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param deviceType Type of device to check for
      * @returns bool with status of device's existence
      */
-    public isDeviceAvailable(deviceType: DeviceType) {
+    public isDeviceAvailable(deviceType: DeviceType): boolean {
         return (this._inputs[deviceType] !== undefined);
     }
 
@@ -164,10 +140,33 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     }
 
     /**
+     * Configures events to work with an engine's active element
+     */
+    private _configureEvents(): void {
+        const inputElement = this._engine.getInputElement();
+        if (inputElement && this._elementToAttachTo !== inputElement) {
+            // If the engine's input element has changed, unregister events from previous element
+            if (this._elementToAttachTo) {
+                this._removeEvents();
+            }
+
+            this._elementToAttachTo = inputElement;
+            // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
+            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : this._engine.canvasTabIndex;
+            this._handleKeyActions();
+            this._handlePointerActions();
+            this._handleGamepadActions();
+
+            // Check for devices that are already connected but aren't registered. Currently, only checks for gamepads and mouse
+            this._checkForConnectedDevices();
+        }
+    }
+
+    /**
      * Checks for existing connections to devices and register them, if necessary
      * Currently handles gamepads and mouse
      */
-    private _checkForConnectedDevices() {
+    private _checkForConnectedDevices(): void {
         if (navigator.getGamepads) {
             const gamepads = navigator.getGamepads();
 
@@ -191,7 +190,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * Add a gamepad to the DeviceInputSystem
      * @param gamepad A single DOM Gamepad object
      */
-    private _addGamePad(gamepad: any) {
+    private _addGamePad(gamepad: any): void {
         const deviceType = this._getGamepadDeviceType(gamepad.id);
         const deviceSlot = gamepad.index;
 
@@ -207,9 +206,9 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param currentX Current X at point of adding
      * @param currentY Current Y at point of adding
      */
-    private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number) {
+    private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number): void {
         this._pointerActive = true;
-        this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystemImpl.MAX_POINTER_INPUTS);
+        this._registerDevice(deviceType, deviceSlot, MAX_POINTER_INPUTS);
         const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
         pointer[0] = currentX;
         pointer[1] = currentY;
@@ -221,7 +220,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param numberOfInputs Number of input entries to create for given device
      */
-    private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number) {
+    private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number): void {
         if (deviceSlot === undefined) {
             throw `Unable to register device ${DeviceType[deviceType]} to undefined slot.`;
         }
@@ -247,7 +246,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param deviceType Enum specifiying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    private _unregisterDevice(deviceType: DeviceType, deviceSlot: number) {
+    private _unregisterDevice(deviceType: DeviceType, deviceSlot: number): void {
         if (this._inputs[deviceType][deviceSlot]) {
             delete this._inputs[deviceType][deviceSlot];
             this.onDeviceDisconnected(deviceType, deviceSlot);
@@ -257,11 +256,11 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     /**
      * Handle all actions that come from keyboard interaction
      */
-    private _handleKeyActions() {
+    private _handleKeyActions(): void {
         this._keyboardDownEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystemImpl.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -282,7 +281,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
         this._keyboardUpEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this._registerDevice(DeviceType.Keyboard, 0, WebDeviceInputSystemImpl.MAX_KEYCODES);
+                this._registerDevice(DeviceType.Keyboard, 0, MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
@@ -329,7 +328,16 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     /**
      * Handle all actions that come from pointer interaction
      */
-    private _handlePointerActions() {
+    private _handlePointerActions(): void {
+        this._maxTouchPoints = (DomManagement.IsNavigatorAvailable() && navigator.maxTouchPoints) || 0;
+        if (!this._activeTouchIds) {
+            this._activeTouchIds = new Array<number>(this._maxTouchPoints);
+        }
+
+        for (let i = 0; i < this._maxTouchPoints; i++) {
+            this._activeTouchIds[i] = -1;
+        }
+
         this._pointerMoveEvent = ((evt) => {
             const deviceType = this._getPointerType(evt);
             const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
@@ -406,8 +414,17 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
             let deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : evt.pointerId;
 
             if (deviceType === DeviceType.Touch) {
-                deviceSlot = this._rollingTouchId++;
-                this._activeTouchIds[deviceSlot] = evt.pointerId;
+                const idx = this._activeTouchIds.indexOf(-1);
+
+                if (idx >= 0) {
+                    deviceSlot = idx;
+                    this._activeTouchIds[idx] = evt.pointerId;
+                }
+                else {
+                    // We can't find an open slot to store new pointer so just return (can only support max number of touches)
+                    Tools.Warn(`Max number of touches exceeded.  Ignoring touches in excess of ${this._maxTouchPoints}`);
+                    return;
+                }
             }
 
             if (!this._inputs[deviceType]) {
@@ -416,6 +433,9 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
 
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
+            }
+            else if (deviceType === DeviceType.Touch) {
+                this.onDeviceConnected(deviceType, deviceSlot);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -488,6 +508,15 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
             const deviceType = this._getPointerType(evt);
             const deviceSlot = (deviceType === DeviceType.Mouse) ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
+            if (deviceType === DeviceType.Touch) {
+                if (deviceSlot === -1) {
+                    return;
+                }
+                else {
+                    this._activeTouchIds[deviceSlot] = -1;
+                }
+            }
+
             const pointer = this._inputs[deviceType]?.[deviceSlot];
             if (pointer && pointer[evt.button + 2] !== 0) {
                 const previousHorizontal = pointer[PointerInput.Horizontal];
@@ -530,11 +559,8 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
 
                 this.onInputChanged(deviceEvent);
 
-                // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-                if (deviceType !== DeviceType.Mouse) {
-                    let idToRemove = this._activeTouchIds.indexOf(evt.pointerId);
-                    delete this._activeTouchIds[idToRemove];
-                    this._unregisterDevice(deviceType, deviceSlot);
+                if (deviceType === DeviceType.Touch) {
+                    this.onDeviceDisconnected(deviceType, deviceSlot);
                 }
             }
         });
@@ -605,7 +631,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
                         this._elementToAttachTo.releasePointerCapture(pointerId);
                     }
 
-                    if (pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
+                    if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
                         const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, pointerId, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
@@ -617,11 +643,10 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
                         deviceEvent.previousState = 1;
                         this.onInputChanged(deviceEvent);
 
-                        this._unregisterDevice(DeviceType.Touch, deviceSlot);
+                        this._activeTouchIds[deviceSlot] = -1;
+                        this.onDeviceDisconnected(DeviceType.Touch, deviceSlot);
                     }
                 }
-                // Clear all active touches
-                while (this._activeTouchIds.pop() !== undefined) { }
             }
         });
 
@@ -635,7 +660,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
 
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, WebDeviceInputSystemImpl.MAX_POINTER_INPUTS);
+                this._registerDevice(deviceType, deviceSlot, MAX_POINTER_INPUTS);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -696,7 +721,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     /**
      * Handle all actions that come from gamepad interaction
      */
-    private _handleGamepadActions() {
+    private _handleGamepadActions(): void {
         this._gamepadConnectedEvent = ((evt: any) => {
             this._addGamePad(evt.gamepad);
         });
@@ -721,7 +746,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      */
-    private _updateDevice(deviceType: DeviceType, deviceSlot: number, inputIndex: number) {
+    private _updateDevice(deviceType: DeviceType, deviceSlot: number, inputIndex: number): void {
         // Gamepads
         const gp = navigator.getGamepads()[deviceSlot];
 
@@ -774,7 +799,7 @@ export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
     /**
      * Remove events from active input element
      */
-    private _removeEvents() {
+    private _removeEvents(): void {
         // Blur Events
         this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
         this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);

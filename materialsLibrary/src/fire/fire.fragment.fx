@@ -37,6 +37,9 @@ vec4 bx2(vec4 x)
    return vec4(2.0) * x - vec4(1.0);
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN

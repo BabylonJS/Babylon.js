@@ -10,7 +10,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { Tools } from "../Misc/tools";
-import { Observer } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
@@ -32,6 +32,42 @@ import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 
 declare const _native: INative;
+
+const onNativeObjectInitialized = new Observable<INative>();
+if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
+    let __native: INative;
+    Object.defineProperty(self, "_native", {
+        get: () => __native,
+        set: (value: INative) => {
+            __native = value;
+            if (__native) {
+                onNativeObjectInitialized.notifyObservers(__native);
+            }
+        }
+    });
+}
+
+/**
+ * Returns _native only after it has been defined by BabylonNative.
+ * @hidden
+ */
+export function AcquireNativeObjectAsync(): Promise<INative> {
+    return new Promise((resolve) => {
+        if (typeof _native === 'undefined') {
+            onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
+        } else {
+            resolve(_native);
+        }
+    });
+}
+
+/**
+ * Registers a constructor on the _native object. See NativeXRFrame for an example.
+ * @hidden
+ */
+export async function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type) {
+    (await AcquireNativeObjectAsync() as any)[typeName] = constructor;
+}
 
 class NativePipelineContext implements IPipelineContext {
     // TODO: async should be true?
@@ -810,6 +846,7 @@ export class NativeEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: false,
             supportSRGBBuffers: true,
+            supportTransformFeedbacks: false
         };
 
         this._features = {

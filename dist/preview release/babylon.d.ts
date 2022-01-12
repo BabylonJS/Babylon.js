@@ -1020,10 +1020,6 @@ declare module BABYLON {
          */
         onInputChanged: (deviceEvent: IDeviceEvent) => void;
         /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
@@ -5080,6 +5076,7 @@ declare module BABYLON {
     }
     /**
      * Represents a 3D path made up of multiple 3D points
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/path3D
      */
     export class Path3D {
         /**
@@ -5893,21 +5890,25 @@ declare module BABYLON {
          */
         set hasAlpha(value: boolean);
         get hasAlpha(): boolean;
+        private _getAlphaFromRGB;
         /**
          * Defines if the alpha value should be determined via the rgb values.
          * If true the luminance of the pixel might be used to find the corresponding alpha value.
          */
-        getAlphaFromRGB: boolean;
+        set getAlphaFromRGB(value: boolean);
+        get getAlphaFromRGB(): boolean;
         /**
          * Intensity or strength of the texture.
          * It is commonly used by materials to fine tune the intensity of the texture
          */
         level: number;
+        protected _coordinatesIndex: number;
         /**
          * Define the UV channel to use starting from 0 and defaulting to 0.
          * This is part of the texture as textures usually maps to one uv set.
          */
-        coordinatesIndex: number;
+        set coordinatesIndex(value: number);
+        get coordinatesIndex(): number;
         protected _coordinatesMode: number;
         /**
         * How a texture is mapped.
@@ -6929,6 +6930,7 @@ declare module BABYLON {
          * Resets the material define values
          */
         reset(): void;
+        private _setDefaultValue;
         /**
          * Converts the material define values to a string
          * @returns - String of material define information
@@ -8846,7 +8848,7 @@ declare module BABYLON {
         /** @hidden */
         _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void;
         /** @hidden */
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh, invertTriangles?: boolean): void;
         /** @hidden */
         _getResponse(pos: Vector3, vel: Vector3): void;
     }
@@ -9796,6 +9798,13 @@ declare module BABYLON {
          */
         unbindEffect(): void;
         /**
+         * Sets the current state of the class (_bufferIndex, _buffer) to point to the data buffer passed in parameter if this buffer is one of the buffers handled by the class (meaning if it can be found in the _buffers array)
+         * This method is meant to be able to update a buffer at any time: just call setDataBuffer to set the class in the right state, call some updateXXX methods and then call udpate() => that will update the GPU buffer on the graphic card
+         * @param dataBuffer buffer to look for
+         * @returns true if the buffer has been found and the class internal state points to it, else false
+         */
+        setDataBuffer(dataBuffer: DataBuffer): boolean;
+        /**
          * Disposes the uniform buffer.
          */
         dispose(): void;
@@ -10134,6 +10143,7 @@ declare module BABYLON {
         _uniformBuffer: UniformBuffer;
         /** @hidden */
         _renderId: number;
+        private _lastUseSpecular;
         /**
          * Creates a Light object in the scene.
          * Documentation : https://doc.babylonjs.com/babylon101/lights
@@ -12038,6 +12048,9 @@ declare module BABYLON {
         /** length of the ray */
         length: number;
         private static readonly _TmpVector3;
+        /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+        static EnableDistantPicking: boolean;
+        private static _rayDistant;
         private _tmpRay;
         /**
          * Creates a new ray
@@ -20539,8 +20552,9 @@ declare module BABYLON {
         setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, materialContext?: IMaterialContext, resetContext?: boolean): void;
         /**
          * Resets the draw wrappers cache
+         * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
          */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -23438,12 +23452,12 @@ declare module BABYLON {
         camera: FreeCamera;
         /**
          * Defines the touch sensibility for rotation.
-         * The higher the faster.
+         * The lower the faster.
          */
         touchAngularSensibility: number;
         /**
          * Defines the touch sensibility for move.
-         * The higher the faster.
+         * The lower the faster.
          */
         touchMoveSensibility: number;
         /**
@@ -25493,16 +25507,19 @@ declare module BABYLON {
         vScale: number;
         /**
          * Define an offset on the texture to rotate around the u coordinates of the UVs
+         * The angle is defined in radians.
          * @see https://doc.babylonjs.com/how_to/more_materials
          */
         uAng: number;
         /**
          * Define an offset on the texture to rotate around the v coordinates of the UVs
+         * The angle is defined in radians.
          * @see https://doc.babylonjs.com/how_to/more_materials
          */
         vAng: number;
         /**
          * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
+         * The angle is defined in radians.
          * @see https://doc.babylonjs.com/how_to/more_materials
          */
         wAng: number;
@@ -27497,6 +27514,360 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class representing an isovector a vector containing 2 INTEGER coordinates
+     * x axis is horizontal
+     * y axis is 60 deg counter clockwise from positive y axis
+     * @hidden
+     */
+    export class _IsoVector {
+        /** defines the first coordinate */
+        x: number;
+        /** defines the second coordinate */
+        y: number;
+        /**
+         * Creates a new isovector from the given x and y coordinates
+         * @param x defines the first coordinate, must be an integer
+         * @param y defines the second coordinate, must be an integer
+         */
+        constructor(
+        /** defines the first coordinate */
+        x?: number, 
+        /** defines the second coordinate */
+        y?: number);
+        /**
+         * Gets a new IsoVector copied from the IsoVector
+         * @returns a new IsoVector
+         */
+        clone(): _IsoVector;
+        /**
+         * Rotates one IsoVector 60 degrees counter clockwise about another
+         * Please note that this is an in place operation
+         * @param other an IsoVector a center of rotation
+         * @returns the rotated IsoVector
+         */
+        rotate60About(other: _IsoVector): this;
+        /**
+         * Rotates one IsoVector 60 degrees clockwise about another
+         * Please note that this is an in place operation
+         * @param other an IsoVector as center of rotation
+         * @returns the rotated IsoVector
+         */
+        rotateNeg60About(other: _IsoVector): this;
+        /**
+         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
+         * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
+         * Please note that this is an in place operation
+         * @param m integer a measure a Primary triangle of order (m, n) m > n
+         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
+         * @returns the rotated IsoVector
+         */
+        rotate120(m: number, n: number): this;
+        /**
+         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
+         * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
+         * Please note that this is an in place operation
+         * @param m integer a measure a Primary triangle of order (m, n) m > n
+         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
+         * @returns the rotated IsoVector
+         */
+        rotateNeg120(m: number, n: number): this;
+        /**
+         * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
+         * @param origin an IsoVector
+         * @returns Point as a Vector3
+         */
+        toCartesianOrigin(origin: _IsoVector, isoGridSize: number): Vector3;
+        /**
+         * Gets a new IsoVector(0, 0)
+         * @returns a new IsoVector
+         */
+        static Zero(): _IsoVector;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class representing data for one face OAB of an equilateral icosahedron
+     * When O is the isovector (0, 0), A is isovector (m, n)
+     * @hidden
+     */
+    export class _PrimaryIsoTriangle {
+        m: number;
+        n: number;
+        cartesian: Vector3[];
+        vertices: _IsoVector[];
+        max: number[];
+        min: number[];
+        vecToIdx: {
+            [key: string]: number;
+        };
+        vertByDist: {
+            [key: string]: number[];
+        };
+        closestTo: number[][];
+        innerFacets: string[][];
+        isoVecsABOB: _IsoVector[][];
+        isoVecsOBOA: _IsoVector[][];
+        isoVecsBAOA: _IsoVector[][];
+        vertexTypes: number[][];
+        coau: number;
+        cobu: number;
+        coav: number;
+        cobv: number;
+        IDATA: PolyhedronData;
+        /**
+        * Creates the PrimaryIsoTriangle Triangle OAB
+        * @param m an integer
+        * @param n an integer
+        */
+        setIndices(): void;
+        calcCoeffs(): void;
+        createInnerFacets(): void;
+        edgeVecsABOB(): void;
+        mapABOBtoOBOA(): void;
+        mapABOBtoBAOA(): void;
+        MapToFace(faceNb: number, geodesicData: PolyhedronData): void;
+        /**Creates a primary triangle
+         * @param m
+         * @param n
+         * @hidden
+         */
+        build(m: number, n: number): this;
+    }
+    /** Builds Polyhedron Data
+    * @hidden
+    */
+    export class PolyhedronData {
+        name: string;
+        category: string;
+        vertex: number[][];
+        face: number[][];
+        edgematch: (number | string)[][];
+        constructor(name: string, category: string, vertex: number[][], face: number[][]);
+    }
+    /**
+     * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
+     */
+    export class GeodesicData extends PolyhedronData {
+        /**
+         * @hidden
+         */
+        edgematch: (number | string)[][];
+        /**
+         * @hidden
+         */
+        adjacentFaces: number[][];
+        /**
+         * @hidden
+         */
+        sharedNodes: number;
+        /**
+         * @hidden
+         */
+        poleNodes: number;
+        /**
+         * @hidden
+         */
+        innerToData(face: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        orderData(primTri: _PrimaryIsoTriangle): void;
+        /**
+         * @hidden
+         */
+        setOrder(m: number, faces: number[]): number[];
+        /**
+         * @hidden
+         */
+        toGoldbergPolyhedronData(): PolyhedronData;
+        /**Builds the data for a Geodesic Polyhedron from a primary triangle
+         * @param primTri the primary triangle
+         * @hidden
+         */
+        static BuildGeodesicData(primTri: _PrimaryIsoTriangle): GeodesicData;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the set of goldberg data used to create the polygon
+     */
+    export type GoldbergData = {
+        /**
+         * The list of Goldberg faces colors
+         */
+        faceColors: Color4[];
+        /**
+         * The list of Goldberg faces centers
+         */
+        faceCenters: Vector3[];
+        /**
+         * The list of Goldberg faces Z axis
+         */
+        faceZaxis: Vector3[];
+        /**
+         * The list of Goldberg faces Y axis
+         */
+        faceXaxis: Vector3[];
+        /**
+         * The list of Goldberg faces X axis
+         */
+        faceYaxis: Vector3[];
+        /**
+         * Defines the number of shared faces
+         */
+        nbSharedFaces: number;
+        /**
+         * Defines the number of unshared faces
+         */
+        nbUnsharedFaces: number;
+        /**
+         * Defines the total number of goldberg faces
+         */
+        nbFaces: number;
+        /**
+         * Defines the number of goldberg faces at the pole
+         */
+        nbFacesAtPole: number;
+        /**
+         * Defines the number of adjacent faces per goldberg faces
+         */
+        adjacentFaces: number[][];
+    };
+    /**
+     * Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+     */
+    export class GoldbergMesh extends Mesh {
+        /**
+         * Defines the specific Goldberg data used in this mesh construction.
+         */
+        goldbergData: GoldbergData;
+        /**
+         * Gets the related Goldberg face from pole infos
+         * @param poleOrShared Defines the pole index or the shared face index if the fromPole parameter is passed in
+         * @param fromPole Defines an optional pole index to find the related info from
+         * @returns the goldberg face number
+         */
+        relatedGoldbergFace(poleOrShared: number, fromPole?: number): number;
+        private _changeGoldbergFaceColors;
+        /**
+         * Set new goldberg face colors
+         * @param colorRange the new color to apply to the mesh
+         */
+        setGoldbergFaceColors(colorRange: (number | Color4)[][]): void;
+        /**
+         * Updates new goldberg face colors
+         * @param colorRange the new color to apply to the mesh
+         */
+        updateGoldbergFaceColors(colorRange: (number | Color4)[][]): void;
+        private _changeGoldbergFaceUVs;
+        /**
+         * set new goldberg face UVs
+         * @param uvRange the new UVs to apply to the mesh
+         */
+        setGoldbergFaceUVs(uvRange: (number | Vector2)[][]): void;
+        /**
+         * Updates new goldberg face UVs
+         * @param uvRange the new UVs to apply to the mesh
+         */
+        updateGoldbergFaceUVs(uvRange: (number | Vector2)[][]): void;
+        /**
+         * Places a mesh on a particular face of the goldberg polygon
+         * @param mesh Defines the mesh to position
+         * @param face Defines the face to position onto
+         * @param position Defines the position relative to the face we are positioning the mesh onto
+         */
+        placeOnGoldbergFaceAt(mesh: Mesh, face: number, position: Vector3): void;
+        /**
+         * Serialize current mesh
+         * @param serializationObject defines the object which will receive the serialization data
+         */
+        serialize(serializationObject: any): void;
+        /**
+        * Parses a serialized goldberg mesh
+        * @param parsedMesh the serialized mesh
+        * @param scene the scene to create the goldberg mesh in
+        * @returns the created goldberg mesh
+        */
+        static Parse(parsedMesh: any, scene: Scene): GoldbergMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the set of data required to create goldberg vertex data.
+     */
+    export type GoldbergVertexDataOption = {
+        /**
+         * the size of the Goldberg, optional default 1
+         */
+        size?: number;
+        /**
+         * allows stretching in the x direction, optional, default size
+         */
+        sizeX?: number;
+        /**
+         * allows stretching in the y direction, optional, default size
+         */
+        sizeY?: number;
+        /**
+         * allows stretching in the z direction, optional, default size
+         */
+        sizeZ?: number;
+        /**
+         * optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+         */
+        sideOrientation?: number;
+    };
+    /**
+     * Defines the set of data required to create a goldberg mesh.
+     */
+    export type GoldbergCreationOption = {
+        /**
+         * number of horizontal steps along an isogrid
+         */
+        m?: number;
+        /**
+         * number of angled steps along an isogrid
+         */
+        n?: number;
+        /**
+         * defines if the mesh must be flagged as updatable
+         */
+        updatable?: boolean;
+    } & GoldbergVertexDataOption;
+    /**
+     * Creates the Mesh for a Goldberg Polyhedron
+     * @param name defines the name of the mesh
+     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+     * @param goldBergData polyhedronData defining the Goldberg polyhedron
+     * @returns GoldbergSphere mesh
+     */
+    export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, goldbergData: PolyhedronData): VertexData;
+    /**
+     * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/goldberg_poly
+     * @param name defines the name of the mesh
+     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+     * @param scene defines the hosting scene
+     * @returns Goldberg mesh
+     */
+    export function CreateGoldberg(name: string, options: GoldbergCreationOption, scene?: Nullable<Scene>): GoldbergMesh;
+}
+declare module BABYLON {
+    /**
      * Mesh representing the ground
      */
     export class GroundMesh extends Mesh {
@@ -27995,13 +28366,15 @@ declare module BABYLON {
              */
             function CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
             /**
-             * Extends a mesh to a Goldberg mesh
-             * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
-             * @param mesh the mesh to convert
-             * @returns the extended mesh
-             * @deprecated Please use ExtendMeshToGoldberg instead
+             * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+             * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+             * @param name defines the name of the mesh
+             * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+             * @param scene defines the hosting scene
+             * @returns Goldberg mesh
+             * @deprecated Please use MeshBuilder instead
              */
-            function ExtendToGoldberg(mesh: Mesh): Mesh;
+            function CreateGoldberg(name: string, options: GoldbergCreationOption, scene?: Nullable<Scene>): GoldbergMesh;
         }
     /** @hidden */
     export const _injectLTSMesh: (Mesh: TypeofMesh) => void;
@@ -30023,6 +30396,8 @@ declare module BABYLON {
         /** @hidden */
         static _GroundMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /** @hidden */
+        static _GoldbergMeshParser: (parsedMesh: any, scene: Scene) => GoldbergMesh;
+        /** @hidden */
         static _LinesMeshParser: (parsedMesh: any, scene: Scene) => Mesh;
         /**
          * Returns a new Mesh object parsed from the source provided.
@@ -30093,6 +30468,8 @@ declare module BABYLON {
         addInstance(instance: InstancedMesh): void;
         /** @hidden */
         removeInstance(instance: InstancedMesh): void;
+        /** @hidden */
+        _shouldConvertRHS(): boolean;
     }
 }
 declare module BABYLON {
@@ -30145,193 +30522,6 @@ declare module BABYLON {
     export const CapsuleBuilder: {
         CreateCapsule: typeof CreateCapsule;
     };
-}
-declare module BABYLON {
-    /**
-     * Class representing an isovector a vector containing 2 INTEGER coordinates
-     * x axis is horizontal
-     * y axis is 60 deg counter clockwise from positive y axis
-     * @hidden
-     */
-    export class _IsoVector {
-        /** defines the first coordinate */
-        x: number;
-        /** defines the second coordinate */
-        y: number;
-        /**
-         * Creates a new isovector from the given x and y coordinates
-         * @param x defines the first coordinate, must be an integer
-         * @param y defines the second coordinate, must be an integer
-         */
-        constructor(
-        /** defines the first coordinate */
-        x?: number, 
-        /** defines the second coordinate */
-        y?: number);
-        /**
-         * Gets a new IsoVector copied from the IsoVector
-         * @returns a new IsoVector
-         */
-        clone(): _IsoVector;
-        /**
-         * Rotates one IsoVector 60 degrees counter clockwise about another
-         * Please note that this is an in place operation
-         * @param other an IsoVector a center of rotation
-         * @returns the rotated IsoVector
-         */
-        rotate60About(other: _IsoVector): this;
-        /**
-         * Rotates one IsoVector 60 degrees clockwise about another
-         * Please note that this is an in place operation
-         * @param other an IsoVector as center of rotation
-         * @returns the rotated IsoVector
-         */
-        rotateNeg60About(other: _IsoVector): this;
-        /**
-         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
-         * Rotates one IsoVector 120 degrees counter clockwise about the center of the triangle
-         * Please note that this is an in place operation
-         * @param m integer a measure a Primary triangle of order (m, n) m > n
-         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
-         * @returns the rotated IsoVector
-         */
-        rotate120(m: number, n: number): this;
-        /**
-         * For an equilateral triangle OAB with O at isovector (0, 0) and A at isovector (m, n)
-         * Rotates one IsoVector 120 degrees clockwise about the center of the triangle
-         * Please note that this is an in place operation
-         * @param m integer a measure a Primary triangle of order (m, n) m > n
-         * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
-         * @returns the rotated IsoVector
-         */
-        rotateNeg120(m: number, n: number): this;
-        /**
-         * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
-         * @param origin an IsoVector
-         * @returns Point as a Vector3
-         */
-        toCartesianOrigin(origin: _IsoVector, isoGridSize: number): Vector3;
-        /**
-         * Gets a new IsoVector(0, 0)
-         * @returns a new IsoVector
-         */
-        static Zero(): _IsoVector;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class representing data for one face OAB of an equilateral icosahedron
-     * When O is the isovector (0, 0), A is isovector (m, n)
-     * @hidden
-     */
-    export class _PrimaryIsoTriangle {
-        m: number;
-        n: number;
-        cartesian: Vector3[];
-        vertices: _IsoVector[];
-        max: number[];
-        min: number[];
-        vecToIdx: {
-            [key: string]: number;
-        };
-        vertByDist: {
-            [key: string]: number[];
-        };
-        closestTo: number[][];
-        innerFacets: string[][];
-        isoVecsABOB: _IsoVector[][];
-        isoVecsOBOA: _IsoVector[][];
-        isoVecsBAOA: _IsoVector[][];
-        vertexTypes: number[][];
-        coau: number;
-        cobu: number;
-        coav: number;
-        cobv: number;
-        IDATA: PolyhedronData;
-        /**
-        * Creates the PrimaryIsoTriangle Triangle OAB
-        * @param m an integer
-        * @param n an integer
-        */
-        setIndices(): void;
-        calcCoeffs(): void;
-        createInnerFacets(): void;
-        edgeVecsABOB(): void;
-        mapABOBtoOBOA(): void;
-        mapABOBtoBAOA(): void;
-        MapToFace(faceNb: number, geodesicData: PolyhedronData): void;
-        /**Creates a primary triangle
-         * @param m
-         * @param n
-         * @hidden
-         */
-        build(m: number, n: number): this;
-    }
-    /** Builds Polyhedron Data
-    * @hidden
-    */
-    export class PolyhedronData {
-        name: string;
-        category: string;
-        vertex: number[][];
-        face: number[][];
-        edgematch: (number | string)[][];
-        constructor(name: string, category: string, vertex: number[][], face: number[][]);
-    }
-    /**
-     * This class Extends the PolyhedronData Class to provide measures for a Geodesic Polyhedron
-     */
-    export class GeodesicData extends PolyhedronData {
-        /**
-         * @hidden
-         */
-        edgematch: (number | string)[][];
-        /**
-         * @hidden
-         */
-        adjacentFaces: number[][];
-        /**
-         * @hidden
-         */
-        sharedNodes: number;
-        /**
-         * @hidden
-         */
-        poleNodes: number;
-        /**
-         * @hidden
-         */
-        innerToData(face: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        orderData(primTri: _PrimaryIsoTriangle): void;
-        /**
-         * @hidden
-         */
-        setOrder(m: number, faces: number[]): number[];
-        /**
-         * @hidden
-         */
-        toGoldbergData(): PolyhedronData;
-        /**Builds the data for a Geodesic Polyhedron from a primary triangle
-         * @param primTri the primary triangle
-         * @hidden
-         */
-        static BuildGeodesicData(primTri: _PrimaryIsoTriangle): GeodesicData;
-    }
 }
 declare module BABYLON {
     /**
@@ -31967,16 +32157,21 @@ declare module BABYLON {
         };
         protected _enable(enable: boolean): void;
         /**
+         * Helper function to mark defines as being dirty.
+         */
+        protected readonly markAllDefinesAsDirty: () => void;
+        /**
          * Creates a new material plugin
          * @param material parent material of the plugin
          * @param name name of the plugin
          * @param priority priority of the plugin
          * @param defines list of defines used by the plugin. The value of the property is the default value for this property
          * @param addToPluginList true to add the plugin to the list of plugins managed by the material plugin manager of the material (default: true)
+         * @param enable true to enable the plugin (it is handy if the plugin does not handle properties to switch its current activation)
          */
         constructor(material: Material, name: string, priority: number, defines?: {
             [key: string]: any;
-        }, addToPluginList?: boolean);
+        }, addToPluginList?: boolean, enable?: boolean);
         /**
          * Gets the current class name useful for serialization or dynamic coding.
          * @returns The class name.
@@ -36423,8 +36618,9 @@ declare module BABYLON {
         markAsDirty(property?: string): AbstractMesh;
         /**
         * Resets the draw wrappers cache for all submeshes of this abstract mesh
+        * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
         */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /**
          * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
          */
@@ -36696,6 +36892,8 @@ declare module BABYLON {
         _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh;
         /** @hidden */
         _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh;
+        /** @hidden */
+        _shouldConvertRHS(): boolean;
         /** @hidden */
         _checkCollision(collider: Collider): AbstractMesh;
         /** @hidden */
@@ -39217,6 +39415,7 @@ declare module BABYLON {
          * @param axis2 defines the second axis
          * @param axis3 defines the third axis
          * @returns a new Vector3
+         * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
          */
         static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3;
         /**
@@ -41886,6 +42085,10 @@ declare module BABYLON {
          */
         get renderPassIds(): readonly number[];
         /**
+         * Gets the current value of the refreshId counter
+         */
+        get currentRefreshId(): number;
+        /**
          * Sets a specific material to be used to render a mesh/a list of meshes in this render target texture
          * @param mesh mesh or array of meshes
          * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
@@ -41950,12 +42153,13 @@ declare module BABYLON {
         /**
          * Creates a depth stencil texture.
          * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode
-         * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
-         * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
-         * @param samples sample count of the depth/stencil texture
+         * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode (default: 0)
+         * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture (default: true)
+         * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
+         * @param samples sample count of the depth/stencil texture (default: 1)
+         * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
          */
-        createDepthStencilTexture(comparisonFunction?: number, bilinearFiltering?: boolean, generateStencil?: boolean, samples?: number): void;
+        createDepthStencilTexture(comparisonFunction?: number, bilinearFiltering?: boolean, generateStencil?: boolean, samples?: number, format?: number): void;
         private _releaseRenderPassId;
         private _createRenderPassId;
         private _processSizeParameter;
@@ -43572,402 +43776,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class to wrap DeviceInputSystem data into an event object
-     */
-    export class DeviceEventFactory {
-        /**
-         * Create device input events based on provided type and slot
-         *
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object
-         */
-        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent;
-        /**
-         * Creates pointer event
-         *
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Pointer)
-         */
-        private static _createPointerEvent;
-        /**
-         * Create Mouse Wheel Event
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Wheel)
-         */
-        private static _createWheelEvent;
-        /**
-         * Create Mouse Event
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Mouse)
-         */
-        private static _createMouseEvent;
-        /**
-         * Create Keyboard Event
-         * @param inputIndex Id of input to be checked
-         * @param currentState Current value for given input
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Keyboard)
-         */
-        private static _createKeyboardEvent;
-        /**
-         * Add parameters for non-character keys (Ctrl, Alt, Meta, Shift)
-         * @param evt Event object to add parameters to
-         * @param deviceInputSystem DeviceInputSystem to pull values from
-         */
-        private static _checkNonCharacterKeys;
-        /**
-         * Create base event object
-         * @param elementToAttachTo Value to use as event target
-         * @returns
-         */
-        private static _createEvent;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class NativeDeviceInputSystemImpl implements IDeviceInputSystem {
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
-        private readonly _nativeInput;
-        constructor(nativeInput?: INativeInput);
-        /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of all the observables
-         */
-        dispose(): void;
-        /**
-         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
-         * @returns Object with dummy functions
-         */
-        private _createDummyNativeInput;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class WebDeviceInputSystemImpl implements IDeviceInputSystem {
-        /** onDeviceConnected property */
-        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
-        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
-        private _inputs;
-        private _gamepads;
-        private _keyboardActive;
-        private _pointerActive;
-        private _elementToAttachTo;
-        private _engine;
-        private _usingSafari;
-        private _onDeviceConnected;
-        private _keyboardDownEvent;
-        private _keyboardUpEvent;
-        private _keyboardBlurEvent;
-        private _pointerMoveEvent;
-        private _pointerDownEvent;
-        private _pointerUpEvent;
-        private _pointerWheelEvent;
-        private _pointerBlurEvent;
-        private _wheelEventName;
-        private _mouseId;
-        private _isUsingFirefox;
-        private _activeTouchIds;
-        private _rollingTouchId;
-        private _pointerInputClearObserver;
-        private _gamepadConnectedEvent;
-        private _gamepadDisconnectedEvent;
-        /** Max number of keycodes */
-        static MAX_KEYCODES: number;
-        /** Max number of pointer inputs */
-        static MAX_POINTER_INPUTS: number;
-        private _eventPrefix;
-        constructor(engine: Engine);
-        /**
-         * Configures events to work with an engine's active element
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of all the eventlisteners
-         */
-        dispose(): void;
-        /**
-         * Checks for existing connections to devices and register them, if necessary
-         * Currently handles gamepads and mouse
-         */
-        private _checkForConnectedDevices;
-        /**
-         * Add a gamepad to the DeviceInputSystem
-         * @param gamepad A single DOM Gamepad object
-         */
-        private _addGamePad;
-        /**
-         * Add pointer device to DeviceInputSystem
-         * @param deviceType Type of Pointer to add
-         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
-         * @param currentX Current X at point of adding
-         * @param currentY Current Y at point of adding
-         */
-        private _addPointerDevice;
-        /**
-         * Add device and inputs to device array
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param numberOfInputs Number of input entries to create for given device
-         */
-        private _registerDevice;
-        /**
-         * Given a specific device name, remove that device from the device map
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _unregisterDevice;
-        /**
-         * Handle all actions that come from keyboard interaction
-         */
-        private _handleKeyActions;
-        /**
-         * Handle all actions that come from pointer interaction
-         */
-        private _handlePointerActions;
-        /**
-         * Handle all actions that come from gamepad interaction
-         */
-        private _handleGamepadActions;
-        /**
-         * Update all non-event based devices with each frame
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         */
-        private _updateDevice;
-        /**
-         * Gets DeviceType from the device name
-         * @param deviceName Name of Device from DeviceInputSystem
-         * @returns DeviceType enum value
-         */
-        private _getGamepadDeviceType;
-        /**
-         * Get DeviceType from a given pointer/mouse/touch event.
-         * @param evt PointerEvent to evaluate
-         * @returns DeviceType interpreted from event
-         */
-        private _getPointerType;
-        /**
-         * Remove events from active input element
-         */
-        private _removeEvents;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class will take all inputs from Keyboard, Pointer, and
-     * any Gamepads and provide a polling system that all devices
-     * will use.  This class assumes that there will only be one
-     * pointer device and one keyboard.
-     */
-    export class DeviceInputSystem {
-        /**
-         * Observable for devices being connected
-         */
-        readonly onDeviceConnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable for devices being disconnected
-         */
-        readonly onDeviceDisconnectedObservable: Observable<{
-            deviceType: DeviceType;
-            deviceSlot: number;
-        }>;
-        /**
-         * Observable for changes to device input
-         */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
-        private _deviceInputSystem;
-        /** @hidden */
-        static _Create(engine: Engine): DeviceInputSystem;
-        /**
-         * DeviceInputSystem constructor
-         * @param deviceInputSystem Web or Native implementation of DeviceInputSystem
-         */
-        constructor(deviceInputSystem: IDeviceInputSystem);
-        /**
-         * Configure events to talk with DeviceInputSystem
-         */
-        configureEvents(): void;
-        /**
-         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-         * @param deviceType Enum specifiying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check if there's an instance of device on given DeviceInputSystem
-         * @param deviceType Enum specifiying device type
-         * @returns
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-        /**
-         * Dispose of DeviceInputSystem sub-elements
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Type to handle enforcement of inputs
-     */
-    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
-}
-declare module BABYLON {
-    /**
-     * Class that handles all input for a specific device
-     */
-    export class DeviceSource<T extends DeviceType> {
-        /** Type of device */
-        readonly deviceType: DeviceType;
-        /** "Slot" or index that device is referenced in */
-        readonly deviceSlot: number;
-        /**
-         * Observable to handle device input changes per device
-         */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
-        private readonly _deviceInputSystem;
-        /**
-         * Default Constructor
-         * @param deviceInputSystem Reference to DeviceInputSystem
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        constructor(deviceInputSystem: DeviceInputSystem, 
-        /** Type of device */
-        deviceType: DeviceType, 
-        /** "Slot" or index that device is referenced in */
-        deviceSlot?: number);
-        /**
-         * Get input for specific input
-         * @param inputIndex index of specific input on device
-         * @returns Input value from DeviceInputSystem
-         */
-        getInput(inputIndex: DeviceInput<T>): number;
-    }
-    /**
-     * Class to keep track of devices
-     */
-    export class DeviceSourceManager implements IDisposable {
-        /**
-         * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
-         */
-        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-        /**
-         * Observable to be triggered when after a device is disconnected
-         */
-        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
-        private readonly _devices;
-        private readonly _firstDevice;
-        private readonly _deviceInputSystem;
-        /**
-         * Default Constructor
-         * @param engine engine to pull input element from
-         */
-        constructor(engine: Engine);
-        /**
-         * Gets a DeviceSource, given a type and slot
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @returns DeviceSource object
-         */
-        getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>>;
-        /**
-         * Gets an array of DeviceSource objects for a given device type
-         * @param deviceType Enum specifying device type
-         * @returns Array of DeviceSource objects
-         */
-        getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>>;
-        /**
-         * Returns a read-only list of all available devices
-         * @returns Read-only array with active devices
-         */
-        getDevices(): ReadonlyArray<DeviceSource<DeviceType>>;
-        /**
-         * Dispose of DeviceInputSystem and other parts
-         */
-        dispose(): void;
-        /**
-         * Function to add device name to device list
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _addDevice;
-        /**
-         * Function to remove device name to device list
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _removeDevice;
-        /**
-         * Updates array storing first connected device of each type
-         * @param type Type of Device
-         */
-        private _updateFirstDevices;
-    }
-}
-declare module BABYLON {
-    /**
      * Defines the interface used by display changed events
      */
     export interface IDisplayChangedEventArgs {
@@ -44254,10 +44062,6 @@ declare module BABYLON {
          */
         isPointerLock: boolean;
         /**
-         * Stores instance of DeviceInputSystem
-         */
-        deviceInputSystem: DeviceInputSystem;
-        /**
          * Observable event triggered each time the rendering canvas is resized
          */
         onResizeObservable: Observable<Engine>;
@@ -44343,7 +44147,7 @@ declare module BABYLON {
         /**
          * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
          * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-         * See @TODO WEBGPU DOC PAGE for more details
+         * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
          */
         get compatibilityMode(): boolean;
         set compatibilityMode(mode: boolean);
@@ -44987,6 +44791,8 @@ declare module BABYLON {
         supportComputeShaders: boolean;
         /** Defines if sRGB texture formats are supported */
         supportSRGBBuffers: boolean;
+        /** Defines if transform feedbacks are supported */
+        supportTransformFeedbacks: boolean;
     }
 }
 declare module BABYLON {
@@ -45533,6 +45339,12 @@ declare module BABYLON {
          * Defines whether to adapt to the device's viewport characteristics (default: false)
          */
         adaptToDeviceRatio?: boolean;
+        /**
+         * If sRGB Buffer support is not set during construction, use this value to force a specific state
+         * This is added due to an issue when processing textures in chrome/edge/firefox
+         * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
+         */
+        forceSRGBBufferSupportState?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -45564,10 +45376,13 @@ declare module BABYLON {
          * Returns a string describing the current engine
          */
         get description(): string;
+        /** @hidden */
+        protected _name: string;
         /**
-         * Returns the name of the engine
+         * Gets or sets the name of the engine
          */
         get name(): string;
+        set name(value: string);
         /**
          * Returns the version of the engine
          */
@@ -46586,7 +46401,7 @@ declare module BABYLON {
          * @param options defines the options used to create the texture
          * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
          * @param source source type of the texture
-         * @returns a new render target texture stored in an InternalTexture
+         * @returns a new internal texture
          */
         _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation?: boolean, source?: InternalTextureSource): InternalTexture;
         /** @hidden */
@@ -48282,6 +48097,352 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Type to handle enforcement of inputs
+     */
+    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
+}
+declare module BABYLON {
+    /**
+     * Class that handles all input for a specific device
+     */
+    export class DeviceSource<T extends DeviceType> {
+        /** Type of device */
+        readonly deviceType: DeviceType;
+        /** "Slot" or index that device is referenced in */
+        readonly deviceSlot: number;
+        /**
+         * Observable to handle device input changes per device
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        private readonly _deviceInputSystem;
+        /**
+         * Default Constructor
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        constructor(deviceInputSystem: IDeviceInputSystem, 
+        /** Type of device */
+        deviceType: DeviceType, 
+        /** "Slot" or index that device is referenced in */
+        deviceSlot?: number);
+        /**
+         * Get input for specific input
+         * @param inputIndex index of specific input on device
+         * @returns Input value from DeviceInputSystem
+         */
+        getInput(inputIndex: DeviceInput<T>): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class to wrap DeviceInputSystem data into an event object
+     */
+    export class DeviceEventFactory {
+        /**
+         * Create device input events based on provided type and slot
+         *
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object
+         */
+        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent;
+        /**
+         * Creates pointer event
+         *
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Pointer)
+         */
+        private static _createPointerEvent;
+        /**
+         * Create Mouse Wheel Event
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Wheel)
+         */
+        private static _createWheelEvent;
+        /**
+         * Create Mouse Event
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Mouse)
+         */
+        private static _createMouseEvent;
+        /**
+         * Create Keyboard Event
+         * @param inputIndex Id of input to be checked
+         * @param currentState Current value for given input
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param elementToAttachTo HTMLElement to reference as target for inputs
+         * @returns IEvent object (Keyboard)
+         */
+        private static _createKeyboardEvent;
+        /**
+         * Add parameters for non-character keys (Ctrl, Alt, Meta, Shift)
+         * @param evt Event object to add parameters to
+         * @param deviceInputSystem DeviceInputSystem to pull values from
+         */
+        private static _checkNonCharacterKeys;
+        /**
+         * Create base event object
+         * @param elementToAttachTo Value to use as event target
+         * @returns
+         */
+        private static _createEvent;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class NativeDeviceInputSystem implements IDeviceInputSystem {
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        private readonly _nativeInput;
+        constructor(nativeInput?: INativeInput);
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the observables
+         */
+        dispose(): void;
+        /**
+         * For versions of BabylonNative that don't have the NativeInput plugin initialized, create a dummy version
+         * @returns Object with dummy functions
+         */
+        private _createDummyNativeInput;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebDeviceInputSystem implements IDeviceInputSystem {
+        /** onDeviceConnected property */
+        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
+        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        private _inputs;
+        private _gamepads;
+        private _keyboardActive;
+        private _pointerActive;
+        private _elementToAttachTo;
+        private readonly _engine;
+        private readonly _usingSafari;
+        private _onDeviceConnected;
+        private _keyboardDownEvent;
+        private _keyboardUpEvent;
+        private _keyboardBlurEvent;
+        private _pointerMoveEvent;
+        private _pointerDownEvent;
+        private _pointerUpEvent;
+        private _pointerWheelEvent;
+        private _pointerBlurEvent;
+        private _wheelEventName;
+        private _mouseId;
+        private readonly _isUsingFirefox;
+        private _activeTouchIds;
+        private _maxTouchPoints;
+        private _pointerInputClearObserver;
+        private _gamepadConnectedEvent;
+        private _gamepadDisconnectedEvent;
+        private _eventPrefix;
+        constructor(engine: Engine);
+        /**
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
+        /**
+         * Check for a specific device in the DeviceInputSystem
+         * @param deviceType Type of device to check for
+         * @returns bool with status of device's existence
+         */
+        isDeviceAvailable(deviceType: DeviceType): boolean;
+        /**
+         * Dispose of all the eventlisteners
+         */
+        dispose(): void;
+        /**
+         * Configures events to work with an engine's active element
+         */
+        private _configureEvents;
+        /**
+         * Checks for existing connections to devices and register them, if necessary
+         * Currently handles gamepads and mouse
+         */
+        private _checkForConnectedDevices;
+        /**
+         * Add a gamepad to the DeviceInputSystem
+         * @param gamepad A single DOM Gamepad object
+         */
+        private _addGamePad;
+        /**
+         * Add pointer device to DeviceInputSystem
+         * @param deviceType Type of Pointer to add
+         * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+         * @param currentX Current X at point of adding
+         * @param currentY Current Y at point of adding
+         */
+        private _addPointerDevice;
+        /**
+         * Add device and inputs to device array
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param numberOfInputs Number of input entries to create for given device
+         */
+        private _registerDevice;
+        /**
+         * Given a specific device name, remove that device from the device map
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _unregisterDevice;
+        /**
+         * Handle all actions that come from keyboard interaction
+         */
+        private _handleKeyActions;
+        /**
+         * Handle all actions that come from pointer interaction
+         */
+        private _handlePointerActions;
+        /**
+         * Handle all actions that come from gamepad interaction
+         */
+        private _handleGamepadActions;
+        /**
+         * Update all non-event based devices with each frame
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         */
+        private _updateDevice;
+        /**
+         * Gets DeviceType from the device name
+         * @param deviceName Name of Device from DeviceInputSystem
+         * @returns DeviceType enum value
+         */
+        private _getGamepadDeviceType;
+        /**
+         * Get DeviceType from a given pointer/mouse/touch event.
+         * @param evt PointerEvent to evaluate
+         * @returns DeviceType interpreted from event
+         */
+        private _getPointerType;
+        /**
+         * Remove events from active input element
+         */
+        private _removeEvents;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /** @hidden */
+            _deviceSourceManager: InternalDeviceSourceManager;
+        }
+    /** @hidden */
+    export class InternalDeviceSourceManager implements IDisposable {
+        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+        private readonly _devices;
+        private readonly _firstDevice;
+        private readonly _deviceInputSystem;
+        private _oninputChangedObserver;
+        static _Create(engine: Engine): InternalDeviceSourceManager;
+        private constructor();
+        getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number | undefined) => Nullable<DeviceSource<T>>;
+        getDeviceSources: <T extends DeviceType>(deviceType: T) => readonly DeviceSource<T>[];
+        getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        dispose(): void;
+        /**
+         * Function to add device name to device list
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _addDevice;
+        /**
+         * Function to remove device name to device list
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _removeDevice;
+        /**
+         * Updates array storing first connected device of each type
+         * @param type Type of Device
+         */
+        private _updateFirstDevices;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class to keep track of devices
+     */
+    export class DeviceSourceManager {
+        /**
+         * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
+         */
+        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+        /**
+         * Observable to be triggered when a device's input is changed
+         */
+        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        /**
+         * Observable to be triggered when after a device is disconnected
+         */
+        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+        private _deviceSourceManager;
+        /**
+         * Gets a DeviceSource, given a type and slot
+         */
+        getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number) => Nullable<DeviceSource<T>>;
+        /**
+         * Gets an array of DeviceSource objects for a given device type
+         */
+        getDeviceSources: <T extends DeviceType>(deviceType: T) => ReadonlyArray<DeviceSource<T>>;
+        /**
+         * Returns a read-only list of all available devices
+         */
+        getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        /**
+         * Default constructor
+         * @param engine Used to get canvas (if applicable)
+         */
+        constructor(engine: Engine);
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to manage all inputs for the scene.
      */
     export class InputManager {
@@ -48327,7 +48488,7 @@ declare module BABYLON {
         private _onKeyDown;
         private _onKeyUp;
         private _scene;
-        private _deviceInputSystem;
+        private _deviceSourceManager;
         /**
          * Creates a new InputManager
          * @param scene defines the hosting scene
@@ -49208,6 +49369,7 @@ declare module BABYLON {
         private _strategies;
         private _startingTimestamp;
         private _hasLoadedData;
+        private _isStarted;
         private readonly _customEventObservable;
         private readonly _eventRestoreSet;
         /**
@@ -49300,9 +49462,10 @@ declare module BABYLON {
          * Given a string containing file data, this function parses the file data into the datasets object.
          * It returns a boolean to indicate if this object was successfully loaded with the data.
          * @param data string content representing the file data.
+         * @param keepDatasetMeta if it should use reuse the existing dataset metadata
          * @returns true if the data was successfully loaded, false otherwise.
          */
-        loadFromFileData(data: string): boolean;
+        loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean;
         /**
          * Exports the datasets inside of the collector to a csv.
          */
@@ -49316,6 +49479,10 @@ declare module BABYLON {
          * Stops the collection of data.
          */
         stop(): void;
+        /**
+         * Returns if the perf collector has been started or not.
+         */
+        get isStarted(): boolean;
         /**
          * Disposes of the object
          */
@@ -51097,8 +51264,9 @@ declare module BABYLON {
         private checkCameraRenderTarget;
         /**
          * Resets the draw wrappers cache of all meshes
+         * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
          */
-        resetDrawCache(): void;
+        resetDrawCache(passId?: number): void;
         /**
          * Render the scene
          * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -54860,7 +55028,6 @@ declare module BABYLON {
         private _referenceSpace;
         private _baseLayerWrapper;
         private _baseLayerRTTProvider;
-        private _sessionEnded;
         private _xrNavigator;
         private _sessionMode;
         /**
@@ -54904,6 +55071,14 @@ declare module BABYLON {
          * or get the offset the player is currently at.
          */
         viewerReferenceSpace: XRReferenceSpace;
+        /**
+         * Are we currently in the XR loop?
+         */
+        inXRFrameLoop: boolean;
+        /**
+         * Are we in an XR session?
+         */
+        inXRSession: boolean;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -55033,6 +55208,12 @@ declare module BABYLON {
          * @returns a promise that resolves once the framerate has been set
          */
         updateTargetFrameRate(rate: number): Promise<void>;
+        /**
+         * Run a callback in the xr render loop
+         * @param callback the callback to call when in XR Frame
+         * @param ignoreIfNotInSession if no session is currently running, run it first thing on the next session
+         */
+        runInXRFrame(callback: () => void, ignoreIfNotInSession?: boolean): void;
         /**
          * Check if fixed foveation is supported on this device
          */
@@ -64157,6 +64338,7 @@ declare module BABYLON {
 declare module BABYLON.Debug {
     /**
          * The Axes viewer will show 3 axes in a specific point in space
+         * @see https://doc.babylonjs.com/toolsAndResources/utilities/World_Axes
          */
     export class AxesViewer {
         private _xAxis;
@@ -64691,6 +64873,8 @@ declare module BABYLON {
      * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
      * * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
      * * The parameter `scale` (float, default 1) is the value to scale the shape.
+     * * The parameter `closeShape` (boolean, default false) closes the shape when true.
+     * * The parameter `closePath` (boolean, default false) closes the path when true and no caps.
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
      * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
      * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
@@ -64710,6 +64894,8 @@ declare module BABYLON {
         path: Vector3[];
         scale?: number;
         rotation?: number;
+        closeShape?: boolean;
+        closePath?: boolean;
         cap?: number;
         updatable?: boolean;
         sideOrientation?: number;
@@ -64727,8 +64913,10 @@ declare module BABYLON {
      * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
      * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
      * * It must returns a float value that will be the scale value applied to the shape on each path point
-     * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray`
-     * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray`
+     * * The parameter `closeShape` (boolean, default false) forces the extrusion underlying ribbon to close all the shape paths in its `pathArray`
+     * * The parameter `closePath` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` when no caps
+     * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray` - depreciated in favor of closeShape
+     * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` - depreciated in favor of closePath
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
      * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
      * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape
@@ -64755,6 +64943,8 @@ declare module BABYLON {
         }>;
         ribbonCloseArray?: boolean;
         ribbonClosePath?: boolean;
+        closeShape?: boolean;
+        closePath?: boolean;
         cap?: number;
         updatable?: boolean;
         sideOrientation?: number;
@@ -66253,6 +66443,16 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Returns _native only after it has been defined by BabylonNative.
+     * @hidden
+     */
+    export function AcquireNativeObjectAsync(): Promise<INative>;
+    /**
+     * Registers a constructor on the _native object. See NativeXRFrame for an example.
+     * @hidden
+     */
+    export function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type): Promise<void>;
+    /**
      * Container for accessors for natively-stored mesh data buffers.
      */
     class NativeDataBuffer extends DataBuffer {
@@ -67190,14 +67390,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export interface IWebGPUPipelineContextVertexInputsCache {
-        indexBuffer: Nullable<GPUBuffer>;
-        indexOffset: number;
-        vertexStartSlot: number;
-        vertexBuffers: GPUBuffer[];
-        vertexOffsets: number[];
-    }
-    /** @hidden */
     export interface IWebGPURenderPipelineStageDescriptor {
         vertexStage: GPUProgrammableStage;
         fragmentStage?: GPUProgrammableStage;
@@ -67732,7 +67924,9 @@ declare module BABYLON {
         /** @hidden */
         _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
         /** @hidden */
-        _copyInvertYBindGroupd: GPUBindGroup;
+        _copyInvertYBindGroup: GPUBindGroup;
+        /** @hidden */
+        _copyInvertYBindGroupWithOfst: GPUBindGroup;
         private _webgpuTexture;
         private _webgpuMSAATexture;
         get underlyingResource(): Nullable<GPUTexture>;
@@ -67745,7 +67939,6 @@ declare module BABYLON {
         textureAdditionalUsages: number;
         constructor(existingTexture?: Nullable<GPUTexture>);
         set(hardwareTexture: GPUTexture): void;
-        setMSAATexture(hardwareTexture: GPUTexture): void;
         setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void;
         createView(descriptor?: GPUTextureViewDescriptor, createViewForWriting?: boolean): void;
         reset(): void;
@@ -67779,6 +67972,12 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Map a (renderable) texture format (GPUTextureFormat) to an index for fast lookup (in caches for eg)
+     */
+    export const renderableTextureFormatToIndex: {
+        [name: string]: number;
+    };
     /** @hidden */
     export class WebGPUTextureHelper {
         private _device;
@@ -67786,6 +67985,7 @@ declare module BABYLON {
         private _tintWASM;
         private _bufferManager;
         private _mipmapSampler;
+        private _ubCopyWithOfst;
         private _pipelines;
         private _compiledShaders;
         private _deferredReleaseTextures;
@@ -67797,7 +67997,6 @@ declare module BABYLON {
         private static _GetBlockInformationFromFormat;
         private static _IsHardwareTexture;
         private static _IsInternalTexture;
-        static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction;
         static IsImageBitmap(imageBitmap: ImageBitmap | {
             width: number;
             height: number;
@@ -67810,7 +68009,8 @@ declare module BABYLON {
         static IsCompressedFormat(format: GPUTextureFormat): boolean;
         static GetWebGPUTextureFormat(type: number, format: number, useSRGBBuffer?: boolean): GPUTextureFormat;
         static GetNumChannelsFromWebGPUTextureFormat(format: GPUTextureFormat): number;
-        invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
+        static HasStencilAspect(format: GPUTextureFormat): boolean;
+        invertYPreMultiplyAlpha(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, faceIndex?: number, mipLevel?: number, layers?: number, ofstX?: number, ofstY?: number, rectWidth?: number, rectHeight?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
         copyWithInvertY(srcTextureView: GPUTextureView, format: GPUTextureFormat, renderPassDescriptor: GPURenderPassDescriptor, commandEncoder?: GPUCommandEncoder): void;
         createTexture(imageBitmap: ImageBitmap | {
             width: number;
@@ -67825,8 +68025,8 @@ declare module BABYLON {
         generateMipmaps(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex?: number, commandEncoder?: GPUCommandEncoder): void;
         createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture;
         createMSAATexture(texture: InternalTexture, samples: number): void;
-        updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder): void;
-        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, commandEncoder?: GPUCommandEncoder, allowGPUOptimization?: boolean): void;
+        updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number): void;
+        updateTexture(imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas, texture: GPUTexture | InternalTexture, width: number, height: number, layers: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, invertY?: boolean, premultiplyAlpha?: boolean, offsetX?: number, offsetY?: number, allowGPUOptimization?: boolean): void;
         readPixels(texture: GPUTexture, x: number, y: number, width: number, height: number, format: GPUTextureFormat, faceIndex?: number, mipLevel?: number, buffer?: Nullable<ArrayBufferView>, noDataConversion?: boolean): Promise<ArrayBufferView>;
         releaseTexture(texture: InternalTexture | GPUTexture): void;
         destroyDeferredTextures(): void;
@@ -67857,6 +68057,7 @@ declare module BABYLON {
         private static _GetWrappingMode;
         private static _GetSamplerWrappingDescriptor;
         private static _GetSamplerDescriptor;
+        static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction;
         getSampler(sampler: TextureSampler, bypassCache?: boolean, hash?: number): GPUSampler;
     }
 }
@@ -67893,6 +68094,7 @@ declare module BABYLON {
         private _mrtAttachments1;
         private _mrtAttachments2;
         private _mrtFormats;
+        private _mrtEnabledMask;
         private _alphaBlendEnabled;
         private _alphaBlendFuncParams;
         private _alphaBlendEqParams;
@@ -67930,6 +68132,7 @@ declare module BABYLON {
         get colorFormats(): GPUTextureFormat[];
         readonly mrtAttachments: number[];
         readonly mrtTextureArray: InternalTexture[];
+        readonly mrtTextureCount: number;
         getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState?: number): GPURenderPipeline;
         endFrame(): void;
         setAlphaToCoverage(enabled: boolean): void;
@@ -67942,7 +68145,8 @@ declare module BABYLON {
         setDepthBias(depthBias: number): void;
         setDepthBiasSlopeScale(depthBiasSlopeScale: number): void;
         setColorFormat(format: GPUTextureFormat): void;
-        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setMRTAttachments(attachments: number[]): void;
+        setMRT(textureArray: InternalTexture[], textureCount?: number): void;
         setAlphaBlendEnabled(enabled: boolean): void;
         setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void;
         setWriteMask(mask: number): void;
@@ -67988,7 +68192,7 @@ declare module BABYLON {
     /** @hidden */
     class NodeState {
         values: {
-            [name: number]: NodeState;
+            [id: number]: NodeState;
         };
         pipeline: GPURenderPipeline;
         constructor();
@@ -68114,8 +68318,8 @@ declare module BABYLON {
         buffers: {
             [name: string]: Nullable<WebGPUDataBuffer>;
         };
-        materialContextUpdateId: number;
         indirectDrawBuffer?: GPUBuffer;
+        private _materialContextUpdateId;
         private _bufferManager;
         private _useInstancing;
         private _indirectDrawData?;
@@ -68187,9 +68391,10 @@ declare module BABYLON {
         private _bindGroups;
         private _depthTextureFormat;
         private _bundleCache;
+        private _keyTemp;
         setDepthStencilFormat(format: GPUTextureFormat | undefined): void;
         setColorFormat(format: GPUTextureFormat): void;
-        setMRTAttachments(attachments: number[], textureArray: InternalTexture[]): void;
+        setMRTAttachments(attachments: number[], textureArray: InternalTexture[], textureCount: number): void;
         constructor(device: GPUDevice, engine: WebGPUEngine, emptyVertexBuffer: VertexBuffer);
         clear(renderPass: Nullable<GPURenderPassEncoder>, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount?: number): Nullable<GPURenderBundle>;
     }
@@ -68287,6 +68492,13 @@ declare module BABYLON {
         endRenderTargetPass(currentRenderPass: GPURenderPassEncoder, gpuWrapper: WebGPUHardwareTexture): boolean;
         endFrame(mainRenderPass: Nullable<GPURenderPassEncoder>): void;
         reset(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class WebGPURenderTargetWrapper extends RenderTargetWrapper {
+        /** @hidden */
+        _defaultAttachments: number[];
     }
 }
 declare module BABYLON {
@@ -68560,10 +68772,6 @@ declare module BABYLON {
         /** Gets the currently enabled extensions on the WebGPU device */
         get enabledExtensions(): Immutable<GPUFeatureName[]>;
         /**
-         * Returns the name of the engine
-         */
-        get name(): string;
-        /**
          * Returns a string describing the current engine
          */
         get description(): string;
@@ -68583,7 +68791,7 @@ declare module BABYLON {
         /**
          * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
          * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-         * See @TODO WEBGPU DOC PAGE for more details
+         * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
          */
         get compatibilityMode(): boolean;
         set compatibilityMode(mode: boolean);
@@ -68778,7 +68986,7 @@ declare module BABYLON {
          */
         getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[];
         /**
-         * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+         * Activates an effect, making it the current one (ie. the one used for rendering)
          * @param effect defines the effect to activate
          */
         enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
@@ -68808,7 +69016,7 @@ declare module BABYLON {
          * @param options defines the options used to create the texture
          * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
          * @param source source type of the texture
-         * @returns a new render target texture stored in an InternalTexture
+         * @returns a new internal texture
          */
         _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation?: boolean, source?: InternalTextureSource): InternalTexture;
         /**
@@ -72102,6 +72310,10 @@ declare module BABYLON {
          * An event triggered when the effect layer changes its size.
          */
         onSizeChangedObservable: Observable<EffectLayer>;
+        /**
+         * Gets the main texture where the effect is rendered
+         */
+        get mainTexture(): RenderTargetTexture;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -74359,6 +74571,7 @@ declare module BABYLON {
         private _impostors;
         private _joints;
         private _subTimeStep;
+        private _uniqueIdCounter;
         /**
          * Gets the gravity vector used by the simulation
          */
@@ -74678,6 +74891,14 @@ declare module BABYLON {
          * The create custom shape handler function to be called when using BABYLON.PhysicsImposter.CustomImpostor
          */
         onCreateCustomShape: (impostor: PhysicsImpostor) => any;
+        /**
+         * The create custom mesh impostor handler function to support building custom mesh impostor vertex data
+         */
+        onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
+        /**
+         * The create custom convex hull impostor handler function to support building custom convex hull impostor vertex data
+         */
+        onCreateCustomConvexHullImpostor: (impostor: PhysicsImpostor) => any;
         private _isImpostorInContact;
         private _isImpostorPairInContact;
         private _stepSimulation;
@@ -79635,12 +79856,18 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Creates the VertexData for a tiled plane
-     * @param options an object used to set the following optional parameters for the box, required but can be empty
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
+     * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
       * * pattern a limited pattern arrangement depending on the number
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
       * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
       * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
       * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
       * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @returns the VertexData of the tiled plane
@@ -79661,22 +79888,21 @@ declare module BABYLON {
     }): VertexData;
     /**
      * Creates a tiled plane mesh
-     * * The parameter `pattern` will, depending on value, do nothing or
-     * * * flip (reflect about central vertical) alternate tiles across and up
-     * * * flip every tile on alternate rows
-     * * * rotate (180 degs) alternate tiles across and up
-     * * * rotate every tile on alternate rows
-     * * * flip and rotate alternate tiles across and up
-     * * * flip and rotate every tile on alternate rows
-     * * The parameter `tileSize` sets the size (float) of each tile side (default 1)
-     * * You can set some different tile dimensions by using the parameters `tileWidth` and `tileHeight` (both by default have the same value of `tileSize`)
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @see https://doc.babylonjs.com/how_to/set_shapes#box
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
      * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
+     * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
+      * * pattern a limited pattern arrangement depending on the number
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
+      * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+      * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+      * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
+      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
@@ -79706,12 +79932,22 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Creates the VertexData for a tiled box
-     * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * faceTiles sets the pattern, tile size and number of tiles for a face
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
+     * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
+      * * pattern sets the rotation or reflection pattern for the tiles,
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
+      * * depth of the box, overwrites size
+      * * tileSize sets the size of a tile
+      * * tileWidth sets the tile width and overwrites tileSize
+      * * tileHeight sets the tile width and overwrites tileSize
       * * faceUV an array of 6 Vector4 elements used to set different images to each box side
       * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @returns the VertexData of the box
+     * @returns the VertexData of the TiledBox
      */
     export function CreateTiledBoxVertexData(options: {
         pattern?: number;
@@ -79729,14 +79965,23 @@ declare module BABYLON {
         sideOrientation?: number;
     }): VertexData;
     /**
-     * Creates a box mesh
-     * faceTiles sets the pattern, tile size and number of tiles for a face     * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
-     * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-     * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-     * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+     * Creates a tiled box mesh
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
      * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
+     * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
+      * * pattern sets the rotation or reflection pattern for the tiles,
+      * * size of the box
+      * * width of the box, overwrites size
+      * * height of the box, overwrites size
+      * * depth of the box, overwrites size
+      * * tileSize sets the size of a tile
+      * * tileWidth sets the tile width and overwrites tileSize
+      * * tileHeight sets the tile width and overwrites tileSize
+      * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+      * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+      * * alignHorizontal places whole tiles aligned to the center, left or right of a row
+      * * alignVertical places whole tiles aligned to the center, left or right of a column
+      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * @param scene defines the hosting scene
      * @returns the box mesh
      */
@@ -79757,7 +80002,7 @@ declare module BABYLON {
     }, scene?: Nullable<Scene>): Mesh;
     /**
      * Class containing static functions to help procedurally build meshes
-     * @deprecated use CreateTildeBox instead
+     * @deprecated use CreateTiledBox instead
      */
     export const TiledBoxBuilder: {
         CreateTiledBox: typeof CreateTiledBox;
@@ -80119,6 +80364,7 @@ declare module BABYLON {
     /**
      * Creates the Mesh for a Geodesic Polyhedron
      * @see https://en.wikipedia.org/wiki/Geodesic_polyhedron
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/geodesic_poly
      * @param name defines the name of the mesh
      * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
      * * m number of horizontal steps along an isogrid
@@ -80152,64 +80398,6 @@ declare module BABYLON {
         frontUVs?: Vector4;
         backUVs?: Vector4;
     }, scene?: Nullable<Scene>): Mesh;
-}
-declare module BABYLON {
-    /**
-     * Creates the Mesh for a Goldberg Polyhedron
-     * @param name defines the name of the mesh
-     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
-     * * m number of horizontal steps along an isogrid
-     * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg, optional default 1
-     * * sizeX allows stretching in the x direction, optional, default size
-     * * sizeY allows stretching in the y direction, optional, default size
-     * * sizeZ allows stretching in the z direction, optional, default size
-     * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-     * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
-     * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-     * @param goldBergData polyhedronData defining the Goldberg polyhedron
-     * @returns GoldbergSphere mesh
-     */
-    export function CreateGoldbergVertexData(options: {
-        size?: number;
-        sizeX?: number;
-        sizeY?: number;
-        sizeZ?: number;
-        sideOrientation?: number;
-    }, goldbergData: PolyhedronData): VertexData;
-    /**
-     * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
-     * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
-     * @param name defines the name of the mesh
-     * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
-     * * m number of horizontal steps along an isogrid
-     * * n number of angled steps along an isogrid
-     * * size the size of the Goldberg, optional default 1
-     * * sizeX allows stretching in the x direction, optional, default size
-     * * sizeY allows stretching in the y direction, optional, default size
-     * * sizeZ allows stretching in the z direction, optional, default size
-     * * updatable defines if the mesh must be flagged as updatable
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @param scene defines the hosting scene
-     * @returns Goldberg mesh
-     */
-    export function CreateGoldberg(name: string, options: {
-        m?: number;
-        n?: number;
-        size?: number;
-        sizeX?: number;
-        sizeY?: number;
-        sizeZ?: number;
-        updatable?: boolean;
-        sideOrientation?: number;
-    }, scene?: Nullable<Scene>): Mesh;
-    /**
-     * Function to use when extending the mesh class to a Goldberg class
-     */
-    export const ExtendMeshToGoldberg: (mesh: Mesh) => Mesh;
 }
 declare module BABYLON {
     /**
@@ -85133,6 +85321,7 @@ declare module BABYLON {
         private _enableSmoothReflections;
         private _reflectionSamples;
         private _smoothSteps;
+        private _isSceneRightHanded;
         /**
          * Gets a string identifying the name of the class
          * @returns "ScreenSpaceReflectionPostProcess" string
@@ -86023,6 +86212,8 @@ declare module BABYLON {
         private _layoutCacheFormat;
         private _layoutCache;
         private _renderPassIds;
+        private _candidateSubMeshes;
+        private _excludedSubMeshes;
         private static _DEPTH_CLEAR_VALUE;
         private static _MIN_DEPTH;
         private static _MAX_DEPTH;
@@ -86068,8 +86259,9 @@ declare module BABYLON {
         /**
          * Renders transparent submeshes with depth peeling
          * @param transparentSubMeshes List of transparent meshes to render
+         * @returns The array of submeshes that could not be handled by this renderer
          */
-        render(transparentSubMeshes: SmartArray<SubMesh>): void;
+        render(transparentSubMeshes: SmartArray<SubMesh>): SmartArray<SubMesh>;
         /**
          * Disposes the depth peeling renderer and associated ressources
          */
@@ -90741,6 +90933,34 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    interface INativeXRFrame extends XRFrame {
+        getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
+    }
+    /** @hidden */
+    export class NativeXRFrame implements XRFrame {
+        private _nativeImpl;
+        private readonly _xrTransform;
+        private readonly _xrPose;
+        private readonly _xrPoseVectorData;
+        get session(): XRSession;
+        constructor(_nativeImpl: INativeXRFrame);
+        getPose(space: XRSpace, baseSpace: XRReferenceSpace): XRPose | undefined;
+        readonly fillPoses: any;
+        readonly getViewerPose: any;
+        readonly getHitTestResults: any;
+        readonly getHitTestResultsForTransientInput: () => never;
+        get trackedAnchors(): XRAnchorSet | undefined;
+        readonly createAnchor: any;
+        get worldInformation(): XRWorldInformation | undefined;
+        get detectedPlanes(): XRPlaneSet | undefined;
+        readonly getJointPose: any;
+        readonly fillJointRadii: any;
+        readonly getLightEstimate: () => never;
+        get featurePointCloud(): number[] | undefined;
+    }
+}
+declare module BABYLON {
     /**
      * Class not used, WebGPUCacheRenderPipelineTree is faster
      * @hidden
@@ -91861,6 +92081,7 @@ interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
 interface GPUImageCopyExternalImage {
     source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
     origin?: GPUOrigin2D; /* default={} */
+    flipY?: boolean; /* default=false */
 }
 
 interface GPUProgrammablePassEncoder {

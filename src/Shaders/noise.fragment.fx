@@ -52,6 +52,9 @@ float perlinNoise2D(float x,float y)
 }
 
 // Main
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     float x = abs(vUV.x);

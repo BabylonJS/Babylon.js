@@ -62,19 +62,35 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._hasAlpha = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get hasAlpha(): boolean {
         return this._hasAlpha;
     }
 
+    @serialize("getAlphaFromRGB")
+    private _getAlphaFromRGB = false;
     /**
      * Defines if the alpha value should be determined via the rgb values.
      * If true the luminance of the pixel might be used to find the corresponding alpha value.
      */
-    @serialize()
-    public getAlphaFromRGB = false;
+    public set getAlphaFromRGB(value: boolean) {
+        if (this._getAlphaFromRGB === value) {
+            return;
+        }
+        this._getAlphaFromRGB = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
+    }
+    public get getAlphaFromRGB() : boolean {
+        return this._getAlphaFromRGB;
+    }
 
     /**
      * Intensity or strength of the texture.
@@ -83,12 +99,27 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     @serialize()
     public level = 1;
 
+    @serialize("coordinatesIndex")
+    protected _coordinatesIndex = 0;
+
     /**
      * Define the UV channel to use starting from 0 and defaulting to 0.
      * This is part of the texture as textures usually maps to one uv set.
      */
-    @serialize()
-    public coordinatesIndex = 0;
+    public set coordinatesIndex(value: number) {
+        if (this._coordinatesIndex === value) {
+            return;
+        }
+        this._coordinatesIndex = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
+    }
+    public get coordinatesIndex(): number {
+        return this._coordinatesIndex;
+    }
 
     @serialize("coordinatesMode")
     protected _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
@@ -115,7 +146,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesMode = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get coordinatesMode(): number {

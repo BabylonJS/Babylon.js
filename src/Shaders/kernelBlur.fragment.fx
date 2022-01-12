@@ -26,6 +26,9 @@ varying vec2 sampleCenter;
 	#include<packingFunctions>
 #endif
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void)
 {
     float computedWeight = 0.0;

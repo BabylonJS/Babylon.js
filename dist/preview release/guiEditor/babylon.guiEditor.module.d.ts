@@ -674,6 +674,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
     import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
+    import { Mesh } from "babylonjs/Meshes/mesh";
     import { Plane } from "babylonjs/Maths/math.plane";
     import { PointerInfo } from "babylonjs/Events/pointerEvents";
     import { EventState } from "babylonjs/Misc/observable";
@@ -681,8 +682,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
-    export type FramePortData = {};
-    export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export enum ConstraintDirection {
         NONE = 0,
         X = 2,
@@ -694,7 +693,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _textureMesh;
+        _textureMesh: Mesh;
         _scene: Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
@@ -710,7 +709,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _isOverGUINode;
         private _clipboard;
         private _selectAll;
-        private _camera;
+        _camera: ArcRotateCamera;
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
@@ -721,6 +720,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -755,6 +755,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick?: boolean): boolean;
+        convertToPercentage(guiControl: Control, includeScale: boolean): void;
         onMove(evt: React.PointerEvent): void;
         getGroundPosition(): Nullable<Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
@@ -763,7 +764,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         createGUICanvas(): void;
         synchronizeLiveGUI(): void;
         addControls(scene: Scene, camera: ArcRotateCamera): void;
-        getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane): Vector3;
+        getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane, x?: number, y?: number): Vector3;
         panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3): Vector3;
         zoomWheel(p: PointerInfo, e: EventState, camera: ArcRotateCamera): number;
         zooming(delta: number, scene: Scene, camera: ArcRotateCamera, plane: Plane, ref: Vector3): void;
@@ -791,6 +792,99 @@ declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockO
         lock: boolean;
     }
 }
+declare module "babylonjs-gui-editor/diagram/guiGizmo" {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    export interface IGuiGizmoProps {
+        globalState: GlobalState;
+    }
+    enum ScalePointPosition {
+        Top = -1,
+        Left = -1,
+        Center = 0,
+        Right = 1,
+        Bottom = 1
+    }
+    interface IScalePoint {
+        position: Vector2;
+        horizontalPosition: ScalePointPosition;
+        verticalPosition: ScalePointPosition;
+        rotation: number;
+        isPivot: boolean;
+    }
+    class Rect {
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        constructor(left: number, top: number, right: number, bottom: number);
+        get center(): Vector2;
+        get width(): number;
+        get height(): number;
+    }
+    interface IGuiGizmoState {
+        canvasBounds: Rect;
+        scalePoints: IScalePoint[];
+        scalePointDragging: number;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
+        private _matrixCache;
+        private _responsive;
+        private _initH;
+        private _initW;
+        private _initX;
+        private _initY;
+        private _localBounds;
+        constructor(props: IGuiGizmoProps);
+        componentDidMount(): void;
+        /**
+         * Update the gizmo's positions
+         * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+         */
+        updateGizmo(force?: boolean): void;
+        private _resetMatrixArray;
+        /**
+         * This function calculates a local matrix for a node, including it's full transformation and pivot point
+         *
+         * @param node the node to calculate the matrix for
+         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+         * @returns a new matrix for the control
+         */
+        private _getNodeMatrix;
+        /**
+         * Using the node's tree, calculate its world matrix and return it
+         * @param node the node to calculate the matrix for
+         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+         * @returns the world matrix for this node
+         */
+        private _nodeToRTTWorldMatrix;
+        private _nodeToRTTSpace;
+        private _rttToLocalNodeSpace;
+        private _rttToCanvasSpace;
+        private _plane;
+        private _mousePointerToRTTSpace;
+        /**
+         * Get the scaling of a specific GUI control
+         * @param node the node for which we are getting the scaling
+         * @param relative should we return only the relative scaling (relative to the parent)
+         * @returns an X,Y vector of the scaling
+         */
+        getScale(node: Control, relative?: boolean): Vector2;
+        getRotation(node: Control, relative?: boolean): number;
+        onUp(evt?: React.PointerEvent): void;
+        private _onUp;
+        onMove(evt: React.PointerEvent): void;
+        private _onMove;
+        private _rotate;
+        private _computeLocalBounds;
+        private _dragLocalBounds;
+        private _updateNodeFromLocalBounds;
+        private _beginDraggingScalePoint;
+        render(): JSX.Element | null;
+    }
+}
 declare module "babylonjs-gui-editor/globalState" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
@@ -803,6 +897,7 @@ declare module "babylonjs-gui-editor/globalState" {
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { LockObject } from "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject";
+    import { GuiGizmoComponent } from "babylonjs-gui-editor/diagram/guiGizmo";
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -833,6 +928,7 @@ declare module "babylonjs-gui-editor/globalState" {
         controlCamera: boolean;
         selectionLock: boolean;
         workbench: WorkbenchComponent;
+        guiGizmo: GuiGizmoComponent;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
         onZoomObservable: Observable<void>;
         onFitToWindowObservable: Observable<void>;
@@ -850,6 +946,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onDraggingEndObservable: Observable<void>;
         onDraggingStartObservable: Observable<void>;
         onWindowResizeObservable: Observable<void>;
+        onGizmoUpdateRequireObservable: Observable<void>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -1670,7 +1767,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
@@ -3523,8 +3620,6 @@ declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
-    export type FramePortData = {};
-    export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export enum ConstraintDirection {
         NONE = 0,
         X = 2,
@@ -3536,7 +3631,7 @@ declare module GUIEDITOR {
         private _setConstraintDirection;
         private _mouseStartPointX;
         private _mouseStartPointY;
-        private _textureMesh;
+        _textureMesh: BABYLON.Mesh;
         _scene: BABYLON.Scene;
         private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
@@ -3552,7 +3647,7 @@ declare module GUIEDITOR {
         private _isOverGUINode;
         private _clipboard;
         private _selectAll;
-        private _camera;
+        _camera: BABYLON.ArcRotateCamera;
         private _cameraRadias;
         private _cameraMaxRadiasFactor;
         private _pasted;
@@ -3563,6 +3658,7 @@ declare module GUIEDITOR {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -3597,6 +3693,7 @@ declare module GUIEDITOR {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
+        convertToPercentage(guiControl: Control, includeScale: boolean): void;
         onMove(evt: React.PointerEvent): void;
         getGroundPosition(): BABYLON.Nullable<BABYLON.Vector3>;
         onDown(evt: React.PointerEvent<HTMLElement>): void;
@@ -3605,7 +3702,7 @@ declare module GUIEDITOR {
         createGUICanvas(): void;
         synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera): void;
-        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane): BABYLON.Vector3;
+        getPosition(scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, x?: number, y?: number): BABYLON.Vector3;
         panning(newPos: BABYLON.Vector3, initialPos: BABYLON.Vector3, inertia: number, ref: BABYLON.Vector3): BABYLON.Vector3;
         zoomWheel(p: BABYLON.PointerInfo, e: BABYLON.EventState, camera: BABYLON.ArcRotateCamera): number;
         zooming(delta: number, scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera, plane: BABYLON.Plane, ref: BABYLON.Vector3): void;
@@ -3631,6 +3728,95 @@ declare module GUIEDITOR {
          * Gets or set if the lock is engaged
          */
         lock: boolean;
+    }
+}
+declare module GUIEDITOR {
+    export interface IGuiGizmoProps {
+        globalState: GlobalState;
+    }
+    enum ScalePointPosition {
+        Top = -1,
+        Left = -1,
+        Center = 0,
+        Right = 1,
+        Bottom = 1
+    }
+    interface IScalePoint {
+        position: BABYLON.Vector2;
+        horizontalPosition: ScalePointPosition;
+        verticalPosition: ScalePointPosition;
+        rotation: number;
+        isPivot: boolean;
+    }
+    class Rect {
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        constructor(left: number, top: number, right: number, bottom: number);
+        get center(): BABYLON.Vector2;
+        get width(): number;
+        get height(): number;
+    }
+    interface IGuiGizmoState {
+        canvasBounds: Rect;
+        scalePoints: IScalePoint[];
+        scalePointDragging: number;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
+        private _matrixCache;
+        private _responsive;
+        private _initH;
+        private _initW;
+        private _initX;
+        private _initY;
+        private _localBounds;
+        constructor(props: IGuiGizmoProps);
+        componentDidMount(): void;
+        /**
+         * Update the gizmo's positions
+         * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+         */
+        updateGizmo(force?: boolean): void;
+        private _resetMatrixArray;
+        /**
+         * This function calculates a local matrix for a node, including it's full transformation and pivot point
+         *
+         * @param node the node to calculate the matrix for
+         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+         * @returns a new matrix for the control
+         */
+        private _getNodeMatrix;
+        /**
+         * Using the node's tree, calculate its world matrix and return it
+         * @param node the node to calculate the matrix for
+         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+         * @returns the world matrix for this node
+         */
+        private _nodeToRTTWorldMatrix;
+        private _nodeToRTTSpace;
+        private _rttToLocalNodeSpace;
+        private _rttToCanvasSpace;
+        private _plane;
+        private _mousePointerToRTTSpace;
+        /**
+         * Get the scaling of a specific GUI control
+         * @param node the node for which we are getting the scaling
+         * @param relative should we return only the relative scaling (relative to the parent)
+         * @returns an X,Y vector of the scaling
+         */
+        getScale(node: Control, relative?: boolean): BABYLON.Vector2;
+        getRotation(node: Control, relative?: boolean): number;
+        onUp(evt?: React.PointerEvent): void;
+        private _onUp;
+        onMove(evt: React.PointerEvent): void;
+        private _onMove;
+        private _rotate;
+        private _computeLocalBounds;
+        private _dragLocalBounds;
+        private _updateNodeFromLocalBounds;
+        private _beginDraggingScalePoint;
+        render(): JSX.Element | null;
     }
 }
 declare module GUIEDITOR {
@@ -3664,6 +3850,7 @@ declare module GUIEDITOR {
         controlCamera: boolean;
         selectionLock: boolean;
         workbench: WorkbenchComponent;
+        guiGizmo: GuiGizmoComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onFitToWindowObservable: BABYLON.Observable<void>;
@@ -3681,6 +3868,7 @@ declare module GUIEDITOR {
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
         onWindowResizeObservable: BABYLON.Observable<void>;
+        onGizmoUpdateRequireObservable: BABYLON.Observable<void>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -4351,7 +4539,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {

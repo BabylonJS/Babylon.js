@@ -3,6 +3,9 @@ varying vec2 vUV;
 uniform sampler2D textureSampler;
 uniform float degree;
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) 
 {
 	vec3 color = texture2D(textureSampler, vUV).rgb;

@@ -95,6 +95,9 @@ vec3 perturbNormal(vec3 viewDir, vec3 mixColor)
 #endif
 
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
