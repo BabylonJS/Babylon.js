@@ -353,8 +353,6 @@ export class TouchHolographicButton extends TouchButton3D {
                     importedFrontPlate.material = this._frontMaterial;
                 }
                 this._frontPlate = importedFrontPlate;
-
-
             });
 
         this._backPlate = CreateBox(
@@ -420,7 +418,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 this._backMaterial.albedoColor = this._backplateColor;
             }
         }
-        
+
         super._onToggle(newState);
     }
 

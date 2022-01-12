@@ -140,7 +140,7 @@ export class TouchButton3D extends Button3D {
     protected _onToggle(newState: boolean) {
         this._toggleState = newState;
         this.onToggleObservable.notifyObservers(newState);
-    };
+    }
 
     // Returns true if the collidable is in front of the button, or if the button has no front direction
     private _isInteractionInFrontOfButton(collidablePos: Vector3) {
