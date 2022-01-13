@@ -260,7 +260,7 @@ export class MultiMaterial extends Material {
         if (parsedMultiMaterial.materialsUniqueIds) {
             multiMaterial._waitingSubMaterialsUniqueIds = parsedMultiMaterial.materialsUniqueIds;
         } else {
-            parsedMultiMaterial.materialIds.forEach((subMatId: string) => multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId)));
+            parsedMultiMaterial.materials.forEach((subMatId: string) => multiMaterial.subMaterials.push(scene.getLastMaterialById(subMatId)));
         }
 
         return multiMaterial;
