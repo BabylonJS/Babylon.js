@@ -5,7 +5,9 @@ import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "./abstractMesh";
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { GoldbergCreationOption } from "./Builders/goldbergBuilder";
 
+declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
 declare type Mesh = import('./mesh').Mesh;
@@ -534,13 +536,15 @@ declare module "./mesh" {
         function CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
 
         /**
-         * Extends a mesh to a Goldberg mesh
-         * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
-         * @param mesh the mesh to convert
-         * @returns the extended mesh
-         * @deprecated Please use ExtendMeshToGoldberg instead
+         * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
+         * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
+         * @param name defines the name of the mesh
+         * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
+         * @param scene defines the hosting scene
+         * @returns Goldberg mesh
+         * @deprecated Please use MeshBuilder instead
          */
-        function ExtendToGoldberg(mesh: Mesh): Mesh;
+        function CreateGoldberg(name: string, options: GoldbergCreationOption, scene?: Nullable<Scene>): GoldbergMesh;
     }
 }
 
@@ -565,5 +569,5 @@ export const _injectLTSMesh = (Mesh: TypeofMesh) => {
     Mesh.CreateIcoSphere = Mesh.CreateIcoSphere || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateDecal = Mesh.CreateDecal || (() => { throw _WarnImport("MeshBuilder"); });
     Mesh.CreateCapsule = Mesh.CreateCapsule || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.ExtendToGoldberg = Mesh.ExtendToGoldberg || (() => { throw _WarnImport("MeshBuilder"); });
+    Mesh.CreateGoldberg = Mesh.CreateGoldberg || (() => { throw _WarnImport("MeshBuilder"); });
 };

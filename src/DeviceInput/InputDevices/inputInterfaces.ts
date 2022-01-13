@@ -1,7 +1,7 @@
 import { IEvent } from "../../Events/deviceInputEvents";
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
-import { DeviceType } from "../InputDevices/deviceEnums";
+import { DeviceType } from "./deviceEnums";
 
 /**
  * Interface for Observables in DeviceInputSystem
@@ -84,11 +84,6 @@ export interface IDeviceInputSystem extends IDisposable {
      * Callback for when an input is changed
      */
     onInputChanged: (deviceEvent: IDeviceEvent) => void;
-
-    /**
-     * Configures events to work with an engine's active element
-     */
-    configureEvents(): void;
 
     // Functions
     /**

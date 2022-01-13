@@ -260,43 +260,47 @@ void main(void) {
     #ifdef REFLECTION
         reflectionOutParams reflectionOut;
 
-        reflectionBlock(
-            vPositionW,
-            normalW,
-            alphaG,
-            vReflectionMicrosurfaceInfos,
-            vReflectionInfos,
-            vReflectionColor,
-        #ifdef ANISOTROPIC
-            anisotropicOut,
-        #endif
-        #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            NdotVUnclamped,
-        #endif
-        #ifdef LINEARSPECULARREFLECTION
-            roughness,
-        #endif
-            reflectionSampler,
-        #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-            vEnvironmentIrradiance,
-        #endif
-        #ifdef USESPHERICALFROMREFLECTIONMAP
-            #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                reflectionMatrix,
+        #ifndef USE_CUSTOM_REFLECTION
+            reflectionBlock(
+                vPositionW,
+                normalW,
+                alphaG,
+                vReflectionMicrosurfaceInfos,
+                vReflectionInfos,
+                vReflectionColor,
+            #ifdef ANISOTROPIC
+                anisotropicOut,
             #endif
+            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                NdotVUnclamped,
+            #endif
+            #ifdef LINEARSPECULARREFLECTION
+                roughness,
+            #endif
+                reflectionSampler,
+            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                vEnvironmentIrradiance,
+            #endif
+            #ifdef USESPHERICALFROMREFLECTIONMAP
+                #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
+                    reflectionMatrix,
+                #endif
+            #endif
+            #ifdef USEIRRADIANCEMAP
+                irradianceSampler,
+            #endif
+            #ifndef LODBASEDMICROSFURACE
+                reflectionSamplerLow,
+                reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
+            #endif
+                reflectionOut
+            );
+        #else
+            #define CUSTOM_REFLECTION
         #endif
-        #ifdef USEIRRADIANCEMAP
-            irradianceSampler,
-        #endif
-        #ifndef LODBASEDMICROSFURACE
-            reflectionSamplerLow,
-            reflectionSamplerHigh,
-        #endif
-        #ifdef REALTIME_FILTERING
-            vReflectionFilteringInfo,
-        #endif
-            reflectionOut
-        );
     #endif
 
     // ___________________ Compute Reflectance aka R0 F0 info _________________________

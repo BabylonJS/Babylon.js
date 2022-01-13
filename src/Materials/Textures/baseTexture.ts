@@ -62,19 +62,35 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._hasAlpha = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get hasAlpha(): boolean {
         return this._hasAlpha;
     }
 
+    @serialize("getAlphaFromRGB")
+    private _getAlphaFromRGB = false;
     /**
      * Defines if the alpha value should be determined via the rgb values.
      * If true the luminance of the pixel might be used to find the corresponding alpha value.
      */
-    @serialize()
-    public getAlphaFromRGB = false;
+    public set getAlphaFromRGB(value: boolean) {
+        if (this._getAlphaFromRGB === value) {
+            return;
+        }
+        this._getAlphaFromRGB = value;
+        if (this._scene) {
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
+    }
+    public get getAlphaFromRGB() : boolean {
+        return this._getAlphaFromRGB;
+    }
 
     /**
      * Intensity or strength of the texture.
@@ -96,7 +112,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesIndex = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get coordinatesIndex(): number {
@@ -128,7 +146,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesMode = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
     }
     public get coordinatesMode(): number {
