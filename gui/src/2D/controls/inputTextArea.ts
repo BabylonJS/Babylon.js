@@ -108,17 +108,16 @@ export class InputTextArea extends InputText {
             return;
         }
 
-        //select all
-        if (evt && (evt.ctrlKey || evt.metaKey) && keyCode === 65) {
-            this._selectAllText();
-            evt.preventDefault();
-            return;
-        }
-
         this._oldlines = this._lines.map(l => l.text);;
 
         // Specific cases
         switch (keyCode) {
+            case 65: // A - select all
+                if (evt && (evt.ctrlKey || evt.metaKey)) {
+                    this._selectAllText();
+                    evt.preventDefault();
+                    return;
+                }
             case 32: //SPACE
                 key = " "; //ie11 key for space is "Spacebar"
                 break;
