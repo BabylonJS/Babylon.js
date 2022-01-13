@@ -4743,9 +4743,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param result defines the ray where to store the picking ray
      * @param camera defines the camera to use for the picking
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
+     * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
      * @returns the current scene
      */
-    public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
+    public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false, enableDistantPicking = false): Scene {
         throw _WarnImport("Ray");
     }
 

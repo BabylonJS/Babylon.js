@@ -720,6 +720,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -799,17 +800,49 @@ declare module "babylonjs-gui-editor/diagram/guiGizmo" {
     export interface IGuiGizmoProps {
         globalState: GlobalState;
     }
-    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
-        scalePoints: HTMLDivElement[];
-        private _scalePointIndex;
-        private _pointerData;
-        private _htmlPoints;
+    enum ScalePointPosition {
+        Top = -1,
+        Left = -1,
+        Center = 0,
+        Right = 1,
+        Bottom = 1
+    }
+    interface IScalePoint {
+        position: Vector2;
+        horizontalPosition: ScalePointPosition;
+        verticalPosition: ScalePointPosition;
+        rotation: number;
+        isPivot: boolean;
+    }
+    class Rect {
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        constructor(left: number, top: number, right: number, bottom: number);
+        get center(): Vector2;
+        get width(): number;
+        get height(): number;
+    }
+    interface IGuiGizmoState {
+        canvasBounds: Rect;
+        scalePoints: IScalePoint[];
+        scalePointDragging: number;
+        isRotating: boolean;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
         private _matrixCache;
         private _responsive;
+        private _initH;
+        private _initW;
+        private _initX;
+        private _initY;
+        private _localBounds;
+        private _rotation;
         constructor(props: IGuiGizmoProps);
         componentDidMount(): void;
         /**
-         * Update the gizmo's corners positions
+         * Update the gizmo's positions
          * @param force should the update be forced. otherwise it will be updated only when the pointer is down
          */
         updateGizmo(force?: boolean): void;
@@ -842,29 +875,17 @@ declare module "babylonjs-gui-editor/diagram/guiGizmo" {
          */
         getScale(node: Control, relative?: boolean): Vector2;
         getRotation(node: Control, relative?: boolean): number;
-        createBaseGizmo(): void;
         onUp(evt?: React.PointerEvent): void;
         private _onUp;
         onMove(evt: React.PointerEvent): void;
-        private _initH;
-        private _initW;
-        private _initX;
-        private _initY;
         private _onMove;
-        /**
-         * Calculate the 4 corners in node space
-         * @param node The node to use
-         */
-        private _nodeToCorners;
-        /**
-         * Computer the node's width, height, top and left, using the 4 corners
-         * @param node the node we use
-         */
-        private _updateNodeFromCorners;
         private _rotate;
-        private _setNodeCorner;
-        private _setMousePosition;
-        render(): null;
+        private _computeLocalBounds;
+        private _dragLocalBounds;
+        private _updateNodeFromLocalBounds;
+        private _beginDraggingScalePoint;
+        private _beginRotate;
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-gui-editor/globalState" {
@@ -3640,6 +3661,7 @@ declare module GUIEDITOR {
         private _selectionDepth;
         private _doubleClick;
         private _lockMainSelection;
+        _liveGuiTextureRerender: boolean;
         get globalState(): GlobalState;
         get nodes(): Control[];
         get selectedGuiNodes(): Control[];
@@ -3715,17 +3737,49 @@ declare module GUIEDITOR {
     export interface IGuiGizmoProps {
         globalState: GlobalState;
     }
-    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps> {
-        scalePoints: HTMLDivElement[];
-        private _scalePointIndex;
-        private _pointerData;
-        private _htmlPoints;
+    enum ScalePointPosition {
+        Top = -1,
+        Left = -1,
+        Center = 0,
+        Right = 1,
+        Bottom = 1
+    }
+    interface IScalePoint {
+        position: BABYLON.Vector2;
+        horizontalPosition: ScalePointPosition;
+        verticalPosition: ScalePointPosition;
+        rotation: number;
+        isPivot: boolean;
+    }
+    class Rect {
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        constructor(left: number, top: number, right: number, bottom: number);
+        get center(): BABYLON.Vector2;
+        get width(): number;
+        get height(): number;
+    }
+    interface IGuiGizmoState {
+        canvasBounds: Rect;
+        scalePoints: IScalePoint[];
+        scalePointDragging: number;
+        isRotating: boolean;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
         private _matrixCache;
         private _responsive;
+        private _initH;
+        private _initW;
+        private _initX;
+        private _initY;
+        private _localBounds;
+        private _rotation;
         constructor(props: IGuiGizmoProps);
         componentDidMount(): void;
         /**
-         * Update the gizmo's corners positions
+         * Update the gizmo's positions
          * @param force should the update be forced. otherwise it will be updated only when the pointer is down
          */
         updateGizmo(force?: boolean): void;
@@ -3758,29 +3812,17 @@ declare module GUIEDITOR {
          */
         getScale(node: Control, relative?: boolean): BABYLON.Vector2;
         getRotation(node: Control, relative?: boolean): number;
-        createBaseGizmo(): void;
         onUp(evt?: React.PointerEvent): void;
         private _onUp;
         onMove(evt: React.PointerEvent): void;
-        private _initH;
-        private _initW;
-        private _initX;
-        private _initY;
         private _onMove;
-        /**
-         * Calculate the 4 corners in node space
-         * @param node The node to use
-         */
-        private _nodeToCorners;
-        /**
-         * Computer the node's width, height, top and left, using the 4 corners
-         * @param node the node we use
-         */
-        private _updateNodeFromCorners;
         private _rotate;
-        private _setNodeCorner;
-        private _setMousePosition;
-        render(): null;
+        private _computeLocalBounds;
+        private _dragLocalBounds;
+        private _updateNodeFromLocalBounds;
+        private _beginDraggingScalePoint;
+        private _beginRotate;
+        render(): JSX.Element | null;
     }
 }
 declare module GUIEDITOR {

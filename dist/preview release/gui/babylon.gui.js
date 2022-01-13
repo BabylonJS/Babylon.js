@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -562,6 +562,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./controls/control */ "./2D/controls/control.ts");
 /* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./measure */ "./2D/measure.ts");
+
 
 
 
@@ -1701,8 +1702,10 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
-        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial", mesh.getScene());
+        // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
+        var uniqueId = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RandomGUID"])();
+        var result = new AdvancedDynamicTexture("AdvancedDynamicTexture for " + mesh.name + " [" + uniqueId + "]", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
+        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial for " + mesh.name + " [" + uniqueId + "]", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
         material.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
@@ -5397,6 +5400,19 @@ var Control = /** @class */ (function () {
         }
         return this.parent.getAscendantOfClass(className);
     };
+    /**
+     * Mark control element as dirty
+     * @param force force non visible elements to be marked too
+     */
+    Control.prototype.markAsDirty = function (force) {
+        this._markAsDirty(force);
+    };
+    /**
+     * Mark the element and its children as dirty
+     */
+    Control.prototype.markAllAsDirty = function () {
+        this._markAllAsDirty();
+    };
     /** @hidden */
     Control.prototype._resetFontCache = function () {
         this._fontSet = true;
@@ -5797,6 +5813,7 @@ var Control = /** @class */ (function () {
         }
     };
     Control.prototype._evaluateClippingState = function (parentMeasure) {
+        this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
@@ -13964,6 +13981,10 @@ var TextWrapping;
      * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
      */
     TextWrapping[TextWrapping["Ellipsis"] = 2] = "Ellipsis";
+    /**
+     * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+     */
+    TextWrapping[TextWrapping["WordWrapEllipsis"] = 3] = "WordWrapEllipsis";
 })(TextWrapping || (TextWrapping = {}));
 /**
  * Class used to create text block control
@@ -14226,7 +14247,7 @@ var TextBlock = /** @class */ (function (_super) {
         }
         _super.prototype._processMeasures.call(this, parentMeasure, context);
         // Prepare lines
-        this._lines = this._breakLines(this._currentMeasure.width, context);
+        this._lines = this._breakLines(this._currentMeasure.width, this._currentMeasure.height, context);
         this.onLinesReadyObservable.notifyObservers(this);
         var maxLineWidth = 0;
         for (var i = 0; i < this._lines.length; i++) {
@@ -14318,7 +14339,7 @@ var TextBlock = /** @class */ (function (_super) {
             context.miterLimit = 2;
         }
     };
-    TextBlock.prototype._breakLines = function (refWidth, context) {
+    TextBlock.prototype._breakLines = function (refWidth, refHeight, context) {
         var lines = [];
         var _lines = this.text.split("\n");
         if (this._textWrapping === TextWrapping.Ellipsis) {
@@ -14333,9 +14354,15 @@ var TextBlock = /** @class */ (function (_super) {
                 lines.push.apply(lines, this._parseLineWordWrap(_line, refWidth, context));
             }
         }
-        else {
+        else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
             for (var _b = 0, _lines_3 = _lines; _b < _lines_3.length; _b++) {
                 var _line = _lines_3[_b];
+                lines.push.apply(lines, this._parseLineWordWrapEllipsis(_line, refWidth, refHeight, context));
+            }
+        }
+        else {
+            for (var _c = 0, _lines_4 = _lines; _c < _lines_4.length; _c++) {
+                var _line = _lines_4[_c];
                 lines.push(this._parseLine(_line, context));
             }
         }
@@ -14399,6 +14426,24 @@ var TextBlock = /** @class */ (function (_super) {
         lines.push({ text: line, width: lineWidth });
         return lines;
     };
+    TextBlock.prototype._parseLineWordWrapEllipsis = function (line, width, height, context) {
+        if (line === void 0) { line = ""; }
+        var lines = this._parseLineWordWrap(line, width, context);
+        for (var n = 1; n <= lines.length; n++) {
+            var currentHeight = this._computeHeightForLinesOf(n);
+            if (currentHeight > height && n > 1) {
+                var lastLine = lines[n - 2];
+                var currentLine = lines[n - 1];
+                lines[n - 2] = this._parseLineEllipsis("" + (lastLine.text + currentLine.text), width, context);
+                var linesToRemove = lines.length - n + 1;
+                for (var i = 0; i < linesToRemove; i++) {
+                    lines.pop();
+                }
+                return lines;
+            }
+        }
+        return lines;
+    };
     TextBlock.prototype._renderLines = function (context) {
         var height = this._currentMeasure.height;
         var rootY = 0;
@@ -14428,6 +14473,20 @@ var TextBlock = /** @class */ (function (_super) {
             rootY += this._fontOffset.height;
         }
     };
+    TextBlock.prototype._computeHeightForLinesOf = function (lineCount) {
+        var newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
+        if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
+            var lineSpacing = 0;
+            if (this._lineSpacing.isPixel) {
+                lineSpacing = this._lineSpacing.getValue(this._host);
+            }
+            else {
+                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+            }
+            newHeight += (lineCount - 1) * lineSpacing;
+        }
+        return newHeight;
+    };
     /**
      * Given a width constraint applied on the text block, find the expected height
      * @returns expected height
@@ -14435,26 +14494,15 @@ var TextBlock = /** @class */ (function (_super) {
     TextBlock.prototype.computeExpectedHeight = function () {
         var _a;
         if (this.text && this.widthInPixels) {
-            // Shoudl abstract platform instead of using LastCreatedEngine
+            // Should abstract platform instead of using LastCreatedEngine
             var context_1 = (_a = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine) === null || _a === void 0 ? void 0 : _a.createCanvas(0, 0).getContext("2d");
             if (context_1) {
                 this._applyStates(context_1);
                 if (!this._fontOffset) {
                     this._fontOffset = _control__WEBPACK_IMPORTED_MODULE_3__["Control"]._GetFontOffset(context_1.font);
                 }
-                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, context_1);
-                var newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lines.length;
-                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                    var lineSpacing = 0;
-                    if (this._lineSpacing.isPixel) {
-                        lineSpacing = this._lineSpacing.getValue(this._host);
-                    }
-                    else {
-                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
-                    }
-                    newHeight += (lines.length - 1) * lineSpacing;
-                }
-                return newHeight;
+                var lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, this.heightInPixels - this._paddingTopInPixels - this._paddingBottomInPixels, context_1);
+                return this._computeHeightForLinesOf(lines.length);
             }
         }
         return 0;
@@ -18329,7 +18377,8 @@ var HolographicSlate = /** @class */ (function (_super) {
         }
     };
     HolographicSlate.prototype._applyContentViewport = function () {
-        if (this._contentPlate.material && this._contentPlate.material.albedoTexture) {
+        var _a;
+        if (((_a = this._contentPlate) === null || _a === void 0 ? void 0 : _a.material) && this._contentPlate.material.albedoTexture) {
             var tex = this._contentPlate.material.albedoTexture;
             tex.uScale = this._contentScaleRatio;
             tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;
@@ -18535,7 +18584,7 @@ var HolographicSlate = /** @class */ (function (_super) {
 /*!******************************!*\
   !*** ./3D/controls/index.ts ***!
   \******************************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, VolumeBasedPanel, HolographicBackplate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18597,15 +18646,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _touchHolographicMenu__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./touchHolographicMenu */ "./3D/controls/touchHolographicMenu.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _touchHolographicMenu__WEBPACK_IMPORTED_MODULE_18__["TouchHolographicMenu"]; });
 
-/* harmony import */ var _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./touchToggleButton3D */ "./3D/controls/touchToggleButton3D.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _touchToggleButton3D__WEBPACK_IMPORTED_MODULE_19__["TouchToggleButton3D"]; });
+/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_19__["VolumeBasedPanel"]; });
 
-/* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_20__["VolumeBasedPanel"]; });
-
-/* harmony import */ var _holographicBackplate__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./holographicBackplate */ "./3D/controls/holographicBackplate.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _holographicBackplate__WEBPACK_IMPORTED_MODULE_21__["HolographicBackplate"]; });
-
+/* harmony import */ var _holographicBackplate__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./holographicBackplate */ "./3D/controls/holographicBackplate.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _holographicBackplate__WEBPACK_IMPORTED_MODULE_20__["HolographicBackplate"]; });
 
 
 
@@ -18765,13 +18810,16 @@ var NearMenu = /** @class */ (function (_super) {
             return this._isPinned;
         },
         set: function (value) {
+            // Tell the pin button to toggle if this was called manually, for clean state control
+            if (this._pinButton.isToggled !== value) {
+                this._pinButton.isToggled = value;
+                return;
+            }
             this._isPinned = value;
-            if (this._isPinned) {
-                this._pinMaterial.emissiveColor.copyFromFloats(0.25, 0.4, 0.95);
+            if (value) {
                 this._defaultBehavior.followBehaviorEnabled = false;
             }
             else {
-                this._pinMaterial.emissiveColor.copyFromFloats(0.08, 0.15, 0.55);
                 this._defaultBehavior.followBehaviorEnabled = true;
             }
         },
@@ -18784,12 +18832,11 @@ var NearMenu = /** @class */ (function (_super) {
         control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
         control.parent = this;
         control._host = this._host;
-        control.onPointerClickObservable.add(function () { return (_this.isPinned = !_this.isPinned); });
+        control.isToggleButton = true;
+        control.onToggleObservable.add(function (newState) { _this.isPinned = newState; });
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);
             control.scaling.scaleInPlace(_touchHolographicMenu__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicMenu"].MENU_BUTTON_SCALE);
-            this._pinMaterial = control.backMaterial;
-            this._pinMaterial.diffuseColor.copyFromFloats(0, 0, 0);
             if (control.node) {
                 control.node.parent = parent;
             }
@@ -19538,6 +19585,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Class used to create a touchable button in 3D
  */
@@ -19551,6 +19599,13 @@ var TouchButton3D = /** @class */ (function (_super) {
     function TouchButton3D(name, collisionMesh) {
         var _this = _super.call(this, name) || this;
         _this._isNearPressed = false;
+        _this._isToggleButton = false;
+        _this._toggleState = false;
+        _this._toggleButtonCallback = function () { _this._onToggle(!_this._toggleState); };
+        /**
+         * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
+         */
+        _this.onToggleObservable = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         _this.collidableFrontDirection = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
         if (collisionMesh) {
             _this.collisionMesh = collisionMesh;
@@ -19608,6 +19663,53 @@ var TouchButton3D = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TouchButton3D.prototype, "isToggleButton", {
+        get: function () {
+            return this._isToggleButton;
+        },
+        /**
+         * Setter for if this TouchButton3D should be treated as a toggle button
+         * @param value If this TouchHolographicButton should act like a toggle button
+         */
+        set: function (value) {
+            if (value === this._isToggleButton) {
+                return;
+            }
+            this._isToggleButton = value;
+            if (value) {
+                this.onPointerUpObservable.add(this._toggleButtonCallback);
+            }
+            else {
+                this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+                // Safety check, reset the button if it's toggled on but no longer a toggle button
+                if (this._toggleState) {
+                    this._onToggle(false);
+                }
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TouchButton3D.prototype, "isToggled", {
+        get: function () {
+            return this._toggleState;
+        },
+        /**
+         * A public entrypoint to set the toggle state of the TouchHolographicButton. Only works if 'isToggleButton' is true
+         * @param newState The new state to set the TouchHolographicButton's toggle state to
+         */
+        set: function (newState) {
+            if (this._isToggleButton && this._toggleState !== newState) {
+                this._onToggle(newState);
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    TouchButton3D.prototype._onToggle = function (newState) {
+        this._toggleState = newState;
+        this.onToggleObservable.notifyObservers(newState);
+    };
     // Returns true if the collidable is in front of the button, or if the button has no front direction
     TouchButton3D.prototype._isInteractionInFrontOfButton = function (collidablePos) {
         return this._getInteractionHeight(collidablePos, this._collisionMesh.getAbsolutePosition()) > 0;
@@ -19657,6 +19759,9 @@ var TouchButton3D = /** @class */ (function (_super) {
      */
     TouchButton3D.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
+        // Clean up toggle observables
+        this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+        this.onToggleObservable.clear();
         if (this._collisionMesh) {
             this._collisionMesh.dispose();
         }
@@ -19681,12 +19786,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _materials_fluentButton_fluentButtonMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../materials/fluentButton/fluentButtonMaterial */ "./3D/materials/fluentButton/fluentButtonMaterial.ts");
-/* harmony import */ var _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../2D/controls/stackPanel */ "./2D/controls/stackPanel.ts");
-/* harmony import */ var _2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../2D/controls/image */ "./2D/controls/image.ts");
-/* harmony import */ var _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../2D/controls/textBlock */ "./2D/controls/textBlock.ts");
-/* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
-/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
+/* harmony import */ var _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../materials/fluent/fluentMaterial */ "./3D/materials/fluent/fluentMaterial.ts");
+/* harmony import */ var _materials_fluentButton_fluentButtonMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/fluentButton/fluentButtonMaterial */ "./3D/materials/fluentButton/fluentButtonMaterial.ts");
+/* harmony import */ var _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../2D/controls/stackPanel */ "./2D/controls/stackPanel.ts");
+/* harmony import */ var _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../2D/controls/image */ "./2D/controls/image.ts");
+/* harmony import */ var _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../2D/controls/textBlock */ "./2D/controls/textBlock.ts");
+/* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
+/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
+
 
 
 
@@ -19721,6 +19828,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         _this._isBackplateVisible = true;
         _this._frontPlateDepth = 0.5;
         _this._backPlateDepth = 0.04;
+        _this._backplateColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.08, 0.15, 0.55);
+        _this._backplateToggledColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.25, 0.4, 0.95);
         _this._shareMaterials = shareMaterials;
         _this.pointerEnterAnimation = function () {
             _this._frontMaterial.leftBlobEnable = true;
@@ -19748,7 +19857,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             if (_this._frontPlate && _this._isNearPressed) {
                 var scale = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
                 if (_this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
-                    var interactionHeight = _this._getInteractionHeight(position, _this._backPlate.position) / scale.z;
+                    var interactionHeight = _this._getInteractionHeight(position, _this._backPlate.getAbsolutePosition()) / scale.z;
                     interactionHeight = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(interactionHeight - (_this._backPlateDepth / 2), 0.2 * _this._frontPlateDepth, _this._frontPlateDepth);
                     _this._frontPlate.scaling.z = interactionHeight;
                     _this._frontPlate.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(_this._frontPlate._scene.useRightHandedSystem).scale((_this._frontPlateDepth - interactionHeight) / 2);
@@ -19825,8 +19934,8 @@ var TouchHolographicButton = /** @class */ (function (_super) {
                 this._tooltipMesh.isPickable = false;
                 this._tooltipMesh.parent = this._backPlate;
                 // Create text texture for the tooltip
-                this._tooltipTexture = _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_6__["AdvancedDynamicTexture"].CreateForMesh(this._tooltipMesh);
-                this._tooltipTextBlock = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__["TextBlock"]();
+                this._tooltipTexture = _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_7__["AdvancedDynamicTexture"].CreateForMesh(this._tooltipMesh);
+                this._tooltipTextBlock = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_6__["TextBlock"]();
                 this._tooltipTextBlock.scaleY = 3;
                 this._tooltipTextBlock.color = "white";
                 this._tooltipTextBlock.fontSize = 130;
@@ -19950,11 +20059,11 @@ var TouchHolographicButton = /** @class */ (function (_super) {
     };
     TouchHolographicButton.prototype._rebuildContent = function () {
         this._disposeFacadeTexture();
-        var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_3__["StackPanel"]();
+        var panel = new _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__["StackPanel"]();
         panel.isVertical = true;
         if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
-                var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_4__["Image"]();
+                var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
                 image.source = this._imageUrl;
                 image.paddingTop = "40px";
                 image.height = "180px";
@@ -19964,7 +20073,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
             }
         }
         if (this._text) {
-            var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_5__["TextBlock"]();
+            var text = new _2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_6__["TextBlock"]();
             text.text = this._text;
             text.color = "white";
             text.height = "30px";
@@ -19989,10 +20098,19 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         collisionMesh.position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SceneLoader"].ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene)
             .then(function (result) {
+            var alphaMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("${this.name}_alphaMesh", {
+                width: 1.0,
+                height: 1.0,
+                depth: 1.0,
+            }, scene);
+            alphaMesh.isPickable = false;
+            alphaMesh.material = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("${this.name}_alphaMesh_material", scene);
+            alphaMesh.material.alpha = 0.15;
             var importedFrontPlate = result.meshes[1];
             importedFrontPlate.name = _this.name + "_frontPlate";
             importedFrontPlate.isPickable = false;
             importedFrontPlate.scaling.z = _this._frontPlateDepth;
+            alphaMesh.parent = importedFrontPlate;
             importedFrontPlate.parent = collisionMesh;
             if (!!_this._frontMaterial) {
                 importedFrontPlate.material = _this._frontMaterial;
@@ -20022,15 +20140,28 @@ var TouchHolographicButton = /** @class */ (function (_super) {
         this._plateMaterial.diffuseColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.4, 0.4, 0.4);
     };
     TouchHolographicButton.prototype._createBackMaterial = function (mesh) {
-        this._backMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](this.name + "Back Material", mesh.getScene());
-        this._backMaterial.diffuseColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 0.5, 0.5);
+        this._backMaterial = new _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__["FluentMaterial"](this.name + "backPlateMaterial", mesh.getScene());
+        this._backMaterial.albedoColor = this._backplateColor;
+        this._backMaterial.renderBorders = true;
+        this._backMaterial.renderHoverLight = false;
     };
     TouchHolographicButton.prototype._createFrontMaterial = function (mesh) {
-        this._frontMaterial = new _materials_fluentButton_fluentButtonMaterial__WEBPACK_IMPORTED_MODULE_2__["FluentButtonMaterial"](this.name + "Front Material", mesh.getScene());
+        this._frontMaterial = new _materials_fluentButton_fluentButtonMaterial__WEBPACK_IMPORTED_MODULE_3__["FluentButtonMaterial"](this.name + "Front Material", mesh.getScene());
     };
     TouchHolographicButton.prototype._createPlateMaterial = function (mesh) {
         this._plateMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](this.name + "Plate Material", mesh.getScene());
         this._plateMaterial.specularColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
+    };
+    TouchHolographicButton.prototype._onToggle = function (newState) {
+        if (this._backMaterial) {
+            if (newState) {
+                this._backMaterial.albedoColor = this._backplateToggledColor;
+            }
+            else {
+                this._backMaterial.albedoColor = this._backplateColor;
+            }
+        }
+        _super.prototype._onToggle.call(this, newState);
     };
     TouchHolographicButton.prototype._affectMaterial = function (mesh) {
         if (this._shareMaterials) {
@@ -20092,7 +20223,7 @@ var TouchHolographicButton = /** @class */ (function (_super) {
      */
     TouchHolographicButton.MODEL_FILENAME = "mrtk-fluent-button.glb";
     return TouchHolographicButton;
-}(_touchButton3D__WEBPACK_IMPORTED_MODULE_7__["TouchButton3D"]));
+}(_touchButton3D__WEBPACK_IMPORTED_MODULE_8__["TouchButton3D"]));
 
 
 
@@ -20338,83 +20469,6 @@ var TouchMeshButton3D = /** @class */ (function (_super) {
     };
     return TouchMeshButton3D;
 }(_touchButton3D__WEBPACK_IMPORTED_MODULE_1__["TouchButton3D"]));
-
-
-
-/***/ }),
-
-/***/ "./3D/controls/touchToggleButton3D.ts":
-/*!********************************************!*\
-  !*** ./3D/controls/touchToggleButton3D.ts ***!
-  \********************************************/
-/*! exports provided: TouchToggleButton3D */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return TouchToggleButton3D; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _touchButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./touchButton3D */ "./3D/controls/touchButton3D.ts");
-
-
-
-/**
- * Class used as base class for touch-enabled toggleable buttons
- */
-var TouchToggleButton3D = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TouchToggleButton3D, _super);
-    /**
-     * Creates a new button
-     * @param name defines the control name
-     * @param collisionMesh defines the mesh to track near interactions with
-     */
-    function TouchToggleButton3D(name, collisionMesh) {
-        var _this = _super.call(this, name, collisionMesh) || this;
-        _this._isPressed = false;
-        /**
-         * An event triggered when the button is toggled on
-         */
-        _this.onToggleOnObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
-        /**
-         * An event triggered when the button is toggled off
-         */
-        _this.onToggleOffObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
-        _this.onPointerUpObservable.add(function (posVecWithInfo) {
-            _this._onToggle(posVecWithInfo);
-        });
-        return _this;
-    }
-    TouchToggleButton3D.prototype._onToggle = function (position) {
-        this._isPressed = !this._isPressed;
-        if (this._isPressed) {
-            this.onToggleOnObservable.notifyObservers(position);
-        }
-        else {
-            this.onToggleOffObservable.notifyObservers(position);
-        }
-    };
-    TouchToggleButton3D.prototype._getTypeName = function () {
-        return "TouchToggleButton3D";
-    };
-    // Mesh association
-    TouchToggleButton3D.prototype._createNode = function (scene) {
-        return _super.prototype._createNode.call(this, scene);
-    };
-    TouchToggleButton3D.prototype._affectMaterial = function (mesh) {
-        _super.prototype._affectMaterial.call(this, mesh);
-    };
-    /**
-     * Releases all associated resources
-     */
-    TouchToggleButton3D.prototype.dispose = function () {
-        this.onToggleOnObservable.clear();
-        this.onToggleOffObservable.clear();
-        _super.prototype.dispose.call(this);
-    };
-    return TouchToggleButton3D;
-}(_touchButton3D__WEBPACK_IMPORTED_MODULE_2__["TouchButton3D"]));
 
 
 
@@ -21528,7 +21582,7 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21571,8 +21625,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicMenu"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["TouchToggleButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _controls_index__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 
@@ -25600,7 +25652,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25733,8 +25785,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchHolographicMenu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["TouchToggleButton3D"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["VolumeBasedPanel"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HolographicBackplate", function() { return _3D_index__WEBPACK_IMPORTED_MODULE_1__["HolographicBackplate"]; });
@@ -25779,7 +25829,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, TouchToggleButton3D, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, FocusableButton, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, TextWrapper, ToggleButton, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, HolographicSlate, HandMenu, MeshButton3D, NearMenu, PlanePanel, ScatterPanel, Slider3D, SpherePanel, StackPanel3D, TouchButton3D, TouchMeshButton3D, TouchHolographicButton, TouchHolographicMenu, VolumeBasedPanel, HolographicBackplate, FluentMaterialDefines, FluentMaterial, FluentButtonMaterial, FluentBackplateMaterial, HandleMaterial, MRDLSliderBarMaterial, MRDLSliderThumbMaterial, MRDLBackplateMaterial, SlateGizmo, HandleState, GizmoHandle, SideHandle, CornerHandle, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25910,8 +25960,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicButton", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicButton"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchHolographicMenu", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchHolographicMenu"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TouchToggleButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["TouchToggleButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["VolumeBasedPanel"]; });
 

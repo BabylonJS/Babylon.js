@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-ui-controls",
     "description": "The Babylon.js UI controls are a set of react controls used by other editors / tools",
-    "version": "4.2.0",
+    "version": "4.2.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -27,7 +27,7 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs": "4.2.0"
+        "babylonjs": "4.2.1"
     },
     "engines": {
         "node": "*"

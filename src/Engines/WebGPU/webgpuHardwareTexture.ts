@@ -37,7 +37,9 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     /** @hidden */
     public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
     /** @hidden */
-    public _copyInvertYBindGroupd: GPUBindGroup;
+    public _copyInvertYBindGroup: GPUBindGroup;
+    /** @hidden */
+    public _copyInvertYBindGroupWithOfst: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;
@@ -69,10 +71,6 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
     public set(hardwareTexture: GPUTexture): void {
         this._webgpuTexture = hardwareTexture;
-    }
-
-    public setMSAATexture(hardwareTexture: GPUTexture): void {
-        this._webgpuMSAATexture = hardwareTexture;
     }
 
     public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {

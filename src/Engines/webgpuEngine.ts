@@ -439,13 +439,6 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Returns the name of the engine
-     */
-    public get name(): string {
-        return "WebGPU";
-    }
-
-    /**
      * Returns a string describing the current engine
      */
     public get description(): string {
@@ -476,7 +469,7 @@ export class WebGPUEngine extends Engine {
     /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-     * See @TODO WEBGPU DOC PAGE for more details
+     * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
      */
     public get compatibilityMode() {
         return this._compatibilityMode;
@@ -512,6 +505,7 @@ export class WebGPUEngine extends Engine {
      */
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
+        this._name = "WebGPU";
 
         (this.isNDCHalfZRange as any) = true;
         (this.hasOriginBottomLeft as any)  = false;
@@ -789,6 +783,7 @@ export class WebGPUEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: true,
             supportSRGBBuffers: true,
+            supportTransformFeedbacks: false
         };
 
         this._caps.parallelShaderCompile = null as any;
@@ -1634,7 +1629,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Activates an effect, mkaing it the current one (ie. the one used for rendering)
+     * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
@@ -1756,7 +1751,7 @@ export class WebGPUEngine extends Engine {
      * @param options defines the options used to create the texture
      * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
      * @param source source type of the texture
-     * @returns a new render target texture stored in an InternalTexture
+     * @returns a new internal texture
      */
     public _createInternalTexture(size: TextureSize, options: boolean | InternalTextureCreationOptions, delayGPUTextureCreation = true, source = InternalTextureSource.Unknown): InternalTexture {
         const fullOptions: InternalTextureCreationOptions = {};
@@ -1863,7 +1858,7 @@ export class WebGPUEngine extends Engine {
                     const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height, undefined, creationFlags);
 
                     if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
-                        this._textureHelper.updateTexture(imageBitmap, texture, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+                        this._textureHelper.updateTexture(imageBitmap, texture, imageBitmap.width, imageBitmap.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0);
                         if (!noMipmap && !isCompressed) {
                             this._generateMipmaps(texture, this._uploadEncoder);
                         }
@@ -1999,8 +1994,8 @@ export class WebGPUEngine extends Engine {
     protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = "", baseName?: string, textureIndex = 0): boolean {
         // name == baseName for a texture that is not part of a texture array
         // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
-        // baseName is used to look up the sampler in the effectContext.samplers map
-        // name is used to look up the texture in the effectContext.textures map
+        // baseName is used to look up the texture in the shaderProcessingContext.availableTextures map
+        // name is used to look up the texture in the _currentMaterialContext.textures map
         baseName = baseName ?? name;
         if (this._currentEffect) {
             if (!texture) {
@@ -2141,7 +2136,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset);
     }
 
     /** @hidden */
@@ -2155,13 +2150,11 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, false, false, 0, 0);
     }
 
     /** @hidden */
     public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0, babylonInternalFormat?: number, useTextureWidthAndHeight = false): void {
-        // TODO WEBPU babylonInternalFormat not handled.
-        // Note that it is used only by BasisTools.LoadTextureFromTranscodeResult when transcoding could not be done, and in that case the texture format used (TEXTURETYPE_UNSIGNED_SHORT_5_6_5) is not compatible with WebGPU...
         const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
         const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
 
@@ -2176,7 +2169,7 @@ export class WebGPUEngine extends Engine {
 
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0);
     }
 
     /** @hidden */
@@ -2197,7 +2190,7 @@ export class WebGPUEngine extends Engine {
         const width = Math.ceil(texture.width / (1 << lod));
         const height = Math.ceil(texture.height / (1 << lod));
 
-        this._textureHelper.updateTexture(bitmap, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(bitmap, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0);
     }
 
     /**
@@ -2794,7 +2787,6 @@ export class WebGPUEngine extends Engine {
         this.setZOffsetUnits(zOffsetUnits);
 
         // Front face
-        // var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
         var frontFace = reverseSide ? (this._currentRenderTarget ? 1 : 2) : (this._currentRenderTarget ? 2 : 1);
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;

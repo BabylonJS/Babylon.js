@@ -150,9 +150,16 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Kept here, TODO - check if needed
                 this.scene.autoClear = false;
                 this.camera.compensateOnFirstFrame = false;
+                // reset the camera's position to the origin
+                this.camera.position.set(0, 0, 0);
+                this.camera.rotationQuaternion.set(0, 0, 0, 1);
             }
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {
+                // when using the back button and not the exit button (default on mobile), the session is ending but the EXITING state was not set
+                if (this.state !== WebXRState.EXITING_XR) {
+                    this._setState(WebXRState.EXITING_XR);
+                }
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
                 this.camera.rigCameras.forEach((c) => {
                     c.outputRenderTarget = null;

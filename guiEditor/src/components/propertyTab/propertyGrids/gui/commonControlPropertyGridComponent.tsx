@@ -307,7 +307,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
                     <FloatLineComponent
-                        iconLabel={"Trasnsform Center"}
+                        iconLabel={"Transform Center"}
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"

@@ -9,6 +9,7 @@ import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
+import { Tools } from "../Misc/tools";
 import { Engine } from '../Engines/engine';
 import { WebRequest } from '../Misc/webRequest';
 import { SpriteRenderer } from './spriteRenderer';
@@ -339,16 +340,14 @@ export class SpriteManager implements ISpriteManager {
                 re.test(imgUrl);
             } while (re.lastIndex > 0);
             let jsonUrl = imgUrl.substring(0, li - 1) + ".json";
-            let xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", jsonUrl, true);
-            xmlhttp.onerror = () => {
+            const onerror = () => {
                 Logger.Error("JSON ERROR: Unable to load JSON file.");
                 this._fromPacked = false;
                 this._packedAndReady = false;
             };
-            xmlhttp.onload = () => {
+            const onload = (data: string | ArrayBuffer) => {
                 try {
-                    let celldata = JSON.parse(xmlhttp.response);
+                    let celldata = JSON.parse(data as string);
                     let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
                     this._spriteMap = spritemap;
                     this._packedAndReady = true;
@@ -360,7 +359,7 @@ export class SpriteManager implements ISpriteManager {
                     throw new Error("Invalid JSON format. Please check documentation for format specifications.");
                 }
             };
-            xmlhttp.send();
+            Tools.LoadFile(jsonUrl, onload, undefined, undefined, false, onerror);
         }
     }
 
