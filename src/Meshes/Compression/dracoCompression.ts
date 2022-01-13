@@ -19,7 +19,7 @@ function createDecoderAsync(wasmBinary?: ArrayBuffer): Promise<any> {
     });
 }
 
-function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: { [kind: string]: number } | undefined, onIndicesData: (data: Uint32Array) => void, onAttributeData: (kind: string, data: Float32Array) => void): void {
+function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: { [kind: string]: number } | undefined, onIndicesData: (data: Uint32Array) => void, onAttributeData: (kind: string, data: Float32Array) => void, dividers?: { [kind: string]: number }): void {
     const buffer = new decoderModule.DecoderBuffer();
     buffer.Init(dataView, dataView.byteLength);
 
@@ -63,7 +63,7 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
             }
         }
 
-        const processAttribute = (kind: string, attribute: any) => {
+        const processAttribute = (kind: string, attribute: any, divider = 1) => {
             var numComponents = attribute.num_components();
             var numPoints = geometry.num_points();
             var numValues = numPoints * numComponents;
@@ -86,6 +86,11 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
                 else {
                     const babylonData = new Float32Array(numValues);
                     babylonData.set(new Float32Array(decoderModule.HEAPF32.buffer, ptr, numValues));
+                    if(divider !== 1) {
+                        for (let i = 0; i < babylonData.length; i++) {
+                            babylonData[i] = babylonData[i] / divider;
+                        }
+                    }
                     onAttributeData(kind, babylonData);
                 }
             }
@@ -98,7 +103,8 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
             for (const kind in attributes) {
                 const id = attributes[kind];
                 const attribute = decoder.GetAttributeByUniqueId(geometry, id);
-                processAttribute(kind, attribute);
+                const divider = dividers && dividers[kind] || 1;
+                processAttribute(kind, attribute, divider);
             }
         }
         else {
@@ -382,7 +388,7 @@ export class DracoCompression implements IDisposable {
       * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
       * @returns A promise that resolves with the decoded vertex data
       */
-    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
+    public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }, dividers?: { [kind: string]: number }): Promise<VertexData> {
         const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
         if (this._workerPoolPromise) {
@@ -409,6 +415,14 @@ export class DracoCompression implements IDisposable {
                                 vertexData.indices = message.data.value;
                             }
                             else {
+                                // check normalization
+                                const divider = dividers && dividers[message.data.id] ? dividers[message.data.id] : 1;
+                                if(divider !== 1) {
+                                    // normalize
+                                    for (let i = 0; i < message.data.value.length; i++) {
+                                        message.data.value[i] = message.data.value[i] / divider;
+                                    }
+                                }
                                 vertexData.set(message.data.value, message.data.id);
                             }
                         };
@@ -432,7 +446,7 @@ export class DracoCompression implements IDisposable {
                     vertexData.indices = indices;
                 }, (kind, data) => {
                     vertexData.set(data, kind);
-                });
+                }, dividers);
                 return vertexData;
             });
         }
