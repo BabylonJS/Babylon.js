@@ -28,11 +28,10 @@ export class GUIEditor {
      * @param options defines the options to use to configure the gui editor
      */
     public static async Show(options: IGUIEditorOptions) {
-        if (this._CurrentState) {
-            var popupWindow = (Popup as any)["gui-editor"];
-            if (popupWindow) {
-                popupWindow.close();
-            }
+        let hostElement = options.hostElement;
+
+        // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
+        if (this._CurrentState && hostElement) {
             if (options.currentSnippetToken) {
                 try {
                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -40,15 +39,14 @@ export class GUIEditor {
                     //swallow and continue
                 }
             }
-            if (options.liveGuiTexture) {
-                this._CurrentState.liveGuiTexture = options.liveGuiTexture;
-            }
             return;
         }
 
-        let hostElement = options.hostElement;
-
         if (!hostElement) {
+            var popupWindow = (Popup as any)["gui-editor"];
+            if (popupWindow) {
+                popupWindow.close();
+            }
             hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800)!;
         }
 
@@ -70,7 +68,6 @@ export class GUIEditor {
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
             globalState.workbench.createGUICanvas();
-            globalState.guiGizmo.createBaseGizmo();
             if (options.currentSnippetToken) {
                 try {
                     await globalState.workbench.loadFromSnippet(options.currentSnippetToken);

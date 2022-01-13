@@ -73,6 +73,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _selectionDepth = 0;
     private _doubleClick: Nullable<Control> = null;
     private _lockMainSelection: boolean = false;
+    public _liveGuiTextureRerender: boolean = true;
     public get globalState() {
         return this.props.globalState;
     }
@@ -214,7 +215,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", this.blurEvent, false);
 
         props.globalState.onWindowResizeObservable.add(() => {
-            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             this._engine.resize();
         });
 
@@ -670,6 +671,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
+        this._liveGuiTextureRerender = false;
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -820,6 +822,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.guiTexture = AdvancedDynamicTexture.CreateForMesh(this._textureMesh, textureSize, textureSize, true);
         this.globalState.guiTexture.rootContainer.clipChildren = false;
         this.globalState.guiTexture.useInvalidateRectOptimization = false;
+        this.globalState.guiTexture.onEndRenderObservable.add(() => this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers());
         this._textureMesh.showBoundingBox = true;
         this.artBoardBackground = new Rectangle("Art-Board-Background");
         this.artBoardBackground.width = "100%";
@@ -860,16 +863,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
-            let doRerender = true;
             this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(() => {
-                if (doRerender) {
+                if (this._liveGuiTextureRerender) {
                     this.globalState.liveGuiTexture?.markAsDirty();
                 }
-                doRerender = true;
+                this._liveGuiTextureRerender = true;
             });
             this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(() => {
                 this.globalState.guiTexture?.markAsDirty();
-                doRerender = false;
+                this._liveGuiTextureRerender = false;
             });
         }
 
@@ -886,11 +888,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
     synchronizeLiveGUI() {
         if (this.globalState.liveGuiTexture) {
-            this.props.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(desc => {
                 this.globalState.liveGuiTexture?.removeControl(desc);
                 this.appendBlock(desc);
             })
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     }
 
@@ -910,7 +913,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const panningFn = () => {
             const pos = this.getPosition(scene, camera, plane);
             this.panning(pos, initialPos, camera.inertia, inertialPanning);
-            //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
         };
 
         const inertialPanningFn = () => {
@@ -918,6 +920,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 camera.target.addInPlace(inertialPanning);
                 inertialPanning.scaleInPlace(camera.inertia);
                 this.zeroIfClose(inertialPanning);
+                this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             }
         };
 
@@ -987,7 +990,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }, KeyboardEventTypes.KEYDOWN);
 
-        scene.onAfterRenderObservable.add(() => { this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers() });
+        scene.onAfterRenderObservable.add(() => { if (this._camera.inertialRadiusOffset != 0) this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers() });
         scene.onPointerObservable.add(zoomFnScrollWheel, PointerEventTypes.POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
@@ -1063,7 +1066,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         ref.addInPlace(offset);
 
         camera.inertialRadiusOffset += delta;
-        //this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
     //Sets x y or z of passed in vector to zero if less than Epsilon

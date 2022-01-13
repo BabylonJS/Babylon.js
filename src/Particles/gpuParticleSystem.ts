@@ -89,7 +89,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (!EngineStore.LastCreatedEngine) {
             return false;
         }
-        return (EngineStore.LastCreatedEngine.name === "WebGL" && EngineStore.LastCreatedEngine.version > 1) || EngineStore.LastCreatedEngine.getCaps().supportComputeShaders;
+        const caps = EngineStore.LastCreatedEngine.getCaps();
+
+        return caps.supportTransformFeedbacks || caps.supportComputeShaders;
     }
 
     /**
