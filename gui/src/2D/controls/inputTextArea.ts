@@ -11,33 +11,14 @@ import { InputText } from "./inputText";
 import { ICanvasRenderingContext, ITextMetrics } from "babylonjs/Engines/ICanvas";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
-
-/**
- * Enum that determines the text-wrapping mode to use.
- */
-export enum TextWrapping_ {
-    /**
-     * Clip the text when it's larger than Control.width; this is the default mode.
-     */
-    Clip = 0,
-
-    /**
-     * Wrap the text word-wise, i.e. try to add line-breaks at word boundary to fit within Control.width.
-     */
-    WordWrap = 1,
-
-    /**
-     * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
-     */
-    Ellipsis,
-}
+import { TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
 
 /**
  * Class used to create input text control
  */
 export class InputTextArea extends InputText {
 
-    private _textWrapping = TextWrapping_.WordWrap;
+    private _textWrapping = TextWrapping.WordWrap;
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
@@ -626,11 +607,11 @@ export class InputTextArea extends InputText {
         var _lines = this.text.split("\n");
         
 
-        if (this._textWrapping === TextWrapping_.Ellipsis) {
+        if (this._textWrapping === TextWrapping.Ellipsis) {
             for (var _line of _lines) {
                 lines.push(this._parseLineEllipsis(_line, refWidth, context));
             }
-        } else if (this._textWrapping === TextWrapping_.WordWrap) {
+        } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
@@ -674,7 +655,7 @@ export class InputTextArea extends InputText {
         }
 
         if (this._resizeToFit) {
-            if (this._textWrapping === TextWrapping_.Clip) {
+            if (this._textWrapping === TextWrapping.Clip) {
                 let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
