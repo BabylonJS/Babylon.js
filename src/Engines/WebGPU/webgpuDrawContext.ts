@@ -15,9 +15,9 @@ export class WebGPUDrawContext implements IDrawContext {
 
     public buffers: { [name: string]: Nullable<WebGPUDataBuffer> };
 
-    public materialContextUpdateId: number;
     public indirectDrawBuffer?: GPUBuffer;
 
+    private _materialContextUpdateId: number;
     private _bufferManager: WebGPUBufferManager;
     private _useInstancing: boolean;
     private _indirectDrawData?: Uint32Array;
@@ -25,12 +25,12 @@ export class WebGPUDrawContext implements IDrawContext {
     private _isDirty: boolean;
 
     public isDirty(materialContextUpdateId: number): boolean {
-        return this._isDirty || this.materialContextUpdateId !== materialContextUpdateId;
+        return this._isDirty || this._materialContextUpdateId !== materialContextUpdateId;
     }
 
     public resetIsDirty(materialContextUpdateId: number): void {
         this._isDirty = false;
-        this.materialContextUpdateId = materialContextUpdateId;
+        this._materialContextUpdateId = materialContextUpdateId;
     }
 
     public get useInstancing() {
@@ -70,7 +70,7 @@ export class WebGPUDrawContext implements IDrawContext {
     public reset(): void {
         this.buffers = {};
         this._isDirty = true;
-        this.materialContextUpdateId = 0;
+        this._materialContextUpdateId = 0;
         this.fastBundle = undefined;
         this.bindGroups = undefined;
     }

@@ -394,14 +394,18 @@ export class Collider {
     }
 
     /** @hidden */
-    public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh): void {
+    public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh, invertTriangles?: boolean): void {
         if (!indices || indices.length === 0) {
             for (let i = 0; i < pts.length; i += 3) {
                 const p1 = pts[i];
                 const p2 = pts[i + 1];
                 const p3 = pts[i + 2];
 
-                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+                if (invertTriangles) {
+                    this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
+                } else {
+                    this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+                }
             }
         } else {
             for (let i = indexStart; i < indexEnd; i += 3) {
@@ -409,7 +413,11 @@ export class Collider {
                 const p2 = pts[indices[i + 1] - decal];
                 const p3 = pts[indices[i + 2] - decal];
 
-                this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+                if (invertTriangles) {
+                    this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
+                } else {
+                    this._testTriangle(i, trianglePlaneArray, p3, p2, p1, hasMaterial, hostMesh);
+                }
             }
         }
     }

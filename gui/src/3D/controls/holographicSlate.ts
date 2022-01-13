@@ -224,7 +224,7 @@ export class HolographicSlate extends ContentDisplay3D {
     }
 
     private _applyContentViewport() {
-        if (this._contentPlate.material && (this._contentPlate.material as FluentMaterial).albedoTexture) {
+        if (this._contentPlate?.material && (this._contentPlate.material as FluentMaterial).albedoTexture) {
             const tex = (this._contentPlate.material as FluentMaterial).albedoTexture as Texture;
             tex.uScale = this._contentScaleRatio;
             tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;

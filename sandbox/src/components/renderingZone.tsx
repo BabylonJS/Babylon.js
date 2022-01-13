@@ -74,7 +74,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
-            this._engine = new Engine(this._canvas, antialias, { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: antialias });
+            this._engine = new Engine(this._canvas, antialias, { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: antialias, forceSRGBBufferSupportState: this.props.globalState.commerceMode });
         }
 
         this._engine.loadingUIBackgroundColor = "#2A2342";

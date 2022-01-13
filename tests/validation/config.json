@@ -163,7 +163,7 @@
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#276",
+            "playgroundId":"#2YZFA0#302",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
         },
@@ -1397,6 +1397,12 @@
             "playgroundId": "#1PHYB0#138",
             "renderCount": 5,
             "referenceImage": "depthRendererRHS.png"
+        },
+        {
+            "title": "Test updateTextureData",
+            "playgroundId": "#EVX1DH#80",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "testUpdateTextureData.png"
         }
     ]
 }

@@ -10,8 +10,8 @@ import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
-import { DeviceInputSystem } from "../DeviceInput/deviceInputSystem";
-import { IDeviceEvent } from "../DeviceInput/Interfaces/inputInterfaces";
+import { IDeviceEvent } from "../DeviceInput/InputDevices/inputInterfaces";
+import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 
 declare type Scene = import("../scene").Scene;
 
@@ -113,7 +113,7 @@ export class InputManager {
     private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
-    private _deviceInputSystem: DeviceInputSystem;
+    private _deviceSourceManager: DeviceSourceManager;
 
     /**
      * Creates a new InputManager
@@ -494,11 +494,8 @@ export class InputManager {
 
         if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
 
-        if (!this._deviceInputSystem) {
-            this._deviceInputSystem = DeviceInputSystem._Create(engine);
-        }
-        else {
-            this._deviceInputSystem.configureEvents();
+        if (!this._deviceSourceManager) {
+            this._deviceSourceManager = new DeviceSourceManager(engine);
         }
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
@@ -855,7 +852,7 @@ export class InputManager {
             }
         };
 
-        this._onInputObserver = this._deviceInputSystem.onInputChangedObservable.add((eventData) => {
+        this._onInputObserver = this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
@@ -902,7 +899,7 @@ export class InputManager {
     public detachControl() {
         if (this._alreadyAttached) {
 
-            this._deviceInputSystem.onInputChangedObservable.remove(this._onInputObserver);
+            this._deviceSourceManager.onInputChangedObservable.remove(this._onInputObserver);
 
             // Cursor
             if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {
