@@ -33,7 +33,7 @@ type ControllerData = {
     nearInteractionMesh: Nullable<AbstractMesh>;
     pick: Nullable<PickingInfo>;
     id: number;
-    pickIndexMeshTip: Nullable<AbstractMesh>;
+    touchCollisionMesh: Nullable<AbstractMesh>;
     grabRay: Ray;
     nearInteraction: boolean;
     hoverInteraction: boolean;
@@ -42,6 +42,21 @@ type ControllerData = {
     eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
     pickedPointVisualCue: AbstractMesh;
 };
+
+export enum WebXRNearControllerMode {
+    /**
+     * Motion controllers will not support near interaction
+     */
+    DISABLED = 0,
+    /**
+     * The interaction point for motion controllers will be inside of them
+     */
+    CENTERED_ON_CONTROLLER = 1,
+    /**
+     * The interaction point for motion controllers will be in front of the controller
+     */
+    CENTERED_IN_FRONT = 2
+}
 
 /**
  * Options interface for the near interaction module
@@ -78,6 +93,11 @@ export interface IWebXRNearInteractionOptions {
      * Far interaction feature to toggle when near interaction takes precedence
      */
     farInteractionFeature?: WebXRControllerPointerSelection;
+
+    /**
+     * Near interaction mode for motion controllers
+     */
+    nearInteractionControllerMode?: WebXRNearControllerMode
 }
 
 /**
@@ -86,13 +106,15 @@ export interface IWebXRNearInteractionOptions {
 export class WebXRNearInteraction extends WebXRAbstractFeature {
     private static _idCounter = 200;
 
+    private _tmpRay: Ray = new Ray(new Vector3(), new Vector3());
+
     private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
         }
         // get two new meshes
-        const pickIndexMeshTip = this._generateNewHandTipMesh();
+        const touchCollisionMesh = this._generateNewHandTipMesh(!!xrController.inputSource.hand);
         const selectionMesh = this._generateVisualCue();
 
         this._controllers[xrController.uniqueId] = {
@@ -100,7 +122,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             meshUnderPointer: null,
             nearInteractionMesh: null,
             pick: null,
-            pickIndexMeshTip,
+            touchCollisionMesh,
             grabRay: new Ray(new Vector3(), new Vector3()),
             hoverInteraction: false,
             nearInteraction: false,
@@ -169,6 +191,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRNearInteractionOptions) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
+        this._options.nearInteractionControllerMode = WebXRNearControllerMode.CENTERED_IN_FRONT;
         if (this._options.farInteractionFeature) {
             this._farInteractionFeature = this._options.farInteractionFeature;
         }
@@ -292,8 +315,41 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     private readonly _hoverRadius = 0.1;
     private readonly _pickRadius = 0.02;
     private readonly _nearGrabLengthScale = 5;
-    private _indexTipQuaternion = new Quaternion();
-    private _indexTipOrientationVector = Vector3.Zero();
+    private _touchPointQuaternion = new Quaternion();
+    private _touchPointOrientationVector = Vector3.Zero();
+
+    private _processTouchPoint(id: string, transform: XRRigidTransform) {
+        const controllerData = this._controllers[id];
+
+        let axisRHSMultiplier = this._scene.useRightHandedSystem ? 1 : -1;
+        let touchPointPosition = transform.position;
+        const touchPointOrientation = transform.orientation;
+        this._touchPointQuaternion.set(
+            touchPointOrientation.x,
+            touchPointOrientation.y,
+            touchPointOrientation.z * axisRHSMultiplier,
+            touchPointOrientation.w * axisRHSMultiplier
+        );
+
+        // set near interaction grab ray parameters
+        const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
+        controllerData.grabRay.origin.set(touchPointPosition.x, touchPointPosition.y, touchPointPosition.z * axisRHSMultiplier);
+
+        if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT) {
+            // offset the touch point in the direction the transform is facing
+            controllerData.xrController!.getWorldPointerRayToRef(this._tmpRay);
+            controllerData.grabRay.origin.addInPlace(this._tmpRay.direction.scale(0.025));
+        }
+
+        this._touchPointQuaternion.toEulerAnglesToRef(this._touchPointOrientationVector);
+        controllerData.grabRay.direction.set(this._touchPointOrientationVector.x, this._touchPointOrientationVector.y, this._touchPointOrientationVector.z);
+        controllerData.grabRay.length = nearGrabRayLength;
+
+        // set positions for near pick and hover
+        if (controllerData.touchCollisionMesh) {
+            controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin);
+        }
+    }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
@@ -302,7 +358,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // If near interaction is not enabled/available for this controller, return early
             if ((!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) ||
                 !controllerData.xrController ||
-                !controllerData.xrController.inputSource.hand) {
+                (!controllerData.xrController.inputSource.hand && (!this._options.nearInteractionControllerMode || !controllerData.xrController.inputSource.gamepad))) {
                 controllerData.pick = null;
                 return;
             }
@@ -317,27 +373,23 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     if (xrIndexTip) {
                         let indexTipPose = _xrFrame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
                         if (indexTipPose && indexTipPose.transform) {
-                            let axisRHSMultiplier = this._scene.useRightHandedSystem ? 1 : -1;
-                            const indexTipPos = indexTipPose.transform.position;
-                            const indexTipOrientation = indexTipPose.transform.orientation;
-                            this._indexTipQuaternion.set(
-                                indexTipOrientation.x,
-                                indexTipOrientation.y,
-                                indexTipOrientation.z * axisRHSMultiplier,
-                                indexTipOrientation.w * axisRHSMultiplier
-                            );
-
-                            // set positions for near pick and hover
-                            if (controllerData.pickIndexMeshTip) {
-                                controllerData.pickIndexMeshTip.position.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
-                            }
-
-                            // set near interaction grab ray parameters
-                            const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
-                            controllerData.grabRay.origin.set(indexTipPos.x, indexTipPos.y, indexTipPos.z * axisRHSMultiplier);
-                            this._indexTipQuaternion.toEulerAnglesToRef(this._indexTipOrientationVector);
-                            controllerData.grabRay.direction.set(this._indexTipOrientationVector.x, this._indexTipOrientationVector.y, this._indexTipOrientationVector.z);
-                            controllerData.grabRay.length = nearGrabRayLength;
+                            this._processTouchPoint(id, indexTipPose.transform);
+                        }
+                    }
+                }
+                else if (controllerData.xrController.inputSource.gamepad) {
+                    const controller = controllerData.xrController.inputSource;
+                    if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_ON_CONTROLLER) {
+                        // Try to get the grip space, with a target ray space fallback
+                        let controllerPose = _xrFrame.getPose(controller.gripSpace || controller.targetRaySpace, this._xrSessionManager.referenceSpace);
+                        if (controllerPose && controllerPose.transform) {
+                            this._processTouchPoint(id, controllerPose.transform);
+                        }
+                    }
+                    else if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT) {
+                        let controllerPose = _xrFrame.getPose(controller.targetRaySpace, this._xrSessionManager.referenceSpace);
+                        if (controllerPose && controllerPose.transform) {
+                            this._processTouchPoint(id, controllerPose.transform);
                         }
                     }
                 }
@@ -400,7 +452,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
 
                 // near interaction pick
-                if (controllerData.pickIndexMeshTip && controllerData.hoverInteraction) {
+                if (controllerData.touchCollisionMesh && controllerData.hoverInteraction) {
                     let utilitySceneNearPick = null;
                     if (this._options.useUtilityLayer && this._utilityLayerScene) {
                         utilitySceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
@@ -481,7 +533,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if ((!this._options.enableNearInteractionOnAllControllers && xrController.uniqueId !== this._attachedController) ||
                 !controllerData.xrController ||
-                !controllerData.xrController.inputSource.hand) {
+                (!controllerData.xrController.inputSource.hand && (!this._options.nearInteractionControllerMode || !controllerData.xrController.inputSource.gamepad))) {
                 return;
             }
             if (controllerData.pick) {
@@ -611,7 +663,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
             });
         }
-        controllerData.pickIndexMeshTip?.dispose();
+        controllerData.touchCollisionMesh?.dispose();
         controllerData.pickedPointVisualCue.dispose();
 
         this._xrSessionManager.runInXRFrame(() => {
@@ -636,30 +688,30 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
     }
 
-    private _generateNewHandTipMesh() {
+    private _generateNewHandTipMesh(isHand: boolean) {
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        var pickIndexMeshTip = null;
+        var touchCollisionMesh = null;
 
         let createSphereMesh = (name: string, scale: number, sceneToUse: Scene): Nullable<AbstractMesh> => {
             let resultMesh = null;
             resultMesh = CreateSphere(name, { diameter: 1 }, sceneToUse);
             resultMesh.scaling.set(scale, scale, scale);
-            resultMesh.isVisible = false;
+            resultMesh.isVisible = !isHand;
 
             return resultMesh;
         };
 
-        pickIndexMeshTip = createSphereMesh("IndexPickSphere", this._pickRadius, meshCreationScene);
-        return pickIndexMeshTip;
+        touchCollisionMesh = createSphereMesh("PickSphere", this._pickRadius, meshCreationScene);
+        return touchCollisionMesh;
     }
 
     private _pickWithSphere(controllerData: ControllerData, radius: number, sceneToUse: Scene, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
         let pickingInfo = new PickingInfo();
         pickingInfo.distance = +Infinity;
 
-        if (controllerData.pickIndexMeshTip && controllerData.xrController) {
-            const position = controllerData.pickIndexMeshTip.position;
+        if (controllerData.touchCollisionMesh && controllerData.xrController) {
+            const position = controllerData.touchCollisionMesh.position;
             const sphere = BoundingSphere.CreateFromCenterAndRadius(position, radius);
 
             for (let meshIndex = 0; meshIndex < sceneToUse.meshes.length; meshIndex++) {
@@ -669,13 +721,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
                 let result = WebXRNearInteraction.PickMeshWithSphere(mesh, sphere);
 
+                console.log(result.hit);
+
                 if (result && result.hit && result.distance < pickingInfo.distance) {
                     pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
                     pickingInfo.pickedPoint = result.pickedPoint;
                     pickingInfo.aimTransform = controllerData.xrController.pointer;
                     pickingInfo.gripTransform = controllerData.xrController.grip || null;
-                    pickingInfo.originMesh = controllerData.pickIndexMeshTip;
+                    pickingInfo.originMesh = controllerData.touchCollisionMesh;
                     pickingInfo.distance = result.distance;
                 }
             }
