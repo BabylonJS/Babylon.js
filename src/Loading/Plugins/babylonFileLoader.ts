@@ -430,7 +430,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         }
 
         // link multimats with materials
-        scene.multiMaterials.forEach(multimat => {
+        scene.multiMaterials.forEach((multimat) => {
                 multimat._waitingSubMaterialsUniqueIds.forEach(subMaterial => {
                     multimat.subMaterials.push(findMaterial(subMaterial, scene));
                 })
@@ -438,7 +438,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         })
 
         // link meshes with materials
-        scene.meshes.forEach(mesh => {
+        scene.meshes.forEach((mesh) => {
             if (mesh._waitingMaterialId !== null) {
                 mesh.material = findMaterial(mesh._waitingMaterialId, scene);
                 mesh._waitingMaterialId = null;
@@ -651,7 +651,7 @@ SceneLoader.RegisterPlugin({
                             }
 
                             if (materialFound === false) {
-                                materialArray.push(parsedMesh.parsedMesh.materialUniqueId || parsedMesh.materialId);
+                                materialArray.push(parsedMesh.materialUniqueId || parsedMesh.materialId);
                                 var mat = parseMaterialByPredicate((parsedMaterial) => (parsedMesh.MaterialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId || parsedMaterial.id === parsedMesh.materialId), parsedData, scene, rootUrl);
                                 if (!mat) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
