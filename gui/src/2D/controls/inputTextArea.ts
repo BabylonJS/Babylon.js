@@ -37,9 +37,7 @@ export enum TextWrapping_ {
  */
 export class InputTextArea extends InputText {
 
-    //private _textWrapping = TextWrapping_.Clip;
     private _textWrapping = TextWrapping_.WordWrap;
-    //private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
