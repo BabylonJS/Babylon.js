@@ -20,41 +20,38 @@ interface IPerformanceViewerComponentProps {
     scene: Scene;
 }
 
-// aribitrary window size
+// arbitrary window size
 const initialWindowSize = { width: 1024, height: 512 };
-
-// Note this should be false when committed until the feature is fully working.
-const isEnabled = false;
 
 export enum IPerfMetadataCategory {
     Count = "Count",
-    FrameSteps = "Frame Steps Duration"
+    FrameSteps = "Frame Steps Duration",
 }
 
 // list of strategies to add to perf graph automatically.
 const defaultStrategiesList = [
-    {strategyCallback: PerfCollectionStrategy.FpsStrategy()},
-    {strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.ActiveIndicesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.ActiveBonesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.ActiveParticlesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: IPerfMetadataCategory.Count},
-    {strategyCallback: PerfCollectionStrategy.TotalLightsStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.TotalVerticesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.TotalMaterialsStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.TotalTexturesStrategy(), category: IPerfMetadataCategory.Count, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.AbsoluteFpsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.MeshesSelectionStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.RenderTargetsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.ParticlesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.SpritesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.AnimationsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.PhysicsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.RenderStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.FrameTotalStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.InterFrameStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
-    {strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true},
+    { strategyCallback: PerfCollectionStrategy.FpsStrategy() },
+    { strategyCallback: PerfCollectionStrategy.TotalMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveMeshesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveIndicesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveBonesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ActiveParticlesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.DrawCallsStrategy(), category: IPerfMetadataCategory.Count },
+    { strategyCallback: PerfCollectionStrategy.TotalLightsStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalVerticesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalMaterialsStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.TotalTexturesStrategy(), category: IPerfMetadataCategory.Count, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.AbsoluteFpsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.MeshesSelectionStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.RenderTargetsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.ParticlesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.SpritesStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.AnimationsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.PhysicsStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.RenderStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.FrameTotalStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.InterFrameStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
+    { strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: IPerfMetadataCategory.FrameSteps, hidden: true },
 ];
 
 export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentProps> = (props: IPerformanceViewerComponentProps) => {
@@ -64,7 +61,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(new Observable<IPerfLayoutSize>());
     const [returnToLiveObservable] = useState(new Observable<void>());
-    
+
     // do cleanup when the window is closed
     const onClosePerformanceViewer = (window: Window | null) => {
         if (window) {
@@ -86,18 +83,28 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
     const startPerformanceViewerPopup = () => {
         if (performanceCollector) {
-            Inspector._CreatePersistentPopup({
-                props: {
-                    id: "performance-viewer",
-                    title: "Realtime Performance Viewer",
-                    onClose: onClosePerformanceViewer,
-                    onResize: onResize,
-                    size: initialWindowSize
+            Inspector._CreatePersistentPopup(
+                {
+                    props: {
+                        id: "performance-viewer",
+                        title: "Realtime Performance Viewer",
+                        onClose: onClosePerformanceViewer,
+                        onResize: onResize,
+                        size: initialWindowSize,
+                    },
+                    children: (
+                        <PerformanceViewerPopupComponent
+                            scene={scene}
+                            layoutObservable={layoutObservable}
+                            returnToLiveObservable={returnToLiveObservable}
+                            performanceCollector={performanceCollector}
+                        />
+                    ),
                 },
-                children: <PerformanceViewerPopupComponent scene={scene} layoutObservable={layoutObservable} returnToLiveObservable={returnToLiveObservable} performanceCollector={performanceCollector}/>
-            }, document.body);
+                document.body
+            );
         }
-    }
+    };
 
     const onPerformanceButtonClick = () => {
         setIsOpen(true);
@@ -111,7 +118,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
             setIsOpen(false);
             setIsLoadedFromCsv(true);
             performanceCollector?.stop();
-            const isValid = performanceCollector?.loadFromFileData(data, true);
+            const isValid = performanceCollector?.loadFromFileData(data);
             if (!isValid) {
                 // if our data isnt valid we close the window.
                 setIsOpen(false);
@@ -140,14 +147,15 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
         }
     };
 
-    const addStrategies = (perfCollector : PerformanceViewerCollector) => {
+    const addStrategies = (perfCollector: PerformanceViewerCollector) => {
         perfCollector.addCollectionStrategies(...defaultStrategiesList);
         if (ComputePressureObserverWrapper.IsAvailable) {
             perfCollector.addCollectionStrategies({
-                strategyCallback: PerfCollectionStrategy.CpuStrategy(), category: IPerfMetadataCategory.FrameSteps
+                strategyCallback: PerfCollectionStrategy.CpuStrategy(),
+                category: IPerfMetadataCategory.FrameSteps,
             });
         }
-    }
+    };
 
     useEffect(() => {
         const perfCollector = scene.getPerfCollector();
@@ -156,15 +164,11 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
     }, []);
 
     return (
-        <>
-            {isEnabled && (
-                <LineContainerComponent title="Performance Viewer">
-                    {!isOpen && <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />}
-                    {!isOpen && <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />}
-                    <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
-                    {!isOpen && <ButtonLineComponent label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
-                </LineContainerComponent>
-            )}
-        </>
+        <LineContainerComponent title="Performance Viewer">
+            {!isOpen && <ButtonLineComponent label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />}
+            {!isOpen && <FileButtonLineComponent accept="csv" label="Load Perf Viewer using CSV" onClick={onLoadClick} />}
+            <ButtonLineComponent label="Export Perf to CSV" onClick={onExportClick} />
+            {!isOpen && <ButtonLineComponent label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
+        </LineContainerComponent>
     );
 };

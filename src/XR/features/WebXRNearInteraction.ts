@@ -614,12 +614,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         controllerData.pickIndexMeshTip?.dispose();
         controllerData.pickedPointVisualCue.dispose();
 
-        // Fire a pointerup
-        const pointerEventInit: PointerEventInit = {
-            pointerId: controllerData.id,
-            pointerType: "xr",
-        };
-        this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+        this._xrSessionManager.runInXRFrame(() => {
+            // Fire a pointerup
+            const pointerEventInit: PointerEventInit = {
+                pointerId: controllerData.id,
+                pointerType: "xr",
+            };
+            this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+        });
 
         // remove from the map
         delete this._controllers[xrControllerUniqueId];

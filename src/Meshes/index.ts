@@ -3,6 +3,7 @@ export * from "./Compression/index";
 export * from "./csg";
 export * from "./geometry";
 export * from "./groundMesh";
+export * from "./goldbergMesh";
 export * from "./trailMesh";
 export * from "./instancedMesh";
 export * from "./linesMesh";

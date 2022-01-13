@@ -45,6 +45,15 @@ export class MaterialDefines {
      */
     constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
         this._externalProperties = externalProperties;
+
+        // Initialize External Properties
+        if (externalProperties) {
+            for (const prop in externalProperties) {
+                if (externalProperties.hasOwnProperty(prop)) {
+                    this._setDefaultValue(prop);
+                }
+            }
+        }
     }
 
     /**
@@ -209,22 +218,23 @@ export class MaterialDefines {
      * Resets the material define values
      */
     public reset(): void {
-        for (var index = 0; index < this._keys.length; index++) {
-            var prop = this._keys[index];
-            var type = this._externalProperties?.[prop]?.type ?? typeof (<any>this)[prop];
-            var defValue = this._externalProperties?.[prop]?.default;
+        this._keys.forEach((prop) => this._setDefaultValue(prop));
+    }
 
-            switch (type) {
-                case "number":
-                    (<any>this)[prop] = defValue ?? 0;
-                    break;
-                case "string":
-                    (<any>this)[prop] = defValue ?? "";
-                    break;
-                default:
-                    (<any>this)[prop] = defValue ?? false;
-                    break;
-            }
+    private _setDefaultValue(prop: string): void {
+        const type = this._externalProperties?.[prop]?.type ?? typeof (<any>this)[prop];
+        const defValue = this._externalProperties?.[prop]?.default;
+
+        switch (type) {
+            case "number":
+                (<any>this)[prop] = defValue ?? 0;
+                break;
+            case "string":
+                (<any>this)[prop] = defValue ?? "";
+                break;
+            default:
+                (<any>this)[prop] = defValue ?? false;
+                break;
         }
     }
 
