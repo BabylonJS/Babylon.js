@@ -39,7 +39,6 @@ export class InputTextArea extends InputText {
     private _selectedLineIndex = 0;
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
-    public measure: ITextMetrics;
     private _contextForBreakLines: ICanvasRenderingContext;
     private _clickedCoordinateX: Nullable<number>;
     private _clickedCoordinateY: Nullable<number>;
@@ -814,13 +813,6 @@ export class InputTextArea extends InputText {
                 context.fillStyle = this._placeholderColor;
             }
         }
-        // measures:
-        // width
-        // actualBoundingBoxLeft: 1
-        // actualBoundingBoxRight: 805.3515625
-        // actualBoundingBoxAscent: 15
-        // actualBoundingBoxDescent: 5
-        this.measure = context.measureText(text);
 
         // measures the textlength -> this.measure.width
         this._textWidth = context.measureText(text).width;
