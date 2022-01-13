@@ -86,7 +86,7 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
                 else {
                     const babylonData = new Float32Array(numValues);
                     babylonData.set(new Float32Array(decoderModule.HEAPF32.buffer, ptr, numValues));
-                    if(divider !== 1) {
+                    if (divider !== 1) {
                         for (let i = 0; i < babylonData.length; i++) {
                             babylonData[i] = babylonData[i] / divider;
                         }
@@ -386,6 +386,7 @@ export class DracoCompression implements IDisposable {
       * Decode Draco compressed mesh data to vertex data.
       * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
       * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+      * @param dividers a list of optional dividers for normalization
       * @returns A promise that resolves with the decoded vertex data
       */
     public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }, dividers?: { [kind: string]: number }): Promise<VertexData> {
@@ -417,7 +418,7 @@ export class DracoCompression implements IDisposable {
                             else {
                                 // check normalization
                                 const divider = dividers && dividers[message.data.id] ? dividers[message.data.id] : 1;
-                                if(divider !== 1) {
+                                if (divider !== 1) {
                                     // normalize
                                     for (let i = 0; i < message.data.value.length; i++) {
                                         message.data.value[i] = message.data.value[i] / divider;
