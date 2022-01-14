@@ -366,7 +366,7 @@ export class CanvasGraphService {
                 const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
                 const value = this.datasets.data.at(valueIndex);
 
-                if (!prevValue) {
+                if (prevValue === undefined) {
                     prevValue = value;
                     this._prevValueById.set(id, prevValue);
                 }
