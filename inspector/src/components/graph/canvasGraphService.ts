@@ -331,7 +331,11 @@ export class CanvasGraphService {
             // we have already calculated  the min and max while getting the tickers, so use those.
             for (let i = 0; i < this._numberOfTickers; i++) {
                 if (this._tickerItems[i].id === id) {
-                    valueMinMax = this._tickerItems[i];
+                    valueMinMax = {...this._tickerItems[i]};
+                    // Extend the min max range by 1% of its total range
+                    const delta = valueMinMax.max - valueMinMax.min;
+                    valueMinMax.min -= 0.01 * delta;
+                    valueMinMax.max += 0.01 * delta;
                 }
             }
 
