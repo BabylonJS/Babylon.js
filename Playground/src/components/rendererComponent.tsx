@@ -100,6 +100,32 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
     }
 
+    /** @hidden */
+    public _startRenderLoop(engine: Engine, canvas: HTMLCanvasElement) {
+        engine.runRenderLoop(() => {
+            if (!this._scene || !this._engine) {
+                return;
+            }            
+
+            if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
+                if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+                    this._engine.resize();
+                }
+            }
+
+            if (this._scene.activeCamera || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
+                this._scene.render();
+            }
+
+            // Update FPS if camera is not a webxr camera
+            if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
+                if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
+                    this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
+                }
+            }
+        });
+    }
+
     private async _compileAndRunAsync() {
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
@@ -261,6 +287,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     window.engine = await asyncEngineCreation();`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
+                globalObject.engineHost = this;
+                code += "\r\nengineHost._startRenderLoop(engine, canvas);";
+
                 if (this.props.globalState.language === "JS") {
                     code += "\r\n" + "window.scene = " + createSceneFunction + "();";
                 } else {
@@ -319,30 +348,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             } else {
                 this._scene = globalObject.scene as Scene;
-            }
-
-            this._engine.runRenderLoop(() => {
-                if (!this._scene || !this._engine) {
-                    return;
-                }
-
-                if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
-                    if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                        this._engine.resize();
-                    }
-                }
-
-                if (this._scene.activeCamera || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
-                    this._scene.render();
-                }
-
-                // Update FPS if camera is not a webxr camera
-                if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
-                    if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
-                        this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
-                    }
-                }
-            });
+            }            
 
             if (checkSceneCount && this._engine.scenes.length === 0) {
                 this.props.globalState.onErrorObservable.notifyObservers({
