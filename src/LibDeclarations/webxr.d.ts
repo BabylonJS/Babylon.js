@@ -54,7 +54,7 @@ type XRDOMOverlayInit = {
 };
 
 type XRLightProbeInit = {
-     reflectionFormat: XRReflectionFormat;
+    reflectionFormat: XRReflectionFormat;
 };
 
 interface XRSessionInit {
@@ -100,6 +100,7 @@ declare class XRWebGLBinding {
     // https://immersive-web.github.io/layers/#XRWebGLBindingtype
     createProjectionLayer(init: XRProjectionLayerInit): XRProjectionLayer;
     getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye?: XREye): XRWebGLSubImage;
+    createQuadLayer(init: XRQuadLayerInit): XRQuadLayer;
     getViewSubImage(layer: XRProjectionLayer, view: XRView): XRWebGLSubImage;
 }
 
@@ -151,6 +152,35 @@ interface XRProjectionLayer extends XRCompositionLayer {
 
     ignoreDepthValues: boolean;
     fixedFoveation?: number;
+}
+
+interface XRLayerInit {
+    space: XRSpace;
+    colorFormat?: GLenum;        //  Default 0x1908, RGBA
+    depthFormat?: GLenum;
+    mipLevels?: number; // default = 1
+    viewPixelWidth: number;
+    viewPixelHeight: number;
+    layout?: XRLayerLayout; // defaults - mono
+    isStatic?: boolean; // false
+}
+
+interface XRQuadLayerInit extends XRLayerInit {
+    textureType?: XRTextureType; //  Default  "texture";
+    transform?: XRRigidTransform;
+    width?: number; // default 1.0
+    height?: number; // default 1.0
+}
+
+interface XRQuadLayer extends XRCompositionLayer {
+    space: XRSpace;
+    transform: XRRigidTransform;
+
+    width: number;
+    height: number;
+
+    // Events
+    onredraw: XREventHandler;
 }
 
 interface XRSubImage {
@@ -263,9 +293,9 @@ type XRDOMOverlayState = {
 };
 
 interface XRLightProbe extends EventTarget {
-    readonly probeSpace: XRSpace ;
-    onreflectionchange: XREventHandler ;
-  }
+    readonly probeSpace: XRSpace;
+    onreflectionchange: XREventHandler;
+}
 
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
