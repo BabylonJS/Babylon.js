@@ -737,7 +737,7 @@ var CellMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new CellMaterial(name, _this.getScene()); }, this);
     };
     CellMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.CellMaterial";
         return serializationObject;
     };
@@ -2165,7 +2165,7 @@ var FurMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new FurMaterial(name, _this.getScene()); }, this);
     };
     FurMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.FurMaterial";
         if (this._meshes) {
             serializationObject.sourceMeshName = this._meshes[0].name;
@@ -2622,7 +2622,7 @@ var GradientMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new GradientMaterial(name, _this.getScene()); }, this);
     };
     GradientMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.GradientMaterial";
         return serializationObject;
     };
@@ -3538,7 +3538,7 @@ var LavaMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new LavaMaterial(name, _this.getScene()); }, this);
     };
     LavaMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.LavaMaterial";
         return serializationObject;
     };
@@ -4157,7 +4157,7 @@ var MixMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MixMaterial(name, _this.getScene()); }, this);
     };
     MixMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.MixMaterial";
         return serializationObject;
     };
@@ -4644,7 +4644,7 @@ var NormalMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new NormalMaterial(name, _this.getScene()); }, this);
     };
     NormalMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.NormalMaterial";
         return serializationObject;
     };
@@ -5009,7 +5009,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new ShadowOnlyMaterial(name, _this.getScene()); }, this);
     };
     ShadowOnlyMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.ShadowOnlyMaterial";
         return serializationObject;
     };
@@ -5373,7 +5373,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new SimpleMaterial(name, _this.getScene()); }, this);
     };
     SimpleMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.SimpleMaterial";
         return serializationObject;
     };
@@ -5776,7 +5776,7 @@ var SkyMaterial = /** @class */ (function (_super) {
      * @returns the serialized material object
      */
     SkyMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.SkyMaterial";
         return serializationObject;
     };
@@ -6275,7 +6275,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new TerrainMaterial(name, _this.getScene()); }, this);
     };
     TerrainMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.TerrainMaterial";
         return serializationObject;
     };
@@ -6701,7 +6701,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new TriPlanarMaterial(name, _this.getScene()); }, this);
     };
     TriPlanarMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.TriPlanarMaterial";
         return serializationObject;
     };
@@ -7550,7 +7550,7 @@ var WaterMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new WaterMaterial(name, _this.getScene()); }, this);
     };
     WaterMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.WaterMaterial";
         serializationObject.renderList = [];
         if (this._refractionRTT && this._refractionRTT.renderList) {

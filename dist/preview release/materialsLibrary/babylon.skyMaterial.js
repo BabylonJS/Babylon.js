@@ -795,7 +795,7 @@ var SkyMaterial = /** @class */ (function (_super) {
      * @returns the serialized material object
      */
     SkyMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.SkyMaterial";
         return serializationObject;
     };

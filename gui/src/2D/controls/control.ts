@@ -1199,6 +1199,21 @@ export class Control {
         return this.parent.getAscendantOfClass(className);
     }
 
+    /**
+     * Mark control element as dirty
+     * @param force force non visible elements to be marked too
+     */
+    public markAsDirty(force: false) : void {
+        this._markAsDirty(force);
+    }
+
+    /**
+     * Mark the element and its children as dirty
+     */
+    public markAllAsDirty() : void {
+        this._markAllAsDirty();
+    }
+
     /** @hidden */
     public _resetFontCache(): void {
         this._fontSet = true;

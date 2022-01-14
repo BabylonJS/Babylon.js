@@ -824,7 +824,7 @@ var FurMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new FurMaterial(name, _this.getScene()); }, this);
     };
     FurMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.FurMaterial";
         if (this._meshes) {
             serializationObject.sourceMeshName = this._meshes[0].name;

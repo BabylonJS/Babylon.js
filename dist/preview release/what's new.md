@@ -47,7 +47,7 @@
 - Spelling of function/variables `xxxByID` renamed to `xxxById` to be consistent over the project. Old `xxxByID` reamain as deprecated that forward to the corresponding `xxxById` ([barroij](https://github.com/barroij))
 - Added new reflector tool that enable remote inspection of scenes. ([bghgary](https://github.com/bghgary))
 - Update `createPickingRay` and `createPickingRayToRef` matrix parameter to be nullable. ([jlivak](https://github.com/jlivak))
-- Improved scene picking precision with huge values in world matrices when `Ray.EnableDistantPicking` flag is true ([CedricGuillemet](https://github.com/CedricGuillemet)
+- Improved scene picking precision with huge values in world matrices when `Mesh.EnableDistantPicking` flag is true ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Added `applyVerticalCorrection` and `projectionPlaneTilt` to perspective cameras to correct perspective projections ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
@@ -100,6 +100,7 @@
 - Added an observable for when loader state changed. ([bghgary](https://github.com/bghgary))
 - Fixed an issue where errors for loading certain assets (e.g. <20-byte GLBs) are not catchable. ([bghgary](https://github.com/bghgary))
 - Added support for `KHR_materials_emissive_strength` for glTF loader. ([sebavan](https://github.com/sebavan))
+- Added support for normalized attributes ([#11685](https://github.com/BabylonJS/Babylon.js/issues/11685)) ([RaananW](https://github.com/RaananW))
 
 ### Navigation
 
@@ -145,6 +146,8 @@
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
+- When a perf profiler metric is constant, draw it on the middle of the canvas instead of on the top ([carolhmj](https://github.com/carolhmj))
+- Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
@@ -184,6 +187,7 @@
 - Added support for full screen UI and rig cameras ([#11544](https://github.com/BabylonJS/Babylon.js/issues/11544)) ([RaananW](https://github.com/RaananW))
 - Added ValueAndUnit change observable and Grid to listen for changes ([brianzinn](https://github.com/brianzinn))
 - Added `closeShape` and `closePath` as extra options parameters in `ExtrudeShape` and `ExtrudeShapeCustom` ([JohnK](https://github.com/BabylonJSGuide))
+- Added `markAsDirty` and `markAllAsDirty` public functions on `Control` ([carolhmj](https://github.com/carolhmj))
 
 ### Behaviors
 
@@ -265,6 +269,7 @@
 - Added the `exportUnusedUVs` property to the `IExportOptions` interface that will prevent any unused vertex uv attributes from being stripped during the glTF export. ([ericbroberic](https://github.com/ericbroberic))
 - glTF serializer now supports `KHR_materials_clearcoat` ([drigax](https://github.com/drigax))
 - Fixed bug where characters that didn't fit into a single UTF-16 code point were not correctly encoded in .glb exports ([darraghjburke](https://github.com/darraghjburke))
+- Serialize and parse now use unique IDs for materials, so duplicate names won't cause problems. Still supports parsing id for back compat ([darraghjburke](https://github.com/darraghjburke))
 
 ## Bugs
 

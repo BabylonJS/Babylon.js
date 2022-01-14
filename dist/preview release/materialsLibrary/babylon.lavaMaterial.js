@@ -821,7 +821,7 @@ var LavaMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new LavaMaterial(name, _this.getScene()); }, this);
     };
     LavaMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.LavaMaterial";
         return serializationObject;
     };

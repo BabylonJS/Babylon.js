@@ -1130,7 +1130,7 @@ var WaterMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new WaterMaterial(name, _this.getScene()); }, this);
     };
     WaterMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.WaterMaterial";
         serializationObject.renderList = [];
         if (this._refractionRTT && this._refractionRTT.renderList) {

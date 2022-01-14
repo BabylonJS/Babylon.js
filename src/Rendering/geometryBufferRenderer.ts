@@ -648,13 +648,13 @@ export class GeometryBufferRenderer {
                 }
 
                 if (material) {
-                    var sideOrientation: Nullable<number>;
+                    let sideOrientation: Nullable<number>;
                     let instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
-                    if (!instanceDataStorage.isFrozen && (material.backFaceCulling || material.overrideMaterialSideOrientation !== null)) {
+                    if (!instanceDataStorage.isFrozen && (material.backFaceCulling || renderingMesh.overrideMaterialSideOrientation !== null)) {
                         let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-                        sideOrientation = material.overrideMaterialSideOrientation;
-                        if (sideOrientation == null) {
+                        sideOrientation = renderingMesh.overrideMaterialSideOrientation;
+                        if (sideOrientation === null) {
                             sideOrientation = material.sideOrientation;
                         }
                         if (mainDeterminant < 0) {

@@ -195,6 +195,10 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
+    /**
+     * Already-created layers
+     */
+    private _existingLayers: WebXRLayerWrapper[] = [];
 
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
@@ -217,8 +221,17 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
         this._glContext = this._xrSessionManager.scene.getEngine()._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
-        this.setXRSessionLayers([this.createProjectionLayer()]);
+        this._existingLayers = [];
+        this.addXRSessionLayer(this.createProjectionLayer());
 
+        return true;
+    }
+
+    public detach(): boolean {
+        if (!super.detach()) {
+            return false;
+        }
+        this._existingLayers.length = 0;
         return true;
     }
 
@@ -243,6 +256,14 @@ export class WebXRLayers extends WebXRAbstractFeature {
     }
 
     /**
+     * Add a new layer to the already-existing list of layers
+     * @param wrappedLayer the new layer to add to the existing ones
+     */
+    public addXRSessionLayer(wrappedLayer: WebXRLayerWrapper) {
+        this.setXRSessionLayers([...this._existingLayers, wrappedLayer]);
+    }
+
+    /**
      * Sets the layers to be used by the XR session.
      * Note that you must call this function with any layers you wish to render to
      * since it adds them to the XR session's render state
@@ -252,6 +273,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param wrappedLayers An array of WebXRLayerWrapper, usually returned from the WebXRLayers createLayer functions.
      */
     public setXRSessionLayers(wrappedLayers: Array<WebXRLayerWrapper>): void {
+        this._existingLayers = wrappedLayers;
         const renderStateInit: XRRenderStateInit = { ...this._xrSessionManager.session.renderState };
         // Clear out the layer-related fields.
         renderStateInit.baseLayer = undefined;

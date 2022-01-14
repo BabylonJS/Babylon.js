@@ -853,16 +853,36 @@ var KHR_draco_mesh_compression = /** @class */ (function () {
                 }
             }
             var attributes = {};
+            var dividers = {};
             var loadAttribute = function (name, kind) {
                 var uniqueId = extension.attributes[name];
-                if (uniqueId == undefined) {
+                if (uniqueId === undefined || primitive.attributes[name] === undefined) {
                     return;
+                }
+                attributes[kind] = uniqueId;
+                var accessor = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(context + "/attributes/" + name, _this._loader.gltf.accessors, primitive.attributes[name]);
+                if (accessor.normalized && accessor.componentType !== 5126 /* FLOAT */) {
+                    var divider = 1;
+                    switch (accessor.componentType) {
+                        case 5120 /* BYTE */:
+                            divider = 127.0;
+                            break;
+                        case 5121 /* UNSIGNED_BYTE */:
+                            divider = 255.0;
+                            break;
+                        case 5122 /* SHORT */:
+                            divider = 32767.0;
+                            break;
+                        case 5123 /* UNSIGNED_SHORT */:
+                            divider = 65535.0;
+                            break;
+                    }
+                    dividers[kind] = divider;
                 }
                 babylonMesh._delayInfo = babylonMesh._delayInfo || [];
                 if (babylonMesh._delayInfo.indexOf(kind) === -1) {
                     babylonMesh._delayInfo.push(kind);
                 }
-                attributes[kind] = uniqueId;
             };
             loadAttribute("POSITION", babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind);
             loadAttribute("NORMAL", babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind);
@@ -880,7 +900,7 @@ var KHR_draco_mesh_compression = /** @class */ (function () {
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = _this._loader.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
                     var dracoCompression = _this.dracoCompression || babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["DracoCompression"].Default;
-                    return dracoCompression.decodeMeshAsync(data, attributes).then(function (babylonVertexData) {
+                    return dracoCompression.decodeMeshAsync(data, attributes, dividers).then(function (babylonVertexData) {
                         var babylonGeometry = new babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["Geometry"](babylonMesh.name, _this._loader.babylonScene);
                         babylonVertexData.applyToGeometry(babylonGeometry);
                         return babylonGeometry;

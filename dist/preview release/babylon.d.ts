@@ -12048,8 +12048,6 @@ declare module BABYLON {
         /** length of the ray */
         length: number;
         private static readonly _TmpVector3;
-        /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
-        static EnableDistantPicking: boolean;
         private static _rayDistant;
         private _tmpRay;
         /**
@@ -12150,9 +12148,10 @@ declare module BABYLON {
          * @param world world matrix
          * @param view view matrix
          * @param projection projection matrix
+         * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
          * @returns this ray updated
          */
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, enableDistantPicking?: boolean): Ray;
         /**
          * Creates a ray with origin and direction of 0,0,0
          * @returns the new ray
@@ -12217,11 +12216,11 @@ declare module BABYLON {
             /** @hidden */
             _pickWithRayInverseMatrix: Matrix;
             /** @hidden */
-            _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            _internalPick(rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
             /** @hidden */
-            _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
+            _internalMultiPick(rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
             /** @hidden */
-            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
+            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
         }
 }
 declare module BABYLON {
@@ -19786,6 +19785,8 @@ declare module BABYLON {
          * Gets or sets the unique id of the material
          */
         uniqueId: number;
+        /** @hidden */
+        _loadedUniqueId: string;
         /**
          * The name of the material
          */
@@ -20421,6 +20422,8 @@ declare module BABYLON {
      */
     export class MultiMaterial extends Material {
         private _subMaterials;
+        /** @hidden */
+        _waitingSubMaterialsUniqueIds: string[];
         /**
          * Gets or Sets the list of Materials used within the multi material.
          * They need to be ordered according to the submeshes order in the associated mesh
@@ -30895,7 +30898,7 @@ declare module BABYLON {
           * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
           * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
           * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-          * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+          * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
           * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
           * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
           * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
@@ -35146,11 +35149,6 @@ declare module BABYLON {
          */
         clone(name: string): StandardMaterial;
         /**
-         * Serializes this material in a JSON representation
-         * @returns the serialized material object
-         */
-        serialize(): any;
-        /**
          * Creates a standard material from parsed material data
          * @param source defines the JSON representation of the material
          * @param scene defines the hosting scene
@@ -36187,6 +36185,7 @@ declare module BABYLON {
         _materialForRenderPass: Array<Material | undefined>;
         _positions: Nullable<Vector3[]>;
         _meshCollisionData: _MeshCollisionData;
+        _enableDistantPicking: boolean;
     }
     /**
      * Class used to store all common mesh properties
@@ -36252,6 +36251,8 @@ declare module BABYLON {
         static get BILLBOARDMODE_USE_POSITION(): number;
         /** @hidden */
         _internalAbstractMeshDataInfo: _InternalAbstractMeshDataInfo;
+        /** @hidden */
+        _waitingMaterialId: Nullable<string>;
         /**
          * The culling strategy to use to check whether the mesh must be rendered or not.
          * This value can be changed at any time and will be used on the next render mesh selection.
@@ -36435,6 +36436,9 @@ declare module BABYLON {
         /** Gets or sets a boolean indicating that this mesh will allow fog to be rendered on it (true by default) */
         get applyFog(): boolean;
         set applyFog(value: boolean);
+        /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+        get enableDistantPicking(): boolean;
+        set enableDistantPicking(value: boolean);
         /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes selection (true by default) */
         useOctreeForRenderingSelection: boolean;
         /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes picking (true by default) */
@@ -50921,9 +50925,10 @@ declare module BABYLON {
         /**
          * Gets a the last added material using a given id
          * @param id defines the material's Id
+         * @param allowMultiMaterials determines whether multimaterials should be considered
          * @return the last material with the given id or null if none found.
          */
-        getLastMaterialById(id: string): Nullable<Material>;
+        getLastMaterialById(id: string, allowMultiMaterials?: boolean): Nullable<Material>;
         /**
          * Gets a material using its name
          * @param name defines the material's name
@@ -51329,9 +51334,10 @@ declare module BABYLON {
          * @param result defines the ray where to store the picking ray
          * @param camera defines the camera to use for the picking
          * @param cameraViewSpace defines if picking will be done in view space (false by default)
+         * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
          * @returns the current scene
          */
-        createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean): Scene;
+        createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace?: boolean, enableDistantPicking?: boolean): Scene;
         /**
          * Creates a ray that can be used to pick in the scene
          * @param x defines the x coordinate of the origin (on-screen)
@@ -60639,7 +60645,7 @@ declare module BABYLON {
       * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
       * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
       * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-      * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+      * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
       * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
@@ -79595,9 +79601,12 @@ declare module BABYLON {
           * Decode Draco compressed mesh data to vertex data.
           * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
           * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+          * @param dividers a list of optional dividers for normalization
           * @returns A promise that resolves with the decoded vertex data
           */
         decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: {
+            [kind: string]: number;
+        }, dividers?: {
             [kind: string]: number;
         }): Promise<VertexData>;
     }
@@ -90715,6 +90724,10 @@ declare module BABYLON {
          * This number does not correspond to the WebXR specs version
          */
         static readonly Version: number;
+        /**
+         * Already-created layers
+         */
+        private _existingLayers;
         private _glContext;
         private _xrWebGLBinding;
         constructor(_xrSessionManager: WebXRSessionManager);
@@ -90725,6 +90738,7 @@ declare module BABYLON {
          * @returns true if successful.
          */
         attach(): boolean;
+        detach(): boolean;
         /**
          * Creates a new XRWebGLLayer.
          * @param params an object providing configuration options for the new XRWebGLLayer
@@ -90737,6 +90751,11 @@ declare module BABYLON {
          * @returns the projection layer
          */
         createProjectionLayer(params?: XRProjectionLayerInit): WebXRProjectionLayerWrapper;
+        /**
+         * Add a new layer to the already-existing list of layers
+         * @param wrappedLayer the new layer to add to the existing ones
+         */
+        addXRSessionLayer(wrappedLayer: WebXRLayerWrapper): void;
         /**
          * Sets the layers to be used by the XR session.
          * Note that you must call this function with any layers you wish to render to
@@ -92798,7 +92817,7 @@ declare class XRWebGLBinding {
 
     // https://immersive-web.github.io/layers/#XRWebGLBindingtype
     createProjectionLayer(init: XRProjectionLayerInit): XRProjectionLayer;
-    getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye: XREye): XRWebGLSubImage;
+    getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye?: XREye): XRWebGLSubImage;
     getViewSubImage(layer: XRProjectionLayer, view: XRView): XRWebGLSubImage;
 }
 

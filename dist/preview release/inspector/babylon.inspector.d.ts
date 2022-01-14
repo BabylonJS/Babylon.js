@@ -1225,6 +1225,9 @@ declare module INSPECTOR {
             from: number;
             to: number;
         }>;
+        lockLastFrameValue: boolean;
+        lockLastFrameFrame: boolean;
+        onActiveKeyDataChanged: BABYLON.Observable<number>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
