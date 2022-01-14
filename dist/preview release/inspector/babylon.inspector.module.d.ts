@@ -1339,6 +1339,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
             from: number;
             to: number;
         }>;
+        lockLastFrameValue: boolean;
+        lockLastFrameFrame: boolean;
+        onActiveKeyDataChanged: Observable<number>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;
@@ -6221,6 +6224,9 @@ declare module INSPECTOR {
             from: number;
             to: number;
         }>;
+        lockLastFrameValue: boolean;
+        lockLastFrameFrame: boolean;
+        onActiveKeyDataChanged: BABYLON.Observable<number>;
         prepare(): void;
         play(forward: boolean): void;
         stop(): void;

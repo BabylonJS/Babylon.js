@@ -21913,7 +21913,7 @@ var FluentMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new FluentMaterial(name, _this.getScene()); }, this);
     };
     FluentMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.GUI.FluentMaterial";
         return serializationObject;
     };
@@ -22394,7 +22394,7 @@ var FluentBackplateMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new FluentBackplateMaterial(name, _this.getScene()); }, this);
     };
     FluentBackplateMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.FluentBackplateMaterial";
         return serializationObject;
     };
@@ -22976,7 +22976,7 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new FluentButtonMaterial(name, _this.getScene()); }, this);
     };
     FluentButtonMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.FluentButtonMaterial";
         return serializationObject;
     };
@@ -23774,7 +23774,7 @@ var MRDLBackplateMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MRDLBackplateMaterial(name, _this.getScene()); }, this);
     };
     MRDLBackplateMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.MRDLBackplateMaterial";
         return serializationObject;
     };
@@ -24459,7 +24459,7 @@ var MRDLSliderBarMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MRDLSliderBarMaterial(name, _this.getScene()); }, this);
     };
     MRDLSliderBarMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.MRDLSliderBarMaterial";
         return serializationObject;
     };
@@ -25264,7 +25264,7 @@ var MRDLSliderThumbMaterial = /** @class */ (function (_super) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Clone(function () { return new MRDLSliderThumbMaterial(name, _this.getScene()); }, this);
     };
     MRDLSliderThumbMaterial.prototype.serialize = function () {
-        var serializationObject = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Serialize(this);
+        var serializationObject = _super.prototype.serialize.call(this);
         serializationObject.customType = "BABYLON.MRDLSliderThumbMaterial";
         return serializationObject;
     };
