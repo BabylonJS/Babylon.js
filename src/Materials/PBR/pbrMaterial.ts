@@ -787,10 +787,9 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @returns - An object with the serialized material.
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.PBRMaterial";
 
-        serializationObject.stencil = this.stencil.serialize();
         serializationObject.clearCoat = this.clearCoat.serialize();
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();

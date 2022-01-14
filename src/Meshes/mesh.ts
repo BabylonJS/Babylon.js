@@ -3505,11 +3505,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Material
         if (this.material) {
             if (!this.material.doNotSerialize) {
-                serializationObject.materialId = this.material.id;
+                serializationObject.materialUniqueId = this.material.uniqueId;
+                serializationObject.materialId = this.material.id; // back compat
             }
         } else {
             this.material = null;
-            serializationObject.materialId = this._scene.defaultMaterial.id;
+            serializationObject.materialUniqueId = this._scene.defaultMaterial.uniqueId;
+            serializationObject.materialId = this._scene.defaultMaterial.id; // back compat
         }
 
         // Morph targets
@@ -3896,10 +3898,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Material
-        if (parsedMesh.materialId) {
-            mesh.setMaterialById(parsedMesh.materialId);
-        } else {
-            mesh.material = null;
+        if (parsedMesh.materialUniqueId) {
+            mesh._waitingMaterialId = parsedMesh.materialUniqueId;
+        }
+        else if (parsedMesh.materialId) {
+            mesh._waitingMaterialId = parsedMesh.materialId;
         }
 
         // Morph targets

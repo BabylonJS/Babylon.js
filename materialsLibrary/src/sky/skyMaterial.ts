@@ -352,7 +352,7 @@ export class SkyMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.SkyMaterial";
         return serializationObject;
     }
