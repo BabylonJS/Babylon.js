@@ -19,7 +19,7 @@ import { BoundingSphere } from "../../Culling/boundingSphere";
 import { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
-import { FresnelParameters } from "../../Materials/FresnelParameters";
+import { FresnelParameters } from "../../Materials/fresnelParameters";
 // side effects
 import "../../Meshes/subMesh.project";
 
@@ -98,7 +98,7 @@ export interface IWebXRNearInteractionOptions {
     /**
      * Near interaction mode for motion controllers
      */
-    nearInteractionControllerMode?: WebXRNearControllerMode
+    nearInteractionControllerMode?: WebXRNearControllerMode;
 }
 
 /**
