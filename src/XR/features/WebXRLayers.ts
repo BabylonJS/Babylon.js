@@ -69,7 +69,10 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
         }
 
         this._lastSubImages.set(eye, subImage);
-
+        // don't skip clear for the first rtt. skip for all others
+        if (subImageIndex === 0) {
+            this._renderTargetTextures[subImageIndex].skipInitialClear = false;
+        }
         return this._renderTargetTextures[subImageIndex];
     }
 
@@ -127,6 +130,23 @@ export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
             layer,
             'XRProjectionLayer',
             (sessionManager) => new WebXRProjectionLayerRenderTargetTextureProvider(sessionManager, xrGLBinding, this));
+    }
+}
+
+/**
+ * Wraps xr quad layers.
+ * @hidden
+ */
+export class WebXRQuadLayerWrapper extends WebXRCompositionLayerWrapper {
+    constructor(
+        public readonly layer: XRQuadLayer,
+        xrGLBinding: XRWebGLBinding) {
+        super(
+            () => layer.width,
+            () => layer.height,
+            layer,
+            'XRQuadLayer',
+            (sessionManager) => new WebXRCompositionLayerRenderTargetTextureProvider(sessionManager, xrGLBinding, this));
     }
 }
 
@@ -253,6 +273,17 @@ export class WebXRLayers extends WebXRAbstractFeature {
     public createProjectionLayer(params = defaultXRProjectionLayerInit): WebXRProjectionLayerWrapper {
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
         return new WebXRProjectionLayerWrapper(projLayer, this._xrWebGLBinding);
+    }
+
+    /**
+     * Create a new quad layer (wrapper).
+     * Note - this is not yet added to the layers list. @see addXRSessionLayer
+     * @param params parameters for the quad layer initialization
+     * @returns a new quad layer wrapper
+     */
+    public createQuadLayer(params: XRQuadLayerInit = { space: this._xrSessionManager.referenceSpace, viewPixelHeight: 1, viewPixelWidth: 1 }): WebXRQuadLayerWrapper {
+        const quadLayer = this._xrWebGLBinding.createQuadLayer(params);
+        return new WebXRQuadLayerWrapper(quadLayer, this._xrWebGLBinding);
     }
 
     /**

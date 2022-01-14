@@ -4,7 +4,7 @@ import { WebXRSessionManager } from "./webXRSessionManager";
 
 /** Covers all supported subclasses of WebXR's XRCompositionLayer */
 // TODO (rgerd): Extend for all other subclasses of XRCompositionLayer.
-export type WebXRCompositionLayerType = 'XRProjectionLayer';
+export type WebXRCompositionLayerType = 'XRProjectionLayer' | 'XRQuadLayer';
 
 /** Covers all supported subclasses of WebXR's XRLayer */
 export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;

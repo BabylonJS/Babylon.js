@@ -63,19 +63,22 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         // Create render target texture from the internal texture
         const renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width, height }, this._scene);
         const renderTargetWrapper = renderTargetTexture.renderTarget!;
-        (renderTargetWrapper as WebGLRenderTargetWrapper)._framebuffer = framebuffer;
+        // Set the framebuffer, make sure it works in all scenarios - emulator, no layers and layers
+        if (framebuffer || !colorTexture) {
+            (renderTargetWrapper as WebGLRenderTargetWrapper)._framebuffer = framebuffer;
+        }
 
         // Create internal texture
         const internalTexture = new InternalTexture(engine, InternalTextureSource.Unknown, true);
         internalTexture.width = width;
         internalTexture.height = height;
-        if (!!colorTexture) {
+        if (colorTexture) {
             internalTexture._hardwareTexture = colorTexture;
         }
         renderTargetWrapper.setTexture(internalTexture, 0);
         renderTargetTexture._texture = internalTexture;
 
-        if (!!depthStencilTexture) {
+        if (depthStencilTexture) {
             const internalDSTexture = new InternalTexture(engine, InternalTextureSource.DepthStencil, true);
             internalDSTexture.width = width;
             internalDSTexture.height = height;
