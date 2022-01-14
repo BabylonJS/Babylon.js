@@ -130,7 +130,7 @@ var findParent = (parentId: any, scene: Scene) => {
 
 const findMaterial = (materialId: any, scene: Scene) => {
     if (typeof materialId !== "number") {
-        return scene.getLastMaterialById(materialId);
+        return scene.getLastMaterialById(materialId, true);
     }
 
     return tempMaterialIndexContainer[materialId];
@@ -708,6 +708,22 @@ SceneLoader.RegisterPlugin({
                         log += "\n\tMesh " + mesh.toString(fullDetails);
                     }
                 }
+
+                 // link multimats with materials
+                scene.multiMaterials.forEach((multimat) => {
+                    multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
+                        multimat.subMaterials.push(findMaterial(subMaterial, scene));
+                    });
+                    multimat._waitingSubMaterialsUniqueIds = [];
+                });
+
+                // link meshes with materials
+                scene.meshes.forEach((mesh) => {
+                    if (mesh._waitingMaterialId !== null) {
+                        mesh.material = findMaterial(mesh._waitingMaterialId, scene);
+                        mesh._waitingMaterialId = null;
+                    }
+                });
 
                 // Connecting parents and lods
                 for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
