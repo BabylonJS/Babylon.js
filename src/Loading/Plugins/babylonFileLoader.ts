@@ -433,7 +433,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         scene.multiMaterials.forEach((multimat) => {
                 multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
                     multimat.subMaterials.push(findMaterial(subMaterial, scene));
-                })
+                });
                 multimat._waitingSubMaterialsUniqueIds = [];
         });
 
