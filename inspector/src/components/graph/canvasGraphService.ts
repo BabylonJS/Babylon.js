@@ -238,7 +238,9 @@ export class CanvasGraphService {
         this._position = null;
     }
 
-    prevPoint: [number, number] | undefined;
+    private _prevPointById: Map<string, [number, number]> = new Map<string, [number, number]>();
+    private _prevValueById: Map<string, number> = new Map<string, number>();
+
     /**
      * This method draws the data and sets up the appropriate scales.
      */
@@ -323,6 +325,8 @@ export class CanvasGraphService {
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
             let valueMinMax: IPerfMinMax | undefined;
+            let prevPoint = this._prevPointById.get(id);
+            let prevValue = this._prevValueById.get(id);
 
             // we have already calculated  the min and max while getting the tickers, so use those.
             for (let i = 0; i < this._numberOfTickers; i++) {
@@ -345,7 +349,8 @@ export class CanvasGraphService {
                 ctx.globalAlpha = backgroundLineAlpha;
             }
 
-            const smoothingFactor = 0.01;
+            const smoothingFactor = 0.2;
+
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
@@ -357,28 +362,34 @@ export class CanvasGraphService {
                 const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
                 const value = this.datasets.data.at(valueIndex);
 
-                const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
-                const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
-
-                if (this.prevPoint === undefined) {
-                    this.prevPoint = [drawableTime, drawableValue];
+                if (!prevValue) {
+                    prevValue = value;
+                    this._prevValueById.set(id, prevValue);
                 }
-                const prevSmoothedValue = this.prevPoint[1];
-            
-                const smoothedDrawableValue = smoothingFactor * drawableValue + (1 - smoothingFactor) * prevSmoothedValue;
-                
+                const smoothedValue = smoothingFactor * value + (1 - smoothingFactor) * prevValue;
 
-                const xDifference = drawableTime - this.prevPoint[0];
+                const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
+                const drawableValue = this._getPixelForNumber(smoothedValue, valueMinMax, top, bottom - top, true);
+
+                if (prevPoint === undefined) {
+                    prevPoint = [drawableTime, drawableValue];
+                    this._prevPointById.set(id, prevPoint);
+                }
+
+                const xDifference = drawableTime - prevPoint[0];
                 const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
                 if (skipLine) {
                     ctx.fillStyle = noDataRectangleColor;
-                    ctx.fillRect(this.prevPoint[0], top, xDifference, bottom - top);
+                    ctx.fillRect(prevPoint[0], top, xDifference, bottom - top);
                 } else {
-                    ctx.moveTo(this.prevPoint[0], this.prevPoint[1]);
-                    ctx.lineTo(drawableTime, smoothedDrawableValue);
+                    if (prevPoint[0] < drawableTime) {
+                        ctx.moveTo(prevPoint[0], prevPoint[1]);
+                        ctx.lineTo(drawableTime, drawableValue);
+                    }
                 }
-                this.prevPoint[0] = drawableTime;
-                this.prevPoint[1] = smoothedDrawableValue;
+                prevPoint[0] = drawableTime;
+                prevPoint[1] = drawableValue;
+                this._prevValueById.set(id, smoothedValue);
             }
 
             ctx.stroke();
@@ -1129,6 +1140,8 @@ export class CanvasGraphService {
         }
 
         this._panPosition.xPos = event.clientX;
+        this._prevPointById.clear();
+        this._prevValueById.clear();
     };
 
     /**
