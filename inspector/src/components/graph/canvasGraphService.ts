@@ -87,7 +87,7 @@ const tooltipDebounceTime = 32;
 const drawThrottleTime = 15;
 
 // What distance percentage in the x axis between two points makes us break the line and draw a "no data" box instead
-const maxXDistancePercBetweenLinePoints = 0.10;  
+const maxXDistancePercBetweenLinePoints = 0.1;
 
 // Color used to draw the rectangle that indicates no collection of data
 const noDataRectangleColor = "#aaaaaa";
@@ -238,6 +238,9 @@ export class CanvasGraphService {
         this._position = null;
     }
 
+    private _prevPointById: Map<string, [number, number]> = new Map<string, [number, number]>();
+    private _prevValueById: Map<string, number> = new Map<string, number>();
+
     /**
      * This method draws the data and sets up the appropriate scales.
      */
@@ -322,11 +325,17 @@ export class CanvasGraphService {
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
             let valueMinMax: IPerfMinMax | undefined;
+            let prevPoint = this._prevPointById.get(id);
+            let prevValue = this._prevValueById.get(id);
 
             // we have already calculated  the min and max while getting the tickers, so use those.
             for (let i = 0; i < this._numberOfTickers; i++) {
                 if (this._tickerItems[i].id === id) {
-                    valueMinMax = this._tickerItems[i];
+                    valueMinMax = {...this._tickerItems[i]};
+                    // Extend the min max range by 1% of its total range
+                    const delta = valueMinMax.max - valueMinMax.min;
+                    valueMinMax.min -= 0.01 * delta;
+                    valueMinMax.max += 0.01 * delta;
                 }
             }
 
@@ -344,7 +353,8 @@ export class CanvasGraphService {
                 ctx.globalAlpha = backgroundLineAlpha;
             }
 
-            let prevPoint: [number, number] | undefined;
+            const smoothingFactor = 0.2;
+
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
@@ -356,25 +366,36 @@ export class CanvasGraphService {
                 const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
                 const value = this.datasets.data.at(valueIndex);
 
+                if (prevValue === undefined) {
+                    prevValue = value;
+                    this._prevValueById.set(id, prevValue);
+                }
+                const smoothedValue = smoothingFactor * value + (1 - smoothingFactor) * prevValue;
+
                 const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
-                const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+                const drawableValue = this._getPixelForNumber(smoothedValue, valueMinMax, top, bottom - top, true);
 
                 if (prevPoint === undefined) {
                     prevPoint = [drawableTime, drawableValue];
+                    this._prevPointById.set(id, prevPoint);
                 }
 
                 const xDifference = drawableTime - prevPoint[0];
-                const skipLine = xDifference > maxXDistancePercBetweenLinePoints*(right-left);
+                const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
                 if (skipLine) {
                     ctx.fillStyle = noDataRectangleColor;
-                    ctx.fillRect(prevPoint[0], top, xDifference, bottom-top);
+                    ctx.fillRect(prevPoint[0], top, xDifference, bottom - top);
                 } else {
-                    ctx.moveTo(prevPoint[0], prevPoint[1]);
-                    ctx.lineTo(drawableTime, drawableValue);
+                    if (prevPoint[0] < drawableTime) {
+                        ctx.moveTo(prevPoint[0], prevPoint[1]);
+                        ctx.lineTo(drawableTime, drawableValue);
+                    }
                 }
                 prevPoint[0] = drawableTime;
                 prevPoint[1] = drawableValue;
+                this._prevValueById.set(id, smoothedValue);
             }
+
             ctx.stroke();
         });
 
@@ -406,7 +427,7 @@ export class CanvasGraphService {
             valueMap.set(id, {
                 min: valueMinMax.min,
                 max: valueMinMax.max,
-                current: latestValue
+                current: latestValue,
             });
             if (text.length > longestText.length) {
                 longestText = text;
@@ -417,7 +438,7 @@ export class CanvasGraphService {
             this._tickerItems[this._numberOfTickers].text = text;
             this._numberOfTickers++;
         });
-        this._onVisibleRangeChangedObservable?.notifyObservers({valueMap});
+        this._onVisibleRangeChangedObservable?.notifyObservers({ valueMap });
 
         ctx.save();
         ctx.font = graphAddonFont;
@@ -687,7 +708,7 @@ export class CanvasGraphService {
     private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = max !== min ? (num - min) / (max - min) : 1;
+        let normalizedValue = Math.abs(max - min) > 0.001 ? (num - min) / (max - min) : 0.5;
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
@@ -1123,6 +1144,8 @@ export class CanvasGraphService {
         }
 
         this._panPosition.xPos = event.clientX;
+        this._prevPointById.clear();
+        this._prevValueById.clear();
     };
 
     /**
