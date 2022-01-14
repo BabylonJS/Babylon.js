@@ -783,7 +783,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MRDLSliderThumbMaterial";
         return serializationObject;
     }

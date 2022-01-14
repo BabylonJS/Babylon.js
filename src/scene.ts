@@ -2785,12 +2785,20 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added material using a given id
      * @param id defines the material's Id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
      * @return the last material with the given id or null if none found.
      */
-    public getLastMaterialById(id: string): Nullable<Material> {
-        for (var index = this.materials.length - 1; index >= 0; index--) {
+    public getLastMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
+        for (let index = this.materials.length - 1; index >= 0; index--) {
             if (this.materials[index].id === id) {
                 return this.materials[index];
+            }
+        }
+        if (allowMultiMaterials) {
+            for (let index = this.multiMaterials.length - 1; index >= 0; index--) {
+                if (this.multiMaterials[index].id === id) {
+                    return this.multiMaterials[index];
+                }
             }
         }
 

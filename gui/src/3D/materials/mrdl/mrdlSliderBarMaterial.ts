@@ -782,7 +782,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MRDLSliderBarMaterial";
         return serializationObject;
     }
