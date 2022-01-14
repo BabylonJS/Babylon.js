@@ -143,6 +143,7 @@
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
 - When a perf profiler metric is constant, draw it on the middle of the canvas instead of on the top ([carolhmj](https://github.com/carolhmj))
+- Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
