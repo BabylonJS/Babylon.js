@@ -99,7 +99,7 @@ declare class XRWebGLBinding {
 
     // https://immersive-web.github.io/layers/#XRWebGLBindingtype
     createProjectionLayer(init: XRProjectionLayerInit): XRProjectionLayer;
-    getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye: XREye): XRWebGLSubImage;
+    getSubImage(layer: XRCompositionLayer, frame: XRFrame, eye?: XREye): XRWebGLSubImage;
     getViewSubImage(layer: XRProjectionLayer, view: XRView): XRWebGLSubImage;
 }
 
