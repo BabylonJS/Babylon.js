@@ -19,6 +19,7 @@ import { BoundingSphere } from "../../Culling/boundingSphere";
 import { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
+import { FresnelParameters } from "../../Materials/FresnelParameters";
 // side effects
 import "../../Meshes/subMesh.project";
 
@@ -33,7 +34,7 @@ type ControllerData = {
     nearInteractionMesh: Nullable<AbstractMesh>;
     pick: Nullable<PickingInfo>;
     id: number;
-    touchCollisionMesh: Nullable<AbstractMesh>;
+    touchCollisionMesh: AbstractMesh;
     grabRay: Ray;
     nearInteraction: boolean;
     hoverInteraction: boolean;
@@ -114,8 +115,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return;
         }
         // get two new meshes
-        const touchCollisionMesh = this._generateNewHandTipMesh(!!xrController.inputSource.hand);
+        const touchCollisionMesh = this._generateNewTouchPointMesh();
         const selectionMesh = this._generateVisualCue();
+
+        if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT &&
+            !xrController.inputSource.hand) {
+            touchCollisionMesh.isVisible = true;
+        }
 
         this._controllers[xrController.uniqueId] = {
             xrController,
@@ -335,10 +341,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
         controllerData.grabRay.origin.set(touchPointPosition.x, touchPointPosition.y, touchPointPosition.z * axisRHSMultiplier);
 
-        if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT) {
+        if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT && !(controllerData.xrController?.inputSource.hand)) {
             // offset the touch point in the direction the transform is facing
             controllerData.xrController!.getWorldPointerRayToRef(this._tmpRay);
-            controllerData.grabRay.origin.addInPlace(this._tmpRay.direction.scale(0.025));
+            controllerData.grabRay.origin.addInPlace(this._tmpRay.direction.scale(0.05));
         }
 
         this._touchPointQuaternion.toEulerAnglesToRef(this._touchPointOrientationVector);
@@ -346,9 +352,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         controllerData.grabRay.length = nearGrabRayLength;
 
         // set positions for near pick and hover
-        if (controllerData.touchCollisionMesh) {
-            controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin);
-        }
+        controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin);
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
@@ -452,7 +456,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
 
                 // near interaction pick
-                if (controllerData.touchCollisionMesh && controllerData.hoverInteraction) {
+                if (controllerData.hoverInteraction) {
                     let utilitySceneNearPick = null;
                     if (this._options.useUtilityLayer && this._utilityLayerScene) {
                         utilitySceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
@@ -475,12 +479,19 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
                     controllerData.pickedPointVisualCue.isVisible = true;
 
+                    if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT &&
+                        !controllerData.xrController.inputSource.hand) {
+                        controllerData.touchCollisionMesh.isVisible = true;
+                        controllerData.touchCollisionMesh.material!.alpha = this._getAlphaFromPick(controllerData.pick);
+                    }
+
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
                         this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, true);
                     }
                 } else {
                     controllerData.meshUnderPointer = null;
                     controllerData.pickedPointVisualCue.isVisible = false;
+                    controllerData.touchCollisionMesh.isVisible = false;
 
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
                         this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, false);
@@ -488,6 +499,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
             }
         });
+    }
+
+    // Generates an alpha value based on the distance from the interaction. An alpha of 0 when just entering the hover range, up to an alpha of 1 when touching
+    private _getAlphaFromPick(pick: PickingInfo) {
+        let hoverDelta = this._hoverRadius - this._pickRadius;
+        let alpha = (this._hoverRadius - pick.distance) / hoverDelta;
+        return Math.max(Math.min(1.0, alpha), 0);
     }
 
     private get _utilityLayerScene() {
@@ -564,11 +582,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (pressed && controllerData.pick && controllerData.meshUnderPointer && this._nearGrabPredicate(controllerData.meshUnderPointer)) {
                     controllerData.grabInteraction = true;
                     controllerData.pickedPointVisualCue.isVisible = false;
+                    controllerData.touchCollisionMesh.scaling.scaleInPlace(1.2);
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 } else if (!pressed && controllerData.pick && controllerData.grabInteraction) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
                     controllerData.pickedPointVisualCue.isVisible = true;
+                    controllerData.touchCollisionMesh.scaling.scaleInPlace(1 / 1.2);
                 }
             } else {
                 if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
@@ -663,7 +683,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
             });
         }
-        controllerData.touchCollisionMesh?.dispose();
+        controllerData.touchCollisionMesh.dispose();
         controllerData.pickedPointVisualCue.dispose();
 
         this._xrSessionManager.runInXRFrame(() => {
@@ -688,22 +708,23 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
     }
 
-    private _generateNewHandTipMesh(isHand: boolean) {
+    private _generateNewTouchPointMesh() {
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        var touchCollisionMesh = null;
 
-        let createSphereMesh = (name: string, scale: number, sceneToUse: Scene): Nullable<AbstractMesh> => {
-            let resultMesh = null;
-            resultMesh = CreateSphere(name, { diameter: 1 }, sceneToUse);
-            resultMesh.scaling.set(scale, scale, scale);
-            resultMesh.isVisible = !isHand;
+        let touchMesh = CreateSphere("PickSphere", { diameter: 1 }, meshCreationScene);
+        touchMesh.scaling.set(this._pickRadius, this._pickRadius, this._pickRadius);
+        touchMesh.isVisible = false;
 
-            return resultMesh;
-        };
+        // Set up a red fresnel effect
+        touchMesh.material = new StandardMaterial("touchPointMesh", meshCreationScene);
+        (touchMesh.material as StandardMaterial).diffuseColor = Color3.Red();
+        (touchMesh.material as StandardMaterial).diffuseFresnelParameters = new FresnelParameters();
+        (touchMesh.material as StandardMaterial).diffuseFresnelParameters.bias = 0.5;
+        (touchMesh.material as StandardMaterial).diffuseFresnelParameters.leftColor = Color3.Black();
+        (touchMesh.material as StandardMaterial).diffuseFresnelParameters.rightColor = Color3.White();
 
-        touchCollisionMesh = createSphereMesh("PickSphere", this._pickRadius, meshCreationScene);
-        return touchCollisionMesh;
+        return touchMesh;
     }
 
     private _pickWithSphere(controllerData: ControllerData, radius: number, sceneToUse: Scene, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
