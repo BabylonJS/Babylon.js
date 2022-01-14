@@ -742,8 +742,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 }
                 let result = WebXRNearInteraction.PickMeshWithSphere(mesh, sphere);
 
-                console.log(result.hit);
-
                 if (result && result.hit && result.distance < pickingInfo.distance) {
                     pickingInfo.hit = result.hit;
                     pickingInfo.pickedMesh = mesh;
