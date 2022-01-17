@@ -30,8 +30,8 @@
         previousInfluence += mPreviousBones[int(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
     #endif
 
-    vPreviousPosition = previousViewProjection * previousWorld * previousInfluence * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * finalPreviousWorld * previousInfluence * vec4(positionUpdated, 1.0);
 #else
-    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
 #endif
 #endif

@@ -151,6 +151,7 @@
 
 ### Playground
 
+- Start render loop before creating scene to make stopping it more convenient([BlakeOne](https://github.com/BlakeOne))
 - Added tooltips for menubar buttons ([darraghjburke](https://github.com/darraghjburke))
 
 ### NME

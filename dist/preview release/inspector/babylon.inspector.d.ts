@@ -480,6 +480,8 @@ declare module INSPECTOR {
          * Force resets the position in the data, effectively returning to the most current data.
          */
         resetDataPosition(): void;
+        private _prevPointById;
+        private _prevValueById;
         /**
          * This method draws the data and sets up the appropriate scales.
          */

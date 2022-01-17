@@ -296,7 +296,7 @@ export class Tools {
         var eventPrefix = "pointer";
 
         // Check if pointer events are supported
-        if (IsWindowObjectExist() && !window.PointerEvent && IsNavigatorAvailable() && !navigator.pointerEnabled) {
+        if (IsWindowObjectExist() && !window.PointerEvent) {
             eventPrefix = "mouse";
         }
 
@@ -759,17 +759,19 @@ export class Tools {
                     Tools.Download(blob!, fileName);
                 }
                 else {
-                    var url = URL.createObjectURL(blob);
+                    if (blob) {
+                        var url = URL.createObjectURL(blob);
 
-                    var newWindow = window.open("");
-                    if (!newWindow) { return; }
-                    var img = newWindow.document.createElement("img");
-                    img.onload = function () {
-                        // no longer need to read the blob so it's revoked
-                        URL.revokeObjectURL(url);
-                    };
-                    img.src = url;
-                    newWindow.document.body.appendChild(img);
+                        var newWindow = window.open("");
+                        if (!newWindow) { return; }
+                        var img = newWindow.document.createElement("img");
+                        img.onload = function () {
+                            // no longer need to read the blob so it's revoked
+                            URL.revokeObjectURL(url);
+                        };
+                        img.src = url;
+                        newWindow.document.body.appendChild(img);
+                    }
                 }
             }, mimeType, quality);
         }
@@ -938,8 +940,8 @@ export class Tools {
      */
     public static GetAbsoluteUrl: (url: string) => string =
         (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
-        (typeof URL === "function" && typeof location === "object") ? (url) => new URL(url, location.origin).href :
-        (url) => { throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context."); };
+            (typeof URL === "function" && typeof location === "object") ? (url) => new URL(url, location.origin).href :
+                (url) => { throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context."); };
 
     // Logs
     /**
