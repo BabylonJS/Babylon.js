@@ -46,7 +46,6 @@ export class Bone extends Node {
     private _baseMatrix: Matrix;
     private _absoluteTransform = new Matrix();
     private _invertedAbsoluteTransform = new Matrix();
-    private _parent: Nullable<Bone>;
     private _scalingDeterminant = 1;
     private _worldTransform = new Matrix();
 
