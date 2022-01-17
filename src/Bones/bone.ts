@@ -131,12 +131,16 @@ export class Bone extends Node {
         return this._skeleton;
     }
 
+    public get parent(): Bone {
+        return this._parentNode as Bone;
+    }
+
     /**
      * Gets parent bone
      * @returns a bone or null if the bone is the root of the bone hierarchy
      */
     public getParent(): Nullable<Bone> {
-        return this._parent;
+        return this.parent;
     }
 
     /**
@@ -155,27 +159,31 @@ export class Bone extends Node {
         return this._index === null ? this.getSkeleton().bones.indexOf(this) : this._index;
     }
 
+    public set parent(newParent: Nullable<Bone>) {
+        this.setParent(newParent);
+    }
+
     /**
      * Sets the parent bone
      * @param parent defines the parent (can be null if the bone is the root)
      * @param updateDifferenceMatrix defines if the difference matrix must be updated
      */
     public setParent(parent: Nullable<Bone>, updateDifferenceMatrix: boolean = true): void {
-        if (this._parent === parent) {
+        if (this.parent === parent) {
             return;
         }
 
-        if (this._parent) {
-            var index = this._parent.children.indexOf(this);
+        if (this.parent) {
+            var index = this.parent.children.indexOf(this);
             if (index !== -1) {
-                this._parent.children.splice(index, 1);
+                this.parent.children.splice(index, 1);
             }
         }
 
-        this._parent = parent;
+        this._parentNode = parent;
 
-        if (this._parent) {
-            this._parent.children.push(this);
+        if (this.parent) {
+            this.parent.children.push(this);
         }
 
         if (updateDifferenceMatrix) {
@@ -412,8 +420,8 @@ export class Bone extends Node {
             rootMatrix = this._baseMatrix;
         }
 
-        if (this._parent) {
-            rootMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
+        if (this.parent) {
+            rootMatrix.multiplyToRef(this.parent._absoluteTransform, this._absoluteTransform);
         } else {
             this._absoluteTransform.copyFrom(rootMatrix);
         }
@@ -477,12 +485,12 @@ export class Bone extends Node {
             var tmat = Bone._tmpMats[0];
             var tvec = Bone._tmpVecs[0];
 
-            if (this._parent) {
+            if (this.parent) {
                 if (tNode && wm) {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    tmat.copyFrom(this.parent.getAbsoluteTransform());
                     tmat.multiplyToRef(wm, tmat);
                 } else {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    tmat.copyFrom(this.parent.getAbsoluteTransform());
                 }
             } else {
                 Matrix.IdentityToRef(tmat);
@@ -524,12 +532,12 @@ export class Bone extends Node {
             var tmat = Bone._tmpMats[0];
             var vec = Bone._tmpVecs[0];
 
-            if (this._parent) {
+            if (this.parent) {
                 if (tNode && wm) {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    tmat.copyFrom(this.parent.getAbsoluteTransform());
                     tmat.multiplyToRef(wm, tmat);
                 } else {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    tmat.copyFrom(this.parent.getAbsoluteTransform());
                 }
                 tmat.invert();
             } else {
@@ -900,8 +908,8 @@ export class Bone extends Node {
     public computeAbsoluteTransforms(): void {
         this._compose();
 
-        if (this._parent) {
-            this._localMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
+        if (this.parent) {
+            this._localMatrix.multiplyToRef(this.parent._absoluteTransform, this._absoluteTransform);
         } else {
             this._absoluteTransform.copyFrom(this._localMatrix);
 
