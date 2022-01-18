@@ -383,7 +383,6 @@
 - Fix Button3D, HolographicButton, TouchHolographicButton and HolographicSlate content when scene is right-handed ([carolhmj](https://github.com/carolhmj))
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
-- Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
 - Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
