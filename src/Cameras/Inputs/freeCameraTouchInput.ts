@@ -133,9 +133,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
         }
 
-        this._observer = this.camera
-            .getScene()
-            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+        this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
@@ -185,12 +183,12 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         }
 
         var camera = this.camera;
+        camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
         if (rotateCamera) {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
-            camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
         } else {
             var speed = camera._computeLocalCameraSpeed();
             var direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);
