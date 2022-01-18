@@ -19,6 +19,7 @@ import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
 import { StartsWith } from '../Misc/stringTools';
+import { BaseError } from "../Misc/baseError";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -454,6 +455,10 @@ export class SceneLoader {
         if (message) {
             errorMessage += `: ${message}`;
         }
+        if (exception instanceof BaseError) {
+            exception.message = errorMessage.concat(`: ${exception.message}`);
+            return errorMessage;
+        }
         else if (exception) {
             errorMessage += `: ${exception}`;
         }
@@ -684,7 +689,7 @@ export class SceneLoader {
             const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, new Error(errorMessage));
+                onError(scene, errorMessage, exception instanceof BaseError ? exception : new Error(errorMessage));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?

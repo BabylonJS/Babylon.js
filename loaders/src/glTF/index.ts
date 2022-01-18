@@ -6,3 +6,4 @@ export {
     GLTF1,
     GLTF2
 };
+export * from "./errors";

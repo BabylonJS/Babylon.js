@@ -11,6 +11,7 @@ declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { MeshInvalidOrEmptyPositionsError } from "./errors";
 declare type PolyhedronData= import("./geodesicMesh").PolyhedronData;
 
 /**
@@ -641,7 +642,7 @@ export class VertexData {
 
     private _validate(): void {
         if (!this.positions) {
-            throw new Error("Positions are required");
+            throw new MeshInvalidOrEmptyPositionsError("Positions are required");
         }
 
         const getElementCount = (kind: string, values: FloatArray) => {
