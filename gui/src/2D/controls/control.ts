@@ -1122,6 +1122,17 @@ export class Control {
 
         this._isEnabled = value;
         this._markAsDirty();
+        // if any child elements are under the pointer, we need to fire a pointerOut event on
+        if (!this._isEnabled) {
+            [this, ...this.getDescendants()].forEach(desc => {
+                for(const pointer in this.host._lastControlOver) {
+                    if (desc === this.host._lastControlOver[pointer]) {
+                        desc._onPointerOut(desc, null, true);
+                        delete this.host._lastControlOver[pointer];
+                    }
+                }
+            })
+        }
     }
     /** Gets or sets background color of control if it's disabled */
     @serialize()
