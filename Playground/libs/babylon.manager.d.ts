@@ -194,10 +194,12 @@ declare module BABYLON {
         static GetLastCreatedScene(): BABYLON.Scene;
         /** Get managed asset container. */
         static GetAssetContainer(scene: BABYLON.Scene, name: string): BABYLON.AssetContainer;
-        /** Set managed asset container. */
-        static SetAssetContainer(scene: BABYLON.Scene, name: string, container: BABYLON.AssetContainer): void;
+        /** Get managed asset container map. */
+        static GetAssetContainers(scene: BABYLON.Scene): Map<string, BABYLON.AssetContainer>;
         /** Clear all managed asset containers. */
         static ClearAssetContainers(scene: BABYLON.Scene): void;
+        /** Set managed asset container. */
+        static RegisterAssetContainer(scene: BABYLON.Scene, name: string, container: BABYLON.AssetContainer): void;
         /** Gets the specified mesh by name from scene. */
         static GetMesh(scene: BABYLON.Scene, name: string): BABYLON.Mesh;
         /** Gets the specified mesh by id from scene. */
@@ -232,19 +234,34 @@ declare module BABYLON {
         static GetMaterialWithName(scene: BABYLON.Scene, name: string): BABYLON.Material;
         /** Get all materials with name. (Uses starts with text searching) */
         static GetAllMaterialsWithName(scene: BABYLON.Scene, name: string): BABYLON.Material[];
-        /** Instantiate the specified prefab asset hierarchy into the scene. (Cloned Hierarchy) */
-        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean): BABYLON.TransformNode;
+        /** TODO: Support Animation Groups */
+        /** TODO: Support Instance Or Clones */
+        /** Instantiate the specified prefab asset hierarchy from the specified scene. (Cloned Hierarchy) */
+        static InstantiatePrefabFromScene(scene: BABYLON.Scene, prefabName: string, newName: string, cloneAnimations?: boolean): BABYLON.TransformNode;
+        /** Instantiate the specified prefab asset hierarchy from an asset container. (Cloned Hierarchy) */
+        static InstantiatePrefabFromContainer(container: BABYLON.AssetContainer, prefabName: string, newName: string, cloneAnimations?: boolean, makeNewMaterials?: boolean): BABYLON.TransformNode;
         /** Clones the specified transform node asset into the scene. (Transform Node) */
         static CloneTransformNode(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.TransformNode;
         /** Clones the specified abstract mesh asset into the scene. (Abtract Mesh) */
         static CloneAbstractMesh(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.AbstractMesh;
         /** Creates an instance of the specified mesh asset into the scene. (Mesh Instance) */
         static CreateInstancedMesh(container: BABYLON.AssetContainer, meshName: string, instanceName: string): BABYLON.InstancedMesh;
-        /** Clones the specfied transform node from scene. */
         /** Registers a script componment with the scene manager. */
         static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
         static DestroyScriptComponent(instance: BABYLON.ScriptComponent): void;
+        /** Validates a network entity on the transform node. */
+        static HasNetworkEntity(transform: BABYLON.TransformNode): boolean;
+        /** Gets the network entity id on the transform node. */
+        static GetNetworkEntityId(transform: BABYLON.TransformNode): string;
+        /** Gets the network entity type on the transform node. */
+        static GetNetworkEntityType(transform: BABYLON.TransformNode): BABYLON.NetworkEntityType;
+        /** Gets the network entity attribute on the transform node. */
+        static GetNetworkEntityAttribute(transform: BABYLON.TransformNode, key: string): string;
+        /** Gets all the network entity attributes on the transform node. */
+        static GetNetworkEntityAttributes(transform: BABYLON.TransformNode): Map<string, string>;
+        /** Post network entity attribute on the transform node update batch. (Local Entities Only) */
+        static PostNetworkEntityAttribute(transform: BABYLON.TransformNode, key: string, value: string): void;
         /** Finds a script component on the transform with the specfied class name. */
         static FindScriptComponent<T extends BABYLON.ScriptComponent>(transform: BABYLON.TransformNode, klass: string): T;
         /** Finds all script components on the transform with the specfied class name. */
@@ -653,19 +670,19 @@ declare module BABYLON {
         private _registeredClassname;
         private _lateUpdateObserver;
         private _fixedUpdateObserver;
+        /** Gets the script component ready state */
+        isReady(): boolean;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
         get transform(): BABYLON.TransformNode;
         constructor(transform: BABYLON.TransformNode, scene: BABYLON.Scene, properties?: any);
+        /** Gets the script component class name */
+        getClassName(): string;
         /** Sets the script component property bag value */
         protected setProperty(name: string, propertyValue: any): void;
         /** Gets the script component property bag value */
         protected getProperty<T>(name: string, defaultValue?: T): T;
-        /** Gets the script component class name */
-        getClassName(): string;
-        /** Gets the script component ready state */
-        getReadyState(): boolean;
         /** Get the current time in seconds */
         getTime(): number;
         /** Get the total game time in seconds */
@@ -706,6 +723,18 @@ declare module BABYLON {
         getChildWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Get all child transforms with the specified script component. */
         getChildrenWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
+        /** Validates a network entity on the transform node. */
+        hasNetworkEntity(): boolean;
+        /** Gets the network entity id on the transform node. */
+        getNetworkEntityId(): string;
+        /** Gets the network entity type on the transform node. */
+        getNetworkEntityType(): BABYLON.NetworkEntityType;
+        /** Gets the network entity attribute on the transform node. */
+        getNetworkEntityAttribute(key: string): string;
+        /** Gets all the network entity attributes on the transform node. */
+        getNetworkEntityAttributes(): Map<string, string>;
+        /** Post network entity attribute on the transform node's update batch. (Local Entities Only) */
+        postNetworkEntityAttribute(key: string, value: string): void;
         /** Registers an on pick tricgger click action */
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
@@ -990,6 +1019,15 @@ declare module BABYLON {
         CF_HAS_FRICTION_ANCHOR = 512,
         CF_HAS_COLLISION_SOUND_TRIGGER = 1024
     }
+    enum RemoteFunctionCallTarget {
+        All = 0,
+        Others = 1
+    }
+    enum NetworkEntityType {
+        None = 0,
+        Local = 1,
+        Remote = 2
+    }
     enum UserInputPointer {
         Left = 0,
         Middle = 1,
@@ -1130,6 +1168,12 @@ declare module BABYLON {
         static UseArrowKeyRotation: boolean;
     }
     /**
+     * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
+     */
+    interface IAssetPreloader {
+        addPreloaderTasks(assetsManager: BABYLON.PreloadAssetsManager): void;
+    }
+    /**
      * Window Message Interface
      */
     interface IWindowMessage {
@@ -1247,11 +1291,58 @@ declare module BABYLON {
         b: number;
         a: number;
     }
-    /**
-     * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
-     */
-    interface IAssetPreloader {
-        addPreloaderTasks(assetsManager: BABYLON.PreloadAssetsManager): void;
+    interface IColyseusNetworkEntity {
+        id: string;
+        ownerId: string;
+        creationId: string;
+        xPos: number;
+        yPos: number;
+        zPos: number;
+        xRot: number;
+        yRot: number;
+        zRot: number;
+        wRot: number;
+        xScale: number;
+        yScale: number;
+        zScale: number;
+        xVel: number;
+        yVel: number;
+        zVel: number;
+        timestamp: number;
+        attributes: Map<string, string>;
+    }
+    interface IColyseusNetworkUser {
+        id: string;
+        name: string;
+        sessionId: string;
+        connected: boolean;
+        timestamp: number;
+        attributes: Map<string, string>;
+    }
+    interface IColyseusRoomState {
+        networkEntities: Map<string, BABYLON.IColyseusNetworkEntity>;
+        networkUsers: Map<string, BABYLON.IColyseusNetworkUser>;
+        attributes: Map<string, string>;
+    }
+    class ColyseusTransformData {
+        xPos: number;
+        yPos: number;
+        zPos: number;
+        xRot: number;
+        yRot: number;
+        zRot: number;
+        wRot: number;
+        xScale: number;
+        yScale: number;
+        zScale: number;
+        xVel: number;
+        yVel: number;
+        zVel: number;
+        constructor();
+        set(transform: BABYLON.TransformNode): void;
+        copy(data: BABYLON.ColyseusTransformData): void;
+        reset(): void;
+        dirty(): void;
     }
     /**
      * Http Request Header
@@ -1268,6 +1359,14 @@ declare module BABYLON {
     class TriggerVolume {
         mesh: BABYLON.AbstractMesh;
         state: number;
+    }
+    /**
+     * Room Error Message
+     * @class RoomErrorMessage - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class RoomErrorMessage {
+        code: number;
+        message: string;
     }
     /**
      * Event Message Bus (Use Static Singleton Pattern)
@@ -1574,9 +1673,9 @@ declare module BABYLON {
         private static TmpAmmoNormalA;
         private static TmpAmmoNormalB;
         private static TmpAmmoNormalC;
-        private static FindMeshCollider;
-        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, normals?: boolean): number;
+        static FindMeshCollider(scene: BABYLON.Scene, object: BABYLON.IPhysicsEnabledObject): BABYLON.IPhysicsEnabledObject;
         static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject): number;
+        static AddMeshVerts(btTriangleMesh: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject, normals?: boolean): number;
         static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number, colliderRenderGroup?: number, useTriangleNormals?: boolean): any;
         static UseTriangleNormals(): boolean;
         static ShowDebugColliders(): boolean;
