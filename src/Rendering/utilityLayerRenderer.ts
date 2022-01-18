@@ -322,16 +322,11 @@ export class UtilityLayerRenderer implements IDisposable {
         this._afterRenderObserver = this.originalScene.onAfterCameraRenderObservable.add((camera) => {
             // Only render when the render camera finishes rendering
             if (this.shouldRender && camera == this.getRenderCamera()) {
-                let currentState;
-                if (camera.outputRenderTarget && camera.isRigCamera && camera.isLeftCamera) {
-                    // first camera in this webxr rig. don't skip clear
-                    currentState = camera.outputRenderTarget.skipInitialClear;
-                    camera.outputRenderTarget.skipInitialClear = false;
+                if (camera.outputRenderTarget && camera.isRigCamera) {
+                    // clear depth for the utility layer to render correctly
+                    this.originalScene.getEngine().clear(null, false, true, false);
                 }
                 this.render();
-                if (camera.outputRenderTarget && currentState !== undefined) {
-                    camera.outputRenderTarget.skipInitialClear = currentState;
-                }
             }
         });
 
