@@ -1130,7 +1130,7 @@ export class Control {
                     delete control.host._lastControlOver[pointer];
                 }
             }
-            if (control instanceof Container) {
+            if ((control as Container).children !== undefined) {
                 (control as Container).children.forEach(recursivelyFirePointerOut);
             }
         }
