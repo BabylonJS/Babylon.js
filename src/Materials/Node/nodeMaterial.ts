@@ -552,7 +552,8 @@ export class NodeMaterial extends PushMaterial {
             return false;
         }
         return this.forceAlphaBlending || (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
-    } 
+    }
+
 
     /**
      * Specifies if this material should be rendered in alpha test mode
