@@ -776,7 +776,7 @@ export class PhysicsImpostor {
      * @param collideAgainst Physics imposter, or array of physics imposters to collide against
      * @param func Callback that is executed on collision
      */
-    public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void {
+    public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void): void {
         var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
         this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
     }
@@ -786,7 +786,7 @@ export class PhysicsImpostor {
      * @param collideAgainst The physics object to collide against
      * @param func Callback to execute on collision
      */
-    public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void {
+    public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>, point: Nullable<Vector3>) => void): void {
         var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
         var index = -1;
         let found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
