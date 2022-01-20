@@ -1877,7 +1877,6 @@ export class NodeMaterial extends PushMaterial {
         }
 
         this.comment = source.comment;
-        
         if (source.alpha !== undefined) {
             this.alpha = source.alpha;
         }
