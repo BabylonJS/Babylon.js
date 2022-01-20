@@ -278,6 +278,7 @@
 
 ## Bugs
 
+- Add missing param `point` to the callback function's type for the methods `registerOnPhysicsCollide` and `unregisterOnPhysicsCollide` of the `PhysicsImpostor` class. ([BlakeOne](https://github.com/BlakeOne))
 - Fix serialization and parsing of `textBlock` and `image` for `Button` class ([BlakeOne](https://github.com/BlakeOne))
 - Fix for `AdvancedTimer` ignoring `timeout` option ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `AssetContainer` is added to `Scene` multiple times ([BlakeOne](https://github.com/BlakeOne))
