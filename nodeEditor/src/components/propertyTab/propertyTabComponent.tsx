@@ -566,20 +566,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         </LineContainerComponent>
                     )}
                     <LineContainerComponent title="TRANSPARENCY">
-                        <SliderLineComponent
-                            label="Alpha"                            
-                            globalState={this.props.globalState}
+                        <CheckBoxLineComponent
+                            label="Force alpha blending"
                             target={this.props.globalState.nodeMaterial}
-                            propertyName="alpha"
-                            minimum={0}
-                            maximum={1}
-                            step={0.01}
+                            propertyName="forceAlphaBlending" 
+                            onValueChanged={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(null)}
                         />
                         <OptionsLineComponent
                             label="Alpha mode"
                             options={alphaModeOptions}
                             target={this.props.globalState.nodeMaterial}
-                            propertyName="alphaMode"                            
+                            propertyName="alphaMode"                                 
+                            onSelect={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(null)}                       
                         />
                     </LineContainerComponent>
                     <InputsPropertyTabComponent globalState={this.props.globalState} inputs={this.props.globalState.nodeMaterial.getInputBlocks()}></InputsPropertyTabComponent>

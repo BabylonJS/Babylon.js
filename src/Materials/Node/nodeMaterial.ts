@@ -538,6 +538,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets or sets a boolean indicating that alpha blending must be enabled no matter what alpha value or alpha channel of the FragmentBlock are
+     */
+     @serialize()
+    public forceAlphaBlending = false;
+
+    /**
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
      */
@@ -545,8 +551,8 @@ export class NodeMaterial extends PushMaterial {
         if (this.ignoreAlpha) {
             return false;
         }
-        return (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
-    }
+        return this.forceAlphaBlending || (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
+    } 
 
     /**
      * Specifies if this material should be rendered in alpha test mode
@@ -1883,6 +1889,10 @@ export class NodeMaterial extends PushMaterial {
 
         if (source.alphaMode !== undefined) {
             this.alphaMode = source.alphaMode;
+        }
+
+        if (source.forceAlphaBlending !== undefined) {
+            this.forceAlphaBlending = source.forceAlphaBlending;
         }
 
         if (!merge) {
