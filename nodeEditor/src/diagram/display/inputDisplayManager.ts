@@ -118,6 +118,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeMaterialSystemValues.CameraParameters:
                     value = "Camera parameters";
                     break;
+                case NodeMaterialSystemValues.MaterialAlpha:
+                    value = "Material alpha";
+                    break;                    
             }
         } else {
             switch (inputBlock.type) {
