@@ -482,6 +482,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
 
+                deviceEvent.inputIndex = evt.button + 2;
+                deviceEvent.previousState = previousButton;
+                deviceEvent.currentState = pointer[evt.button + 2];
+                this.onInputChanged(deviceEvent);
+
                 if (previousHorizontal !== evt.clientX) {
                     deviceEvent.inputIndex = PointerInput.Horizontal;
                     deviceEvent.previousState = previousHorizontal;
@@ -496,11 +501,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                     this.onInputChanged(deviceEvent);
                 }
-
-                deviceEvent.inputIndex = evt.button + 2;
-                deviceEvent.previousState = previousButton;
-                deviceEvent.currentState = pointer[evt.button + 2];
-                this.onInputChanged(deviceEvent);
             }
         });
 
