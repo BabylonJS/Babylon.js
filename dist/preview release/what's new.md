@@ -150,6 +150,7 @@
 - Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
 - Deselect keys with right-click on ACE ([carolhmj](https://github.com/carolhmj))
 - Let users edit multiple ACE key frame/values at the same time ([carolhmj](https://github.com/carolhmj))
+- Set default tangents for new keys on ACE and fix their behavior ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
