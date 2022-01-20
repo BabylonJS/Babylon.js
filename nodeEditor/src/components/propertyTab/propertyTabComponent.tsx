@@ -35,6 +35,7 @@ import { NodeMaterialModes } from "babylonjs/Materials/Node/Enums/nodeMaterialMo
 import { PreviewType } from "../preview/previewType";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
+import { Constants } from "babylonjs/Engines/constants";
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -413,6 +414,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
         ];
 
+        const alphaModeOptions = [
+            { label: "Combine", value: Constants.ALPHA_COMBINE },
+            { label: "One one", value: Constants.ALPHA_ONEONE },
+            { label: "Add", value: Constants.ALPHA_ADD },
+            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+        ];
+
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -554,6 +565,23 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         </LineContainerComponent>
                     )}
+                    <LineContainerComponent title="TRANSPARENCY">
+                        <SliderLineComponent
+                            label="Alpha"                            
+                            globalState={this.props.globalState}
+                            target={this.props.globalState.nodeMaterial}
+                            propertyName="alpha"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                        />
+                        <OptionsLineComponent
+                            label="Alpha mode"
+                            options={alphaModeOptions}
+                            target={this.props.globalState.nodeMaterial}
+                            propertyName="alphaMode"                            
+                        />
+                    </LineContainerComponent>
                     <InputsPropertyTabComponent globalState={this.props.globalState} inputs={this.props.globalState.nodeMaterial.getInputBlocks()}></InputsPropertyTabComponent>
                 </div>
             </div>

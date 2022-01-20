@@ -1877,6 +1877,14 @@ export class NodeMaterial extends PushMaterial {
         }
 
         this.comment = source.comment;
+        
+        if (source.alpha !== undefined) {
+            this.alpha = source.alpha;
+        }
+
+        if (source.alphaMode !== undefined) {
+            this.alphaMode = source.alphaMode;
+        }
 
         if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;
