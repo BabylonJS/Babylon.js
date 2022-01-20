@@ -482,6 +482,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
 
+                // NOTE: The +2 used here to is because PointerInput has the same value progression for its mouse buttons as PointerEvent.button
+                // However, we have our X and Y values front-loaded to group together the touch inputs but not break this progression
+                // EG. ([X, Y, Left-click], Middle-click, etc...)
+                deviceEvent.inputIndex = evt.button + 2;
+                deviceEvent.previousState = previousButton;
+                deviceEvent.currentState = pointer[deviceEvent.inputIndex];
+                this.onInputChanged(deviceEvent);
+
                 if (previousHorizontal !== evt.clientX) {
                     deviceEvent.inputIndex = PointerInput.Horizontal;
                     deviceEvent.previousState = previousHorizontal;
@@ -496,11 +504,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                     this.onInputChanged(deviceEvent);
                 }
-
-                deviceEvent.inputIndex = evt.button + 2;
-                deviceEvent.previousState = previousButton;
-                deviceEvent.currentState = pointer[evt.button + 2];
-                this.onInputChanged(deviceEvent);
             }
         });
 
@@ -546,9 +549,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     this.onInputChanged(deviceEvent);
                 }
 
+                // NOTE: The +2 used here to is because PointerInput has the same value progression for its mouse buttons as PointerEvent.button
+                // However, we have our X and Y values front-loaded to group together the touch inputs but not break this progression
+                // EG. ([X, Y, Left-click], Middle-click, etc...)
                 deviceEvent.inputIndex = evt.button + 2;
                 deviceEvent.previousState = previousButton;
-                deviceEvent.currentState = pointer[evt.button + 2];
+                deviceEvent.currentState = pointer[deviceEvent.inputIndex];
 
                 if (deviceType === DeviceType.Mouse && this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture?.(this._mouseId)) {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
