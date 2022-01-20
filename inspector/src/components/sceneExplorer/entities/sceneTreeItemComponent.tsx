@@ -68,7 +68,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 nextState.isSelected = false;
             }
         }
-        this.updateGizmoAutoPicking(nextState.updateGizmoAutoPicking);
+        this.updateGizmoAutoPicking(nextState.isInPickingMode);
         return true;
     }
 
