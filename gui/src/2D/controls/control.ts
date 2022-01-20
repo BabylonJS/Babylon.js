@@ -1133,7 +1133,7 @@ export class Control {
             if ((control as Container).children !== undefined) {
                 (control as Container).children.forEach(recursivelyFirePointerOut);
             }
-        }
+        };
         recursivelyFirePointerOut(this);
     }
     /** Gets or sets background color of control if it's disabled */
