@@ -149,6 +149,7 @@
 - When a perf profiler metric is constant, draw it on the middle of the canvas instead of on the top ([carolhmj](https://github.com/carolhmj))
 - Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
 - Deselect keys with right-click on ACE ([carolhmj](https://github.com/carolhmj))
+- Let users edit multiple ACE key frame/values at the same time ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
