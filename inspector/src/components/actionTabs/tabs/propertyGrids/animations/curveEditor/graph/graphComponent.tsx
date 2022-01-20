@@ -176,6 +176,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                     let newKey: IAnimationKey = {
                         frame: currentFrame,
                         value: value,
+                        lockedTangent: true
                     };
 
                     if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
