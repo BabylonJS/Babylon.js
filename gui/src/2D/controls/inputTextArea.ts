@@ -11,7 +11,7 @@ import { InputText } from "./inputText";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
-import { TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
+import { TextWrapping } from "./textBlock";
 
 /**
  * Class used to create input text control
