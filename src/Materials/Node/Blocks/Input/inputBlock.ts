@@ -606,7 +606,7 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialSystemValues.MaterialAlpha:
                     effect.setFloat(variableName, material.alpha);
-                    break;                    
+                    break;
             }
             return;
         }
