@@ -8,7 +8,7 @@ import { VirtualKeyboard } from "./virtualKeyboard";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
 import { InputText } from "./inputText";
-import { ICanvasRenderingContext, ITextMetrics } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
 import { TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
