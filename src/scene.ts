@@ -4045,7 +4045,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
-        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
+        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || camera._renderingMultiview()) {
+            if (camera._renderingMultiview() && !this._multiviewSceneUbo) {
+                this._createMultiviewUbo();
+            }
             this._renderForCamera(camera, undefined, bindFrameBuffer);
             this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
@@ -4360,7 +4363,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 throw new Error("No camera defined");
             }
 
-            this._processSubCameras(this.activeCamera, false);
+            this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
         }
 
         // Intersection checks
