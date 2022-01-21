@@ -43,6 +43,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
     internalTexture.width = width;
     internalTexture.height = height;
+    internalTexture.isMultiview = true;
 
     rtWrapper._colorTextureArray = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._colorTextureArray);
@@ -50,11 +51,12 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
 
     rtWrapper._depthStencilTextureArray = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._depthStencilTextureArray);
-    (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
+    (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
 
     internalTexture.isReady = true;
 
     rtWrapper.setTextures(internalTexture);
+    rtWrapper._depthStencilTexture = internalTexture;
 
     return rtWrapper;
 };
@@ -95,6 +97,12 @@ declare module "../../Cameras/camera" {
 
         /**
          * @hidden
+         * For WebXR cameras that are rendering to multiview texture arrays.
+         */
+        _renderingMultiview(): boolean;
+
+        /**
+         * @hidden
          * ensures the multiview texture of the camera exists and has the specified width/height
          * @param width height to set on the multiview texture
          * @param height width to set on the multiview texture
@@ -106,6 +114,10 @@ declare module "../../Cameras/camera" {
 Camera.prototype._useMultiviewToSingleView = false;
 
 Camera.prototype._multiviewTexture = null;
+
+Camera.prototype._renderingMultiview = function() {
+    return this.outputRenderTarget && this.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview;
+};
 
 Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, height: number) {
     if (!this._multiviewTexture) {
@@ -138,6 +150,7 @@ function createMultiviewUbo(engine: Engine, name?: string) {
     ubo.addUniform("view", 16);
     ubo.addUniform("projection", 16);
     ubo.addUniform("viewPosition", 4);
+    ubo.addUniform("vEyePosition", 4);
     return ubo;
 }
 
