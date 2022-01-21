@@ -160,6 +160,7 @@
 
 ### NME
 
+- Added a `MaterialAlpha` block to read material's alpha value ([Deltakosh](https://github.com/Deltakosh))
 - Added a `CloudBLock` block to create noise based cloud data ([Deltakosh](https://github.com/Deltakosh))
 - Updated the VectorMerger and ColorMerger blocks to support swizzling ([Deltakosh](https://github.com/Deltakosh))
 - Added a `ImageSource` block to factorize access to texture data ([Deltakosh](https://github.com/Deltakosh))

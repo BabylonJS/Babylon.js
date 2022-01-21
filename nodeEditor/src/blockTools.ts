@@ -423,6 +423,11 @@ export class BlockTools {
                 deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);
                 return deltaTimeBlock;
             }
+            case "MaterialAlphaBlock": {
+                let deltaTimeBlock = new InputBlock("Material alpha");
+                deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.MaterialAlpha);
+                return deltaTimeBlock;
+            }            
             case "WorldPositionBlock": {
                 let worldPositionBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
                 if (!worldPositionBlock) {

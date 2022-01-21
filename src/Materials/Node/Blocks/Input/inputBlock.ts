@@ -13,6 +13,7 @@ import { GetClass, RegisterClass } from '../../../../Misc/typeStore';
 import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
+import { NodeMaterial } from '../../nodeMaterial';
 
 const remapAttributeName: { [name: string]: string } = {
     "position2d": "position",
@@ -158,6 +159,7 @@ export class InputBlock extends NodeMaterialBlock {
                         this._type = NodeMaterialBlockConnectionPointTypes.Color3;
                         return this._type;
                     case NodeMaterialSystemValues.DeltaTime:
+                    case NodeMaterialSystemValues.MaterialAlpha:
                         this._type = NodeMaterialBlockConnectionPointTypes.Float;
                         return this._type;
                     case NodeMaterialSystemValues.CameraParameters:
@@ -567,7 +569,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /** @hidden */
-    public _transmit(effect: Effect, scene: Scene) {
+    public _transmit(effect: Effect, scene: Scene, material: NodeMaterial) {
         if (this.isAttribute) {
             return;
         }
@@ -596,10 +598,14 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialSystemValues.DeltaTime:
                     effect.setFloat(variableName, scene.deltaTime / 1000.0);
+                    break;
                 case NodeMaterialSystemValues.CameraParameters:
                     if (scene.activeCamera) {
                         effect.setFloat4(variableName, scene.getEngine().hasOriginBottomLeft ? -1 : 1, scene.activeCamera.minZ, scene.activeCamera.maxZ, 1 / scene.activeCamera.maxZ);
                     }
+                    break;
+                case NodeMaterialSystemValues.MaterialAlpha:
+                    effect.setFloat(variableName, material.alpha);
                     break;
             }
             return;
