@@ -100,7 +100,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
-        if (deviceType >= DeviceType.Xbox && deviceType <= DeviceType.Switch && navigator.getGamepads) {
+        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense && navigator.getGamepads) {
             this._updateDevice(deviceType, deviceSlot, inputIndex);
         }
 
@@ -194,8 +194,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         const deviceType = this._getGamepadDeviceType(gamepad.id);
         const deviceSlot = gamepad.index;
 
-        this._registerDevice(deviceType, deviceSlot, gamepad.buttons.length + gamepad.axes.length);
         this._gamepads = this._gamepads || new Array<DeviceType>(gamepad.index + 1);
+        this._registerDevice(deviceType, deviceSlot, gamepad.buttons.length + gamepad.axes.length);
+
         this._gamepads[deviceSlot] = deviceType;
     }
 
@@ -768,8 +769,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * @returns DeviceType enum value
      */
     private _getGamepadDeviceType(deviceName: string): DeviceType {
-        if (deviceName.indexOf("054c") !== -1 && deviceName.indexOf("0ce6") === -1) { // DualShock 4 Gamepad
-            return DeviceType.DualShock;
+        if (deviceName.indexOf("054c") !== -1) { // DualShock 4 Gamepad
+            return (deviceName.indexOf("0ce6") !== -1 ? DeviceType.DualSense : DeviceType.DualShock);
         }
         else if (deviceName.indexOf("Xbox One") !== -1 || deviceName.search("Xbox 360") !== -1 || deviceName.search("xinput") !== -1) { // Xbox Gamepad
             return DeviceType.Xbox;
