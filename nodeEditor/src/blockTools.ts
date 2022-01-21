@@ -85,10 +85,13 @@ import { CloudBlock } from 'babylonjs/Materials/Node/Blocks/cloudBlock';
 import { VoronoiNoiseBlock } from 'babylonjs/Materials/Node/Blocks/voronoiNoiseBlock';
 import { ScreenSpaceBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSpaceBlock';
 import { TwirlBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/twirlBlock';
+import { ElbowBlock } from 'babylonjs/Materials/Node/Blocks/elbowBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "ElbowBlock":
+                return new ElbowBlock("");
             case "TwirlBlock":
                 return new TwirlBlock("Twirl");
             case "VoronoiNoiseBlock":
