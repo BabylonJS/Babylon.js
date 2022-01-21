@@ -118,6 +118,7 @@ export class InputTextArea extends InputText {
                     evt.preventDefault();
                     return;
                 }
+                break;
             case 32: //SPACE
                 key = " "; //ie11 key for space is "Spacebar"
                 break;
