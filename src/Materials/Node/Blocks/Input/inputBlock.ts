@@ -13,7 +13,7 @@ import { GetClass, RegisterClass } from '../../../../Misc/typeStore';
 import { Color3, Color4, TmpColors } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
-import { NodeMaterial } from '../..';
+import { NodeMaterial } from '../../nodeMaterial';
 
 const remapAttributeName: { [name: string]: string } = {
     "position2d": "position",
