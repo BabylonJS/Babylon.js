@@ -1039,7 +1039,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Connection points
         for (var inputBlock of this._sharedData.inputBlocks) {
-            inputBlock._transmit(effect, this.getScene());
+            inputBlock._transmit(effect, this.getScene(), this);
         }
     }
 
@@ -1310,7 +1310,7 @@ export class NodeMaterial extends PushMaterial {
 
                 // Connection points
                 for (var inputBlock of sharedData.inputBlocks) {
-                    inputBlock._transmit(effect, scene);
+                    inputBlock._transmit(effect, scene, this);
                 }
             }
         } else if (!this.isFrozen) {
@@ -1883,13 +1883,6 @@ export class NodeMaterial extends PushMaterial {
         }
 
         this.comment = source.comment;
-        if (source.alpha !== undefined) {
-            this.alpha = source.alpha;
-        }
-
-        if (source.alphaMode !== undefined) {
-            this.alphaMode = source.alphaMode;
-        }
 
         if (source.forceAlphaBlending !== undefined) {
             this.forceAlphaBlending = source.forceAlphaBlending;
