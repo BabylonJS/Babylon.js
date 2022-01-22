@@ -41,12 +41,15 @@
     <script>
         var canvas = document.getElementById("renderCanvas");
 
-####INJECT####        
+        function startRenderLoop(engine, canvas) {
             engine.runRenderLoop(function () {
                 if (sceneToRender && sceneToRender.activeCamera) {
                     sceneToRender.render();
                 }
             });
+        }
+
+####INJECT####                    
         });
 
         // Resize
