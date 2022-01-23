@@ -1196,7 +1196,7 @@ export class _Exporter {
             node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
         }
 
-        let rotationQuaternion = Quaternion.RotationYawPitchRoll(babylonCamera.rotation.y, babylonCamera.rotation.x, babylonCamera.rotation.z);
+        let rotationQuaternion = babylonCamera.absoluteRotation;
         if (!Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
@@ -1968,7 +1968,7 @@ export class _Exporter {
                     }
                     return node;
                 });
-            } else if (babylonNode instanceof Camera) { 
+            } else if (babylonNode instanceof Camera) {
                 this.setCameraTransformation(node, babylonNode, convertToRightHandedSystem);
                 return node;
             } else {
