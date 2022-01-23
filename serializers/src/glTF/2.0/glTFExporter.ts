@@ -1182,7 +1182,7 @@ export class _Exporter {
         if (babylonTransformNode.rotationQuaternion) {
             rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
         }
-        if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
+        if (!Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
 
@@ -1196,9 +1196,8 @@ export class _Exporter {
             node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
         }
 
-        let rotation = babylonCamera.absoluteRotation;
-        let rotationQuaternion = Quaternion.RotationYawPitchRoll(rotation.y, rotation.x, rotation.z);
-        if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
+        let rotationQuaternion = Quaternion.RotationYawPitchRoll(babylonCamera.rotation.y, babylonCamera.rotation.x, babylonCamera.rotation.z);
+        if (!Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
 
@@ -1722,6 +1721,7 @@ export class _Exporter {
         });
 
         // Export babylon cameras to glTFCamera
+        let cameraHash = new Map();
         babylonScene.cameras.forEach((camera) => {
             let glTFCamera: ICamera = {
                 type: camera.mode === Camera.PERSPECTIVE_CAMERA ? CameraType.PERSPECTIVE : CameraType.ORTHOGRAPHIC
@@ -1732,9 +1732,11 @@ export class _Exporter {
             }
 
             if (glTFCamera.type === CameraType.PERSPECTIVE) {
-                glTFCamera.perspective = {aspectRatio: camera.getEngine().getAspectRatio(camera),
+                glTFCamera.perspective = {
+                    aspectRatio: camera.getEngine().getAspectRatio(camera),
                     yfov: camera._cache.fovMode === Camera.FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera._cache.aspectRatio,
-                    znear: camera.minZ, zfar: camera.maxZ};
+                    znear: camera.minZ, zfar: camera.maxZ
+                };
             } else if (glTFCamera.type === CameraType.ORTHOGRAPHIC) {
                 const halfWidth = camera.orthoLeft && camera.orthoRight ?
                     0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
@@ -1746,6 +1748,7 @@ export class _Exporter {
                 };
             }
 
+            cameraHash.set(camera, this._cameras.length);
             this._cameras.push(glTFCamera);
         });
 
@@ -1775,13 +1778,7 @@ export class _Exporter {
                             }
 
                             if (babylonNode instanceof Camera) {
-                                // Assign camera index by comparing with node names.
-                                for (let i = 0; i < this._cameras.length; i++) {
-                                    let babylonCamera: Camera = babylonNode;
-                                    if (this._cameras[i].name == babylonCamera.name) {
-                                        glTFNode.camera = i;
-                                    }
-                                }
+                                glTFNode.camera = cameraHash.get(babylonNode);
                             }
 
                             if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
