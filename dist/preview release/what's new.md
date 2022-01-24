@@ -281,6 +281,7 @@
 
 ## Bugs
 
+- Fix `WaterMaterial`’s constructor to use `this.getScene()` instead of `scene` parameter ([BlakeOne](https://github.com/BlakeOne))
 - Add missing param `point` to the callback function's type for the methods `registerOnPhysicsCollide` and `unregisterOnPhysicsCollide` of the `PhysicsImpostor` class. ([BlakeOne](https://github.com/BlakeOne))
 - Fix serialization and parsing of `textBlock` and `image` for `Button` class ([BlakeOne](https://github.com/BlakeOne))
 - Fix for `AdvancedTimer` ignoring `timeout` option ([BlakeOne](https://github.com/BlakeOne))
