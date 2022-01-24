@@ -2319,6 +2319,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Remove from the scene if found
             this.skeletons.splice(index, 1);
             this.onSkeletonRemovedObservable.notifyObservers(toRemove);
+
+            // Clean active container
+            this._executeActiveContainerCleanup(this._activeSkeletons);
         }
 
         return index;
@@ -2407,6 +2410,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         var index = this.particleSystems.indexOf(toRemove);
         if (index !== -1) {
             this.particleSystems.splice(index, 1);
+
+            // Clean active container
+            this._executeActiveContainerCleanup(this._activeParticleSystems);
         }
         return index;
     }
@@ -3688,6 +3694,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._activeMeshesFrozen = false;
         return this;
+    }
+
+    private _executeActiveContainerCleanup(container: SmartArray<any>) {
+        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+
+        if (!isInFastMode && this._activeMeshesFrozen && this._activeMeshes.length) {
+            return; // Do not execute in frozen mode
+        }
+
+        // We need to ensure we are not in the rendering loop
+        this.onBeforeRenderObservable.addOnce(() => container.dispose());
     }
 
     private _evaluateActiveMeshes(): void {
