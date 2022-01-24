@@ -428,7 +428,7 @@ export class DepthPeelingRenderer {
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
         this._engine.bindAttachments(this._layoutCache[0]);
 
-        this._engine.setAlphaMode(Constants.ALPHA_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
+        this._engine.setAlphaMode(Constants.ALPHA_ONEONE_ONEONE); // in WebGPU, when using MIN or MAX equation, the src / dst color factors should not use SRC_ALPHA and the src / dst alpha factors must be 1 else WebGPU will throw a validation error
         this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
         this._engine.depthCullingState.depthMask = false;
         this._engine.depthCullingState.depthTest = true;
@@ -465,7 +465,7 @@ export class DepthPeelingRenderer {
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
             this._engine.bindAttachments(this._layoutCache[2]);
 
-            this._engine.setAlphaMode(Constants.ALPHA_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
+            this._engine.setAlphaMode(Constants.ALPHA_ONEONE_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
             this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
             this._engine.depthCullingState.depthTest = false;
             this._engine.applyStates();

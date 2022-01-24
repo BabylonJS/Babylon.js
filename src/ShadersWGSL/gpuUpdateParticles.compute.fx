@@ -125,40 +125,40 @@ struct SimParams {
     #endif
 };
 
-[[binding(0), group(0)]] var<uniform> params : SimParams;
-[[binding(1), group(0)]] var<storage, read> particlesIn : Particles;
-[[binding(2), group(0)]] var<storage, read_write> particlesOut : Particles;
-[[binding(3), group(0)]] var randomTexture : texture_2d<f32>;
-[[binding(4), group(0)]] var randomTexture2 : texture_2d<f32>;
+@binding(0) @group(0) var<uniform> params : SimParams;
+@binding(1) @group(0) var<storage, read> particlesIn : Particles;
+@binding(2) @group(0) var<storage, read_write> particlesOut : Particles;
+@binding(3) @group(0) var randomTexture : texture_2d<f32>;
+@binding(4) @group(0) var randomTexture2 : texture_2d<f32>;
 
 #ifdef SIZEGRADIENTS
-    [[binding(0), group(1)]] var sizeGradientSampler : sampler;
-    [[binding(1), group(1)]] var sizeGradientTexture : texture_2d<f32>;
+    @binding(0) @group(1) var sizeGradientSampler : sampler;
+    @binding(1) @group(1) var sizeGradientTexture : texture_2d<f32>;
 #endif 
 
 #ifdef ANGULARSPEEDGRADIENTS
-    [[binding(2), group(1)]] var angularSpeedGradientSampler : sampler;
-    [[binding(3), group(1)]] var angularSpeedGradientTexture : texture_2d<f32>;
+    @binding(2) @group(1) var angularSpeedGradientSampler : sampler;
+    @binding(3) @group(1) var angularSpeedGradientTexture : texture_2d<f32>;
 #endif 
 
 #ifdef VELOCITYGRADIENTS
-    [[binding(4), group(1)]] var velocityGradientSampler : sampler;
-    [[binding(5), group(1)]] var velocityGradientTexture : texture_2d<f32>;
+    @binding(4) @group(1) var velocityGradientSampler : sampler;
+    @binding(5) @group(1) var velocityGradientTexture : texture_2d<f32>;
 #endif
 
 #ifdef LIMITVELOCITYGRADIENTS
-    [[binding(6), group(1)]] var limitVelocityGradientSampler : sampler;
-    [[binding(7), group(1)]] var limitVelocityGradientTexture : texture_2d<f32>;
+    @binding(6) @group(1) var limitVelocityGradientSampler : sampler;
+    @binding(7) @group(1) var limitVelocityGradientTexture : texture_2d<f32>;
 #endif
 
 #ifdef DRAGGRADIENTS
-    [[binding(8), group(1)]] var dragGradientSampler : sampler;
-    [[binding(9), group(1)]] var dragGradientTexture : texture_2d<f32>;
+    @binding(8) @group(1) var dragGradientSampler : sampler;
+    @binding(9) @group(1) var dragGradientTexture : texture_2d<f32>;
 #endif
 
 #ifdef NOISE
-    [[binding(10), group(1)]] var noiseSampler : sampler;
-    [[binding(11), group(1)]] var noiseTexture : texture_2d<f32>;
+    @binding(10) @group(1) var noiseSampler : sampler;
+    @binding(11) @group(1) var noiseTexture : texture_2d<f32>;
 #endif
 
 fn getRandomVec3(offset : f32, vertexID : f32) -> vec3<f32> {
@@ -169,8 +169,8 @@ fn getRandomVec4(offset : f32, vertexID : f32) -> vec4<f32> {
     return textureLoad(randomTexture, vec2<i32>(i32(vertexID * offset / params.currentCount * f32(params.randomTextureSize)) % params.randomTextureSize, 0), 0);
 }
 
-[[stage(compute), workgroup_size(64)]]
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+@stage(compute) @workgroup_size(64)
+fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let index : u32 = GlobalInvocationID.x;
     let vertexID : f32 = f32(index);
 
