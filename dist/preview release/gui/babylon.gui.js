@@ -5343,11 +5343,25 @@ var Control = /** @class */ (function () {
             return this._isEnabled;
         },
         set: function (value) {
+            var _this = this;
             if (this._isEnabled === value) {
                 return;
             }
             this._isEnabled = value;
             this._markAsDirty();
+            // if this control or any of it's descendants are under a pointer, we need to fire a pointerOut event
+            var recursivelyFirePointerOut = function (control) {
+                for (var pointer in control.host._lastControlOver) {
+                    if (control === _this.host._lastControlOver[pointer]) {
+                        control._onPointerOut(control, null, true);
+                        delete control.host._lastControlOver[pointer];
+                    }
+                }
+                if (control.children !== undefined) {
+                    control.children.forEach(recursivelyFirePointerOut);
+                }
+            };
+            recursivelyFirePointerOut(this);
         },
         enumerable: false,
         configurable: true
@@ -19648,12 +19662,10 @@ var TouchButton3D = /** @class */ (function (_super) {
          * @param collisionMesh the new collision mesh for the button
          */
         set: function (collisionMesh) {
-            if (this._collisionMesh) {
-                this._collisionMesh.dispose();
-            }
-            // parent the mesh to sync transforms
-            if (!collisionMesh.parent && this.mesh) {
-                collisionMesh.setParent(this.mesh);
+            var _a, _b;
+            // Remove the GUI3DManager's data from the previous collision mesh's reserved data store
+            if ((_b = (_a = this._collisionMesh) === null || _a === void 0 ? void 0 : _a.reservedDataStore) === null || _b === void 0 ? void 0 : _b.GUI3D) {
+                this._collisionMesh.reservedDataStore.GUI3D = {};
             }
             this._collisionMesh = collisionMesh;
             this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;

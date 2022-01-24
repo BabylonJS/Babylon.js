@@ -1397,7 +1397,8 @@ declare module INSPECTOR {
     interface ITopBarComponentState {
         keyFrameValue: string;
         keyValue: string;
-        editControlsVisible: boolean;
+        frameControlEnabled: boolean;
+        valueControlEnabled: boolean;
     }
     export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
         private _onFrameSetObserver;
@@ -1481,6 +1482,7 @@ declare module INSPECTOR {
         private _pointerIsDown;
         private _sourcePointerX;
         private _sourcePointerY;
+        private _selectionMade;
         private _selectionStartX;
         private _selectionStartY;
         private _onActiveAnimationChangedObserver;
@@ -4021,6 +4023,7 @@ declare module INSPECTOR {
             isSelected: boolean;
             isInPickingMode: boolean;
         }): boolean;
+        updateGizmoAutoPicking(isInPickingMode: boolean): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
         onSelect(): void;

@@ -769,7 +769,9 @@ declare module BABYLON {
         /** Xbox */
         Xbox = 5,
         /** Switch Controller */
-        Switch = 6
+        Switch = 6,
+        /** PS5 DualSense */
+        DualSense = 7
     }
     /**
      * Enum for All Pointers (Touch/Mouse)
@@ -822,6 +824,55 @@ declare module BABYLON {
         R2 = 7,
         /** Share */
         Share = 8,
+        /** Options */
+        Options = 9,
+        /** L3 */
+        L3 = 10,
+        /** R3 */
+        R3 = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** TouchPad */
+        TouchPad = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+    /**
+     * Enum for Dual Shock Gamepad
+     */
+    export enum DualSenseInput {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** L1 */
+        L1 = 4,
+        /** R1 */
+        R1 = 5,
+        /** L2 */
+        L2 = 6,
+        /** R2 */
+        R2 = 7,
+        /** Create */
+        Create = 8,
         /** Options */
         Options = 9,
         /** L3 */
@@ -7667,7 +7718,9 @@ declare module BABYLON {
         /** Delta time */
         DeltaTime = 9,
         /** Camera parameters */
-        CameraParameters = 10
+        CameraParameters = 10,
+        /** Material alpha */
+        MaterialAlpha = 11
     }
 }
 declare module BABYLON {
@@ -7962,7 +8015,7 @@ declare module BABYLON {
         /** @hidden */
         _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
         /** @hidden */
-        _transmit(effect: Effect, scene: Scene): void;
+        _transmit(effect: Effect, scene: Scene, material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
         protected _dumpPropertiesCode(): string;
         dispose(): void;
@@ -22312,6 +22365,10 @@ declare module BABYLON {
         private _addFragmentOutputNode;
         private _removeFragmentOutputNode;
         /**
+         * Gets or sets a boolean indicating that alpha blending must be enabled no matter what alpha value or alpha channel of the FragmentBlock are
+         */
+        forceAlphaBlending: boolean;
+        /**
          * Specifies if the material will require alpha blending
          * @returns a boolean specifying if alpha blending is needed
          */
@@ -26338,7 +26395,6 @@ declare module BABYLON {
         private _baseMatrix;
         private _absoluteTransform;
         private _invertedAbsoluteTransform;
-        private _parent;
         private _scalingDeterminant;
         private _worldTransform;
         private _localScaling;
@@ -26379,6 +26435,7 @@ declare module BABYLON {
          * @returns a skeleton
          */
         getSkeleton(): Skeleton;
+        get parent(): Bone;
         /**
          * Gets parent bone
          * @returns a bone or null if the bone is the root of the bone hierarchy
@@ -26394,6 +26451,7 @@ declare module BABYLON {
          * @returns the node index
          */
         getIndex(): number;
+        set parent(newParent: Nullable<Bone>);
         /**
          * Sets the parent bone
          * @param parent defines the parent (can be null if the bone is the root)
@@ -28098,7 +28156,7 @@ declare module BABYLON {
              * @returns a new Mesh
              * @deprecated Please use MeshBuilder instead
              */
-            function CreateLines(name: string, points: Vector3[], scene: Nullable<Scene>, updatable: boolean, instance?: Nullable<LinesMesh>): LinesMesh;
+            function CreateLines(name: string, points: Vector3[], scene: Nullable<Scene>, updatable?: boolean, instance?: Nullable<LinesMesh>): LinesMesh;
             /**
              * Creates a dashed line mesh.
              * @param name defines the name of the mesh to create
@@ -29327,13 +29385,13 @@ declare module BABYLON {
          * @param collideAgainst Physics imposter, or array of physics imposters to collide against
          * @param func Callback that is executed on collision
          */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void): void;
         /**
          * Unregisters the physics imposter on contact
          * @param collideAgainst The physics object to collide against
          * @param func Callback to execute on collision
          */
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>, point: Nullable<Vector3>) => void): void;
         private _tmpQuat;
         private _tmpQuat2;
         /**
@@ -37369,7 +37427,7 @@ declare module BABYLON {
         _scene: Scene;
         /** @hidden */
         _cache: any;
-        private _parentNode;
+        protected _parentNode: Nullable<Node>;
         /** @hidden */
         protected _children: Nullable<Node[]>;
         /** @hidden */
@@ -48103,7 +48161,7 @@ declare module BABYLON {
     /**
      * Type to handle enforcement of inputs
      */
-    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
+    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : T extends DeviceType.DualSense ? DualSenseInput : never;
 }
 declare module BABYLON {
     /**
@@ -64092,6 +64150,8 @@ declare module BABYLON {
         };
         /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
         clearGizmoOnEmptyPointerEvent: boolean;
+        /** When true (default), picking to attach a new mesh is enabled. This works in sync with inspector autopicking. */
+        enableAutoPicking: boolean;
         /** Fires an event when the manager is attached to a mesh */
         onAttachedToMeshObservable: Observable<Nullable<AbstractMesh>>;
         /** Fires an event when the manager is attached to a node */
@@ -79465,6 +79525,32 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used as a pass through
+     */
+    export class ElbowBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ElbowBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        get input(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Creates an instance of the anisotropic plugin
      * @param material parent material the plugin will be created for
      * @returns the plugin instance or null if the plugin is incompatible with material
@@ -87903,6 +87989,7 @@ declare module BABYLON {
         removeTask(task: AbstractAssetTask): void;
         private _decreaseWaitingTasksCount;
         private _runTask;
+        private _formatTaskErrorMessage;
         /**
          * Reset the AssetsManager and remove all tasks
          * @return the current instance of the AssetsManager
