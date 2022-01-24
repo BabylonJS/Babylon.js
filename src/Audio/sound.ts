@@ -273,6 +273,7 @@ export class Sound {
                                     (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
                                     url.indexOf(".wav", url.length - 4) !== -1 ||
                                     url.indexOf(".m4a", url.length - 4) !== -1 ||
+                                    url.indexOf(".mp4", url.length - 4) !== -1 ||
                                     url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
                                     // Loading sound
