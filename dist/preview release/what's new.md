@@ -246,6 +246,7 @@
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 - Add `NativeXRPlugin` and `NativeXRFrame` to improve XR performance on BabylonNative ([rgerd](https://github.com/rgerd))
 - Reset XR Camera's orientation when entering an AR session for consistent experience ([RaananW](https://github.com/RaananW))
+- Enable multiview rendering to `XRProjectionLayer` with texture type "texture-array" ([#10767](https://github.com/BabylonJS/Babylon.js/issues/10767)) ([rgerd](https://github.com/rgerd))
 
 ### Gizmos
 
