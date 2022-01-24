@@ -1151,12 +1151,27 @@ export class AssetsManager {
 
             if (this.onTaskError) {
                 this.onTaskError(task);
+            } else if (!task.onError) {
+                Logger.Error(this._formatTaskErrorMessage(task));
             }
             this.onTaskErrorObservable.notifyObservers(task);
             this._decreaseWaitingTasksCount(task);
         };
 
         task.run(this._scene, done, error);
+    }
+
+    private _formatTaskErrorMessage(task: AbstractAssetTask) {
+        let errorMessage = "Unable to complete task " + task.name;
+
+        if (task.errorObject.message) {
+            errorMessage += `: ${task.errorObject.message}`;
+        }
+        if (task.errorObject.exception) {
+            errorMessage += `: ${task.errorObject.exception}`;
+        }
+
+        return errorMessage;
     }
 
     /**

@@ -22,4 +22,6 @@ export enum NodeMaterialSystemValues {
     DeltaTime = 9,
     /** Camera parameters */
     CameraParameters = 10,
+    /** Material alpha */
+    MaterialAlpha = 11,
 }

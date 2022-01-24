@@ -26,6 +26,9 @@ export class GizmoManager implements IDisposable {
     /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
     public clearGizmoOnEmptyPointerEvent = false;
 
+    /** When true (default), picking to attach a new mesh is enabled. This works in sync with inspector autopicking. */
+    public enableAutoPicking = true;
+
     /** Fires an event when the manager is attached to a mesh */
     public onAttachedToMeshObservable = new Observable<Nullable<AbstractMesh>>();
 
@@ -136,32 +139,34 @@ export class GizmoManager implements IDisposable {
             }
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
-                    var node: Nullable<Node> = pointerInfo.pickInfo.pickedMesh;
-                    if (this.attachableMeshes == null) {
-                        // Attach to the most parent node
-                        while (node && node.parent != null) {
-                            node = node.parent;
-                        }
-                    } else {
-                        // Attach to the parent node that is an attachableMesh
-                        var found = false;
-                        this.attachableMeshes.forEach((mesh) => {
-                            if (node && (node == mesh || node.isDescendantOf(mesh))) {
-                                node = mesh;
-                                found = true;
+                    if (this.enableAutoPicking) {
+                        var node: Nullable<Node> = pointerInfo.pickInfo.pickedMesh;
+                        if (this.attachableMeshes == null) {
+                            // Attach to the most parent node
+                            while (node && node.parent != null) {
+                                node = node.parent;
                             }
-                        });
-                        if (!found) {
-                            node = null;
+                        } else {
+                            // Attach to the parent node that is an attachableMesh
+                            var found = false;
+                            this.attachableMeshes.forEach((mesh) => {
+                                if (node && (node == mesh || node.isDescendantOf(mesh))) {
+                                    node = mesh;
+                                    found = true;
+                                }
+                            });
+                            if (!found) {
+                                node = null;
+                            }
                         }
-                    }
-                    if (node instanceof AbstractMesh) {
-                        if (this._attachedMesh != node) {
-                            this.attachToMesh(node);
-                        }
-                    } else {
-                        if (this.clearGizmoOnEmptyPointerEvent) {
-                            this.attachToMesh(null);
+                        if (node instanceof AbstractMesh) {
+                            if (this._attachedMesh != node) {
+                                this.attachToMesh(node);
+                            }
+                        } else {
+                            if (this.clearGizmoOnEmptyPointerEvent) {
+                                this.attachToMesh(null);
+                            }
                         }
                     }
                 } else {

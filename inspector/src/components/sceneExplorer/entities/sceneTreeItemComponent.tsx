@@ -52,6 +52,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             } else if (manager.boundingBoxGizmoEnabled) {
                 gizmoMode = 4;
             }
+            // autopicking is disable by default
+            manager.enableAutoPicking = false;
         }
 
         this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode };
@@ -66,8 +68,16 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 nextState.isSelected = false;
             }
         }
-
+        this.updateGizmoAutoPicking(nextState.isInPickingMode);
         return true;
+    }
+
+    updateGizmoAutoPicking(isInPickingMode: boolean) {
+        const scene = this.props.scene;
+        if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+            const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+            manager.enableAutoPicking = isInPickingMode;
+        }
     }
 
     componentDidMount() {

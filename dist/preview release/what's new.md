@@ -69,6 +69,7 @@
 - Added `onCreateCustomMeshImpostor` handler for creating mesh impostors with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
 - Added `onCreateCustomConvexHullImpostor` handler for creating convex hull imposters with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
 - Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
+- Added support for DualSense controllers to DeviceInputSystem. ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -101,6 +102,7 @@
 - Fixed an issue where errors for loading certain assets (e.g. <20-byte GLBs) are not catchable. ([bghgary](https://github.com/bghgary))
 - Added support for `KHR_materials_emissive_strength` for glTF loader. ([sebavan](https://github.com/sebavan))
 - Added support for normalized attributes ([#11685](https://github.com/BabylonJS/Babylon.js/issues/11685)) ([RaananW](https://github.com/RaananW))
+- Added fallback error logging on mesh loading tasks if no error handler is defined. ([carolhmj](https://github.com/carolhmj))
 
 ### Navigation
 
@@ -148,14 +150,18 @@
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
 - When a perf profiler metric is constant, draw it on the middle of the canvas instead of on the top ([carolhmj](https://github.com/carolhmj))
 - Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
+- Deselect keys with right-click on ACE ([carolhmj](https://github.com/carolhmj))
+- Let users edit multiple ACE key frame/values at the same time ([carolhmj](https://github.com/carolhmj))
+- Set default tangents for new keys on ACE and fix their behavior ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
-- Start render loop before creating scene to make stopping it more convenient([BlakeOne](https://github.com/BlakeOne))
+- Start render loop before creating scene to make stopping it more convenient ([BlakeOne](https://github.com/BlakeOne))
 - Added tooltips for menubar buttons ([darraghjburke](https://github.com/darraghjburke))
 
 ### NME
 
+- Added a `MaterialAlpha` block to read material's alpha value ([Deltakosh](https://github.com/Deltakosh))
 - Added a `CloudBLock` block to create noise based cloud data ([Deltakosh](https://github.com/Deltakosh))
 - Updated the VectorMerger and ColorMerger blocks to support swizzling ([Deltakosh](https://github.com/Deltakosh))
 - Added a `ImageSource` block to factorize access to texture data ([Deltakosh](https://github.com/Deltakosh))
@@ -251,6 +257,7 @@
 - Added constructor parameters to allow turning off `updateScale` on RotationGizmo ([jekelija](https://github.com/jekelija))
 - Dispose `_dragPlane` when detaching in `PointerDragBehavior` ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Log warning when trying to attach a node to a `LightGizmo` ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Inspector autopicking is in sync with `GimoManager` autopicking ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fixed wrong matrix with nodes having pivot point ([CedricGuillemet](https://github.com/CedricGuillemet))
 - `validateDrag` support added to `AxisDragGizmo` ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Gizmos that have draggable components now support near interactions via `WebXRNearInteraction` ([rickfromwork](https://github.com/rickfromwork))
@@ -274,6 +281,7 @@
 
 ## Bugs
 
+- Add missing param `point` to the callback function's type for the methods `registerOnPhysicsCollide` and `unregisterOnPhysicsCollide` of the `PhysicsImpostor` class. ([BlakeOne](https://github.com/BlakeOne))
 - Fix serialization and parsing of `textBlock` and `image` for `Button` class ([BlakeOne](https://github.com/BlakeOne))
 - Fix for `AdvancedTimer` ignoring `timeout` option ([BlakeOne](https://github.com/BlakeOne))
 - Fix issue when `AssetContainer` is added to `Scene` multiple times ([BlakeOne](https://github.com/BlakeOne))
@@ -383,7 +391,6 @@
 - Fix Button3D, HolographicButton, TouchHolographicButton and HolographicSlate content when scene is right-handed ([carolhmj](https://github.com/carolhmj))
 - Fix get attachedNode always return null for `PositionGizmo` ([jtcheng](https://github.com/jtcheng))
 - Fix Screen Space Reflections for right-handed scenes ([carolhmj](https://github.com/carolhmj))
-- Fix FreeCameraTouchInput roation when moving ([m1911star](https://github.com/m1911star))
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
 - Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
