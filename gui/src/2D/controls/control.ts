@@ -1122,6 +1122,19 @@ export class Control {
 
         this._isEnabled = value;
         this._markAsDirty();
+        // if this control or any of it's descendants are under a pointer, we need to fire a pointerOut event
+        const recursivelyFirePointerOut = (control: Control) => {
+            for (const pointer in control.host._lastControlOver) {
+                if (control === this.host._lastControlOver[pointer]) {
+                    control._onPointerOut(control, null, true);
+                    delete control.host._lastControlOver[pointer];
+                }
+            }
+            if ((control as Container).children !== undefined) {
+                (control as Container).children.forEach(recursivelyFirePointerOut);
+            }
+        };
+        recursivelyFirePointerOut(this);
     }
     /** Gets or sets background color of control if it's disabled */
     @serialize()

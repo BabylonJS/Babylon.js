@@ -162,6 +162,7 @@ export class InternalDeviceSourceManager implements IDisposable {
                 this._firstDevice[type] = 0;
                 break;
             case DeviceType.Touch:
+            case DeviceType.DualSense:
             case DeviceType.DualShock:
             case DeviceType.Xbox:
             case DeviceType.Switch:

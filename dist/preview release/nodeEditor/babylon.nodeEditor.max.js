@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \****************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -117,7 +117,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
 /*!
- * Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 function _typeof(obj) {
@@ -314,7 +314,7 @@ var STYLE_TO_PREFIX = {
   'kit': 'fak'
 };
 var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome ([5 ]*)(Solid|Regular|Light|Duotone|Brands|Free|Pro|Kit).*/; // TODO: do we need to handle font-weight for kit SVG pseudo-elements?
+var FONT_FAMILY_PATTERN = /Font Awesome ([5 ]*)(Solid|Regular|Light|Duotone|Brands|Free|Pro|Kit).*/i; // TODO: do we need to handle font-weight for kit SVG pseudo-elements?
 
 var FONT_WEIGHT_TO_PREFIX = {
   '900': 'fas',
@@ -1214,7 +1214,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.15.3\"";
+var preamble = "FA \"5.15.4\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -2557,10 +2557,10 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \****************************************************************************************/
-/*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \***************************************************************************************************************/
+/*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVest, faVestPatches, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3529,6 +3529,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVenus", function() { return faVenus; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVenusDouble", function() { return faVenusDouble; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVenusMars", function() { return faVenusMars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVest", function() { return faVest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVestPatches", function() { return faVestPatches; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVial", function() { return faVial; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVials", function() { return faVials; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVideo", function() { return faVideo; });
@@ -3567,6 +3569,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faXRay", function() { return faXRay; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faYenSign", function() { return faYenSign; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faYinYang", function() { return faYinYang; });
+/*!
+ * Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ */
 var prefix = "fas";
 var faAd = {
   prefix: 'fas',
@@ -3591,7 +3597,7 @@ var faAdjust = {
 var faAirFreshener = {
   prefix: 'fas',
   iconName: 'air-freshener',
-  icon: [384, 512, [], "f5d0", "M378.94 321.41L284.7 224h49.22c15.3 0 23.66-16.6 13.86-27.53L234.45 69.96c3.43-6.61 5.55-14 5.55-21.96 0-26.51-21.49-48-48-48s-48 21.49-48 48c0 7.96 2.12 15.35 5.55 21.96L36.22 196.47C26.42 207.4 34.78 224 50.08 224H99.3L5.06 321.41C-6.69 333.56 3.34 352 21.7 352H160v32H48c-8.84 0-16 7.16-16 16v96c0 8.84 7.16 16 16 16h288c8.84 0 16-7.16 16-16v-96c0-8.84-7.16-16-16-16H224v-32h138.3c18.36 0 28.39-18.44 16.64-30.59zM192 31.98c8.85 0 16.02 7.17 16.02 16.02 0 8.84-7.17 16.02-16.02 16.02S175.98 56.84 175.98 48c0-8.85 7.17-16.02 16.02-16.02zM304 432v32H80v-32h224z"]
+  icon: [512, 512, [], "f5d0", "M224 160H96C43 160 0 203 0 256V480C0 497.625 14.375 512 32 512H288C305.625 512 320 497.625 320 480V256C320 203 277 160 224 160ZM160 416C115.875 416 80 380.125 80 336S115.875 256 160 256S240 291.875 240 336S204.125 416 160 416ZM224 32C224 14.375 209.625 0 192 0H128C110.375 0 96 14.375 96 32V128H224V32ZM381.781 51.578C383 50.969 384 49.359 384 48C384 46.625 383 45.031 381.781 44.422L352 32L339.562 2.219C338.969 1 337.375 0 336 0S333.031 1 332.406 2.219L320 32L290.219 44.422C289 45.031 288 46.625 288 48C288 49.359 289 50.969 290.219 51.578L320 64L332.406 93.781C333.031 95 334.625 96 336 96S338.969 95 339.562 93.781L352 64L381.781 51.578ZM448 64L460.406 93.781C461.031 95 462.625 96 464 96S466.969 95 467.562 93.781L480 64L509.781 51.578C511 50.969 512 49.359 512 48C512 46.625 511 45.031 509.781 44.422L480 32L467.562 2.219C466.969 1 465.375 0 464 0S461.031 1 460.406 2.219L448 32L418.219 44.422C417 45.031 416 46.625 416 48C416 49.359 417 50.969 418.219 51.578L448 64ZM480 224L467.562 194.219C466.969 193 465.375 192 464 192S461.031 193 460.406 194.219L448 224L418.219 236.422C417 237.031 416 238.625 416 240C416 241.359 417 242.969 418.219 243.578L448 256L460.406 285.781C461.031 287 462.625 288 464 288S466.969 287 467.562 285.781L480 256L509.781 243.578C511 242.969 512 241.359 512 240C512 238.625 511 237.031 509.781 236.422L480 224ZM445.781 147.578C447 146.969 448 145.359 448 144C448 142.625 447 141.031 445.781 140.422L416 128L403.562 98.219C402.969 97 401.375 96 400 96S397.031 97 396.406 98.219L384 128L354.219 140.422C353 141.031 352 142.625 352 144C352 145.359 353 146.969 354.219 147.578L384 160L396.406 189.781C397.031 191 398.625 192 400 192S402.969 191 403.562 189.781L416 160L445.781 147.578Z"]
 };
 var faAlignCenter = {
   prefix: 'fas',
@@ -3836,12 +3842,12 @@ var faBacon = {
 var faBacteria = {
   prefix: 'fas',
   iconName: 'bacteria',
-  icon: [640, 512, [], "f959", "M272.35,226.4A17.71,17.71,0,0,0,281.46,203l-4-9.08a121.29,121.29,0,0,1,12.36-3.08A83.34,83.34,0,0,0,323.57,177l10,9a17.76,17.76,0,1,0,23.92-26.27l-9.72-8.76a83.12,83.12,0,0,0,11.65-48.18l11.85-3.51a17.73,17.73,0,1,0-10.15-34l-11.34,3.36a84,84,0,0,0-36.38-35.57l2.84-10.85a17.8,17.8,0,0,0-34.47-8.93l-2.82,10.78a83.25,83.25,0,0,0-16.74,1.1C250.83,27,240,30.22,229.1,33.39l-3.38-9.46a17.8,17.8,0,0,0-33.56,11.89l3.49,9.8a286.74,286.74,0,0,0-43.94,23.57l-6.32-8.43a17.9,17.9,0,0,0-24.94-3.6A17.69,17.69,0,0,0,116.84,82l6.45,8.61a286.59,286.59,0,0,0-34.95,35.33l-8.82-6.42a17.84,17.84,0,0,0-24.89,3.86,17.66,17.66,0,0,0,3.88,24.77l8.88,6.47a286.6,286.6,0,0,0-23,43.91l-10.48-3.59a17.73,17.73,0,1,0-11.59,33.52L32.67,232c-2.79,10-5.79,19.84-7.52,30.22a83.16,83.16,0,0,0-.82,19l-11.58,3.43a17.73,17.73,0,1,0,10.13,34l11.27-3.33a83.51,83.51,0,0,0,36.39,35.43l-2.88,11.06a17.81,17.81,0,0,0,34.48,8.92l2.87-11c1,0,2.07.26,3.1.26a83.39,83.39,0,0,0,45.65-13.88l8.59,8.8a17.77,17.77,0,0,0,25.56-24.7l-9.14-9.37a83.41,83.41,0,0,0,12.08-31.05,119.08,119.08,0,0,1,3.87-15.53l9,4.22a17.74,17.74,0,1,0,15.15-32.09l-8.8-4.11c.67-1,1.2-2.08,1.9-3.05a119.89,119.89,0,0,1,7.87-9.41,121.73,121.73,0,0,1,11.65-11.4,119.49,119.49,0,0,1,9.94-7.82c1.12-.77,2.32-1.42,3.47-2.15l3.92,8.85a17.86,17.86,0,0,0,16.32,10.58A18.14,18.14,0,0,0,272.35,226.4ZM128,256a32,32,0,1,1,32-32A32,32,0,0,1,128,256Zm80-96a16,16,0,1,1,16-16A16,16,0,0,1,208,160Zm431.26,45.3a17.79,17.79,0,0,0-17.06-12.69,17.55,17.55,0,0,0-5.08.74l-11.27,3.33a83.61,83.61,0,0,0-36.39-35.43l2.88-11.06a17.81,17.81,0,0,0-34.48-8.91l-2.87,11c-1,0-2.07-.26-3.1-.26a83.32,83.32,0,0,0-45.65,13.89l-8.59-8.81a17.77,17.77,0,0,0-25.56,24.7l9.14,9.37a83.28,83.28,0,0,0-12.08,31.06,119.34,119.34,0,0,1-3.87,15.52l-9-4.22a17.74,17.74,0,1,0-15.15,32.09l8.8,4.11c-.67,1-1.2,2.08-1.89,3.05a117.71,117.71,0,0,1-7.94,9.47,119,119,0,0,1-11.57,11.33,121.59,121.59,0,0,1-10,7.83c-1.12.77-2.32,1.42-3.47,2.15l-3.92-8.85a17.86,17.86,0,0,0-16.32-10.58,18.14,18.14,0,0,0-7.18,1.5A17.71,17.71,0,0,0,358.54,309l4,9.08a118.71,118.71,0,0,1-12.36,3.08,83.34,83.34,0,0,0-33.77,13.9l-10-9a17.77,17.77,0,1,0-23.92,26.28l9.72,8.75a83.12,83.12,0,0,0-11.65,48.18l-11.86,3.51a17.73,17.73,0,1,0,10.16,34l11.34-3.36A84,84,0,0,0,326.61,479l-2.84,10.85a17.8,17.8,0,0,0,34.47,8.93L361.06,488a83.3,83.3,0,0,0,16.74-1.1c11.37-1.89,22.24-5.07,33.1-8.24l3.38,9.46a17.8,17.8,0,0,0,33.56-11.89l-3.49-9.79a287.66,287.66,0,0,0,43.94-23.58l6.32,8.43a17.88,17.88,0,0,0,24.93,3.6A17.67,17.67,0,0,0,523.16,430l-6.45-8.61a287.37,287.37,0,0,0,34.95-35.34l8.82,6.42a17.76,17.76,0,1,0,21-28.63l-8.88-6.46a287.17,287.17,0,0,0,23-43.92l10.48,3.59a17.73,17.73,0,1,0,11.59-33.52L607.33,280c2.79-10,5.79-19.84,7.52-30.21a83.27,83.27,0,0,0,.82-19.05l11.58-3.43A17.7,17.7,0,0,0,639.26,205.3ZM416,416a32,32,0,1,1,32-32A32,32,0,0,1,416,416Z"]
+  icon: [640, 512, [], "e059", "M272.35,226.4A17.71,17.71,0,0,0,281.46,203l-4-9.08a121.29,121.29,0,0,1,12.36-3.08A83.34,83.34,0,0,0,323.57,177l10,9a17.76,17.76,0,1,0,23.92-26.27l-9.72-8.76a83.12,83.12,0,0,0,11.65-48.18l11.85-3.51a17.73,17.73,0,1,0-10.15-34l-11.34,3.36a84,84,0,0,0-36.38-35.57l2.84-10.85a17.8,17.8,0,0,0-34.47-8.93l-2.82,10.78a83.25,83.25,0,0,0-16.74,1.1C250.83,27,240,30.22,229.1,33.39l-3.38-9.46a17.8,17.8,0,0,0-33.56,11.89l3.49,9.8a286.74,286.74,0,0,0-43.94,23.57l-6.32-8.43a17.9,17.9,0,0,0-24.94-3.6A17.69,17.69,0,0,0,116.84,82l6.45,8.61a286.59,286.59,0,0,0-34.95,35.33l-8.82-6.42a17.84,17.84,0,0,0-24.89,3.86,17.66,17.66,0,0,0,3.88,24.77l8.88,6.47a286.6,286.6,0,0,0-23,43.91l-10.48-3.59a17.73,17.73,0,1,0-11.59,33.52L32.67,232c-2.79,10-5.79,19.84-7.52,30.22a83.16,83.16,0,0,0-.82,19l-11.58,3.43a17.73,17.73,0,1,0,10.13,34l11.27-3.33a83.51,83.51,0,0,0,36.39,35.43l-2.88,11.06a17.81,17.81,0,0,0,34.48,8.92l2.87-11c1,0,2.07.26,3.1.26a83.39,83.39,0,0,0,45.65-13.88l8.59,8.8a17.77,17.77,0,0,0,25.56-24.7l-9.14-9.37a83.41,83.41,0,0,0,12.08-31.05,119.08,119.08,0,0,1,3.87-15.53l9,4.22a17.74,17.74,0,1,0,15.15-32.09l-8.8-4.11c.67-1,1.2-2.08,1.9-3.05a119.89,119.89,0,0,1,7.87-9.41,121.73,121.73,0,0,1,11.65-11.4,119.49,119.49,0,0,1,9.94-7.82c1.12-.77,2.32-1.42,3.47-2.15l3.92,8.85a17.86,17.86,0,0,0,16.32,10.58A18.14,18.14,0,0,0,272.35,226.4ZM128,256a32,32,0,1,1,32-32A32,32,0,0,1,128,256Zm80-96a16,16,0,1,1,16-16A16,16,0,0,1,208,160Zm431.26,45.3a17.79,17.79,0,0,0-17.06-12.69,17.55,17.55,0,0,0-5.08.74l-11.27,3.33a83.61,83.61,0,0,0-36.39-35.43l2.88-11.06a17.81,17.81,0,0,0-34.48-8.91l-2.87,11c-1,0-2.07-.26-3.1-.26a83.32,83.32,0,0,0-45.65,13.89l-8.59-8.81a17.77,17.77,0,0,0-25.56,24.7l9.14,9.37a83.28,83.28,0,0,0-12.08,31.06,119.34,119.34,0,0,1-3.87,15.52l-9-4.22a17.74,17.74,0,1,0-15.15,32.09l8.8,4.11c-.67,1-1.2,2.08-1.89,3.05a117.71,117.71,0,0,1-7.94,9.47,119,119,0,0,1-11.57,11.33,121.59,121.59,0,0,1-10,7.83c-1.12.77-2.32,1.42-3.47,2.15l-3.92-8.85a17.86,17.86,0,0,0-16.32-10.58,18.14,18.14,0,0,0-7.18,1.5A17.71,17.71,0,0,0,358.54,309l4,9.08a118.71,118.71,0,0,1-12.36,3.08,83.34,83.34,0,0,0-33.77,13.9l-10-9a17.77,17.77,0,1,0-23.92,26.28l9.72,8.75a83.12,83.12,0,0,0-11.65,48.18l-11.86,3.51a17.73,17.73,0,1,0,10.16,34l11.34-3.36A84,84,0,0,0,326.61,479l-2.84,10.85a17.8,17.8,0,0,0,34.47,8.93L361.06,488a83.3,83.3,0,0,0,16.74-1.1c11.37-1.89,22.24-5.07,33.1-8.24l3.38,9.46a17.8,17.8,0,0,0,33.56-11.89l-3.49-9.79a287.66,287.66,0,0,0,43.94-23.58l6.32,8.43a17.88,17.88,0,0,0,24.93,3.6A17.67,17.67,0,0,0,523.16,430l-6.45-8.61a287.37,287.37,0,0,0,34.95-35.34l8.82,6.42a17.76,17.76,0,1,0,21-28.63l-8.88-6.46a287.17,287.17,0,0,0,23-43.92l10.48,3.59a17.73,17.73,0,1,0,11.59-33.52L607.33,280c2.79-10,5.79-19.84,7.52-30.21a83.27,83.27,0,0,0,.82-19.05l11.58-3.43A17.7,17.7,0,0,0,639.26,205.3ZM416,416a32,32,0,1,1,32-32A32,32,0,0,1,416,416Z"]
 };
 var faBacterium = {
   prefix: 'fas',
   iconName: 'bacterium',
-  icon: [512, 512, [], "f95a", "M511,102.93A23.76,23.76,0,0,0,481.47,87l-15.12,4.48a111.85,111.85,0,0,0-48.5-47.42l3.79-14.47a23.74,23.74,0,0,0-46-11.91l-3.76,14.37a111.94,111.94,0,0,0-22.33,1.47,386.74,386.74,0,0,0-44.33,10.41l-4.3-12a23.74,23.74,0,0,0-44.75,15.85l4.3,12.05a383.4,383.4,0,0,0-58.69,31.83l-8-10.63a23.85,23.85,0,0,0-33.24-4.8,23.57,23.57,0,0,0-4.83,33.09l8,10.63a386.14,386.14,0,0,0-46.7,47.44l-11-8a23.68,23.68,0,1,0-28,38.17l11.09,8.06a383.45,383.45,0,0,0-30.92,58.75l-12.93-4.43a23.65,23.65,0,1,0-15.47,44.69l13,4.48a385.81,385.81,0,0,0-9.3,40.53A111.58,111.58,0,0,0,32.44,375L17,379.56a23.64,23.64,0,0,0,13.51,45.31l15-4.44a111.49,111.49,0,0,0,48.53,47.24l-3.85,14.75a23.66,23.66,0,0,0,17,28.83,24.7,24.7,0,0,0,6,.75,23.73,23.73,0,0,0,23-17.7L140,479.67c1.37.05,2.77.35,4.13.35A111.22,111.22,0,0,0,205,461.5l11.45,11.74a23.7,23.7,0,0,0,34.08-32.93l-12.19-12.5a111,111,0,0,0,16.11-41.4,158.69,158.69,0,0,1,5.16-20.71l12,5.64a23.66,23.66,0,1,0,20.19-42.79l-11.72-5.49c.89-1.32,1.59-2.77,2.52-4.06a157.86,157.86,0,0,1,10.46-12.49,159.5,159.5,0,0,1,15.59-15.28,162.18,162.18,0,0,1,13.23-10.4c1.5-1,3.1-1.89,4.63-2.87l5.23,11.8a23.74,23.74,0,0,0,43.48-19.08l-5.36-12.11a158.87,158.87,0,0,1,16.49-4.1,111,111,0,0,0,45-18.54l13.33,12a23.69,23.69,0,1,0,31.88-35l-12.94-11.67A110.83,110.83,0,0,0,479.21,137L495,132.32A23.61,23.61,0,0,0,511,102.93ZM160,368a48,48,0,1,1,48-48A48,48,0,0,1,160,368Zm80-136a24,24,0,1,1,24-24A24,24,0,0,1,240,232Z"]
+  icon: [512, 512, [], "e05a", "M511,102.93A23.76,23.76,0,0,0,481.47,87l-15.12,4.48a111.85,111.85,0,0,0-48.5-47.42l3.79-14.47a23.74,23.74,0,0,0-46-11.91l-3.76,14.37a111.94,111.94,0,0,0-22.33,1.47,386.74,386.74,0,0,0-44.33,10.41l-4.3-12a23.74,23.74,0,0,0-44.75,15.85l4.3,12.05a383.4,383.4,0,0,0-58.69,31.83l-8-10.63a23.85,23.85,0,0,0-33.24-4.8,23.57,23.57,0,0,0-4.83,33.09l8,10.63a386.14,386.14,0,0,0-46.7,47.44l-11-8a23.68,23.68,0,1,0-28,38.17l11.09,8.06a383.45,383.45,0,0,0-30.92,58.75l-12.93-4.43a23.65,23.65,0,1,0-15.47,44.69l13,4.48a385.81,385.81,0,0,0-9.3,40.53A111.58,111.58,0,0,0,32.44,375L17,379.56a23.64,23.64,0,0,0,13.51,45.31l15-4.44a111.49,111.49,0,0,0,48.53,47.24l-3.85,14.75a23.66,23.66,0,0,0,17,28.83,24.7,24.7,0,0,0,6,.75,23.73,23.73,0,0,0,23-17.7L140,479.67c1.37.05,2.77.35,4.13.35A111.22,111.22,0,0,0,205,461.5l11.45,11.74a23.7,23.7,0,0,0,34.08-32.93l-12.19-12.5a111,111,0,0,0,16.11-41.4,158.69,158.69,0,0,1,5.16-20.71l12,5.64a23.66,23.66,0,1,0,20.19-42.79l-11.72-5.49c.89-1.32,1.59-2.77,2.52-4.06a157.86,157.86,0,0,1,10.46-12.49,159.5,159.5,0,0,1,15.59-15.28,162.18,162.18,0,0,1,13.23-10.4c1.5-1,3.1-1.89,4.63-2.87l5.23,11.8a23.74,23.74,0,0,0,43.48-19.08l-5.36-12.11a158.87,158.87,0,0,1,16.49-4.1,111,111,0,0,0,45-18.54l13.33,12a23.69,23.69,0,1,0,31.88-35l-12.94-11.67A110.83,110.83,0,0,0,479.21,137L495,132.32A23.61,23.61,0,0,0,511,102.93ZM160,368a48,48,0,1,1,48-48A48,48,0,0,1,160,368Zm80-136a24,24,0,1,1,24-24A24,24,0,0,1,240,232Z"]
 };
 var faBahai = {
   prefix: 'fas',
@@ -4086,7 +4092,7 @@ var faBoxOpen = {
 var faBoxTissue = {
   prefix: 'fas',
   iconName: 'box-tissue',
-  icon: [512, 512, [], "f95b", "M383.88,287.82l64-192H338.47a70.2,70.2,0,0,1-66.59-48,70.21,70.21,0,0,0-66.6-48H63.88l64,288Zm-384,192a32,32,0,0,0,32,32h448a32,32,0,0,0,32-32v-64H-.12Zm480-256H438.94l-21.33,64h14.27a16,16,0,0,1,0,32h-352a16,16,0,1,1,0-32H95.09l-14.22-64h-49a32,32,0,0,0-32,32v128h512v-128A32,32,0,0,0,479.88,223.82Z"]
+  icon: [512, 512, [], "e05b", "M383.88,287.82l64-192H338.47a70.2,70.2,0,0,1-66.59-48,70.21,70.21,0,0,0-66.6-48H63.88l64,288Zm-384,192a32,32,0,0,0,32,32h448a32,32,0,0,0,32-32v-64H-.12Zm480-256H438.94l-21.33,64h14.27a16,16,0,0,1,0,32h-352a16,16,0,1,1,0-32H95.09l-14.22-64h-49a32,32,0,0,0-32,32v128h512v-128A32,32,0,0,0,479.88,223.82Z"]
 };
 var faBoxes = {
   prefix: 'fas',
@@ -5141,7 +5147,7 @@ var faFastForward = {
 var faFaucet = {
   prefix: 'fas',
   iconName: 'faucet',
-  icon: [512, 512, [], "f905", "M352,256H313.39c-15.71-13.44-35.46-23.07-57.39-28V180.44l-32-3.38-32,3.38V228c-21.93,5-41.68,14.6-57.39,28H16A16,16,0,0,0,0,272v96a16,16,0,0,0,16,16h92.79C129.38,421.73,173,448,224,448s94.62-26.27,115.21-64H352a32,32,0,0,1,32,32,32,32,0,0,0,32,32h64a32,32,0,0,0,32-32A160,160,0,0,0,352,256ZM81.59,159.91l142.41-15,142.41,15c9.42,1,17.59-6.81,17.59-16.8V112.89c0-10-8.17-17.8-17.59-16.81L256,107.74V80a16,16,0,0,0-16-16H208a16,16,0,0,0-16,16v27.74L81.59,96.08C72.17,95.09,64,102.9,64,112.89v30.22C64,153.1,72.17,160.91,81.59,159.91Z"]
+  icon: [512, 512, [], "e005", "M352,256H313.39c-15.71-13.44-35.46-23.07-57.39-28V180.44l-32-3.38-32,3.38V228c-21.93,5-41.68,14.6-57.39,28H16A16,16,0,0,0,0,272v96a16,16,0,0,0,16,16h92.79C129.38,421.73,173,448,224,448s94.62-26.27,115.21-64H352a32,32,0,0,1,32,32,32,32,0,0,0,32,32h64a32,32,0,0,0,32-32A160,160,0,0,0,352,256ZM81.59,159.91l142.41-15,142.41,15c9.42,1,17.59-6.81,17.59-16.8V112.89c0-10-8.17-17.8-17.59-16.81L256,107.74V80a16,16,0,0,0-16-16H208a16,16,0,0,0-16,16v27.74L81.59,96.08C72.17,95.09,64,102.9,64,112.89v30.22C64,153.1,72.17,160.91,81.59,159.91Z"]
 };
 var faFax = {
   prefix: 'fas',
@@ -5671,7 +5677,7 @@ var faHandHoldingHeart = {
 var faHandHoldingMedical = {
   prefix: 'fas',
   iconName: 'hand-holding-medical',
-  icon: [576, 512, [], "f95c", "M159.88,175.82h64v64a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-64h64a16,16,0,0,0,16-16v-64a16,16,0,0,0-16-16h-64v-64a16,16,0,0,0-16-16h-64a16,16,0,0,0-16,16v64h-64a16,16,0,0,0-16,16v64A16,16,0,0,0,159.88,175.82ZM568.07,336.13a39.91,39.91,0,0,0-55.93-8.47L392.47,415.84H271.86a16,16,0,0,1,0-32H350.1c16,0,30.75-10.87,33.37-26.61a32.06,32.06,0,0,0-31.62-37.38h-160a117.7,117.7,0,0,0-74.12,26.25l-46.5,37.74H15.87a16.11,16.11,0,0,0-16,16v96a16.11,16.11,0,0,0,16,16h347a104.8,104.8,0,0,0,61.7-20.27L559.6,392A40,40,0,0,0,568.07,336.13Z"]
+  icon: [576, 512, [], "e05c", "M159.88,175.82h64v64a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-64h64a16,16,0,0,0,16-16v-64a16,16,0,0,0-16-16h-64v-64a16,16,0,0,0-16-16h-64a16,16,0,0,0-16,16v64h-64a16,16,0,0,0-16,16v64A16,16,0,0,0,159.88,175.82ZM568.07,336.13a39.91,39.91,0,0,0-55.93-8.47L392.47,415.84H271.86a16,16,0,0,1,0-32H350.1c16,0,30.75-10.87,33.37-26.61a32.06,32.06,0,0,0-31.62-37.38h-160a117.7,117.7,0,0,0-74.12,26.25l-46.5,37.74H15.87a16.11,16.11,0,0,0-16,16v96a16.11,16.11,0,0,0,16,16h347a104.8,104.8,0,0,0,61.7-20.27L559.6,392A40,40,0,0,0,568.07,336.13Z"]
 };
 var faHandHoldingUsd = {
   prefix: 'fas',
@@ -5741,7 +5747,7 @@ var faHandScissors = {
 var faHandSparkles = {
   prefix: 'fas',
   iconName: 'hand-sparkles',
-  icon: [640, 512, [], "f95d", "M106.66,170.64l.09,0,49.55-20.65a7.32,7.32,0,0,0,3.68-6h0a7.29,7.29,0,0,0-3.68-6l-49.57-20.67-.07,0L86,67.68a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L3.7,138A7.29,7.29,0,0,0,0,144H0a7.32,7.32,0,0,0,3.68,6L53.27,170.6l.07,0L74,220.26a6.65,6.65,0,0,0,11.92,0l20.69-49.62ZM471.38,467.41l-1-.42-1-.5a38.67,38.67,0,0,1,0-69.14l1-.49,1-.43,37.49-15.63,15.63-37.48.41-1,.47-.95c3.85-7.74,10.58-13.63,18.35-17.34,0-1.33.25-2.69.27-4V144a32,32,0,0,0-64,0v72a8,8,0,0,1-8,8H456a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H360a8,8,0,0,1-8-8V32a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H264a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0v241l-23.59-32.49a40,40,0,0,0-64.71,47.09L229.3,492.21A48.07,48.07,0,0,0,268.09,512H465.7c19.24,0,35.65-11.73,43.24-28.79l-.07-.17ZM349.79,339.52,320,351.93l-12.42,29.78a4,4,0,0,1-7.15,0L288,351.93l-29.79-12.41a4,4,0,0,1,0-7.16L288,319.94l12.42-29.78a4,4,0,0,1,7.15,0L320,319.94l29.79,12.42a4,4,0,0,1,0,7.16ZM640,431.91a7.28,7.28,0,0,0-3.68-6l-49.57-20.67-.07,0L566,355.63a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L483.7,426a7.28,7.28,0,0,0-3.68,6h0a7.29,7.29,0,0,0,3.68,5.95l49.57,20.67.07,0L554,508.21a6.65,6.65,0,0,0,11.92,0l20.69-49.62h0l.09,0,49.55-20.66a7.29,7.29,0,0,0,3.68-5.95h0Z"]
+  icon: [640, 512, [], "e05d", "M106.66,170.64l.09,0,49.55-20.65a7.32,7.32,0,0,0,3.68-6h0a7.29,7.29,0,0,0-3.68-6l-49.57-20.67-.07,0L86,67.68a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L3.7,138A7.29,7.29,0,0,0,0,144H0a7.32,7.32,0,0,0,3.68,6L53.27,170.6l.07,0L74,220.26a6.65,6.65,0,0,0,11.92,0l20.69-49.62ZM471.38,467.41l-1-.42-1-.5a38.67,38.67,0,0,1,0-69.14l1-.49,1-.43,37.49-15.63,15.63-37.48.41-1,.47-.95c3.85-7.74,10.58-13.63,18.35-17.34,0-1.33.25-2.69.27-4V144a32,32,0,0,0-64,0v72a8,8,0,0,1-8,8H456a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H360a8,8,0,0,1-8-8V32a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H264a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0v241l-23.59-32.49a40,40,0,0,0-64.71,47.09L229.3,492.21A48.07,48.07,0,0,0,268.09,512H465.7c19.24,0,35.65-11.73,43.24-28.79l-.07-.17ZM349.79,339.52,320,351.93l-12.42,29.78a4,4,0,0,1-7.15,0L288,351.93l-29.79-12.41a4,4,0,0,1,0-7.16L288,319.94l12.42-29.78a4,4,0,0,1,7.15,0L320,319.94l29.79,12.42a4,4,0,0,1,0,7.16ZM640,431.91a7.28,7.28,0,0,0-3.68-6l-49.57-20.67-.07,0L566,355.63a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L483.7,426a7.28,7.28,0,0,0-3.68,6h0a7.29,7.29,0,0,0,3.68,5.95l49.57,20.67.07,0L554,508.21a6.65,6.65,0,0,0,11.92,0l20.69-49.62h0l.09,0,49.55-20.66a7.29,7.29,0,0,0,3.68-5.95h0Z"]
 };
 var faHandSpock = {
   prefix: 'fas',
@@ -5761,7 +5767,7 @@ var faHandsHelping = {
 var faHandsWash = {
   prefix: 'fas',
   iconName: 'hands-wash',
-  icon: [576, 512, [], "f95e", "M496,224a48,48,0,1,0-48-48A48,48,0,0,0,496,224ZM311.47,178.45A56.77,56.77,0,0,1,328,176a56,56,0,0,1,19,3.49l15.35-48.61A24,24,0,0,0,342,99.74c-11.53-1.35-22.21,6.44-25.71,17.51l-20.9,66.17ZM93.65,386.33c.8-.19,1.54-.54,2.35-.71V359.93a156,156,0,0,1,107.06-148l73.7-22.76L310.92,81.05a24,24,0,0,0-20.33-31.11c-11.53-1.34-22.22,6.45-25.72,17.52L231.42,173.88a8,8,0,0,1-15.26-4.83L259.53,31.26A24,24,0,0,0,239.2.15C227.67-1.19,217,6.6,213.49,17.66L165.56,169.37a8,8,0,1,1-15.26-4.82l38.56-122a24,24,0,0,0-20.33-31.11C157,10,146.32,17.83,142.82,28.9l-60,189.85L80.76,168.7A24,24,0,0,0,56.9,144.55c-13.23-.05-24.72,10.54-24.9,23.86V281.14A123.69,123.69,0,0,0,93.65,386.33ZM519.1,336H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,279.84,498.71,272,487.1,272H288l47.09-17.06a24,24,0,0,0-14.18-45.88L213.19,242.31A123.88,123.88,0,0,0,128,360v25.65a79.78,79.78,0,0,1,58,108.63A118.9,118.9,0,0,0,248,512H456a24,24,0,0,0,23.54-28.76C477.35,471.84,466.71,464,455.1,464H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,407.84,498.71,400,487.1,400H360a8,8,0,0,1,0-16H520a24,24,0,0,0,23.54-28.76C541.35,343.84,530.71,336,519.1,336ZM416,64a32,32,0,1,0-32-32A32,32,0,0,0,416,64ZM112,416a48,48,0,1,0,48,48A48,48,0,0,0,112,416Z"]
+  icon: [576, 512, [], "e05e", "M496,224a48,48,0,1,0-48-48A48,48,0,0,0,496,224ZM311.47,178.45A56.77,56.77,0,0,1,328,176a56,56,0,0,1,19,3.49l15.35-48.61A24,24,0,0,0,342,99.74c-11.53-1.35-22.21,6.44-25.71,17.51l-20.9,66.17ZM93.65,386.33c.8-.19,1.54-.54,2.35-.71V359.93a156,156,0,0,1,107.06-148l73.7-22.76L310.92,81.05a24,24,0,0,0-20.33-31.11c-11.53-1.34-22.22,6.45-25.72,17.52L231.42,173.88a8,8,0,0,1-15.26-4.83L259.53,31.26A24,24,0,0,0,239.2.15C227.67-1.19,217,6.6,213.49,17.66L165.56,169.37a8,8,0,1,1-15.26-4.82l38.56-122a24,24,0,0,0-20.33-31.11C157,10,146.32,17.83,142.82,28.9l-60,189.85L80.76,168.7A24,24,0,0,0,56.9,144.55c-13.23-.05-24.72,10.54-24.9,23.86V281.14A123.69,123.69,0,0,0,93.65,386.33ZM519.1,336H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,279.84,498.71,272,487.1,272H288l47.09-17.06a24,24,0,0,0-14.18-45.88L213.19,242.31A123.88,123.88,0,0,0,128,360v25.65a79.78,79.78,0,0,1,58,108.63A118.9,118.9,0,0,0,248,512H456a24,24,0,0,0,23.54-28.76C477.35,471.84,466.71,464,455.1,464H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,407.84,498.71,400,487.1,400H360a8,8,0,0,1,0-16H520a24,24,0,0,0,23.54-28.76C541.35,343.84,530.71,336,519.1,336ZM416,64a32,32,0,1,0-32-32A32,32,0,0,0,416,64ZM112,416a48,48,0,1,0,48,48A48,48,0,0,0,112,416Z"]
 };
 var faHandshake = {
   prefix: 'fas',
@@ -5771,12 +5777,12 @@ var faHandshake = {
 var faHandshakeAltSlash = {
   prefix: 'fas',
   iconName: 'handshake-alt-slash',
-  icon: [640, 512, [], "f95f", "M358.59,195.6,504.2,313.8a63.4,63.4,0,0,1,22.21,37.91H624a16.05,16.05,0,0,0,16-16V143.91A16,16,0,0,0,624,128H512L457.41,73.41A32,32,0,0,0,434.8,64H348.91a32,32,0,0,0-21.61,8.41l-88.12,80.68-25.69-19.85L289.09,64H205.3a32,32,0,0,0-22.6,9.41l-20.34,20.3L45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.54,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45L303.4,202.72l32.69-29.92,27-24.7a16,16,0,0,1,21.61,23.61ZM16,128A16.05,16.05,0,0,0,0,144V335.91a16,16,0,0,0,16,16H146.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L23.56,128Z"]
+  icon: [640, 512, [], "e05f", "M358.59,195.6,504.2,313.8a63.4,63.4,0,0,1,22.21,37.91H624a16.05,16.05,0,0,0,16-16V143.91A16,16,0,0,0,624,128H512L457.41,73.41A32,32,0,0,0,434.8,64H348.91a32,32,0,0,0-21.61,8.41l-88.12,80.68-25.69-19.85L289.09,64H205.3a32,32,0,0,0-22.6,9.41l-20.34,20.3L45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.54,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45L303.4,202.72l32.69-29.92,27-24.7a16,16,0,0,1,21.61,23.61ZM16,128A16.05,16.05,0,0,0,0,144V335.91a16,16,0,0,0,16,16H146.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L23.56,128Z"]
 };
 var faHandshakeSlash = {
   prefix: 'fas',
   iconName: 'handshake-slash',
-  icon: [640, 512, [], "f960", "M0,128.21V384H64a32,32,0,0,0,32-32V184L23.83,128.21ZM48,320.1a16,16,0,1,1-16,16A16,16,0,0,1,48,320.1Zm80,31.81h18.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L128,208.72Zm416-223.7V352.1a32,32,0,0,0,32,32h64V128.21ZM592,352.1a16,16,0,1,1,16-16A16,16,0,0,1,592,352.1ZM303.33,202.67l59.58-54.57a16,16,0,0,1,21.59,23.61L358.41,195.6,504,313.8a73.08,73.08,0,0,1,7.91,7.7V128L457.3,73.41A31.76,31.76,0,0,0,434.7,64H348.8a31.93,31.93,0,0,0-21.6,8.41l-88.07,80.64-25.64-19.81L289.09,64H205.3a32,32,0,0,0-22.6,9.41L162.36,93.72,45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.65-25.27a16,16,0,0,0-2.82-22.45Z"]
+  icon: [640, 512, [], "e060", "M0,128.21V384H64a32,32,0,0,0,32-32V184L23.83,128.21ZM48,320.1a16,16,0,1,1-16,16A16,16,0,0,1,48,320.1Zm80,31.81h18.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L128,208.72Zm416-223.7V352.1a32,32,0,0,0,32,32h64V128.21ZM592,352.1a16,16,0,1,1,16-16A16,16,0,0,1,592,352.1ZM303.33,202.67l59.58-54.57a16,16,0,0,1,21.59,23.61L358.41,195.6,504,313.8a73.08,73.08,0,0,1,7.91,7.7V128L457.3,73.41A31.76,31.76,0,0,0,434.7,64H348.8a31.93,31.93,0,0,0-21.6,8.41l-88.07,80.64-25.64-19.81L289.09,64H205.3a32,32,0,0,0-22.6,9.41L162.36,93.72,45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.65-25.27a16,16,0,0,0-2.82-22.45Z"]
 };
 var faHanukiah = {
   prefix: 'fas',
@@ -5816,22 +5822,22 @@ var faHdd = {
 var faHeadSideCough = {
   prefix: 'fas',
   iconName: 'head-side-cough',
-  icon: [640, 512, [], "f961", "M616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304ZM552,416a24,24,0,1,0,24,24A24,24,0,0,0,552,416Zm-64-56a24,24,0,1,0,24,24A24,24,0,0,0,488,360ZM616,464a24,24,0,1,0,24,24A24,24,0,0,0,616,464Zm0-104a24,24,0,1,0,24,24A24,24,0,0,0,616,360Zm-64-40a24,24,0,1,0,24,24A24,24,0,0,0,552,320Zm-74.78-45c-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192C86,0,0,86,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320a32,32,0,0,1,0-64h96V320h32A32,32,0,0,0,477.22,275ZM288,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,288,224Z"]
+  icon: [640, 512, [], "e061", "M616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304ZM552,416a24,24,0,1,0,24,24A24,24,0,0,0,552,416Zm-64-56a24,24,0,1,0,24,24A24,24,0,0,0,488,360ZM616,464a24,24,0,1,0,24,24A24,24,0,0,0,616,464Zm0-104a24,24,0,1,0,24,24A24,24,0,0,0,616,360Zm-64-40a24,24,0,1,0,24,24A24,24,0,0,0,552,320Zm-74.78-45c-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192C86,0,0,86,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320a32,32,0,0,1,0-64h96V320h32A32,32,0,0,0,477.22,275ZM288,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,288,224Z"]
 };
 var faHeadSideCoughSlash = {
   prefix: 'fas',
   iconName: 'head-side-cough-slash',
-  icon: [640, 512, [], "f962", "M454.11,319.21c19.56-3.81,31.62-25,23.11-44.21-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192A190.64,190.64,0,0,0,84.18,33.3L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM313.39,210.45,263.61,172c5.88-7.14,14.43-12,24.36-12a32.06,32.06,0,0,1,32,32C320,199,317.24,205.17,313.39,210.45ZM616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304Zm-64,64a24,24,0,1,0-24-24A24,24,0,0,0,552,368ZM288,384a32,32,0,0,1,32-32h19.54L20.73,105.59A190.86,190.86,0,0,0,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320A32,32,0,0,1,288,384Zm328-24a24,24,0,1,0,24,24A24,24,0,0,0,616,360Z"]
+  icon: [640, 512, [], "e062", "M454.11,319.21c19.56-3.81,31.62-25,23.11-44.21-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192A190.64,190.64,0,0,0,84.18,33.3L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM313.39,210.45,263.61,172c5.88-7.14,14.43-12,24.36-12a32.06,32.06,0,0,1,32,32C320,199,317.24,205.17,313.39,210.45ZM616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304Zm-64,64a24,24,0,1,0-24-24A24,24,0,0,0,552,368ZM288,384a32,32,0,0,1,32-32h19.54L20.73,105.59A190.86,190.86,0,0,0,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320A32,32,0,0,1,288,384Zm328-24a24,24,0,1,0,24,24A24,24,0,0,0,616,360Z"]
 };
 var faHeadSideMask = {
   prefix: 'fas',
   iconName: 'head-side-mask',
-  icon: [512, 512, [], "f963", "M.15,184.42C-2.17,244.21,23,298.06,64,334.88V512H224V316.51L3.67,156.25A182.28,182.28,0,0,0,.15,184.42ZM509.22,275c-21-47.12-48.5-151.75-73.12-186.75A208.11,208.11,0,0,0,266.11,0H200C117,0,42.48,50.57,13.25,123.65L239.21,288H511.76A31.35,31.35,0,0,0,509.22,275ZM320,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,320,224Zm16,144H496l16-48H256V512H401.88a64,64,0,0,0,60.71-43.76L464,464H336a16,16,0,0,1,0-32H474.67l10.67-32H336a16,16,0,0,1,0-32Z"]
+  icon: [512, 512, [], "e063", "M.15,184.42C-2.17,244.21,23,298.06,64,334.88V512H224V316.51L3.67,156.25A182.28,182.28,0,0,0,.15,184.42ZM509.22,275c-21-47.12-48.5-151.75-73.12-186.75A208.11,208.11,0,0,0,266.11,0H200C117,0,42.48,50.57,13.25,123.65L239.21,288H511.76A31.35,31.35,0,0,0,509.22,275ZM320,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,320,224Zm16,144H496l16-48H256V512H401.88a64,64,0,0,0,60.71-43.76L464,464H336a16,16,0,0,1,0-32H474.67l10.67-32H336a16,16,0,0,1,0-32Z"]
 };
 var faHeadSideVirus = {
   prefix: 'fas',
   iconName: 'head-side-virus',
-  icon: [512, 512, [], "f964", "M272,240a16,16,0,1,0,16,16A16,16,0,0,0,272,240Zm-64-64a16,16,0,1,0,16,16A16,16,0,0,0,208,176Zm301.2,99c-20.93-47.12-48.43-151.73-73.07-186.75A207.9,207.9,0,0,0,266.09,0H192C86,0,0,86,0,192A191.23,191.23,0,0,0,64,334.81V512H320V448h64a64,64,0,0,0,64-64V320H480A32,32,0,0,0,509.2,275ZM368,240H355.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C290.47,297.09,256,311.37,256,339.88V352a16,16,0,0,1-32,0V339.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H112a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V96a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C313.09,173.53,327.37,208,355.88,208H368a16,16,0,0,1,0,32Z"]
+  icon: [512, 512, [], "e064", "M272,240a16,16,0,1,0,16,16A16,16,0,0,0,272,240Zm-64-64a16,16,0,1,0,16,16A16,16,0,0,0,208,176Zm301.2,99c-20.93-47.12-48.43-151.73-73.07-186.75A207.9,207.9,0,0,0,266.09,0H192C86,0,0,86,0,192A191.23,191.23,0,0,0,64,334.81V512H320V448h64a64,64,0,0,0,64-64V320H480A32,32,0,0,0,509.2,275ZM368,240H355.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C290.47,297.09,256,311.37,256,339.88V352a16,16,0,0,1-32,0V339.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H112a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V96a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C313.09,173.53,327.37,208,355.88,208H368a16,16,0,0,1,0,32Z"]
 };
 var faHeading = {
   prefix: 'fas',
@@ -5981,7 +5987,7 @@ var faHouseDamage = {
 var faHouseUser = {
   prefix: 'fas',
   iconName: 'house-user',
-  icon: [576, 512, [], "f965", "M570.69,236.27,512,184.44V48a16,16,0,0,0-16-16H432a16,16,0,0,0-16,16V99.67L314.78,10.3C308.5,4.61,296.53,0,288,0s-20.46,4.61-26.74,10.3l-256,226A18.27,18.27,0,0,0,0,248.2a18.64,18.64,0,0,0,4.09,10.71L25.5,282.7a21.14,21.14,0,0,0,12,5.3,21.67,21.67,0,0,0,10.69-4.11l15.9-14V480a32,32,0,0,0,32,32H480a32,32,0,0,0,32-32V269.88l15.91,14A21.94,21.94,0,0,0,538.63,288a20.89,20.89,0,0,0,11.87-5.31l21.41-23.81A21.64,21.64,0,0,0,576,248.19,21,21,0,0,0,570.69,236.27ZM288,176a64,64,0,1,1-64,64A64,64,0,0,1,288,176ZM400,448H176a16,16,0,0,1-16-16,96,96,0,0,1,96-96h64a96,96,0,0,1,96,96A16,16,0,0,1,400,448Z"]
+  icon: [576, 512, [], "e065", "M570.69,236.27,512,184.44V48a16,16,0,0,0-16-16H432a16,16,0,0,0-16,16V99.67L314.78,10.3C308.5,4.61,296.53,0,288,0s-20.46,4.61-26.74,10.3l-256,226A18.27,18.27,0,0,0,0,248.2a18.64,18.64,0,0,0,4.09,10.71L25.5,282.7a21.14,21.14,0,0,0,12,5.3,21.67,21.67,0,0,0,10.69-4.11l15.9-14V480a32,32,0,0,0,32,32H480a32,32,0,0,0,32-32V269.88l15.91,14A21.94,21.94,0,0,0,538.63,288a20.89,20.89,0,0,0,11.87-5.31l21.41-23.81A21.64,21.64,0,0,0,576,248.19,21,21,0,0,0,570.69,236.27ZM288,176a64,64,0,1,1-64,64A64,64,0,0,1,288,176ZM400,448H176a16,16,0,0,1-16-16,96,96,0,0,1,96-96h64a96,96,0,0,1,96,96A16,16,0,0,1,400,448Z"]
 };
 var faHryvnia = {
   prefix: 'fas',
@@ -6151,7 +6157,7 @@ var faLaptopCode = {
 var faLaptopHouse = {
   prefix: 'fas',
   iconName: 'laptop-house',
-  icon: [640, 512, [], "f966", "M272,288H208a16,16,0,0,1-16-16V208a16,16,0,0,1,16-16h64a16,16,0,0,1,16,16v37.12C299.11,232.24,315,224,332.8,224H469.74l6.65-7.53A16.51,16.51,0,0,0,480,207a16.31,16.31,0,0,0-4.75-10.61L416,144V48a16,16,0,0,0-16-16H368a16,16,0,0,0-16,16V87.3L263.5,8.92C258,4,247.45,0,240.05,0s-17.93,4-23.47,8.92L4.78,196.42A16.15,16.15,0,0,0,0,207a16.4,16.4,0,0,0,3.55,9.39L22.34,237.7A16.22,16.22,0,0,0,33,242.48,16.51,16.51,0,0,0,42.34,239L64,219.88V384a32,32,0,0,0,32,32H272ZM629.33,448H592V288c0-17.67-12.89-32-28.8-32H332.8c-15.91,0-28.8,14.33-28.8,32V448H266.67A10.67,10.67,0,0,0,256,458.67v10.66A42.82,42.82,0,0,0,298.6,512H597.4A42.82,42.82,0,0,0,640,469.33V458.67A10.67,10.67,0,0,0,629.33,448ZM544,448H352V304H544Z"]
+  icon: [640, 512, [], "e066", "M272,288H208a16,16,0,0,1-16-16V208a16,16,0,0,1,16-16h64a16,16,0,0,1,16,16v37.12C299.11,232.24,315,224,332.8,224H469.74l6.65-7.53A16.51,16.51,0,0,0,480,207a16.31,16.31,0,0,0-4.75-10.61L416,144V48a16,16,0,0,0-16-16H368a16,16,0,0,0-16,16V87.3L263.5,8.92C258,4,247.45,0,240.05,0s-17.93,4-23.47,8.92L4.78,196.42A16.15,16.15,0,0,0,0,207a16.4,16.4,0,0,0,3.55,9.39L22.34,237.7A16.22,16.22,0,0,0,33,242.48,16.51,16.51,0,0,0,42.34,239L64,219.88V384a32,32,0,0,0,32,32H272ZM629.33,448H592V288c0-17.67-12.89-32-28.8-32H332.8c-15.91,0-28.8,14.33-28.8,32V448H266.67A10.67,10.67,0,0,0,256,458.67v10.66A42.82,42.82,0,0,0,298.6,512H597.4A42.82,42.82,0,0,0,640,469.33V458.67A10.67,10.67,0,0,0,629.33,448ZM544,448H352V304H544Z"]
 };
 var faLaptopMedical = {
   prefix: 'fas',
@@ -6306,7 +6312,7 @@ var faLungs = {
 var faLungsVirus = {
   prefix: 'fas',
   iconName: 'lungs-virus',
-  icon: [640, 512, [], "f967", "M344,150.68V16A16,16,0,0,0,328,0H312a16,16,0,0,0-16,16V150.68a46.45,46.45,0,0,1,48,0ZM195.54,444.46a48.06,48.06,0,0,1,0-67.88l8.58-8.58H192a48,48,0,0,1,0-96h12.12l-8.58-8.57a48,48,0,0,1,60.46-74V161.75C256,125.38,224.62,96,186,96c-44,0-58,28.5-80.12,63.13a819.52,819.52,0,0,0-102,231A113.16,113.16,0,0,0,0,419.75C0,481,62.5,525.26,125.25,508.38l59.5-15.87a98.51,98.51,0,0,0,52.5-34.75,46.49,46.49,0,0,1-41.71-13.3Zm226.29-22.63a16,16,0,0,0,0-22.62l-8.58-8.58C393.09,370.47,407.37,336,435.88,336H448a16,16,0,0,0,0-32H435.88c-28.51,0-42.79-34.47-22.63-54.62l8.58-8.58a16,16,0,0,0-22.63-22.63l-8.57,8.58C370.47,246.91,336,232.63,336,204.12V192a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.58c20.16,20.15,5.88,54.62-22.63,54.62H192a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.58a16,16,0,1,0,22.63,22.62l8.57-8.57C269.53,393.1,304,407.38,304,435.88V448a16,16,0,0,0,32,0V435.88c0-28.5,34.47-42.78,54.63-22.62l8.57,8.57a16,16,0,0,0,22.63,0ZM288,304a16,16,0,1,1,16-16A16,16,0,0,1,288,304Zm64,64a16,16,0,1,1,16-16A16,16,0,0,1,352,368Zm284.12,22.13a819.52,819.52,0,0,0-102-231C512,124.5,498,96,454,96c-38.62,0-70,29.38-70,65.75v27.72a48,48,0,0,1,60.46,74L435.88,272H448a48,48,0,0,1,0,96H435.88l8.58,8.58a47.7,47.7,0,0,1-41.71,81.18,98.51,98.51,0,0,0,52.5,34.75l59.5,15.87C577.5,525.26,640,481,640,419.75A113.16,113.16,0,0,0,636.12,390.13Z"]
+  icon: [640, 512, [], "e067", "M344,150.68V16A16,16,0,0,0,328,0H312a16,16,0,0,0-16,16V150.68a46.45,46.45,0,0,1,48,0ZM195.54,444.46a48.06,48.06,0,0,1,0-67.88l8.58-8.58H192a48,48,0,0,1,0-96h12.12l-8.58-8.57a48,48,0,0,1,60.46-74V161.75C256,125.38,224.62,96,186,96c-44,0-58,28.5-80.12,63.13a819.52,819.52,0,0,0-102,231A113.16,113.16,0,0,0,0,419.75C0,481,62.5,525.26,125.25,508.38l59.5-15.87a98.51,98.51,0,0,0,52.5-34.75,46.49,46.49,0,0,1-41.71-13.3Zm226.29-22.63a16,16,0,0,0,0-22.62l-8.58-8.58C393.09,370.47,407.37,336,435.88,336H448a16,16,0,0,0,0-32H435.88c-28.51,0-42.79-34.47-22.63-54.62l8.58-8.58a16,16,0,0,0-22.63-22.63l-8.57,8.58C370.47,246.91,336,232.63,336,204.12V192a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.58c20.16,20.15,5.88,54.62-22.63,54.62H192a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.58a16,16,0,1,0,22.63,22.62l8.57-8.57C269.53,393.1,304,407.38,304,435.88V448a16,16,0,0,0,32,0V435.88c0-28.5,34.47-42.78,54.63-22.62l8.57,8.57a16,16,0,0,0,22.63,0ZM288,304a16,16,0,1,1,16-16A16,16,0,0,1,288,304Zm64,64a16,16,0,1,1,16-16A16,16,0,0,1,352,368Zm284.12,22.13a819.52,819.52,0,0,0-102-231C512,124.5,498,96,454,96c-38.62,0-70,29.38-70,65.75v27.72a48,48,0,0,1,60.46,74L435.88,272H448a48,48,0,0,1,0,96H435.88l8.58,8.58a47.7,47.7,0,0,1-41.71,81.18,98.51,98.51,0,0,0,52.5,34.75l59.5,15.87C577.5,525.26,640,481,640,419.75A113.16,113.16,0,0,0,636.12,390.13Z"]
 };
 var faMagic = {
   prefix: 'fas',
@@ -6761,7 +6767,7 @@ var faPencilRuler = {
 var faPeopleArrows = {
   prefix: 'fas',
   iconName: 'people-arrows',
-  icon: [576, 512, [], "f968", "M96,128A64,64,0,1,0,32,64,64,64,0,0,0,96,128Zm0,176.08a44.11,44.11,0,0,1,13.64-32L181.77,204c1.65-1.55,3.77-2.31,5.61-3.57A63.91,63.91,0,0,0,128,160H64A64,64,0,0,0,0,224v96a32,32,0,0,0,32,32V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V383.61l-50.36-47.53A44.08,44.08,0,0,1,96,304.08ZM480,128a64,64,0,1,0-64-64A64,64,0,0,0,480,128Zm32,32H448a63.91,63.91,0,0,0-59.38,40.42c1.84,1.27,4,2,5.62,3.59l72.12,68.06a44.37,44.37,0,0,1,0,64L416,383.62V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V352a32,32,0,0,0,32-32V224A64,64,0,0,0,512,160ZM444.4,295.34l-72.12-68.06A12,12,0,0,0,352,236v36H224V236a12,12,0,0,0-20.28-8.73L131.6,295.34a12.4,12.4,0,0,0,0,17.47l72.12,68.07A12,12,0,0,0,224,372.14V336H352v36.14a12,12,0,0,0,20.28,8.74l72.12-68.07A12.4,12.4,0,0,0,444.4,295.34Z"]
+  icon: [576, 512, [], "e068", "M96,128A64,64,0,1,0,32,64,64,64,0,0,0,96,128Zm0,176.08a44.11,44.11,0,0,1,13.64-32L181.77,204c1.65-1.55,3.77-2.31,5.61-3.57A63.91,63.91,0,0,0,128,160H64A64,64,0,0,0,0,224v96a32,32,0,0,0,32,32V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V383.61l-50.36-47.53A44.08,44.08,0,0,1,96,304.08ZM480,128a64,64,0,1,0-64-64A64,64,0,0,0,480,128Zm32,32H448a63.91,63.91,0,0,0-59.38,40.42c1.84,1.27,4,2,5.62,3.59l72.12,68.06a44.37,44.37,0,0,1,0,64L416,383.62V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V352a32,32,0,0,0,32-32V224A64,64,0,0,0,512,160ZM444.4,295.34l-72.12-68.06A12,12,0,0,0,352,236v36H224V236a12,12,0,0,0-20.28-8.73L131.6,295.34a12.4,12.4,0,0,0,0,17.47l72.12,68.07A12,12,0,0,0,224,372.14V336H352v36.14a12,12,0,0,0,20.28,8.74l72.12-68.07A12.4,12.4,0,0,0,444.4,295.34Z"]
 };
 var faPeopleCarry = {
   prefix: 'fas',
@@ -6861,7 +6867,7 @@ var faPlaneDeparture = {
 var faPlaneSlash = {
   prefix: 'fas',
   iconName: 'plane-slash',
-  icon: [640, 512, [], "f969", "M32.48,147.88,64,256,32.48,364.13A16,16,0,0,0,48,384H88a16,16,0,0,0,12.8-6.41L144,320H246.85l-49,171.59A16,16,0,0,0,213.2,512h65.5a16,16,0,0,0,13.89-8.06l66.6-116.54L34.35,136.34A15.47,15.47,0,0,0,32.48,147.88ZM633.82,458.09,455.14,320H512c35.34,0,96-28.66,96-64s-60.66-64-96-64H397.7L292.61,8.06C290.06,3.61,283.84,0,278.71,0H213.2a16,16,0,0,0-15.38,20.39l36.94,129.29L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09Z"]
+  icon: [640, 512, [], "e069", "M32.48,147.88,64,256,32.48,364.13A16,16,0,0,0,48,384H88a16,16,0,0,0,12.8-6.41L144,320H246.85l-49,171.59A16,16,0,0,0,213.2,512h65.5a16,16,0,0,0,13.89-8.06l66.6-116.54L34.35,136.34A15.47,15.47,0,0,0,32.48,147.88ZM633.82,458.09,455.14,320H512c35.34,0,96-28.66,96-64s-60.66-64-96-64H397.7L292.61,8.06C290.06,3.61,283.84,0,278.71,0H213.2a16,16,0,0,0-15.38,20.39l36.94,129.29L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09Z"]
 };
 var faPlay = {
   prefix: 'fas',
@@ -6981,12 +6987,12 @@ var faProjectDiagram = {
 var faPumpMedical = {
   prefix: 'fas',
   iconName: 'pump-medical',
-  icon: [384, 512, [], "f96a", "M235.51,159.82H84.24A64,64,0,0,0,20.51,218L.14,442a64,64,0,0,0,63.74,69.8h192A64,64,0,0,0,319.61,442L299.24,218A64,64,0,0,0,235.51,159.82Zm4.37,173.33a13.35,13.35,0,0,1-13.34,13.34h-40v40a13.33,13.33,0,0,1-13.33,13.33H146.54a13.33,13.33,0,0,1-13.33-13.33v-40h-40a13.34,13.34,0,0,1-13.33-13.34V306.49a13.33,13.33,0,0,1,13.33-13.34h40v-40a13.33,13.33,0,0,1,13.33-13.33h26.67a13.33,13.33,0,0,1,13.33,13.33v40h40a13.34,13.34,0,0,1,13.34,13.34ZM379.19,93.88,335.87,50.56a64,64,0,0,0-45.24-18.74H223.88a32,32,0,0,0-32-32h-64a32,32,0,0,0-32,32v96h128v-32h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.19,93.88Z"]
+  icon: [384, 512, [], "e06a", "M235.51,159.82H84.24A64,64,0,0,0,20.51,218L.14,442a64,64,0,0,0,63.74,69.8h192A64,64,0,0,0,319.61,442L299.24,218A64,64,0,0,0,235.51,159.82Zm4.37,173.33a13.35,13.35,0,0,1-13.34,13.34h-40v40a13.33,13.33,0,0,1-13.33,13.33H146.54a13.33,13.33,0,0,1-13.33-13.33v-40h-40a13.34,13.34,0,0,1-13.33-13.34V306.49a13.33,13.33,0,0,1,13.33-13.34h40v-40a13.33,13.33,0,0,1,13.33-13.33h26.67a13.33,13.33,0,0,1,13.33,13.33v40h40a13.34,13.34,0,0,1,13.34,13.34ZM379.19,93.88,335.87,50.56a64,64,0,0,0-45.24-18.74H223.88a32,32,0,0,0-32-32h-64a32,32,0,0,0-32,32v96h128v-32h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.19,93.88Z"]
 };
 var faPumpSoap = {
   prefix: 'fas',
   iconName: 'pump-soap',
-  icon: [384, 512, [], "f96b", "M235.63,160H84.37a64,64,0,0,0-63.74,58.21L.27,442.21A64,64,0,0,0,64,512H256a64,64,0,0,0,63.74-69.79l-20.36-224A64,64,0,0,0,235.63,160ZM160,416c-33.12,0-60-26.33-60-58.75,0-25,35.7-75.47,52-97.27A10,10,0,0,1,168,260c16.33,21.8,52,72.27,52,97.27C220,389.67,193.12,416,160,416ZM379.31,94.06,336,50.74A64,64,0,0,0,290.75,32H224A32,32,0,0,0,192,0H128A32,32,0,0,0,96,32v96H224V96h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.31,94.06Z"]
+  icon: [384, 512, [], "e06b", "M235.63,160H84.37a64,64,0,0,0-63.74,58.21L.27,442.21A64,64,0,0,0,64,512H256a64,64,0,0,0,63.74-69.79l-20.36-224A64,64,0,0,0,235.63,160ZM160,416c-33.12,0-60-26.33-60-58.75,0-25,35.7-75.47,52-97.27A10,10,0,0,1,168,260c16.33,21.8,52,72.27,52,97.27C220,389.67,193.12,416,160,416ZM379.31,94.06,336,50.74A64,64,0,0,0,290.75,32H224A32,32,0,0,0,192,0H128A32,32,0,0,0,96,32v96H224V96h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.31,94.06Z"]
 };
 var faPuzzlePiece = {
   prefix: 'fas',
@@ -7301,7 +7307,7 @@ var faShieldAlt = {
 var faShieldVirus = {
   prefix: 'fas',
   iconName: 'shield-virus',
-  icon: [512, 512, [], "f96c", "M224,192a16,16,0,1,0,16,16A16,16,0,0,0,224,192ZM466.5,83.68l-192-80A57.4,57.4,0,0,0,256.05,0a57.4,57.4,0,0,0-18.46,3.67l-192,80A47.93,47.93,0,0,0,16,128C16,326.5,130.5,463.72,237.5,508.32a48.09,48.09,0,0,0,36.91,0C360.09,472.61,496,349.3,496,128A48,48,0,0,0,466.5,83.68ZM384,256H371.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C306.47,313.09,272,327.37,272,355.88V368a16,16,0,0,1-32,0V355.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H128a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V112a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C329.09,189.53,343.37,224,371.88,224H384a16,16,0,0,1,0,32Zm-96,0a16,16,0,1,0,16,16A16,16,0,0,0,288,256Z"]
+  icon: [512, 512, [], "e06c", "M224,192a16,16,0,1,0,16,16A16,16,0,0,0,224,192ZM466.5,83.68l-192-80A57.4,57.4,0,0,0,256.05,0a57.4,57.4,0,0,0-18.46,3.67l-192,80A47.93,47.93,0,0,0,16,128C16,326.5,130.5,463.72,237.5,508.32a48.09,48.09,0,0,0,36.91,0C360.09,472.61,496,349.3,496,128A48,48,0,0,0,466.5,83.68ZM384,256H371.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C306.47,313.09,272,327.37,272,355.88V368a16,16,0,0,1-32,0V355.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H128a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V112a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C329.09,189.53,343.37,224,371.88,224H384a16,16,0,0,1,0,32Zm-96,0a16,16,0,1,0,16,16A16,16,0,0,0,288,256Z"]
 };
 var faShip = {
   prefix: 'fas',
@@ -7381,7 +7387,7 @@ var faSimCard = {
 var faSink = {
   prefix: 'fas',
   iconName: 'sink',
-  icon: [512, 512, [], "f96d", "M32,416a96,96,0,0,0,96,96H384a96,96,0,0,0,96-96V384H32ZM496,288H400V256h64a16,16,0,0,0,16-16V224a16,16,0,0,0-16-16H384a32,32,0,0,0-32,32v48H288V96a32,32,0,0,1,64,0v16a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V96A96.16,96.16,0,0,0,300.87,1.86C255.29,10.71,224,53.36,224,99.79V288H160V240a32,32,0,0,0-32-32H48a16,16,0,0,0-16,16v16a16,16,0,0,0,16,16h64v32H16A16,16,0,0,0,0,304v32a16,16,0,0,0,16,16H496a16,16,0,0,0,16-16V304A16,16,0,0,0,496,288Z"]
+  icon: [512, 512, [], "e06d", "M32,416a96,96,0,0,0,96,96H384a96,96,0,0,0,96-96V384H32ZM496,288H400V256h64a16,16,0,0,0,16-16V224a16,16,0,0,0-16-16H384a32,32,0,0,0-32,32v48H288V96a32,32,0,0,1,64,0v16a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V96A96.16,96.16,0,0,0,300.87,1.86C255.29,10.71,224,53.36,224,99.79V288H160V240a32,32,0,0,0-32-32H48a16,16,0,0,0-16,16v16a16,16,0,0,0,16,16h64v32H16A16,16,0,0,0,0,304v32a16,16,0,0,0,16,16H496a16,16,0,0,0,16-16V304A16,16,0,0,0,496,288Z"]
 };
 var faSitemap = {
   prefix: 'fas',
@@ -7486,7 +7492,7 @@ var faSnowplow = {
 var faSoap = {
   prefix: 'fas',
   iconName: 'soap',
-  icon: [512, 512, [], "f96e", "M416,192a95.42,95.42,0,0,1-30.94,70.21A95.8,95.8,0,0,1,352,448H160a96,96,0,0,1,0-192h88.91A95.3,95.3,0,0,1,224,192H96A96,96,0,0,0,0,288V416a96,96,0,0,0,96,96H416a96,96,0,0,0,96-96V288A96,96,0,0,0,416,192Zm-96,64a64,64,0,1,0-64-64A64,64,0,0,0,320,256ZM208,96a48,48,0,1,0-48-48A48,48,0,0,0,208,96ZM384,64a32,32,0,1,0-32-32A32,32,0,0,0,384,64ZM160,288a64,64,0,0,0,0,128H352a64,64,0,0,0,0-128Z"]
+  icon: [512, 512, [], "e06e", "M416,192a95.42,95.42,0,0,1-30.94,70.21A95.8,95.8,0,0,1,352,448H160a96,96,0,0,1,0-192h88.91A95.3,95.3,0,0,1,224,192H96A96,96,0,0,0,0,288V416a96,96,0,0,0,96,96H416a96,96,0,0,0,96-96V288A96,96,0,0,0,416,192Zm-96,64a64,64,0,1,0-64-64A64,64,0,0,0,320,256ZM208,96a48,48,0,1,0-48-48A48,48,0,0,0,208,96ZM384,64a32,32,0,1,0-32-32A32,32,0,0,0,384,64ZM160,288a64,64,0,0,0,0,128H352a64,64,0,0,0,0-128Z"]
 };
 var faSocks = {
   prefix: 'fas',
@@ -7696,7 +7702,7 @@ var faStopwatch = {
 var faStopwatch20 = {
   prefix: 'fas',
   iconName: 'stopwatch-20',
-  icon: [448, 512, [], "f96f", "M398.5,190.91l.59-.61,26.59-26.58a16,16,0,0,0,0-22.63L403,118.41a16,16,0,0,0-22.63,0l-24.68,24.68A206.68,206.68,0,0,0,256,98.5V64h32a16,16,0,0,0,16-16V16A16,16,0,0,0,288,0H160a16.05,16.05,0,0,0-16,16V48a16.05,16.05,0,0,0,16,16h32V98.5A207.92,207.92,0,0,0,16.09,297.57C12.64,411.5,106.76,510.22,220.72,512,337.13,513.77,432,420,432,304A206,206,0,0,0,398.5,190.91ZM204.37,377.55a8.2,8.2,0,0,1,8.32,8.07v22.31a8.2,8.2,0,0,1-8.32,8.07H121.52a16.46,16.46,0,0,1-16.61-17.62c2.78-35.22,14.67-57.41,38.45-91.37,20.42-29.19,27.1-37.32,27.1-62.34,0-16.92-1.79-24.27-12.21-24.27-9.39,0-12.69,7.4-12.69,22.68v5.23a8.2,8.2,0,0,1-8.33,8.07h-24.9a8.2,8.2,0,0,1-8.33-8.07v-4.07c0-27.3,8.48-60.24,56.43-60.24,43,0,55.57,25.85,55.57,61,0,35.58-12.44,51.21-34.35,81.31-11.56,15-24.61,35.57-26.41,51.2ZM344,352.32c0,35.16-12.3,63.68-57.23,63.68C243.19,416,232,386.48,232,352.55V247.22c0-40.73,19.58-63.22,56.2-63.22C325,184,344,206.64,344,245.3ZM287.87,221.73c-9.41,0-13.23,7.5-13.23,20V357.68c0,13.11,3.59,20.59,13.23,20.59s13-8,13-21.27V241.06C300.89,229.79,297.88,221.73,287.87,221.73Z"]
+  icon: [448, 512, [], "e06f", "M398.5,190.91l.59-.61,26.59-26.58a16,16,0,0,0,0-22.63L403,118.41a16,16,0,0,0-22.63,0l-24.68,24.68A206.68,206.68,0,0,0,256,98.5V64h32a16,16,0,0,0,16-16V16A16,16,0,0,0,288,0H160a16.05,16.05,0,0,0-16,16V48a16.05,16.05,0,0,0,16,16h32V98.5A207.92,207.92,0,0,0,16.09,297.57C12.64,411.5,106.76,510.22,220.72,512,337.13,513.77,432,420,432,304A206,206,0,0,0,398.5,190.91ZM204.37,377.55a8.2,8.2,0,0,1,8.32,8.07v22.31a8.2,8.2,0,0,1-8.32,8.07H121.52a16.46,16.46,0,0,1-16.61-17.62c2.78-35.22,14.67-57.41,38.45-91.37,20.42-29.19,27.1-37.32,27.1-62.34,0-16.92-1.79-24.27-12.21-24.27-9.39,0-12.69,7.4-12.69,22.68v5.23a8.2,8.2,0,0,1-8.33,8.07h-24.9a8.2,8.2,0,0,1-8.33-8.07v-4.07c0-27.3,8.48-60.24,56.43-60.24,43,0,55.57,25.85,55.57,61,0,35.58-12.44,51.21-34.35,81.31-11.56,15-24.61,35.57-26.41,51.2ZM344,352.32c0,35.16-12.3,63.68-57.23,63.68C243.19,416,232,386.48,232,352.55V247.22c0-40.73,19.58-63.22,56.2-63.22C325,184,344,206.64,344,245.3ZM287.87,221.73c-9.41,0-13.23,7.5-13.23,20V357.68c0,13.11,3.59,20.59,13.23,20.59s13-8,13-21.27V241.06C300.89,229.79,297.88,221.73,287.87,221.73Z"]
 };
 var faStore = {
   prefix: 'fas',
@@ -7711,12 +7717,12 @@ var faStoreAlt = {
 var faStoreAltSlash = {
   prefix: 'fas',
   iconName: 'store-alt-slash',
-  icon: [640, 512, [], "f970", "M17.89,123.62,5.51,142.2c-14.2,21.3,1,49.8,26.59,49.8h74.26ZM576,413.42V224H512V364L384,265V224H330.92l-41.4-32H608c25.5,0,40.7-28.5,26.59-49.8l-85.29-128A32.18,32.18,0,0,0,522.6,0H117.42A31.87,31.87,0,0,0,90.81,14.2l-10.66,16L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.81l19.64-25.26a16,16,0,0,0-2.81-22.45ZM320,384H128V224H64V480a32,32,0,0,0,32,32H352a32,32,0,0,0,32-32V406.59l-64-49.47Z"]
+  icon: [640, 512, [], "e070", "M17.89,123.62,5.51,142.2c-14.2,21.3,1,49.8,26.59,49.8h74.26ZM576,413.42V224H512V364L384,265V224H330.92l-41.4-32H608c25.5,0,40.7-28.5,26.59-49.8l-85.29-128A32.18,32.18,0,0,0,522.6,0H117.42A31.87,31.87,0,0,0,90.81,14.2l-10.66,16L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.81l19.64-25.26a16,16,0,0,0-2.81-22.45ZM320,384H128V224H64V480a32,32,0,0,0,32,32H352a32,32,0,0,0,32-32V406.59l-64-49.47Z"]
 };
 var faStoreSlash = {
   prefix: 'fas',
   iconName: 'store-slash',
-  icon: [640, 512, [], "f971", "M121.51,384V284.2a119.43,119.43,0,0,1-28,3.8,123.46,123.46,0,0,1-17.1-1.2,114.88,114.88,0,0,1-15.58-3.6V480c0,17.7,13.59,32,30.4,32H505.75L348.42,384Zm-28-128.09c25.1,0,47.29-10.72,64-27.24L24,120.05c-30.52,53.39-2.45,126.53,56.49,135A95.68,95.68,0,0,0,93.48,255.91ZM602.13,458.09,547.2,413.41V283.2a93.5,93.5,0,0,1-15.57,3.6,127.31,127.31,0,0,1-17.29,1.2,114.89,114.89,0,0,1-28-3.8v79.68L348.52,251.77a88.06,88.06,0,0,0,25.41,4.14c28.11,0,53-13,70.11-33.11,17.19,20.11,42.08,33.11,70.11,33.11a94.31,94.31,0,0,0,13-.91c59.66-8.41,88-82.8,56.06-136.4L521.55,15A30.1,30.1,0,0,0,495.81,0H112A30.11,30.11,0,0,0,86.27,15L76.88,30.78,43.19,3.38A14.68,14.68,0,0,0,21.86,6.19L3.2,31.45A16.58,16.58,0,0,0,5.87,53.91L564.81,508.63a14.69,14.69,0,0,0,21.33-2.82l18.66-25.26A16.58,16.58,0,0,0,602.13,458.09Z"]
+  icon: [640, 512, [], "e071", "M121.51,384V284.2a119.43,119.43,0,0,1-28,3.8,123.46,123.46,0,0,1-17.1-1.2,114.88,114.88,0,0,1-15.58-3.6V480c0,17.7,13.59,32,30.4,32H505.75L348.42,384Zm-28-128.09c25.1,0,47.29-10.72,64-27.24L24,120.05c-30.52,53.39-2.45,126.53,56.49,135A95.68,95.68,0,0,0,93.48,255.91ZM602.13,458.09,547.2,413.41V283.2a93.5,93.5,0,0,1-15.57,3.6,127.31,127.31,0,0,1-17.29,1.2,114.89,114.89,0,0,1-28-3.8v79.68L348.52,251.77a88.06,88.06,0,0,0,25.41,4.14c28.11,0,53-13,70.11-33.11,17.19,20.11,42.08,33.11,70.11,33.11a94.31,94.31,0,0,0,13-.91c59.66-8.41,88-82.8,56.06-136.4L521.55,15A30.1,30.1,0,0,0,495.81,0H112A30.11,30.11,0,0,0,86.27,15L76.88,30.78,43.19,3.38A14.68,14.68,0,0,0,21.86,6.19L3.2,31.45A16.58,16.58,0,0,0,5.87,53.91L564.81,508.63a14.69,14.69,0,0,0,21.33-2.82l18.66-25.26A16.58,16.58,0,0,0,602.13,458.09Z"]
 };
 var faStream = {
   prefix: 'fas',
@@ -8021,7 +8027,7 @@ var faToiletPaper = {
 var faToiletPaperSlash = {
   prefix: 'fas',
   iconName: 'toilet-paper-slash',
-  icon: [640, 512, [], "f972", "M64,192V364.13c0,41.12-9.75,62.75-31.12,126.87A16,16,0,0,0,48,512H328.86a31.87,31.87,0,0,0,30.38-21.87c9.31-27.83,18-53.35,22.18-85.55l-316-244.25C64.53,170.66,64,181.19,64,192ZM633.82,458.09l-102-78.81C575.28,360.91,608,284.32,608,192,608,86,565,0,512,0s-96,86-96,192c0,42,7,80.4,18.43,112L384,265V192c0-83.62,23.63-153.5,60.5-192H160c-23.33,0-44.63,16.83-61.26,44.53L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09ZM512,256c-17.63,0-32-28.62-32-64s14.37-64,32-64,32,28.63,32,64S529.62,256,512,256Z"]
+  icon: [640, 512, [], "e072", "M64,192V364.13c0,41.12-9.75,62.75-31.12,126.87A16,16,0,0,0,48,512H328.86a31.87,31.87,0,0,0,30.38-21.87c9.31-27.83,18-53.35,22.18-85.55l-316-244.25C64.53,170.66,64,181.19,64,192ZM633.82,458.09l-102-78.81C575.28,360.91,608,284.32,608,192,608,86,565,0,512,0s-96,86-96,192c0,42,7,80.4,18.43,112L384,265V192c0-83.62,23.63-153.5,60.5-192H160c-23.33,0-44.63,16.83-61.26,44.53L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09ZM512,256c-17.63,0-32-28.62-32-64s14.37-64,32-64,32,28.63,32,64S529.62,256,512,256Z"]
 };
 var faToolbox = {
   prefix: 'fas',
@@ -8066,7 +8072,7 @@ var faTrafficLight = {
 var faTrailer = {
   prefix: 'fas',
   iconName: 'trailer',
-  icon: [640, 512, [], "f941", "M624,320H544V80a16,16,0,0,0-16-16H16A16,16,0,0,0,0,80V368a16,16,0,0,0,16,16H65.61c7.83-54.21,54-96,110.39-96s102.56,41.79,110.39,96H624a16,16,0,0,0,16-16V336A16,16,0,0,0,624,320ZM96,243.68a176.29,176.29,0,0,0-32,20.71V136a8,8,0,0,1,8-8H88a8,8,0,0,1,8,8Zm96-18.54c-5.31-.49-10.57-1.14-16-1.14s-10.69.65-16,1.14V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,39.25a176.29,176.29,0,0,0-32-20.71V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8ZM384,320H352V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,0H448V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm-304,0a80,80,0,1,0,80,80A80,80,0,0,0,176,320Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,176,432Z"]
+  icon: [640, 512, [], "e041", "M624,320H544V80a16,16,0,0,0-16-16H16A16,16,0,0,0,0,80V368a16,16,0,0,0,16,16H65.61c7.83-54.21,54-96,110.39-96s102.56,41.79,110.39,96H624a16,16,0,0,0,16-16V336A16,16,0,0,0,624,320ZM96,243.68a176.29,176.29,0,0,0-32,20.71V136a8,8,0,0,1,8-8H88a8,8,0,0,1,8,8Zm96-18.54c-5.31-.49-10.57-1.14-16-1.14s-10.69.65-16,1.14V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,39.25a176.29,176.29,0,0,0-32-20.71V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8ZM384,320H352V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,0H448V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm-304,0a80,80,0,1,0,80,80A80,80,0,0,0,176,320Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,176,432Z"]
 };
 var faTrain = {
   prefix: 'fas',
@@ -8346,7 +8352,7 @@ var faUsersCog = {
 var faUsersSlash = {
   prefix: 'fas',
   iconName: 'users-slash',
-  icon: [640, 512, [], "f973", "M132.65,212.32,36.21,137.78A63.4,63.4,0,0,0,32,160a63.84,63.84,0,0,0,100.65,52.32Zm40.44,62.28A63.79,63.79,0,0,0,128,256H64A64.06,64.06,0,0,0,0,320v32a32,32,0,0,0,32,32H97.91A146.62,146.62,0,0,1,173.09,274.6ZM544,224a64,64,0,1,0-64-64A64.06,64.06,0,0,0,544,224ZM500.56,355.11a114.24,114.24,0,0,0-84.47-65.28L361,247.23c41.46-16.3,71-55.92,71-103.23A111.93,111.93,0,0,0,320,32c-57.14,0-103.69,42.83-110.6,98.08L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM128,403.21V432a48,48,0,0,0,48,48H464a47.45,47.45,0,0,0,12.57-1.87L232,289.13C173.74,294.83,128,343.42,128,403.21ZM576,256H512a63.79,63.79,0,0,0-45.09,18.6A146.29,146.29,0,0,1,542,384h66a32,32,0,0,0,32-32V320A64.06,64.06,0,0,0,576,256Z"]
+  icon: [640, 512, [], "e073", "M132.65,212.32,36.21,137.78A63.4,63.4,0,0,0,32,160a63.84,63.84,0,0,0,100.65,52.32Zm40.44,62.28A63.79,63.79,0,0,0,128,256H64A64.06,64.06,0,0,0,0,320v32a32,32,0,0,0,32,32H97.91A146.62,146.62,0,0,1,173.09,274.6ZM544,224a64,64,0,1,0-64-64A64.06,64.06,0,0,0,544,224ZM500.56,355.11a114.24,114.24,0,0,0-84.47-65.28L361,247.23c41.46-16.3,71-55.92,71-103.23A111.93,111.93,0,0,0,320,32c-57.14,0-103.69,42.83-110.6,98.08L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM128,403.21V432a48,48,0,0,0,48,48H464a47.45,47.45,0,0,0,12.57-1.87L232,289.13C173.74,294.83,128,343.42,128,403.21ZM576,256H512a63.79,63.79,0,0,0-45.09,18.6A146.29,146.29,0,0,1,542,384h66a32,32,0,0,0,32-32V320A64.06,64.06,0,0,0,576,256Z"]
 };
 var faUtensilSpoon = {
   prefix: 'fas',
@@ -8378,6 +8384,16 @@ var faVenusMars = {
   iconName: 'venus-mars',
   icon: [576, 512, [], "f228", "M564 0h-79c-10.7 0-16 12.9-8.5 20.5l16.9 16.9-48.7 48.7C422.5 72.1 396.2 64 368 64c-33.7 0-64.6 11.6-89.2 30.9 14 16.7 25 36 32.1 57.1 14.5-14.8 34.7-24 57.1-24 44.1 0 80 35.9 80 80s-35.9 80-80 80c-22.3 0-42.6-9.2-57.1-24-7.1 21.1-18 40.4-32.1 57.1 24.5 19.4 55.5 30.9 89.2 30.9 79.5 0 144-64.5 144-144 0-28.2-8.1-54.5-22.1-76.7l48.7-48.7 16.9 16.9c2.4 2.4 5.4 3.5 8.4 3.5 6.2 0 12.1-4.8 12.1-12V12c0-6.6-5.4-12-12-12zM144 64C64.5 64 0 128.5 0 208c0 68.5 47.9 125.9 112 140.4V400H76c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h36v36c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12v-36h36c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-36v-51.6c64.1-14.6 112-71.9 112-140.4 0-79.5-64.5-144-144-144zm0 224c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"]
 };
+var faVest = {
+  prefix: 'fas',
+  iconName: 'vest',
+  icon: [448, 512, [], "e085", "M437.252,239.877,384,160V32A32,32,0,0,0,352,0H320a24.021,24.021,0,0,0-13.312,4.031l-25,16.672a103.794,103.794,0,0,1-115.376,0l-25-16.672A24.021,24.021,0,0,0,128,0H96A32,32,0,0,0,64,32V160L10.748,239.877A64,64,0,0,0,0,275.377V480a32,32,0,0,0,32,32H192V288a31.987,31.987,0,0,1,1.643-10.119L207.135,237.4,150.188,66.564A151.518,151.518,0,0,0,224,86.234a151.55,151.55,0,0,0,73.812-19.672L224,288V512H416a32,32,0,0,0,32-32V275.377A64,64,0,0,0,437.252,239.877ZM131.312,371.312l-48,48a16,16,0,0,1-22.624-22.624l48-48a16,16,0,0,1,22.624,22.624Zm256,48a15.992,15.992,0,0,1-22.624,0l-48-48a16,16,0,0,1,22.624-22.624l48,48A15.993,15.993,0,0,1,387.312,419.312Z"]
+};
+var faVestPatches = {
+  prefix: 'fas',
+  iconName: 'vest-patches',
+  icon: [448, 512, [], "e086", "M437.252,239.877,384,160V32A32,32,0,0,0,352,0H320a23.982,23.982,0,0,0-13.312,4.031l-25,16.672a103.794,103.794,0,0,1-115.376,0l-25-16.672A23.982,23.982,0,0,0,128,0H96A32,32,0,0,0,64,32V160L10.748,239.877A64,64,0,0,0,0,275.377V480a32,32,0,0,0,32,32H192V288a31.987,31.987,0,0,1,1.643-10.119L207.135,237.4,150.188,66.561A151.579,151.579,0,0,0,224,86.234a151.565,151.565,0,0,0,73.811-19.668L224,288V512H416a32,32,0,0,0,32-32V275.377A64,64,0,0,0,437.252,239.877ZM63.5,272.484a12.01,12.01,0,0,1,17-16.968l15.5,15.5,15.5-15.5a12.01,12.01,0,0,1,17,16.968L112.984,288,128.5,303.516a12.01,12.01,0,0,1-17,16.968L96,304.984l-15.5,15.5a12.01,12.01,0,0,1-17-16.968L79.016,288ZM96,456a40,40,0,1,1,40-40A40,40,0,0,1,96,456ZM359.227,335.785,310.7,336a6.671,6.671,0,0,1-6.7-6.7l.215-48.574A24.987,24.987,0,0,1,331.43,256.1c12.789,1.162,22.129,12.619,22.056,25.419l-.037,5.057,5.051-.037c12.826-.035,24.236,9.275,25.4,22.076A24.948,24.948,0,0,1,359.227,335.785Z"]
+};
 var faVial = {
   prefix: 'fas',
   iconName: 'vial',
@@ -8406,17 +8422,17 @@ var faVihara = {
 var faVirus = {
   prefix: 'fas',
   iconName: 'virus',
-  icon: [512, 512, [], "f974", "M483.55,227.55H462c-50.68,0-76.07-61.27-40.23-97.11L437,115.19A28.44,28.44,0,0,0,396.8,75L381.56,90.22c-35.84,35.83-97.11,10.45-97.11-40.23V28.44a28.45,28.45,0,0,0-56.9,0V50c0,50.68-61.27,76.06-97.11,40.23L115.2,75A28.44,28.44,0,0,0,75,115.19l15.25,15.25c35.84,35.84,10.45,97.11-40.23,97.11H28.45a28.45,28.45,0,1,0,0,56.89H50c50.68,0,76.07,61.28,40.23,97.12L75,396.8A28.45,28.45,0,0,0,115.2,437l15.24-15.25c35.84-35.84,97.11-10.45,97.11,40.23v21.54a28.45,28.45,0,0,0,56.9,0V462c0-50.68,61.27-76.07,97.11-40.23L396.8,437A28.45,28.45,0,0,0,437,396.8l-15.25-15.24c-35.84-35.84-10.45-97.12,40.23-97.12h21.54a28.45,28.45,0,1,0,0-56.89ZM224,272a48,48,0,1,1,48-48A48,48,0,0,1,224,272Zm80,56a24,24,0,1,1,24-24A24,24,0,0,1,304,328Z"]
+  icon: [512, 512, [], "e074", "M483.55,227.55H462c-50.68,0-76.07-61.27-40.23-97.11L437,115.19A28.44,28.44,0,0,0,396.8,75L381.56,90.22c-35.84,35.83-97.11,10.45-97.11-40.23V28.44a28.45,28.45,0,0,0-56.9,0V50c0,50.68-61.27,76.06-97.11,40.23L115.2,75A28.44,28.44,0,0,0,75,115.19l15.25,15.25c35.84,35.84,10.45,97.11-40.23,97.11H28.45a28.45,28.45,0,1,0,0,56.89H50c50.68,0,76.07,61.28,40.23,97.12L75,396.8A28.45,28.45,0,0,0,115.2,437l15.24-15.25c35.84-35.84,97.11-10.45,97.11,40.23v21.54a28.45,28.45,0,0,0,56.9,0V462c0-50.68,61.27-76.07,97.11-40.23L396.8,437A28.45,28.45,0,0,0,437,396.8l-15.25-15.24c-35.84-35.84-10.45-97.12,40.23-97.12h21.54a28.45,28.45,0,1,0,0-56.89ZM224,272a48,48,0,1,1,48-48A48,48,0,0,1,224,272Zm80,56a24,24,0,1,1,24-24A24,24,0,0,1,304,328Z"]
 };
 var faVirusSlash = {
   prefix: 'fas',
   iconName: 'virus-slash',
-  icon: [640, 512, [], "f975", "M114,227.56H92.44a28.44,28.44,0,0,0,0,56.88H114c50.68,0,76.06,61.28,40.23,97.12L139,396.81A28.44,28.44,0,1,0,179.19,437l15.25-15.25c35.84-35.84,97.11-10.45,97.11,40.23v21.54a28.45,28.45,0,0,0,56.9,0V462c0-26.61,17-45.91,38.22-53.37l-244.5-189A55.58,55.58,0,0,1,114,227.56ZM633.82,458.09,470.62,332c4.17-25.39,24.91-47.52,55.39-47.52h21.55a28.44,28.44,0,1,0,0-56.88H526c-50.68,0-76.06-61.28-40.23-97.12L501,115.19A28.44,28.44,0,0,0,460.81,75L445.56,90.22c-35.84,35.84-97.11,10.46-97.11-40.23V28.45a28.45,28.45,0,0,0-56.9,0V50c0,50.69-61.27,76.07-97.11,40.23L179.19,75A28.43,28.43,0,0,0,139,75c-.13.14-.15.32-.28.46L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09ZM335.43,227.48l-62.87-48.59A46.55,46.55,0,0,1,288,176a48,48,0,0,1,48,48C336,225.22,335.52,226.29,335.43,227.48Z"]
+  icon: [640, 512, [], "e075", "M114,227.6H92.4C76.7,227.6,64,240.3,64,256s12.7,28.4,28.4,28.4H114c50.7,0,76.1,61.3,40.2,97.1L139,396.8 c-11.5,10.7-12.2,28.7-1.6,40.2s28.7,12.2,40.2,1.6c0.5-0.5,1.1-1,1.6-1.6l15.2-15.2c35.8-35.8,97.1-10.5,97.1,40.2v21.5 c0,15.7,12.8,28.4,28.5,28.4c15.7,0,28.4-12.7,28.4-28.4V462c0-26.6,17-45.9,38.2-53.4l-244.5-189 C133.7,224.7,123.9,227.5,114,227.6z M617,505.8l19.6-25.3c5.4-7,4.2-17-2.8-22.5L470.6,332c4.2-25.4,24.9-47.5,55.4-47.5h21.5 c15.7,0,28.4-12.7,28.4-28.4s-12.7-28.4-28.4-28.4H526c-50.7,0-76.1-61.3-40.2-97.1l15.2-15.3c10.7-11.5,10-29.5-1.6-40.2 c-10.9-10.1-27.7-10.1-38.6,0l-15.2,15.2c-35.8,35.8-97.1,10.5-97.1-40.2V28.5C348.4,12.7,335.7,0,320,0 c-15.7,0-28.4,12.7-28.4,28.4V50c0,50.7-61.3,76.1-97.1,40.2L179.2,75c-11.1-11.1-29.4-10.6-40.5,0.5L45.5,3.4 c-7-5.4-17-4.2-22.5,2.8L3.4,31.5c-5.4,7-4.2,17,2.8,22.5l588.4,454.7C601.5,514.1,611.6,512.8,617,505.8z M335.4,227.5l-62.9-48.6 c4.9-1.8,10.2-2.8,15.4-2.9c26.5,0,48,21.5,48,48C336,225.2,335.5,226.3,335.4,227.5z"]
 };
 var faViruses = {
   prefix: 'fas',
   iconName: 'viruses',
-  icon: [640, 512, [], "f976", "M624,352H611.88c-28.51,0-42.79-34.47-22.63-54.63l8.58-8.57a16,16,0,1,0-22.63-22.63l-8.57,8.58C546.47,294.91,512,280.63,512,252.12V240a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.57c20.16,20.16,5.88,54.63-22.63,54.63H368a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.57a16,16,0,1,0,22.63,22.63l8.57-8.58c20.16-20.16,54.63-5.88,54.63,22.63V496a16,16,0,0,0,32,0V483.88c0-28.51,34.47-42.79,54.63-22.63l8.57,8.58a16,16,0,1,0,22.63-22.63l-8.58-8.57C569.09,418.47,583.37,384,611.88,384H624a16,16,0,0,0,0-32ZM480,384a32,32,0,1,1,32-32A32,32,0,0,1,480,384ZM346.51,213.33h16.16a21.33,21.33,0,0,0,0-42.66H346.51c-38,0-57.05-46-30.17-72.84l11.43-11.44A21.33,21.33,0,0,0,297.6,56.23L286.17,67.66c-26.88,26.88-72.84,7.85-72.84-30.17V21.33a21.33,21.33,0,0,0-42.66,0V37.49c0,38-46,57.05-72.84,30.17L86.4,56.23A21.33,21.33,0,0,0,56.23,86.39L67.66,97.83c26.88,26.88,7.85,72.84-30.17,72.84H21.33a21.33,21.33,0,0,0,0,42.66H37.49c38,0,57.05,46,30.17,72.84L56.23,297.6A21.33,21.33,0,1,0,86.4,327.77l11.43-11.43c26.88-26.88,72.84-7.85,72.84,30.17v16.16a21.33,21.33,0,0,0,42.66,0V346.51c0-38,46-57.05,72.84-30.17l11.43,11.43a21.33,21.33,0,0,0,30.17-30.17l-11.43-11.43C289.46,259.29,308.49,213.33,346.51,213.33ZM160,192a32,32,0,1,1,32-32A32,32,0,0,1,160,192Zm80,32a16,16,0,1,1,16-16A16,16,0,0,1,240,224Z"]
+  icon: [640, 512, [], "e076", "M624,352H611.88c-28.51,0-42.79-34.47-22.63-54.63l8.58-8.57a16,16,0,1,0-22.63-22.63l-8.57,8.58C546.47,294.91,512,280.63,512,252.12V240a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.57c20.16,20.16,5.88,54.63-22.63,54.63H368a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.57a16,16,0,1,0,22.63,22.63l8.57-8.58c20.16-20.16,54.63-5.88,54.63,22.63V496a16,16,0,0,0,32,0V483.88c0-28.51,34.47-42.79,54.63-22.63l8.57,8.58a16,16,0,1,0,22.63-22.63l-8.58-8.57C569.09,418.47,583.37,384,611.88,384H624a16,16,0,0,0,0-32ZM480,384a32,32,0,1,1,32-32A32,32,0,0,1,480,384ZM346.51,213.33h16.16a21.33,21.33,0,0,0,0-42.66H346.51c-38,0-57.05-46-30.17-72.84l11.43-11.44A21.33,21.33,0,0,0,297.6,56.23L286.17,67.66c-26.88,26.88-72.84,7.85-72.84-30.17V21.33a21.33,21.33,0,0,0-42.66,0V37.49c0,38-46,57.05-72.84,30.17L86.4,56.23A21.33,21.33,0,0,0,56.23,86.39L67.66,97.83c26.88,26.88,7.85,72.84-30.17,72.84H21.33a21.33,21.33,0,0,0,0,42.66H37.49c38,0,57.05,46,30.17,72.84L56.23,297.6A21.33,21.33,0,1,0,86.4,327.77l11.43-11.43c26.88-26.88,72.84-7.85,72.84,30.17v16.16a21.33,21.33,0,0,0,42.66,0V346.51c0-38,46-57.05,72.84-30.17l11.43,11.43a21.33,21.33,0,0,0,30.17-30.17l-11.43-11.43C289.46,259.29,308.49,213.33,346.51,213.33ZM160,192a32,32,0,1,1,32-32A32,32,0,0,1,160,192Zm80,32a16,16,0,1,1,16-16A16,16,0,0,1,240,224Z"]
 };
 var faVoicemail = {
   prefix: 'fas',
@@ -9531,6 +9547,8 @@ var _iconsCache = {
   faVenus: faVenus,
   faVenusDouble: faVenusDouble,
   faVenusMars: faVenusMars,
+  faVest: faVest,
+  faVestPatches: faVestPatches,
   faVial: faVial,
   faVials: faVials,
   faVideo: faVideo,
@@ -9577,9 +9595,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*************************************************************************************/
+/*!************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \************************************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9853,6 +9871,12 @@ function log () {
 }
 
 function normalizeIconArgs(icon) {
+  // this has everything that it needs to be rendered which means it was probably imported
+  // directly from an icon svg package
+  if (icon && _typeof(icon) === 'object' && icon.prefix && icon.iconName && icon.icon) {
+    return icon;
+  }
+
   if (_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon) {
     return _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon(icon);
   } // if the icon is null, there's nothing to do
@@ -9863,7 +9887,7 @@ function normalizeIconArgs(icon) {
   } // if the icon is an object and has a prefix and an icon name, return it
 
 
-  if (_typeof(icon) === 'object' && icon.prefix && icon.iconName) {
+  if (icon && _typeof(icon) === 'object' && icon.prefix && icon.iconName) {
     return icon;
   } // if it's an array with length of two
 
@@ -9980,117 +10004,159 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!******************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \******************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*!****************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \****************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#nme-log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #nme-log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #nme-log-console .log.error {\n      color: red; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#nme-log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #nme-log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #nme-log-console .log.error {\n      color: red; }\n", "",{"version":3,"sources":["webpack://./components/log/log.scss"],"names":[],"mappings":"AAAA;EACI,mBAAmB;EACnB,aAAa;EACb,sBAAsB;EACtB,SAAS;EACT,aAAa;EACb,WAAW;EACX,gBAAgB;EAChB,gBAAgB,EAAA;EARpB;IAWQ,YAAY;IACZ,eAAe;IACf,8CAA8C,EAAA;IAbtD;MAgBY,UAAS,EAAA","sourcesContent":["#nme-log-console {\r\n    background: #333333;\r\n    height: 120px;\r\n    box-sizing: border-box;\r\n    margin: 0;\r\n    padding: 10px;\r\n    width: 100%; \r\n    overflow: hidden;\r\n    overflow-y: auto;\r\n\r\n    .log {\r\n        color: white;\r\n        font-size: 14px;\r\n        font-family: 'Courier New', Courier, monospace;\r\n\r\n        &.error {\r\n            color:red;\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss":
-/*!****************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss ***!
-  \****************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*!**************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss ***!
+  \**************************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .nonDraggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n        #nodeList .panes .pane .list-container .withButton {\n          height: 30px;\n          position: relative; }\n          #nodeList .panes .pane .list-container .withButton .icon {\n            position: absolute;\n            right: 4px;\n            top: 5px; }\n            #nodeList .panes .pane .list-container .withButton .icon:hover {\n              cursor: pointer; }\n            #nodeList .panes .pane .list-container .withButton .icon .img {\n              height: 17px;\n              width: 17px; }\n          #nodeList .panes .pane .list-container .withButton .buttonLine {\n            height: 30px;\n            display: grid;\n            align-items: center;\n            justify-items: stretch;\n            padding-bottom: 5px;\n            position: absolute;\n            right: 0px;\n            top: 2px; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine input[type=\"file\"] {\n              display: none; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload {\n              background: transparent;\n              border: transparent;\n              padding: 15px 200px;\n              opacity: 0.9;\n              cursor: pointer;\n              text-align: center; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload:hover {\n              opacity: 1.0; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload:active {\n              transform: scale(0.98);\n              transform-origin: 0.5 0.5; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button {\n              background: transparent;\n              border: transparent;\n              margin: 5px 10px 5px 10px;\n              color: white;\n              padding: 4px 5px;\n              opacity: 0.9; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:hover {\n              opacity: 0.0; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:active {\n              background: transparent; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:focus {\n              border: transparent;\n              outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .nonDraggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n        #nodeList .panes .pane .list-container .withButton {\n          height: 30px;\n          position: relative; }\n          #nodeList .panes .pane .list-container .withButton .icon {\n            position: absolute;\n            right: 4px;\n            top: 5px; }\n            #nodeList .panes .pane .list-container .withButton .icon:hover {\n              cursor: pointer; }\n            #nodeList .panes .pane .list-container .withButton .icon .img {\n              height: 17px;\n              width: 17px; }\n          #nodeList .panes .pane .list-container .withButton .buttonLine {\n            height: 30px;\n            display: grid;\n            align-items: center;\n            justify-items: stretch;\n            padding-bottom: 5px;\n            position: absolute;\n            right: 0px;\n            top: 2px; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine input[type=\"file\"] {\n              display: none; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload {\n              background: transparent;\n              border: transparent;\n              padding: 15px 200px;\n              opacity: 0.9;\n              cursor: pointer;\n              text-align: center; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload:hover {\n              opacity: 1.0; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload:active {\n              transform: scale(0.98);\n              transform-origin: 0.5 0.5; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button {\n              background: transparent;\n              border: transparent;\n              margin: 5px 10px 5px 10px;\n              color: white;\n              padding: 4px 5px;\n              opacity: 0.9; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:hover {\n              opacity: 0.0; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:active {\n              background: transparent; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:focus {\n              border: transparent;\n              outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", "",{"version":3,"sources":["webpack://./components/nodeList/nodeList.scss"],"names":[],"mappings":"AAAA;EACI,mBAAmB;EACnB,YAAY;EACZ,SAAS;EACT,UAAU;EACV,aAAa;EACb,WAAW;EACX,gBAAgB,EAAA;EAPpB;IAUQ,gBAAgB,EAAA;IAVxB;MAaY,YAAY;MAEZ,gBAAgB;MAChB,YAAY;MAEZ,yBAAyB;MACzB,sBAAsB;MACtB,qBAAqB;MACrB,iBAAiB,EAAA;MArB7B;QAwBgB,aAAa;QACb,oBAAoB,EAAA;QAzBpC;UA4BoB,WAAW;UACX,0BAA0B;UAC1B,cAAc;UACd,YAAY;UACZ,UAAU;UACV,gCAA0C;UAC1C,8EAAwF;UACxF,8BAA8B;UAC9B,4BAA4B;UAC5B,4BAA4B;UAC5B,YAAW,EAAA;QAtC/B;UA0CoB,gBAAgB;UAChB,aAAa;UACb,wBAAwB,EAAA;QA5C5C;UAgDoB,WAAW,EAAA;MAhD/B;QAqDgB,kBAAkB;QAClB,gBAAgB;QAChB,yBAAyB,EAAA;QAvDzC;UA0DoB,mDAAmD,EAAA;QA1DvE;UA8DoB,YAAY;UACZ,aAAa;UACb,mBAAmB;UACnB,sBAAsB;UACtB,mBAAmB;UACnB,YAAY;UACZ,kBAAkB;UAClB,SAAS;UACT,sBAAsB,EAAA;UAtE1C;YAyEwB,mBAA6B;YAC7B,YAAY,EAAA;QA1EpC;UA+EoB,YAAY;UACZ,aAAa;UACb,mBAAmB;UACnB,sBAAsB;UACtB,mBAAmB;UACnB,kBAAkB;UAClB,SAAS;UACT,sBAAsB,EAAA;QAtF1C;UA0FoB,YAAY;UACZ,kBAAkB,EAAA;UA3FtC;YA6FwB,kBAAkB;YAClB,UAAU;YACV,QAAQ,EAAA;YA/FhC;cAiG4B,eAAe,EAAA;YAjG3C;cAqG4B,YAAY;cACZ,WAAW,EAAA;UAtGvC;YA2GwB,YAAY;YACZ,aAAa;YACb,mBAAmB;YACnB,sBAAsB;YACtB,mBAAmB;YACnB,kBAAkB;YAClB,UAAU;YACV,QAAQ,EAAA;YAlHhC;cAoH4B,aAAa,EAAA;YApHzC;cAwH4B,uBAAuB;cACvB,mBAAmB;cACnB,mBAAmB;cACnB,YAAY;cACZ,eAAe;cACf,kBAAkB,EAAA;YA7H9C;cAiI4B,YAAY,EAAA;YAjIxC;cAqI4B,sBAAsB;cACtB,yBAAyB,EAAA;YAtIrD;cA0I4B,uBAAuB;cACvB,mBAAmB;cACnB,yBAAyB;cACzB,YAAW;cACX,gBAAgB;cAChB,YAAY,EAAA;YA/IxC;cAmJ4B,YAAY,EAAA;YAnJxC;cAuJ4B,uBAAuB,EAAA;YAvJnD;cA2J4B,mBAAmB;cACnB,YAAY,EAAA;QA5JxC;UAmKoB,eAAe;UACf,aAAY;UACZ,wBAAwB;UACxB,2BAA2B,EAAA;UAtK/C;YAyKwB,WAAW;YACX,cAAc,EAAA;YA1KtC;cA6K4B,aAAa;cACb,+BAA+B;cAC/B,mBAAmB;cACnB,YAAY;cACZ,kBAAkB;cAClB,eAAe,EAAA;cAlL3C;gBAqLgC,kCAAkC;gBAClC,iBAAiB;gBACjB,cAAc;gBACd,aAAa;gBACb,mBAAmB,EAAA;cAzLnD;gBA6LgC,cAAc;gBACd,aAAa;gBACb,mBAAmB;gBACnB,qBAAqB;gBACrB,wBAAwB,EAAA;gBAjMxD;kBAoMoC,yBAAyB,EAAA;YApM7D;cA0M4B,iDAAiD,EAAA","sourcesContent":["#nodeList {\r\n    background: #333333;\r\n    height: 100%;\r\n    margin: 0;\r\n    padding: 0;\r\n    display: grid;\r\n    width: 100%; \r\n    overflow: hidden;\r\n\r\n    .panes {\r\n        overflow: hidden;\r\n        \r\n        .pane {\r\n            color: white;\r\n\r\n            overflow: hidden;\r\n            height: 100%;\r\n\r\n            -webkit-user-select: none; \r\n            -moz-user-select: none;   \r\n            -ms-user-select: none;    \r\n            user-select: none;     \r\n\r\n            .filter {\r\n                display: flex;\r\n                align-items: stretch;\r\n        \r\n                input {\r\n                    width: 100%;\r\n                    margin: 10px 10px 5px 10px;\r\n                    display: block;\r\n                    border: none;\r\n                    padding: 0;\r\n                    border-bottom: solid 1px rgb(51, 122, 183);\r\n                    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);\r\n                    background-position: -1000px 0;\r\n                    background-size: 1000px 100%;\r\n                    background-repeat: no-repeat;  \r\n                    color:white;    \r\n                }\r\n        \r\n                input:focus  {\r\n                    box-shadow: none;\r\n                    outline: none;\r\n                    background-position: 0 0;\r\n                }\r\n\r\n                input::placeholder {\r\n                    color: gray;\r\n                }\r\n            }\r\n\r\n            .list-container {\r\n                overflow-x: hidden;\r\n                overflow-y: auto;\r\n                height: calc(100% - 32px);\r\n\r\n                .underline {\r\n                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);\r\n                }\r\n\r\n                .draggableLine {\r\n                    height: 30px;\r\n                    display: grid;\r\n                    align-items: center;\r\n                    justify-items: stretch;\r\n                    background: #222222;\r\n                    cursor: grab;\r\n                    text-align: center;\r\n                    margin: 0;\r\n                    box-sizing: border-box;\r\n\r\n                    &:hover {\r\n                        background: rgb(51, 122, 183);\r\n                        color: white;\r\n                    }\r\n                }\r\n\r\n                .nonDraggableLine {\r\n                    height: 30px;\r\n                    display: grid;\r\n                    align-items: center;\r\n                    justify-items: stretch;\r\n                    background: #222222;\r\n                    text-align: center;\r\n                    margin: 0;\r\n                    box-sizing: border-box;\r\n                }\r\n\r\n                .withButton {\r\n                    height: 30px;\r\n                    position: relative;\r\n                    .icon {\r\n                        position: absolute;\r\n                        right: 4px;\r\n                        top: 5px;\r\n                        &:hover {\r\n                            cursor: pointer;\r\n                        }\r\n\r\n                        .img {\r\n                            height: 17px;\r\n                            width: 17px;\r\n                        }\r\n                    }\r\n\r\n                    .buttonLine {\r\n                        height: 30px;\r\n                        display: grid;\r\n                        align-items: center;\r\n                        justify-items: stretch;\r\n                        padding-bottom: 5px;\r\n                        position: absolute;\r\n                        right: 0px;\r\n                        top: 2px;\r\n                        input[type=\"file\"] {\r\n                            display: none;\r\n                        }\r\n                \r\n                        .file-upload {            \r\n                            background: transparent;\r\n                            border: transparent;\r\n                            padding: 15px 200px;\r\n                            opacity: 0.9;\r\n                            cursor: pointer;\r\n                            text-align: center;\r\n                        }\r\n                \r\n                        .file-upload:hover {\r\n                            opacity: 1.0;\r\n                        }\r\n                \r\n                        .file-upload:active {\r\n                            transform: scale(0.98);\r\n                            transform-origin: 0.5 0.5;\r\n                        }\r\n                \r\n                        button {\r\n                            background: transparent;\r\n                            border: transparent;\r\n                            margin: 5px 10px 5px 10px;\r\n                            color:white;\r\n                            padding: 4px 5px;\r\n                            opacity: 0.9;\r\n                        }\r\n                \r\n                        button:hover {\r\n                            opacity: 0.0;\r\n                        }\r\n                \r\n                        button:active {\r\n                            background: transparent;\r\n                        }   \r\n                        \r\n                        button:focus {\r\n                            border: transparent;\r\n                            outline: 0px;\r\n                        }  \r\n                    }\r\n                    \r\n                }                \r\n\r\n                .paneContainer {\r\n                    margin-top: 3px;\r\n                    display:grid;\r\n                    grid-template-rows: 100%;\r\n                    grid-template-columns: 100%;\r\n\r\n                    .paneContainer-content {\r\n                        grid-row: 1;\r\n                        grid-column: 1;\r\n\r\n                        .header {\r\n                            display: grid;\r\n                            grid-template-columns: 1fr auto;\r\n                            background: #555555;    \r\n                            height: 30px;   \r\n                            padding-right: 5px;                        \r\n                            cursor: pointer;\r\n                            \r\n                            .title {                                \r\n                                border-left: 3px solid transparent;\r\n                                padding-left: 5px;\r\n                                grid-column: 1;\r\n                                display: flex;\r\n                                align-items: center;\r\n                            }\r\n\r\n                            .collapse {\r\n                                grid-column: 2;\r\n                                display: flex;\r\n                                align-items: center;  \r\n                                justify-items: center;\r\n                                transform-origin: center;\r\n\r\n                                &.closed {\r\n                                    transform: rotate(180deg);\r\n                                }\r\n                            }                        \r\n                        }\r\n\r\n                        .paneList > div:not(:last-child) {\r\n                            border-bottom: 1px solid rgba(255, 255, 255, 0.3);\r\n                        }\r\n                    }\r\n                }\r\n            }    \r\n        }\r\n    }\r\n}\r\n\r\n"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \**********************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*!********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, ".right-panel #propertyTab {\n  color: white;\n  background: #333333; }\n  .right-panel #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    .right-panel #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    .right-panel #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  .right-panel #propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  .right-panel #propertyTab .range:hover {\n    opacity: 1; }\n  .right-panel #propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  .right-panel #propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  .right-panel #propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  .right-panel #propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  .right-panel #propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  .right-panel #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 1fr 50px auto; }\n    .right-panel #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .sliderLine .slider {\n      grid-column: 3;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .sliderLine .floatLine {\n      grid-column: 2;\n      padding-left: 5px; }\n      .right-panel #propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      .right-panel #propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        .right-panel #propertyTab .sliderLine .floatLine .short input {\n          width: 35px; }\n        .right-panel #propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        .right-panel #propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        .right-panel #propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  .right-panel #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    .right-panel #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      .right-panel #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  .right-panel #propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 50px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    .right-panel #propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      .right-panel #propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  .right-panel #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    .right-panel #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    .right-panel #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    .right-panel #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    .right-panel #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      .right-panel #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    .right-panel #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      .right-panel #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        .right-panel #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        .right-panel #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          .right-panel #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      .right-panel #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      .right-panel #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  .right-panel #propertyTab .color-picker {\n    height: calc(100% - 8px);\n    margin: 4px;\n    width: calc(100% - 8px); }\n    .right-panel #propertyTab .color-picker .color-rect {\n      height: calc(100% - 4px);\n      border: 2px white solid;\n      cursor: pointer;\n      min-height: 18px; }\n    .right-panel #propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    .right-panel #propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  .right-panel #propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    .right-panel #propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    .right-panel #propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    .right-panel #propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      .right-panel #propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    .right-panel #propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      .right-panel #propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      .right-panel #propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    .right-panel #propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      .right-panel #propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      .right-panel #propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  .right-panel #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    .right-panel #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      .right-panel #propertyTab .floatLine .value input {\n        width: 110px; }\n    .right-panel #propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      .right-panel #propertyTab .floatLine .short input {\n        width: 27px; }\n      .right-panel #propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      .right-panel #propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      .right-panel #propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  .right-panel #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    .right-panel #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      .right-panel #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      .right-panel #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      .right-panel #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    .right-panel #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      .right-panel #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      .right-panel #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      .right-panel #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      .right-panel #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  .right-panel #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    .right-panel #propertyTab .buttonLine.disabled {\n      opacity: 0.3; }\n    .right-panel #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    .right-panel #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    .right-panel #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    .right-panel #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    .right-panel #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    .right-panel #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    .right-panel #propertyTab .buttonLine button:active {\n      background: #282828; }\n    .right-panel #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  .right-panel #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    .right-panel #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: #164975;\n        cursor: pointer; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  .right-panel #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    .right-panel #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      .right-panel #propertyTab .listLine .options select {\n        width: 115px; }\n  .right-panel #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    .right-panel #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      .right-panel #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      .right-panel #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        width: 50px;\n        display: flex;\n        align-items: center; }\n        .right-panel #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      .right-panel #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        .right-panel #propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      .right-panel #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        .right-panel #propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    .right-panel #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      .right-panel #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      .right-panel #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      .right-panel #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  .right-panel #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    .right-panel #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    .right-panel #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      .right-panel #propertyTab .textLine .value.check {\n        color: green; }\n      .right-panel #propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ".right-panel #propertyTab {\n  color: white;\n  background: #333333; }\n  .right-panel #propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    .right-panel #propertyTab #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    .right-panel #propertyTab #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  .right-panel #propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 6px;\n    background: #d3d3d3;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  .right-panel #propertyTab .range:hover {\n    opacity: 1; }\n  .right-panel #propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  .right-panel #propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #337ab7;\n    cursor: pointer; }\n  .right-panel #propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  .right-panel #propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  .right-panel #propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  .right-panel #propertyTab .sliderLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 1fr 50px auto; }\n    .right-panel #propertyTab .sliderLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .sliderLine .slider {\n      grid-column: 3;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .sliderLine .floatLine {\n      grid-column: 2;\n      padding-left: 5px; }\n      .right-panel #propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      .right-panel #propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        .right-panel #propertyTab .sliderLine .floatLine .short input {\n          width: 35px; }\n        .right-panel #propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        .right-panel #propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        .right-panel #propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  .right-panel #propertyTab .textInputLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    .right-panel #propertyTab .textInputLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      .right-panel #propertyTab .textInputLine .value input {\n        width: calc(100% - 5px); }\n  .right-panel #propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 50px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    .right-panel #propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      .right-panel #propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  .right-panel #propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    .right-panel #propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    .right-panel #propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    .right-panel #propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    .right-panel #propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      .right-panel #propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    .right-panel #propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      .right-panel #propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #555555;\n        height: 30px;\n        padding-right: 5px;\n        cursor: pointer; }\n        .right-panel #propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        .right-panel #propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          .right-panel #propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      .right-panel #propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      .right-panel #propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  .right-panel #propertyTab .color-picker {\n    height: calc(100% - 8px);\n    margin: 4px;\n    width: calc(100% - 8px); }\n    .right-panel #propertyTab .color-picker .color-rect {\n      height: calc(100% - 4px);\n      border: 2px white solid;\n      cursor: pointer;\n      min-height: 18px; }\n    .right-panel #propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    .right-panel #propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  .right-panel #propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    .right-panel #propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    .right-panel #propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    .right-panel #propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      .right-panel #propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    .right-panel #propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      .right-panel #propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      .right-panel #propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    .right-panel #propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      .right-panel #propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      .right-panel #propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  .right-panel #propertyTab .floatLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    .right-panel #propertyTab .floatLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .floatLine .value {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      .right-panel #propertyTab .floatLine .value input {\n        width: 110px; }\n    .right-panel #propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      .right-panel #propertyTab .floatLine .short input {\n        width: 27px; }\n      .right-panel #propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      .right-panel #propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      .right-panel #propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  .right-panel #propertyTab .vector3Line {\n    padding-left: 5px;\n    display: grid; }\n    .right-panel #propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: 30px; }\n      .right-panel #propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      .right-panel #propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      .right-panel #propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    .right-panel #propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      .right-panel #propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      .right-panel #propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      .right-panel #propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      .right-panel #propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  .right-panel #propertyTab .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    .right-panel #propertyTab .buttonLine.disabled {\n      opacity: 0.3; }\n    .right-panel #propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    .right-panel #propertyTab .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    .right-panel #propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    .right-panel #propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    .right-panel #propertyTab .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9; }\n    .right-panel #propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    .right-panel #propertyTab .buttonLine button:active {\n      background: #282828; }\n    .right-panel #propertyTab .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n  .right-panel #propertyTab .checkBoxLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    .right-panel #propertyTab .checkBoxLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .checkBoxLine .checkBox {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        background: #898989;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 2px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #fff;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: #337ab7; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: #164975; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: #164975;\n        cursor: pointer; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      .right-panel #propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  .right-panel #propertyTab .listLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    .right-panel #propertyTab .listLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .listLine .options {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      .right-panel #propertyTab .listLine .options select {\n        width: 115px; }\n  .right-panel #propertyTab .color3Line {\n    padding-left: 5px;\n    display: grid; }\n    .right-panel #propertyTab .color3Line .firstLine {\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto 20px 20px; }\n      .right-panel #propertyTab .color3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      .right-panel #propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        width: 50px;\n        display: flex;\n        align-items: center; }\n        .right-panel #propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      .right-panel #propertyTab .color3Line .firstLine .copy {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        .right-panel #propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      .right-panel #propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        .right-panel #propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    .right-panel #propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      .right-panel #propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      .right-panel #propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      .right-panel #propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  .right-panel #propertyTab .textLine {\n    padding-left: 5px;\n    height: 30px;\n    display: grid;\n    grid-template-columns: 1fr auto; }\n    .right-panel #propertyTab .textLine .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    .right-panel #propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    .right-panel #propertyTab .textLine .value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      .right-panel #propertyTab .textLine .value.check {\n        color: green; }\n      .right-panel #propertyTab .textLine .value.uncheck {\n        color: red; }\n", "",{"version":3,"sources":["webpack://./components/propertyTab/propertyTab.scss"],"names":[],"mappings":"AAAA;EAGQ,YAAW;EACX,mBAAmB,EAAA;EAJ3B;IAOY,YAAY;IACZ,eAAe;IACf,YAAY;IACZ,mBAAmB;IACnB,WAAW;IACX,kBAAkB;IAClB,aAAa;IACb,+BAA+B;IAC/B,yBAAyB;IACzB,sBAAsB;IACtB,qBAAqB;IACrB,iBAAiB,EAAA;IAlB7B;MAqBgB,kBAAkB;MAClB,cAAc;MACd,WAAW;MACX,YAAY;MACZ,OAAM;MACN,aAAa;MACb,kBAAkB;MAClB,oBAAoB,EAAA;IA5BpC;MAgCgB,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,kBAAkB,EAAA;EAnClC;IAwCY,wBAAwB;IACxB,YAAY;IACZ,WAAW;IACX,mBAAmB;IACnB,kBAAkB;IAClB,aAAa;IACb,YAAY;IACZ,uBAAuB;IACvB,uBAAuB,EAAA;EAhDnC;IAoDY,UAAU,EAAA;EApDtB;IAwDY,wBAAwB;IACxB,gBAAgB;IAChB,WAAW;IACX,YAAY;IACZ,kBAAkB;IAClB,mBAA6B;IAC7B,eAAe,EAAA;EA9D3B;IAkEY,WAAW;IACX,YAAY;IACZ,kBAAkB;IAClB,mBAA6B;IAC7B,eAAe,EAAA;EAtE3B;IA0EY,wBAAwB;IACxB,0CAA0C;IAC1C,UAAU;IACV,WAAW;IACX,YAAY,EAAA;EA9ExB;IAiFY,UAAU,EAAA;EAjFtB;IAoFY,YAAY,EAAA;EApFxB;IAwFY,iBAtFmB;IAuFnB,YAAY;IACZ,aAAa;IACb,wBAAwB;IACxB,oCAAoC,EAAA;IA5FhD;MA+FgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAjGnC;MAqGgB,cAAc;MACd,WAAW;MACX,iBAAiB;MACjB,UAAU;MACV,aAAa;MACb,mBAAmB,EAAA;IA1GnC;MA8GgB,cAAc;MACd,iBA7Ge,EAAA;MAF/B;QAkHoB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MApHvC;QAwHoB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;QA1HvC;UA6HwB,WAAW,EAAA;QA7HnC;;UAkIoB,wBAAwB;UACxB,SAAS,EAAA;QAnI7B;UAuIwB,0BAA0B,EAAA;EAvIlD;IA8IY,iBA5ImB;IA6InB,YAAY;IACZ,aAAa;IACb,qCAAqC,EAAA;IAjJjD;MAoJgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAtJnC;MA0JgB,aAAa;MACb,mBAAmB;MACnB,cAAc,EAAA;MA5J9B;QA+JoB,uBAAuB,EAAA;EA/J3C;IAqKY,iBAnKmB;IAoKnB,YAAY;IACZ,aAAa;IACb,gCAAgC,EAAA;IAxK5C;MA2KgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA7KnC;MAiLgB,aAAa;MACb,mBAAmB;MACnB,cAAc,EAAA;MAnL9B;QAsLoB,uBAAuB;QACvB,iBAAiB;QACjB,YAAY,EAAA;EAxLhC;IA8LY,eAAe;IACf,aAAY;IACZ,wBAAwB;IACxB,2BAA2B,EAAA;IAjMvC;MAoMgB,kCAAkC,EAAA;IApMlD;MAyMoB,8CAA8C,EAAA;IAzMlE;MA+M4B,8BAAwC,EAAA;IA/MpE;MAsNgB,WAAW;MACX,cAAc;MACd,UAAU;MACV,qBAAqB;MACrB,yBAAyB;MACzB,oBAAoB,EAAA;MA3NpC;QA8NoB,UAAU,EAAA;IA9N9B;MAmOgB,WAAW;MACX,cAAc,EAAA;MApO9B;QAuOoB,aAAa;QACb,+BAA+B;QAC/B,mBAAmB;QACnB,YAAY;QACZ,kBAAkB;QAClB,eAAe,EAAA;QA5OnC;UA+OwB,kCAAkC;UAClC,iBAAiB;UACjB,cAAc;UACd,aAAa;UACb,mBAAmB,EAAA;QAnP3C;UAuPwB,cAAc;UACd,aAAa;UACb,mBAAmB;UACnB,qBAAqB;UACrB,wBAAwB,EAAA;UA3PhD;YA8P4B,yBAAyB,EAAA;MA9PrD;QAoQoB,mDAAmD,EAAA;MApQvE;QAwQoB,mDAAmD,EAAA;EAxQvE;IA8QY,wBAAwB;IACxB,WAAW;IACX,uBAAuB,EAAA;IAhRnC;MAmRgB,wBAAwB;MACxB,uBAAuB;MACvB,eAAe;MACf,gBAAgB,EAAA;IAtRhC;MA0RgB,eAAe;MACf,QAAQ;MACR,UAAU;MACV,WAAW;MACX,SAAS,EAAA;IA9RzB;MAkSgB,UAAU;MACV,kBAAkB,EAAA;EAnSlC;IAwSY,aAAa;IACb,wBAAwB;IACxB,oDAAoD;IACpD,gBAAgB;IAChB,iBAAiB;IACjB,mBAAmB,EAAA;IA7S/B;MAgTgB,WAAW;MACX,cAAc,EAAA;IAjT9B;MAqTgB,WAAW;MACX,cAAc;MACd,eAAe,EAAA;IAvT/B;MA2TgB,gBAAgB;MAChB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,iBAAiB,EAAA;IA/TjC;MAmUgB,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,qBAAqB;MACrB,kBAAkB;MAClB,kBAAkB,EAAA;MAzUlC;QA4UoB,UAAU,EAAA;IA5U9B;MAiVgB,WAAW;MACX,cAAc;MACd,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;MArVvC;QAwVoB,YAAY;QACZ,WAAW,EAAA;MAzV/B;QA4VoB,eAAe,EAAA;IA5VnC;MAiWgB,WAAW;MACX,cAAc;MACd,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;MArWvC;QAuWoB,YAAY;QACZ,WAAW,EAAA;MAxW/B;QA2WoB,eAAe,EAAA;EA3WnC;IAmXY,iBAjXmB;IAkXnB,YAAY;IACZ,aAAa;IACb,gCAAgC,EAAA;IAtX5C;MA0XgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA5XnC;MAgYgB,cAAc;MAEd,aAAa;MACb,mBAAmB,EAAA;MAnYnC;QAsYoB,YAAY,EAAA;IAtYhC;MA2YgB,cAAc;MAEd,aAAa;MACb,mBAAmB,EAAA;MA9YnC;QAiZoB,WAAW,EAAA;MAjZ/B;;QAsZgB,wBAAwB;QACxB,SAAS,EAAA;MAvZzB;QA2ZoB,0BAA0B,EAAA;EA3Z9C;IAiaY,iBA/ZmB;IAganB,aAAa,EAAA;IAlazB;MAqagB,aAAa;MACb,oCAAoC;MACpC,YAAY,EAAA;MAva5B;QA0aoB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MA5avC;QAgboB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,iBAAiB;QACjB,YAAY,EAAA;MApbhC;QAwboB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;IA5bnC;MAicgB,aAAa;MACb,kBAAkB;MAClB,8BAAwC,EAAA;MAncxD;QAscoB,eAAe,EAAA;MAtcnC;QA0coB,aAAa;QACb,+BAA+B,EAAA;MA3cnD;QA+coB,iBAAiB;QACjB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,mBAAmB;QACnB,kBAAkB,EAAA;MApdtC;QAwdoB,YAAY;QACZ,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,yBAAoC,EAAA;EA5dxD;IAkeY,YAAY;IACZ,aAAa;IACb,mBAAmB;IACnB,sBAAsB;IACtB,mBAAmB,EAAA;IAte/B;MAyegB,YAAY,EAAA;IAze5B;MA6egB,aAAa,EAAA;IA7e7B;MAifgB,mBAAmB;MACnB,yBAAmC;MACnC,gBAAgB;MAChB,YAAW;MACX,gBAAgB;MAChB,gBAAgB;MAChB,YAAY;MACZ,eAAe;MACf,kBAAkB,EAAA;IAzflC;MA6fgB,YAAY,EAAA;IA7f5B;MAigBgB,sBAAsB;MACtB,yBAAyB,EAAA;IAlgBzC;MAsgBgB,mBAAmB;MACnB,yBAAmC;MACnC,yBAAyB;MACzB,YAAW;MACX,gBAAgB;MAChB,YAAY,EAAA;IA3gB5B;MA+gBgB,YAAY,EAAA;IA/gB5B;MAmhBgB,mBAAmB,EAAA;IAnhBnC;MAuhBgB,yBAAmC;MACnC,YAAY,EAAA;EAxhB5B;IA8hBY,iBA5hBmB;IA6hBnB,YAAY;IACZ,aAAa;IACb,+BAA+B,EAAA;IAjiB3C;MAoiBgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAtiBnC;MA0iBgB,cAAc;MAEd,aAAa;MACb,mBAAmB,EAAA;MA7iBnC;QAgjBoB,kBAAkB;QAClB,cAAc;QACd,YAAY;QACZ,WAAW;QACX,iBAAiB;QACjB,mBAAmB;QACnB,oBAAoB;QACpB,eAAe;QACf,yBAAyB,EAAA;MAxjB7C;QA4jBoB,kBAAkB;QAClB,SAAS;QACT,QAAQ;QACR,cAAc;QACd,WAAW;QACX,YAAY;QACZ,oBAAoB;QACpB,gBAAgB;QAChB,2CAAwC;QACxC,WAAW;QACX,0BAA0B,EAAA;MAtkB9C;QA0kBoB,4BAA4B,EAAA;MA1kBhD;QA8kBoB,mBAA6B,EAAA;MA9kBjD;QAklBoB,UAAU;QACV,mBAA4B,EAAA;MAnlBhD;QAulBoB,mBAA4B;QAC5B,eAAe,EAAA;MAxlBnC;QA4lBoB,UAAU;QACV,mBAA2B;QAC3B,eAAe,EAAA;MA9lBnC;QAkmBoB,mBAA2B;QAC3B,eAAe,EAAA;MAnmBnC;QAumBoB,aAAa,EAAA;EAvmBjC;IA6mBY,iBA3mBmB;IA4mBnB,YAAY;IACZ,aAAa;IACb,+BAA+B,EAAA;IAhnB3C;MAonBgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAtnBnC;MA0nBgB,cAAc;MAEd,aAAa;MACb,mBAAmB;MACnB,iBAAiB,EAAA;MA9nBjC;QAioBoB,YAAY,EAAA;EAjoBhC;IAuoBY,iBAroBmB;IAsoBnB,aAAa,EAAA;IAxoBzB;MA2oBgB,YAAY;MACZ,aAAa;MACb,yCAAyC,EAAA;MA7oBzD;QAgpBoB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MAlpBvC;QAspBoB,cAAc;QACd,WAAW;QAEX,aAAa;QACb,mBAAmB,EAAA;QA1pBvC;UA6pBwB,iBAAiB,EAAA;MA7pBzC;QAkqBoB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;QAtqBnC;UAyqBwB,YAAY;UACZ,WAAW,EAAA;MA1qBnC;QA+qBoB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;QAnrBnC;UAsrBwB,YAAY;UACZ,WAAW,EAAA;IAvrBnC;MA6rBgB,aAAa;MACb,kBAAkB;MAClB,8BAAwC,EAAA;MA/rBxD;QAksBoB,aAAa;QACb,+BAA+B,EAAA;MAnsBnD;QAusBoB,iBAAiB;QACjB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,mBAAmB;QACnB,kBAAkB,EAAA;MA5sBtC;QAgtBoB,YAAY;QACZ,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,yBAAoC,EAAA;EAptBxD;IA0tBY,iBAxtBmB;IAytBnB,YAAY;IACZ,aAAa;IACb,+BAA+B,EAAA;IA7tB3C;MAguBgB,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAluBnC;MAsuBgB,cAAc;MACd,mBAAmB;MACnB,uBAAuB;MACvB,gBAAgB;MAChB,eAAe;MACf,YAAY;MACZ,WAAU;MACV,eAAe;MACf,gBAAgB;MAChB,0BAA0B;MAC1B,eAAe,EAAA;IAhvB/B;MAovBgB,cAAc;MACd,mBAAmB;MACnB,uBAAuB;MACvB,gBAAgB;MAChB,eAAe;MACf,YAAY;MACZ,WAAU;MACV,eAAe;MACf,gBAAgB;MAChB,yBAAyB;MACzB,sBAAsB;MACtB,qBAAqB;MACrB,iBAAiB,EAAA;MAhwBjC;QAmwBoB,YAAY,EAAA;MAnwBhC;QAuwBoB,UAAU,EAAA","sourcesContent":[".right-panel {\r\n    #propertyTab {\r\n        $line-padding-left: 5px;\r\n        color:white;\r\n        background: #333333;\r\n\r\n        #header {\r\n            height: 30px;\r\n            font-size: 16px;\r\n            color: white;\r\n            background: #222222;\r\n            grid-row: 1;\r\n            text-align: center;\r\n            display: grid;\r\n            grid-template-columns: 30px 1fr;        \r\n            -webkit-user-select: none; \r\n            -moz-user-select: none;   \r\n            -ms-user-select: none;    \r\n            user-select: none;                \r\n\r\n            #logo {\r\n                position: relative;\r\n                grid-column: 1; \r\n                width: 24px;\r\n                height: 24px;\r\n                left:0;\r\n                display: flex;\r\n                align-self: center;   \r\n                justify-self: center;\r\n            }        \r\n\r\n            #title {\r\n                grid-column: 2; \r\n                display: grid;\r\n                align-items: center;   \r\n                text-align: center;\r\n            }\r\n        }\r\n\r\n        .range {\r\n            -webkit-appearance: none;\r\n            width: 120px;\r\n            height: 6px;\r\n            background: #d3d3d3;\r\n            border-radius: 5px;\r\n            outline: none;\r\n            opacity: 0.7;\r\n            -webkit-transition: .2s;\r\n            transition: opacity .2s;\r\n        }\r\n        \r\n        .range:hover {\r\n            opacity: 1;\r\n        }\r\n        \r\n        .range::-webkit-slider-thumb {\r\n            -webkit-appearance: none;\r\n            appearance: none;\r\n            width: 14px;\r\n            height: 14px;\r\n            border-radius: 50%;\r\n            background: rgb(51, 122, 183);\r\n            cursor: pointer;\r\n        }\r\n        \r\n        .range::-moz-range-thumb {\r\n            width: 14px;\r\n            height: 14px;\r\n            border-radius: 50%;\r\n            background: rgb(51, 122, 183);\r\n            cursor: pointer;\r\n        }\r\n\r\n        input[type=\"color\"] {\r\n            -webkit-appearance: none;\r\n            border: 1px solid rgba(255, 255, 255, 0.5);\r\n            padding: 0;\r\n            width: 30px;\r\n            height: 20px;\r\n        }\r\n        input[type=\"color\"]::-webkit-color-swatch-wrapper {\r\n            padding: 0;\r\n        }\r\n        input[type=\"color\"]::-webkit-color-swatch {\r\n            border: none;\r\n        }\r\n\r\n        .sliderLine {\r\n            padding-left: $line-padding-left;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 1fr 50px auto;\r\n\r\n            .label { \r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .slider {\r\n                grid-column: 3;\r\n                grid-row: 1;\r\n                margin-right: 5px;\r\n                width: 90%;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .floatLine {\r\n                grid-column: 2;\r\n                padding-left: $line-padding-left;\r\n        \r\n                .label {\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n            \r\n                .short {\r\n                    grid-column: 1; \r\n                    display: flex;\r\n                    align-items: center;\r\n                    \r\n                    input {\r\n                        width: 35px;\r\n                    }\r\n                    \r\n                    input::-webkit-outer-spin-button,\r\n                    input::-webkit-inner-spin-button {\r\n                    -webkit-appearance: none;\r\n                    margin: 0;\r\n                    }\r\n        \r\n                    input[type=number] {\r\n                        -moz-appearance: textfield;\r\n                    }\r\n                }\r\n            }  \r\n        }     \r\n\r\n        .textInputLine {\r\n            padding-left: $line-padding-left;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-columns: 1fr 120px auto;\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .value {                        \r\n                display: flex;\r\n                align-items: center;\r\n                grid-column: 2;\r\n                \r\n                input {\r\n                    width: calc(100% - 5px);\r\n                }\r\n            }\r\n        }\r\n        \r\n        .textInputArea {\r\n            padding-left: $line-padding-left;\r\n            height: 50px;\r\n            display: grid;\r\n            grid-template-columns: 1fr 120px;\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .value {                        \r\n                display: flex;\r\n                align-items: center;\r\n                grid-column: 2;\r\n                \r\n                textarea {\r\n                    width: calc(150% - 5px);\r\n                    margin-left: -50%;\r\n                    height: 40px;\r\n                }\r\n            }\r\n        }\r\n        \r\n        .paneContainer {\r\n            margin-top: 3px;\r\n            display:grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            \r\n            .paneList {\r\n                border-left: 3px solid transparent;\r\n            }\r\n\r\n            &:hover {  \r\n                .paneList {                      \r\n                    border-left: 3px solid rgba(51, 122, 183, 0.8);\r\n                }\r\n\r\n                .paneContainer-content {\r\n                    .header {\r\n                        .title {   \r\n                            border-left: 3px solid rgb(51, 122, 183);\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            \r\n            .paneContainer-highlight-border {\r\n                grid-row: 1;\r\n                grid-column: 1;\r\n                opacity: 1;\r\n                border: 3px solid red;\r\n                transition: opacity 250ms;\r\n                pointer-events: none;\r\n                \r\n                &.transparent {\r\n                    opacity: 0;\r\n                }\r\n            }\r\n\r\n            .paneContainer-content {\r\n                grid-row: 1;\r\n                grid-column: 1;\r\n\r\n                .header {\r\n                    display: grid;\r\n                    grid-template-columns: 1fr auto;\r\n                    background: #555555;    \r\n                    height: 30px;   \r\n                    padding-right: 5px;                        \r\n                    cursor: pointer;\r\n                    \r\n                    .title {                                \r\n                        border-left: 3px solid transparent;\r\n                        padding-left: 5px;\r\n                        grid-column: 1;\r\n                        display: flex;\r\n                        align-items: center;\r\n                    }\r\n\r\n                    .collapse {\r\n                        grid-column: 2;\r\n                        display: flex;\r\n                        align-items: center;  \r\n                        justify-items: center;\r\n                        transform-origin: center;\r\n\r\n                        &.closed {\r\n                            transform: rotate(180deg);\r\n                        }\r\n                    }                        \r\n                }\r\n\r\n                .paneList > div:not(:last-child) {\r\n                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n                }\r\n\r\n                .fragment > div:not(:last-child)  {\r\n                    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n                }\r\n            }\r\n        }\r\n\r\n        .color-picker {\r\n            height: calc(100% - 8px);\r\n            margin: 4px;\r\n            width: calc(100% - 8px);\r\n\r\n            .color-rect {\r\n                height: calc(100% - 4px);\r\n                border: 2px white solid;\r\n                cursor: pointer;\r\n                min-height: 18px;\r\n            }\r\n\r\n            .color-picker-cover {\r\n                position: fixed;\r\n                top: 0px;\r\n                right: 0px;\r\n                bottom: 0px;\r\n                left: 0px;\r\n            }\r\n\r\n            .color-picker-float {\r\n                z-index: 2;\r\n                position: absolute;  \r\n            }                \r\n        }\r\n\r\n        .gradient-step {\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 20px 30px 40px auto 20px 30px;\r\n            padding-top: 5px;\r\n            padding-left: 5px;\r\n            padding-bottom: 5px;\r\n\r\n            .step {\r\n                grid-row: 1;\r\n                grid-column: 1;\r\n            }\r\n                \r\n            .color {\r\n                grid-row: 1;\r\n                grid-column: 2;\r\n                cursor: pointer;\r\n            }\r\n\r\n            .step-value {       \r\n                margin-left: 5px;     \r\n                grid-row: 1;\r\n                grid-column: 3;\r\n                text-align: right;\r\n                margin-right: 5px;\r\n            }\r\n\r\n            .step-slider {            \r\n                grid-row: 1;\r\n                grid-column: 4;\r\n                display: grid;\r\n                justify-content: stretch;\r\n                align-content: center;\r\n                margin-right: -5px;\r\n                padding-left: 12px;\r\n\r\n                input {\r\n                    width: 90%;\r\n                }\r\n            }\r\n\r\n            .gradient-copy {            \r\n                grid-row: 1;\r\n                grid-column: 5;\r\n                display: grid;\r\n                align-content: center;\r\n                justify-content: center;\r\n    \r\n                .img {\r\n                    height: 20px;\r\n                    width: 20px;\r\n                }\r\n                .img:hover {\r\n                    cursor: pointer;\r\n                }\r\n\r\n            }\r\n            .gradient-delete {            \r\n                grid-row: 1;\r\n                grid-column: 6;\r\n                display: grid;\r\n                align-content: center;\r\n                justify-content: center;\r\n                .img {\r\n                    height: 20px;\r\n                    width: 20px;\r\n                }\r\n                .img:hover {\r\n                    cursor: pointer;\r\n                }\r\n\r\n            }\r\n\r\n        }\r\n\r\n        .floatLine {\r\n            padding-left: $line-padding-left;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-columns: 1fr 120px;\r\n\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .value {\r\n                grid-column: 2;\r\n                \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 110px;\r\n                }\r\n            }\r\n\r\n            .short {\r\n                grid-column: 2;\r\n                \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 27px;\r\n                }\r\n                \r\n                input::-webkit-outer-spin-button,\r\n                input::-webkit-inner-spin-button {\r\n                -webkit-appearance: none;\r\n                margin: 0;\r\n                }\r\n\r\n                input[type=number] {\r\n                    -moz-appearance: textfield;\r\n                }\r\n            }\r\n        }\r\n\r\n        .vector3Line {\r\n            padding-left:$line-padding-left;                    \r\n            display: grid;\r\n\r\n            .firstLine {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto 20px;\r\n                height: 30px;\r\n\r\n                .label {\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .vector {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;\r\n                    text-align: right;\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                .expand {\r\n                    grid-column: 3;\r\n                    display: grid;\r\n                    align-items: center;\r\n                    justify-items: center;\r\n                    cursor: pointer;\r\n                }\r\n            }\r\n\r\n            .secondLine {\r\n                display: grid;\r\n                padding-right: 5px;  \r\n                border-left: 1px solid rgb(51, 122, 183);\r\n\r\n                .no-right-margin {\r\n                    margin-right: 0;\r\n                }\r\n\r\n                .numeric {\r\n                    display: grid;\r\n                    grid-template-columns: 1fr auto;\r\n                }\r\n\r\n                .numeric-label {\r\n                    text-align: right;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;                            \r\n                    justify-self: right;\r\n                    margin-right: 10px;                          \r\n                }\r\n\r\n                .numeric-value {\r\n                    width: 120px;\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    border: 1px solid  rgb(51, 122, 183);\r\n                }                        \r\n            }\r\n        }\r\n\r\n        .buttonLine {\r\n            height: 30px;\r\n            display: grid;\r\n            align-items: center;\r\n            justify-items: stretch;\r\n            padding-bottom: 5px;\r\n\r\n            &.disabled {\r\n                opacity: 0.3;\r\n            }\r\n\r\n            input[type=\"file\"] {\r\n                display: none;\r\n            }\r\n\r\n            .file-upload {            \r\n                background: #222222;\r\n                border: 1px solid rgb(51, 122, 183);\r\n                margin: 5px 10px;\r\n                color:white;\r\n                padding: 4px 5px;\r\n                padding-top: 0px;\r\n                opacity: 0.9;\r\n                cursor: pointer;\r\n                text-align: center;\r\n            }\r\n\r\n            .file-upload:hover {\r\n                opacity: 1.0;\r\n            }\r\n\r\n            .file-upload:active {\r\n                transform: scale(0.98);\r\n                transform-origin: 0.5 0.5;\r\n            }\r\n\r\n            button {\r\n                background: #222222;\r\n                border: 1px solid rgb(51, 122, 183);\r\n                margin: 5px 10px 5px 10px;\r\n                color:white;\r\n                padding: 4px 5px;\r\n                opacity: 0.9;\r\n            }\r\n\r\n            button:hover {\r\n                opacity: 1.0;\r\n            }\r\n\r\n            button:active {\r\n                background: #282828;\r\n            }   \r\n            \r\n            button:focus {\r\n                border: 1px solid rgb(51, 122, 183);\r\n                outline: 0px;\r\n            }  \r\n        }\r\n\r\n        \r\n        .checkBoxLine {\r\n            padding-left: $line-padding-left;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-columns: 1fr auto;\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .checkBox {\r\n                grid-column: 2;\r\n                \r\n                display: flex;\r\n                align-items: center;\r\n\r\n                .lbl {\r\n                    position: relative;\r\n                    display: block;\r\n                    height: 14px;\r\n                    width: 34px;\r\n                    margin-right: 5px;\r\n                    background: #898989;\r\n                    border-radius: 100px;\r\n                    cursor: pointer;\r\n                    transition: all 0.3s ease;\r\n                }\r\n\r\n                .lbl:after {\r\n                    position: absolute;\r\n                    left: 3px;\r\n                    top: 2px;\r\n                    display: block;\r\n                    width: 10px;\r\n                    height: 10px;\r\n                    border-radius: 100px;\r\n                    background: #fff;\r\n                    box-shadow: 0px 3px 3px rgba(0,0,0,0.05);\r\n                    content: '';\r\n                    transition: all 0.15s ease;\r\n                }\r\n\r\n                .lbl:active:after { \r\n                    transform: scale(1.15, 0.85); \r\n                }\r\n\r\n                .cbx:checked ~ label { \r\n                    background: rgb(51, 122, 183);\r\n                }\r\n\r\n                .cbx:checked ~ label:after {\r\n                    left: 20px;\r\n                    background: rgb(22, 73, 117);\r\n                }\r\n\r\n                .cbx:checked ~ label.disabled { \r\n                    background: rgb(22, 73, 117);\r\n                    cursor: pointer;\r\n                }\r\n\r\n                .cbx:checked ~ label.disabled:after {\r\n                    left: 20px;\r\n                    background: rgb(85, 85, 85);\r\n                    cursor: pointer;\r\n                }\r\n\r\n                .cbx ~ label.disabled {\r\n                    background: rgb(85, 85, 85);\r\n                    cursor: pointer;\r\n                }\r\n\r\n                .hidden { \r\n                    display: none; \r\n                }               \r\n            }                    \r\n        }  \r\n\r\n        .listLine {\r\n            padding-left: $line-padding-left;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-columns: 1fr auto;\r\n\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .options {\r\n                grid-column: 2;\r\n                \r\n                display: flex;\r\n                align-items: center;   \r\n                margin-right: 5px;\r\n\r\n                select {\r\n                    width: 115px;\r\n                }\r\n            }                    \r\n        }  \r\n                        \r\n        .color3Line {\r\n            padding-left: $line-padding-left;\r\n            display: grid;\r\n\r\n            .firstLine {\r\n                height: 30px;\r\n                display: grid;\r\n                grid-template-columns: 1fr auto 20px 20px;\r\n\r\n                .label {\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .color3 {\r\n                    grid-column: 2;                \r\n                    width: 50px;\r\n                    \r\n                    display: flex;\r\n                    align-items: center;            \r\n                    \r\n                    input {\r\n                        margin-right: 5px;\r\n                    }\r\n                }\r\n\r\n                .copy {\r\n                    grid-column: 3;\r\n                    display: grid;\r\n                    align-items: center;\r\n                    justify-items: center;\r\n                    cursor: pointer;\r\n                    \r\n                    img {\r\n                        height: 100%;\r\n                        width: 20px;\r\n                    }\r\n                }\r\n\r\n                .expand {\r\n                    grid-column: 4;\r\n                    display: grid;\r\n                    align-items: center;\r\n                    justify-items: center;\r\n                    cursor: pointer;\r\n\r\n                    img {\r\n                        height: 100%;\r\n                        width: 20px;\r\n                    }\r\n                }\r\n            }   \r\n\r\n            .secondLine {\r\n                display: grid;\r\n                padding-right: 5px;  \r\n                border-left: 1px solid rgb(51, 122, 183);\r\n\r\n                .numeric {\r\n                    display: grid;\r\n                    grid-template-columns: 1fr auto;\r\n                }\r\n\r\n                .numeric-label {\r\n                    text-align: right;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;                            \r\n                    justify-self: right;\r\n                    margin-right: 10px;                          \r\n                }\r\n\r\n                .numeric-value {\r\n                    width: 120px;\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    border: 1px solid  rgb(51, 122, 183);\r\n                }                        \r\n            }                  \r\n        }     \r\n        \r\n        .textLine {\r\n            padding-left: $line-padding-left;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-columns: 1fr auto;\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .link-value {\r\n                grid-column: 2;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                overflow: hidden;\r\n                text-align: end;\r\n                opacity: 0.8;\r\n                margin:5px;\r\n                margin-top: 6px;\r\n                max-width: 140px;\r\n                text-decoration: underline;\r\n                cursor: pointer;\r\n            }\r\n\r\n            .value {\r\n                grid-column: 2;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                overflow: hidden;\r\n                text-align: end;\r\n                opacity: 0.8;\r\n                margin:5px;\r\n                margin-top: 6px;\r\n                max-width: 200px;\r\n                -webkit-user-select: text; \r\n                -moz-user-select: text;   \r\n                -ms-user-select: text;    \r\n                user-select: text;                \r\n\r\n                &.check {\r\n                    color: green;\r\n                }\r\n\r\n                &.uncheck {\r\n                    color: red;\r\n                }  \r\n            }\r\n        }    \r\n\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/graphCanvas.scss":
-/*!*******************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/graphCanvas.scss ***!
-  \*******************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*!*****************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/graphCanvas.scss ***!
+  \*****************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port img.selected {\n      box-shadow: 0 0 0 2px;\n      border-radius: 50%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #graph-canvas #graph-container .frame-box.collapsed .top-handle, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .right-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .left-handle, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .right-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle::after, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .left-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle::before, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px;\n          transform: scale(1); }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header-container {\n          grid-row: 1;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 1fr auto;\n          grid-template-rows: 100%;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          background: black;\n          color: white;\n          transform: scaleX(1.01) translateY(-0.5px);\n          transform-origin: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header-container.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header-container.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .promotion-warning {\n          grid-row: 1;\n          grid-column: 1;\n          display: none;\n          z-index: 10;\n          justify-self: end;\n          align-self: center;\n          margin-right: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .promotion-warning.visible {\n            display: grid;\n            width: 20px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%;\n          transform: scale(1); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 2;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.image-source-block {\n            margin-top: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: 60px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reduced-texture-block {\n            margin-top: 30px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reflection-block {\n            grid-row: 3; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port img.selected {\n      box-shadow: 0 0 0 2px;\n      border-radius: 50%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #graph-canvas #graph-container .frame-box.collapsed .top-handle, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .right-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .left-handle, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .right-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle::after, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .left-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle::before, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px;\n          transform: scale(1); }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header-container {\n          grid-row: 1;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 1fr auto;\n          grid-template-rows: 100%;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          background: black;\n          color: white;\n          transform: scaleX(1.01) translateY(-0.5px);\n          transform-origin: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header-container.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header-container.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .promotion-warning {\n          grid-row: 1;\n          grid-column: 1;\n          display: none;\n          z-index: 10;\n          justify-self: end;\n          align-self: center;\n          margin-right: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .promotion-warning.visible {\n            display: grid;\n            width: 20px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%;\n          transform: scale(1); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 2;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.image-source-block {\n            margin-top: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: 60px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reduced-texture-block {\n            margin-top: 30px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.reflection-block {\n            grid-row: 3; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", "",{"version":3,"sources":["webpack://./diagram/graphCanvas.scss"],"names":[],"mappings":"AAAA;EACI,WAAW;EACX,YAAY;EACZ,SAAS;EACT,UAAU;EACV,uBAAuB;EACvB,iBAAiB;EACjB,gBAAgB;EAChB,YAAY;EACZ,mIAE4D,EAAA;EAXhE;IAcQ,oBAAoB,EAAA;IAd5B;MAiBY,WAAW;MACX,kBAAkB;MAClB,kCAAkC;MAClC,sBAAsB,EAAA;EApBlC;IAyBQ,mBAAmB;IACnB,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;IA5B1B;MA+BY,WAAW,EAAA;IA/BvB;MAmCY,qBAAqB;MACrB,kBAAkB,EAAA;IApC9B;MAwCY,qBAAqB,EAAA;EAxCjC;IA6CQ,YAAY;IACZ,aAAa;IACb,wBAAwB,EAAA;EA/ChC;IAmDQ,mBAAmB,EAAA;EAnD3B;IAuDQ,WAAW;IACX,cAAc,EAAA;IAxDtB;MA2DY,6CAA6C,EAAA;MA3DzD;QA8DgB,WAAW;QACX,cAAc,EAAA;MA/D9B;QAmEgB,WAAW;QACX,cAAc;QACd,4BAA4B,EAAA;EArE5C;IA2EQ,WAAW;IACX,cAAc,EAAA;IA5EtB;MA+EY,6CAA6C,EAAA;MA/EzD;QAkFgB,WAAW;QACX,cAAc;QACd,iBAAiB,EAAA;MApFjC;QAwFgB,WAAW;QACX,cAAc;QACd,0BAA0B,EAAA;EA1F1C;IAgGQ,WAAW;IACX,YAAY;IACZ,OAAO;IACP,MAAM;IACN,0BAA0B;IAC1B,aAAa;IACb,wBAAwB;IACxB,2BAA2B,EAAA;IAvGnC;MA0GY,iBAAiB;MACjB,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,WAAW;MACX,YAAY,EAAA;IA/GxB;MAmHY,kBAAkB;MAClB,iCAAiC;MACjC,aAAa;MACb,0CAA0C;MAC1C,2BAA2B;MAC3B,sBAAsB,EAAA;MAxHlC;QA2HgB,uBAAuB;QACvB,uBAAuB;QACvB,UAAU,EAAA;QA7H1B;UAgIoB,eAAe;UACf,iDAAiD,EAAA;UAjIrE;YAoIwB,gBAAgB,EAAA;UApIxC;YAwIwB,aAAa,EAAA;QAxIrC;UA8IwB,mBAAmB;UACnB,uBAAuB;UACvB,gBAAgB,EAAA;MAhJxC;QAsJgB,oBAAoB;QACpB,cAAc;QACd,WAAW;QACX,YAAY;QACZ,6BAA6B;QAC7B,oBAAoB;QACpB,sBAAsB,EAAA;MA5JtC;QAgKgB,WAAW;QACX,cAAc;QACd,mBAA+B;QAC/B,YAAY;QACZ,eAAe;QACf,kBAAkB;QAClB,aAAa;QACb,wBAAwB;QACxB,0DAA0D;QAC1D,qBAAqB;QACrB,gBAAgB,EAAA;QA1KhC;UA6KoB,eAAe;UACf,kBAAkB;UAClB,yBAAyB;UACzB,mBAAmB;UACnB,mBAAmB;UACnB,WAAW;UACX,aAAa,EAAA;UAnLjC;YAsLwB,qBAAsB,EAAA;QAtL9C;UA2LoB,cAAc;UACd,WAAW,EAAA;QA5L/B;UAgMoB,cAAc;UACd,WAAW,EAAA;QAjM/B;UAqMoB,cAAc;UACd,WAAW;UACX,aAAa;UACb,YAAY;UACZ,WAAW;UACX,mBAAmB;UACnB,mBAAmB;UACnB,gBAAgB,EAAA;MA5MpC;QAiNgB,eAAe;QACf,kBAAkB;QAClB,gBAAgB;QAChB,iBAAiB;QACjB,YAAY;QACZ,WAAW;QACX,cAAc;QACd,aAAa;QACb,wBAAwB;QACxB,8BAA8B;QAC9B,UAAU,EAAA;MA3N1B;QA+NgB,aAAa;QACb,WAAW;QACX,cAAc;QACd,eAAe;QACf,kBAAkB;QAClB,qBAAqB,EAAA;MApOrC;QAyOkB,mBAAmB,EAAA;MAzOrC;QA8OgB,wBAAwB;QACxB,UAAU;QACV,6BAA6B;QAC7B,iBAAiB,EAAA;QAjPjC;UAoPoB,WAAW;UACX,UAAU;UACV,kBAAkB;UAClB,MAAM;UACN,SAAS;UACT,iBAAiB;UACjB,iBAAiB,EAAA;QA1PrC;UA+PoB,eAAe,EAAA;MA/PnC;QAoQgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,UAAU;QACV,iBAAiB,EAAA;QAzQjC;UA4QoB,6BAA6B;UAC7B,iBAAiB;UACjB,kBAAkB;UAClB,SAAS;UACT,YAAY;UACZ,WAAW,EAAA;MAjR/B;QAuRgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,wBAAwB;QACxB,iBAAiB,EAAA;QA5RjC;UAgSoB,6BAA6B;UAC7B,YAAY;UACZ,iBAAiB;UACjB,UAAU;UACV,YAAY;UACZ,WAAW,EAAA;MArS/B;QA0SgB,wBAAwB;QACxB,UAAU;QACV,6BAA6B;QAC7B,iBAAiB,EAAA;QA7SjC;UAgToB,WAAW;UACX,UAAU;UACV,kBAAkB;UAClB,MAAM;UACN,SAAS;UACT,iBAAiB,EAAA;MArTrC;QA2TgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,UAAU;QACV,iBAAiB,EAAA;QAhUjC;UAmUoB,6BAA6B;UAC7B,iBAAiB;UACjB,kBAAkB;UAClB,SAAS;UACT,YAAY;UACZ,WAAW,EAAA;MAxU/B;QA6UgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,wBAAwB,EAAA;QAjVxC;UAqVoB,6BAA6B;UAC7B,YAAY;UACZ,iBAAiB;UACjB,UAAU;UACV,YAAY;UACZ,WAAW,EAAA;MA1V/B;QA+VgB,wBAAwB;QACxB,6BAA6B;QAC7B,WAAW;QACX,iBAAiB,EAAA;QAlWjC;UAqWoB,WAAW;UACX,WAAW;UACX,kBAAkB;UAClB,SAAS;UACT,YAAY;UACZ,QAAQ;UACR,OAAO;UACP,mBAAmB;UACnB,iBAAiB;UACjB,WAAW,EAAA;MA9W/B;QAmXgB,wBAAwB;QACxB,6BAA6B;QAC7B,WAAW;QACX,iBAAiB,EAAA;QAtXjC;UAyXoB,WAAW;UACX,WAAW;UACX,kBAAkB;UAClB,SAAS;UACT,SAAS;UACT,QAAQ;UACR,OAAO;UACP,gBAAgB;UAChB,iBAAiB;UACjB,YAAY,EAAA;MAlYhC;QAwYoB,eAAe,EAAA;MAxYnC;QA6YwB,eAAe,EAAA;MA7YvC;QAmZwB,eAAe,EAAA;IAnZvC;MA0ZY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,WAAW;MACX,YAAY;MACZ,iBAAiB;MACjB,oBAAoB;MACpB,UAAU,EAAA;MAjatB;QAoagB,iBAAiB,EAAA;QApajC;UAsaoB,wBAAwB;UACxB,uBAAuB,EAAA;QAva3C;UA2aoB,aAAa,EAAA;MA3ajC;QAgbgB,mBAAmB;QACnB,kBAAkB;QAClB,UAAU;QACV,wBAAwB;QACxB,mBAAmB;QACnB,eAAe,EAAA;QArb/B;UAwboB,aAAa,EAAA;QAxbjC;UA4boB,wBAAwB;UACxB,YAAY,EAAA;IA7bhC;MAmcY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,WAAW;MACX,YAAY,EAAA;MAvcxB;QA0cgB,UAAU;QACV,YAAY;QACZ,kBAAkB;QAClB,OAAO;QACP,MAAM;QACN,gBAAgB;QAChB,uBAAuB;QACvB,mBAAmB;QACnB,aAAa;QACb,6BAA6B;QAC7B,2BAA2B;QAC3B,YAAY,EAAA;QArd5B;UAwdoB,aAAa,EAAA;QAxdjC;UA4doB,kBAAkB;UAClB,UAAU;UACV,YAAY;UACZ,YAAY;UACZ,gBAAgB;UAChB,kBAAkB;UAClB,YAAY;UACZ,aAAa;UACb,qBAAqB;UACrB,oBAAoB,EAAA;QArexC;UAyeoB,oBAAoB;UACpB,cAAc;UACd,YAAY;UAEZ,8BAA8B;UAE9B,uBAAuB;UACvB,mBAAmB;UACnB,mBAAmB,EAAA;QAjfvC;UAsfwB,mBAAmB,EAAA;QAtf3C;UA2foB,WAAW;UACX,cAAc;UACd,aAAa;UACb,+BAA+B;UAC/B,wBAAwB;UACxB,uBAAuB;UACvB,4BAA4B;UAC5B,2BAA2B;UAC3B,iBAAiB;UACjB,YAAY;UACZ,0CAA0C;UAC1C,wBAAwB,EAAA;UAtgB5C;YAygBwB,qBAAqB;YACrB,mBAAmB,EAAA;UA1gB3C;YA8gBwB,qBAAqB;YACrB,mBAAmB,EAAA;QA/gB3C;UAohBoB,WAAW;UACX,cAAc;UACd,aAAa;UACb,WAAW;UACX,iBAAiB;UACjB,kBAAkB;UAClB,iBAAiB,EAAA;UA1hBrC;YA6hBwB,aAAa;YACb,WAAW,EAAA;QA9hBnC;UAmiBoB,WAAW;UACX,cAAc;UACd,eAAe;UACf,kBAAkB;UAClB,gBAAgB;UAChB,iBAAiB;UACjB,kBAAkB;UAClB,mBAAmB;UACnB,uBAAuB;UACvB,gBAAgB,EAAA;QA5iBpC;UAgjBoB,WAAW;UACX,cAAc;UAEd,aAAa;UACb,8BAA8B;UAC9B,mBAAmB,EAAA;QArjBvC;UAyjBoB,gBAAgB;UAChB,WAAW;UACX,cAAc,EAAA;UA3jBlC;YA8jBwB,WAAW;YACX,gBAAgB;YAChB,kBAAkB;YAClB,eAAe;YACf,iBAAiB;YACjB,kBAAkB;YAClB,aAAa;YACb,qBAAqB,EAAA;YArkB7C;cAwkB4B,eAAe,EAAA;UAxkB3C;YA6kBwB,eAAe;YACf,WAAW,EAAA;UA9kBnC;YAklBwB,WAAW;YACX,YAAY;YACZ,kBAAkB;YAClB,eAAe;YACf,iBAAiB;YACjB,cAAc,EAAA;UAvlBtC;YA2lBwB,WAAW;YACX,YAAY,EAAA;UA5lBpC;YAgmBwB,WAAW;YACX,aAAa;YACb,YAAY;YACZ,gBAAgB;YAChB,8BAA8B;YAC9B,uBAAuB;YACvB,gBAAgB;YAChB,kBAAkB,EAAA;YAvmB1C;cA0mB4B,WAAW;cACX,YAAY;cACZ,oBAAoB,EAAA;cA5mBhD;gBA+mBgC,aAAa,EAAA;UA/mB7C;YAqnBwB,eAAe,EAAA;UArnBvC;YAynBwB,gBAAgB,EAAA;UAznBxC;YA6nBwB,gBAAgB,EAAA;UA7nBxC;YAioBwB,WAAW,EAAA;UAjoBnC;YAqoBwB,YAAY;YACZ,kBAAkB;YAClB,eAAe;YACf,iBAAiB;YACjB,cAAc,EAAA;UAzoBtC;YA6oBwB,WAAW;YACX,YAAY;YACZ,kBAAkB;YAClB,eAAe;YACf,iBAAiB;YACjB,cAAc,EAAA","sourcesContent":["#graph-canvas {\r\n    width: 100%;\r\n    height: 100%;\r\n    margin: 0;\r\n    padding: 0;            \r\n    font: 14px \"acumin-pro\";  \r\n    user-select: none;\r\n    overflow: hidden;\r\n    cursor: move;   \r\n    background-image:\r\n        linear-gradient(to right, #4F4E4F 1px, transparent 1px),\r\n        linear-gradient(to bottom, #4F4E4F 1px, transparent 1px);  \r\n\r\n    #selection-container {\r\n        pointer-events: none;\r\n        \r\n        .selection-box {\r\n            z-index: 10;\r\n            position: absolute;\r\n            background: rgba(72, 72, 196, 0.5);\r\n            border: blue solid 2px;\r\n        }\r\n    }\r\n\r\n    .port {\r\n        border-radius: 20px;\r\n        width: 20px;\r\n        height: 20px;                                                    \r\n        align-self: center;   \r\n        \r\n        .img {\r\n            width: 100%;\r\n        }\r\n\r\n        img.selected {\r\n            box-shadow: 0 0 0 2px;\r\n            border-radius: 50%;\r\n        }\r\n        \r\n        &:hover, &.selected {\r\n            filter: brightness(2);\r\n        }\r\n    }\r\n\r\n    .portLine {\r\n        height: 24px;\r\n        display: grid;                \r\n        grid-template-rows: 100%;\r\n    }\r\n\r\n    .port-label {                   \r\n        align-items: center;\r\n    }\r\n\r\n    .inputsContainer {                        \r\n        grid-row: 1;\r\n        grid-column: 1;\r\n\r\n        .portLine {\r\n            grid-template-columns: 12px calc(100% - 15px);\r\n\r\n            .port-label {                    \r\n                grid-row: 1;\r\n                grid-column: 2;\r\n            }\r\n\r\n            .port {                              \r\n                grid-row: 1;\r\n                grid-column: 1;\r\n                transform: translateX(-12px);     \r\n            }\r\n        }\r\n    }\r\n\r\n    .outputsContainer {                  \r\n        grid-row: 1;\r\n        grid-column: 2;\r\n\r\n        .portLine {\r\n            grid-template-columns: calc(100% - 10px) 12px;\r\n\r\n            .port-label {                    \r\n                grid-row: 1;\r\n                grid-column: 1;\r\n                text-align: right;\r\n            }\r\n\r\n            .port {                              \r\n                grid-row: 1;\r\n                grid-column: 2;\r\n                transform: translateX(2px);                        \r\n            }        \r\n        }\r\n    }\r\n\r\n    #graph-container {\r\n        width: 100%;\r\n        height: 100%;\r\n        left: 0;\r\n        top: 0;\r\n        transform-origin: left top;\r\n        display: grid;\r\n        grid-template-rows: 100%;          \r\n        grid-template-columns: 100%;          \r\n\r\n        #frame-container {\r\n            overflow: visible;   \r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            position: relative;\r\n            width: 100%;\r\n            height: 100%;             \r\n        }\r\n\r\n        .frame-box {\r\n            position: absolute;\r\n            background: rgba(72, 72, 72, 0.7);\r\n            display: grid;\r\n            grid-template-rows: 40px calc(100% - 40px);\r\n            grid-template-columns: 100%;            \r\n            box-sizing: border-box;\r\n\r\n            &.collapsed {\r\n                height: auto !important;\r\n                width: 200px !important;\r\n                z-index: 3;\r\n\r\n                .frame-box-header {\r\n                    font-size: 16px;\r\n                    grid-template-columns: calc(100% - 37px) 30px 7px;  \r\n                    \r\n                    .frame-box-header-collapse {\r\n                        margin-top: -2px;\r\n                    }\r\n                    \r\n                    .frame-box-header-close {\r\n                        display: none;\r\n                    }\r\n                }\r\n\r\n                .frame-comments.has-comments{\r\n                    .frame-comment-span{\r\n                        white-space: nowrap;\r\n                        text-overflow: ellipsis;\r\n                        overflow: hidden;\r\n                    }\r\n                }\r\n            }\r\n\r\n            .frame-box-border {                \r\n                grid-row: 1 / span 2;\r\n                grid-column: 1;\r\n                width: 100%;\r\n                height: 100%;\r\n                border: transparent solid 4px;\r\n                pointer-events: none;\r\n                box-sizing: border-box;\r\n            }\r\n\r\n            .frame-box-header {\r\n                grid-row: 1;\r\n                grid-column: 1;\r\n                background: rgba(72, 72, 72, 1);    \r\n                color: white;\r\n                font-size: 24px;\r\n                text-align: center;\r\n                display: grid;\r\n                grid-template-rows: 100%;  \r\n                grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;  \r\n                align-content: center;\r\n                overflow: hidden;\r\n\r\n                .frame-box-header-button {\r\n                    cursor: pointer;\r\n                    align-self: center;\r\n                    transform-origin: 50% 50%;\r\n                    transform: scale(1);\r\n                    stroke: transparent;\r\n                    fill: white;\r\n                    display: grid;               \r\n\r\n                    &.down {\r\n                        transform: scale(0.90);\r\n                    }\r\n                }\r\n\r\n                .frame-box-header-collapse {\r\n                    grid-column: 2;\r\n                    grid-row: 1;\r\n                }\r\n\r\n                .frame-box-header-close {\r\n                    grid-column: 4;\r\n                    grid-row: 1;\r\n                }\r\n\r\n                .frame-box-header-title {\r\n                    grid-column: 1;\r\n                    grid-row: 1;\r\n                    display: grid;\r\n                    height: 100%;\r\n                    width: 100%;\r\n                    align-self: stretch;\r\n                    align-items: center;\r\n                    margin-top: -2px;\r\n                }\r\n            }\r\n\r\n            .port-container {\r\n                margin-top: 6px;      \r\n                margin-bottom: 6px; \r\n                margin-left: 4px;     \r\n                margin-right: 4px;     \r\n                color: white;\r\n                grid-row: 2;\r\n                grid-column: 1;\r\n                display: grid;\r\n                grid-template-rows: 100%;\r\n                grid-template-columns: 50% 50%; \r\n                z-index: 2;\r\n            }\r\n\r\n            .frame-comments.has-comments{\r\n                display: grid;\r\n                grid-row: 2;\r\n                grid-column: 1;\r\n                padding: 0 10px;\r\n                font-style: italic;\r\n                word-wrap: break-word;\r\n            }\r\n\r\n            &.selected {\r\n                .frame-box-border {\r\n                  border-color: white;\r\n                }\r\n            }\r\n\r\n            .right-handle {\r\n                grid-area: 1 / 2 / 3 / 2;\r\n                width: 4px;\r\n                background-color: transparent;\r\n                cursor: ew-resize;\r\n\r\n                &::after{\r\n                    content: \"\";\r\n                    width: 8px;\r\n                    position: absolute;\r\n                    top: 0;\r\n                    bottom: 0;\r\n                    margin-left: -4px;\r\n                    cursor: ew-resize;\r\n                    \r\n                }\r\n\r\n                &.collapsed {\r\n                    cursor: pointer;\r\n                }\r\n            }\r\n\r\n            .top-right-corner-handle{\r\n                background-color: transparent;\r\n                height: 4px;\r\n                z-index: 21;\r\n                cursor: ne-resize;\r\n                width: 4px;\r\n                margin-left: -6px;\r\n\r\n                &::after {\r\n                    background-color: transparent;\r\n                    cursor: ne-resize;\r\n                    margin-left: unset;\r\n                    top: -4px;\r\n                    height: 10px;\r\n                    width: 10px;\r\n                }\r\n            }\r\n\r\n\r\n            .bottom-right-corner-handle{\r\n                background-color: transparent;\r\n                height: 0px;\r\n                z-index: 21;\r\n                cursor: nw-resize;\r\n                grid-area: 4 / 2 / 4 / 2;;\r\n                margin-left: -2px;\r\n\r\n\r\n                &::after {\r\n                    background-color: transparent;\r\n                    height: 10px;\r\n                    cursor: nw-resize;\r\n                    top: unset;\r\n                    bottom: -4px;\r\n                    width: 10px;               \r\n                }\r\n            }\r\n\r\n            .left-handle {\r\n                grid-area: 1 / 1 / 3 / 1;\r\n                width: 4px;\r\n                background-color: transparent;\r\n                cursor: ew-resize;\r\n\r\n                &::before{\r\n                    content: \"\";\r\n                    width: 8px;\r\n                    position: absolute;\r\n                    top: 0;\r\n                    bottom: 0;\r\n                    margin-left: -4px;\r\n\r\n                }\r\n            }\r\n\r\n            .top-left-corner-handle{\r\n                background-color: transparent;\r\n                height: 4px;\r\n                z-index: 21;\r\n                cursor: nw-resize;\r\n                width: 4px;\r\n                margin-left: -4px;\r\n\r\n                &::before {\r\n                    background-color: transparent;\r\n                    cursor: nw-resize;\r\n                    margin-left: unset;\r\n                    top: -4px;\r\n                    height: 10px;\r\n                    width: 10px;\r\n                }\r\n            }\r\n\r\n            .bottom-left-corner-handle{\r\n                background-color: transparent;\r\n                height: 0px;\r\n                z-index: 21;\r\n                cursor: sw-resize;\r\n                grid-area: 4 / 1 / 4 / 1;\r\n\r\n\r\n                &::before {\r\n                    background-color: transparent;\r\n                    height: 10px;\r\n                    cursor: sw-resize;\r\n                    top: unset;\r\n                    bottom: -4px;\r\n                    width: 10px;               \r\n                }\r\n            }\r\n\r\n            .top-handle {\r\n                grid-area: 1 / 1 / 1 / 1;\r\n                background-color: transparent;\r\n                height: 4px;\r\n                cursor: ns-resize;\r\n\r\n                &::before{\r\n                    content: \"\";\r\n                    width: 100%;\r\n                    position: absolute;\r\n                    top: -4px;\r\n                    bottom: 100%;\r\n                    right: 0;\r\n                    left: 0;\r\n                    margin-bottom: -8px;\r\n                    cursor: ns-resize;\r\n                    height: 8px;\r\n                }\r\n            }\r\n\r\n            .bottom-handle {\r\n                grid-area: 3 / 1 / 3 / 1;\r\n                background-color: transparent;\r\n                height: 4px;\r\n                cursor: ns-resize;\r\n\r\n                &::after {\r\n                    content: \"\";\r\n                    width: 100%;\r\n                    position: absolute;\r\n                    top: 100%;\r\n                    bottom: 0;\r\n                    right: 0;\r\n                    left: 0;\r\n                    margin-top: -8px;\r\n                    cursor: ns-resize;\r\n                    height: 12px;\r\n                }\r\n            }\r\n            \r\n            &.collapsed{\r\n                .top-handle, .top-right-corner-handle, .right-handle, .bottom-right-corner-handle, .bottom-handle, .bottom-left-corner-handle, .left-handle, .top-left-corner-handle {\r\n                    cursor: default;\r\n                }\r\n\r\n                .right-handle, .bottom-handle, .top-right-corner-handle, .bottom-right-corner-handle{\r\n                    &::after{\r\n                        cursor: default;\r\n                    }\r\n                }\r\n\r\n                .left-handle, .top-handle, .top-left-corner-handle, .bottom-left-corner-handle{\r\n                    &::before{\r\n                        cursor: default;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n        #graph-svg-container {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            position: relative;\r\n            width: 100%;\r\n            height: 100%;  \r\n            overflow: visible; \r\n            pointer-events: none;\r\n            z-index: 2;\r\n            \r\n            .link {\r\n                stroke-width: 4px;    \r\n                &.selected {                    \r\n                    stroke: white !important;\r\n                    stroke-dasharray: 10, 2;\r\n                }       \r\n\r\n                &.hidden {\r\n                    display: none;\r\n                }\r\n            }\r\n\r\n            .selection-link {\r\n                pointer-events: all;\r\n                stroke-width: 16px;\r\n                opacity: 0;\r\n                transition: opacity 75ms;\r\n                stroke: transparent;                        \r\n                cursor: pointer;\r\n\r\n                &.hidden {\r\n                    display: none;\r\n                }\r\n\r\n                &:hover, &.selected {\r\n                    stroke: white !important;\r\n                    opacity: 0.4;\r\n                }\r\n            }\r\n        }\r\n\r\n        #graph-canvas-container {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            position: relative;\r\n            width: 100%;\r\n            height: 100%;                  \r\n\r\n            .visual {\r\n                z-index: 4;\r\n                width: 200px;\r\n                position: absolute;\r\n                left: 0;\r\n                top: 0;\r\n                background: gray;\r\n                border: 4px solid black;\r\n                border-radius: 12px;\r\n                display: grid;\r\n                grid-template-rows: 30px auto;\r\n                grid-template-columns: 100%;\r\n                color: white;\r\n\r\n                &.hidden {\r\n                    display: none;\r\n                }\r\n\r\n                .comments {\r\n                    position: absolute;\r\n                    top: -50px;\r\n                    width: 200px;\r\n                    height: 45px;\r\n                    overflow: hidden;                    \r\n                    font-style: italic;\r\n                    opacity: 0.8;\r\n                    display: grid;\r\n                    align-items: flex-end;\r\n                    pointer-events: none;\r\n                }\r\n\r\n                .selection-border {                    \r\n                    grid-row: 1 / span 3;\r\n                    grid-column: 1;\r\n                    margin: -4px;\r\n\r\n                    transition: border-color 100ms;\r\n\r\n                    border: 4px solid black;\r\n                    border-radius: 12px;\r\n                    transform: scale(1);\r\n                }\r\n\r\n                &.selected {\r\n                    .selection-border {  \r\n                        border-color: white;\r\n                    }\r\n                }\r\n\r\n                .header-container {\r\n                    grid-row: 1;\r\n                    grid-column: 1;\r\n                    display: grid;\r\n                    grid-template-columns: 1fr auto;\r\n                    grid-template-rows: 100%;\r\n                    border: 4px solid black;\r\n                    border-top-right-radius: 7px;\r\n                    border-top-left-radius: 7px;\r\n                    background: black;\r\n                    color: white;\r\n                    transform: scaleX(1.01) translateY(-0.5px);\r\n                    transform-origin: center;\r\n\r\n                    &.constant {\r\n                        border-color: #464348;\r\n                        background: #464348;\r\n                    }\r\n            \r\n                    &.inspector {\r\n                        border-color: #66491b;\r\n                        background: #66491b;\r\n                    }\r\n                }\r\n\r\n                .promotion-warning {\r\n                    grid-row: 1;\r\n                    grid-column: 1;\r\n                    display: none;  \r\n                    z-index: 10; \r\n                    justify-self: end;\r\n                    align-self: center;\r\n                    margin-right: 5px;           \r\n\r\n                    &.visible {\r\n                        display: grid;\r\n                        width: 20px;\r\n                    }\r\n                }\r\n\r\n                .header {\r\n                    grid-row: 1;\r\n                    grid-column: 1;\r\n                    font-size: 16px;\r\n                    text-align: center;\r\n                    margin-top: -1px;\r\n                    margin-left: -1px;\r\n                    margin-right: -1px;\r\n                    white-space: nowrap;\r\n                    text-overflow: ellipsis;\r\n                    overflow: hidden;\r\n                }\r\n\r\n                .connections {\r\n                    grid-row: 2;\r\n                    grid-column: 1;\r\n\r\n                    display: grid;\r\n                    grid-template-columns: 50% 50%; \r\n                    transform: scale(1);                 \r\n                }\r\n\r\n                .content {\r\n                    min-height: 20px;\r\n                    grid-row: 3;\r\n                    grid-column: 1;\r\n\r\n                    &.input-block {\r\n                        grid-row: 2;\r\n                        min-height: 34px;\r\n                        text-align: center;\r\n                        font-size: 18px;\r\n                        font-weight: bold;\r\n                        margin: 0 10px 5px;\r\n                        display: grid;\r\n                        align-content: center;\r\n\r\n                        &.small-font {                            \r\n                            font-size: 17px;\r\n                        }\r\n                    }\r\n\r\n                    &.output-block {\r\n                        min-height: 0px;\r\n                        height: 5px;\r\n                    }\r\n\r\n                    &.clamp-block {                    \r\n                        grid-row: 2;\r\n                        height: 34px;\r\n                        text-align: center;\r\n                        font-size: 18px;\r\n                        font-weight: bold;\r\n                        margin: 0 10px;\r\n                    }\r\n\r\n                    &.gradient-block {                    \r\n                        grid-row: 2;\r\n                        height: 34px;\r\n                    }\r\n\r\n                    &.texture-block {                    \r\n                        grid-row: 2;\r\n                        height: 140px;\r\n                        width: 140px;\r\n                        overflow: hidden;\r\n                        border-bottom-left-radius: 7px;\r\n                        border: black 4px solid;\r\n                        border-left: 0px;\r\n                        border-bottom: 0px;\r\n\r\n                        img {\r\n                            width: 100%;\r\n                            height: 100%;\r\n                            pointer-events: none;\r\n\r\n                            &.empty {\r\n                                display: none;\r\n                            }\r\n                        }\r\n                    }\r\n\r\n                    &.image-source-block {  \r\n                        margin-top: 5px;                        \r\n                    }\r\n\r\n                    &.regular-texture-block {  \r\n                        margin-top: 60px;                        \r\n                    }\r\n\r\n                    &.reduced-texture-block {  \r\n                        margin-top: 30px;                        \r\n                    }\r\n\r\n                    &.reflection-block {\r\n                        grid-row: 3;\r\n                    }\r\n\r\n                    &.remap-block {                    \r\n                        height: 34px;\r\n                        text-align: center;\r\n                        font-size: 18px;\r\n                        font-weight: bold;\r\n                        margin: 0 10px;\r\n                    }      \r\n                    \r\n                    &.trigonometry-block {                    \r\n                        grid-row: 2;\r\n                        height: 34px;\r\n                        text-align: center;\r\n                        font-size: 18px;\r\n                        font-weight: bold;\r\n                        margin: 0 10px;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!****************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \****************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \**************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n  #node-editor-graph-root.popup {\n    grid-template-columns: 100%;\n    overflow: hidden; }\n  #node-editor-graph-root .wait-screen {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 100%;\n    width: 100%;\n    background: #464646;\n    opacity: 0.95;\n    color: white;\n    font: 24px \"acumin-pro\";\n    position: absolute;\n    top: 0;\n    left: 0; }\n    #node-editor-graph-root .wait-screen.hidden {\n      visibility: hidden; }\n  #node-editor-graph-root #nodeList {\n    grid-row: 1 / span 2;\n    grid-column: 1; }\n  #node-editor-graph-root #leftGrab {\n    grid-row: 1 / span 2;\n    grid-column: 2;\n    cursor: ew-resize; }\n  #node-editor-graph-root #rightGrab {\n    grid-row: 1 / span 2;\n    grid-column: 4;\n    cursor: ew-resize; }\n  #node-editor-graph-root .diagram-container {\n    grid-row: 1;\n    grid-column: 3;\n    background: #5f5b60;\n    width: 100%;\n    height: 100%; }\n    #node-editor-graph-root .diagram-container .diagram {\n      display: none;\n      width: 100%;\n      height: 100%; }\n  #node-editor-graph-root .right-panel {\n    grid-row: 1 / span 2;\n    grid-column: 5;\n    display: grid;\n    grid-template-rows: 1fr 40px auto 40px;\n    grid-template-columns: 100%;\n    height: 100%;\n    overflow-y: auto; }\n  #node-editor-graph-root #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  #node-editor-graph-root .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    #node-editor-graph-root .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    #node-editor-graph-root .button.selected {\n      background: #337ab7;\n      color: white; }\n    #node-editor-graph-root .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  #node-editor-graph-root #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    #node-editor-graph-root #preview-mesh-bar #file-picker {\n      display: none; }\n    #node-editor-graph-root #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        #node-editor-graph-root #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-mesh-bar .button img {\n        height: 24px;\n        width: 24px; }\n    #node-editor-graph-root #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    #node-editor-graph-root #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button img {\n        height: 24px;\n        width: 24px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 7px;\n        padding-bottom: 38px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    #node-editor-graph-root #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    #node-editor-graph-root #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  #node-editor-graph-root #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    #node-editor-graph-root #preview-config-bar.extended {\n      grid-template-columns: 1fr; }\n    #node-editor-graph-root #preview-config-bar .listLine {\n      padding-left: 5px;\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto; }\n      #node-editor-graph-root #preview-config-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-config-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-right: 5px; }\n        #node-editor-graph-root #preview-config-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-config-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-config-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      #node-editor-graph-root #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      #node-editor-graph-root #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      #node-editor-graph-root #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n  #node-editor-graph-root #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    padding: 0 !important;\n    user-select: none;\n    overflow: hidden; }\n    #node-editor-graph-root #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      padding: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    #node-editor-graph-root #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      #node-editor-graph-root #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n  #node-editor-graph-root .blocker {\n    visibility: hidden;\n    position: absolute;\n    width: calc(100% - 40px);\n    height: 100%;\n    top: 0;\n    left: 0;\n    background: rgba(20, 20, 20, 0.95);\n    font-family: \"acumin-pro\";\n    color: white;\n    font-size: 24px;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    user-select: none;\n    padding: 20px;\n    text-align: center; }\n  #node-editor-graph-root #log-console {\n    grid-row: 2;\n    grid-column: 3; }\n  #node-editor-graph-root .dialog-container {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    background: rgba(0, 0, 0, 0.6);\n    display: grid;\n    font-family: \"acumin-pro\";\n    top: 0; }\n    #node-editor-graph-root .dialog-container .dialog {\n      align-self: center;\n      justify-self: center;\n      min-height: 140px;\n      max-width: 400px;\n      border-radius: 10px;\n      background: white;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: calc(100% - 50px) 50px; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-message {\n        grid-row: 1;\n        grid-column: 1;\n        margin-top: 20px;\n        padding: 10px;\n        font-size: 18px;\n        color: black; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-buttons {\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%;\n        color: white; }\n        #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n          cursor: pointer;\n          justify-self: center;\n          background: green;\n          min-width: 80px;\n          justify-content: center;\n          display: grid;\n          align-content: center;\n          align-self: center;\n          height: 35px;\n          border-radius: 10px; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n            opacity: 0.8; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n            background: red; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n  #node-editor-graph-root.popup {\n    grid-template-columns: 100%;\n    overflow: hidden; }\n  #node-editor-graph-root .wait-screen {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 100%;\n    width: 100%;\n    background: #464646;\n    opacity: 0.95;\n    color: white;\n    font: 24px \"acumin-pro\";\n    position: absolute;\n    top: 0;\n    left: 0; }\n    #node-editor-graph-root .wait-screen.hidden {\n      visibility: hidden; }\n  #node-editor-graph-root #nodeList {\n    grid-row: 1 / span 2;\n    grid-column: 1; }\n  #node-editor-graph-root #leftGrab {\n    grid-row: 1 / span 2;\n    grid-column: 2;\n    cursor: ew-resize; }\n  #node-editor-graph-root #rightGrab {\n    grid-row: 1 / span 2;\n    grid-column: 4;\n    cursor: ew-resize; }\n  #node-editor-graph-root .diagram-container {\n    grid-row: 1;\n    grid-column: 3;\n    background: #5f5b60;\n    width: 100%;\n    height: 100%; }\n    #node-editor-graph-root .diagram-container .diagram {\n      display: none;\n      width: 100%;\n      height: 100%; }\n  #node-editor-graph-root .right-panel {\n    grid-row: 1 / span 2;\n    grid-column: 5;\n    display: grid;\n    grid-template-rows: 1fr 40px auto 40px;\n    grid-template-columns: 100%;\n    height: 100%;\n    overflow-y: auto; }\n  #node-editor-graph-root #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  #node-editor-graph-root .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    #node-editor-graph-root .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    #node-editor-graph-root .button.selected {\n      background: #337ab7;\n      color: white; }\n    #node-editor-graph-root .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  #node-editor-graph-root #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    #node-editor-graph-root #preview-mesh-bar #file-picker {\n      display: none; }\n    #node-editor-graph-root #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        #node-editor-graph-root #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-mesh-bar .button img {\n        height: 24px;\n        width: 24px; }\n    #node-editor-graph-root #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    #node-editor-graph-root #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button img {\n        height: 24px;\n        width: 24px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 7px;\n        padding-bottom: 38px; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      #node-editor-graph-root #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    #node-editor-graph-root #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    #node-editor-graph-root #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  #node-editor-graph-root #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    #node-editor-graph-root #preview-config-bar.extended {\n      grid-template-columns: 1fr; }\n    #node-editor-graph-root #preview-config-bar .listLine {\n      padding-left: 5px;\n      height: 30px;\n      display: grid;\n      grid-template-columns: 1fr auto; }\n      #node-editor-graph-root #preview-config-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      #node-editor-graph-root #preview-config-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-right: 5px; }\n        #node-editor-graph-root #preview-config-bar .listLine .options select {\n          width: 115px; }\n    #node-editor-graph-root #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      #node-editor-graph-root #preview-config-bar .button:hover {\n        background: #3f3461; }\n      #node-editor-graph-root #preview-config-bar .button.selected {\n        background: #9379e6; }\n      #node-editor-graph-root #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      #node-editor-graph-root #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      #node-editor-graph-root #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      #node-editor-graph-root #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      #node-editor-graph-root #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      #node-editor-graph-root #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n  #node-editor-graph-root #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    padding: 0 !important;\n    user-select: none;\n    overflow: hidden; }\n    #node-editor-graph-root #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      padding: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    #node-editor-graph-root #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      #node-editor-graph-root #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n  #node-editor-graph-root .blocker {\n    visibility: hidden;\n    position: absolute;\n    width: calc(100% - 40px);\n    height: 100%;\n    top: 0;\n    left: 0;\n    background: rgba(20, 20, 20, 0.95);\n    font-family: \"acumin-pro\";\n    color: white;\n    font-size: 24px;\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    user-select: none;\n    padding: 20px;\n    text-align: center; }\n  #node-editor-graph-root #log-console {\n    grid-row: 2;\n    grid-column: 3; }\n  #node-editor-graph-root .dialog-container {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    background: rgba(0, 0, 0, 0.6);\n    display: grid;\n    font-family: \"acumin-pro\";\n    top: 0; }\n    #node-editor-graph-root .dialog-container .dialog {\n      align-self: center;\n      justify-self: center;\n      min-height: 140px;\n      max-width: 400px;\n      border-radius: 10px;\n      background: white;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: calc(100% - 50px) 50px; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-message {\n        grid-row: 1;\n        grid-column: 1;\n        margin-top: 20px;\n        padding: 10px;\n        font-size: 18px;\n        color: black; }\n      #node-editor-graph-root .dialog-container .dialog .dialog-buttons {\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 100%;\n        color: white; }\n        #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n          cursor: pointer;\n          justify-self: center;\n          background: green;\n          min-width: 80px;\n          justify-content: center;\n          display: grid;\n          align-content: center;\n          align-self: center;\n          height: 35px;\n          border-radius: 10px; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n            opacity: 0.8; }\n          #node-editor-graph-root .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n            background: red; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"AAAA;EACI,aAAa;EACb,4CAA4C;EAC5C,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,uBAAuB,EAAA;EAN3B;IASQ,2BAA2B;IAC3B,gBAAgB,EAAA;EAVxB;IAcQ,aAAa;IACb,uBAAuB;IACvB,qBAAqB;IACrB,YAAY;IACZ,WAAW;IACX,mBAAmB;IACnB,aAAa;IACb,YAAW;IACX,uBAAuB;IACvB,kBAAkB;IAClB,MAAM;IACN,OAAO,EAAA;IAzBf;MA4BY,kBAAkB,EAAA;EA5B9B;IAiCQ,oBAAoB;IACpB,cAAc,EAAA;EAlCtB;IAsCQ,oBAAoB;IACpB,cAAc;IACd,iBAAiB,EAAA;EAxCzB;IA4CQ,oBAAoB;IACpB,cAAc;IACd,iBAAiB,EAAA;EA9CzB;IAkDQ,WAAW;IACX,cAAc;IACd,mBAAmB;IACnB,WAAW;IACX,YAAY,EAAA;IAtDpB;MAyDY,aAAa;MACb,WAAW;MACX,YAAY,EAAA;EA3DxB;IAgEQ,oBAAoB;IACpB,cAAc;IACd,aAAa;IACb,sCAAsC;IACtC,2BAA2B;IAC3B,YAAY;IACZ,gBAAgB,EAAA;EAtExB;IA0EQ,WAAW;IACX,cAAc,EAAA;EA3EtB;IA+EQ,aAAa;IACb,uBAAuB;IACvB,qBAAqB;IACrB,YAAY;IACZ,qBAAqB;IACrB,eAAe,EAAA;IApFvB;MAuFY,mBAA6B;MAC7B,YAAY;MACZ,YAAY,EAAA;IAzFxB;MA6FY,mBAA6B;MAC7B,YAAY,EAAA;IA9FxB;MAkGY,wBAAwB;MACxB,kBAAkB,EAAA;EAnG9B;IAwGQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,8CAA8C;IAC9C,mBAAmB;IACnB,eAAe;IACf,yBAAyB,EAAA;IA9GjC;MAiHY,aAAa,EAAA;IAjHzB;MAqHY,cAAc;MACd,YAAY;MACZ,aAAa;MACb,8BAA8B,EAAA;MAxH1C;QA2HgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,eAAe,EAAA;MA9H/B;QAkIgB,cAAc;QAEd,aAAa;QACb,mBAAmB;QACnB,gBAAgB,EAAA;QAtIhC;UAyIoB,YAAY,EAAA;IAzIhC;MA+IY,cAAc;MACd,WAAW;MACX,YAAY;MACZ,yBAAyB,EAAA;MAlJrC;QAqJgB,qBAAsB,EAAA;MArJtC;QAyJgB,mBAAmB,EAAA;MAzJnC;QA6JgB,mBAAmB,EAAA;MA7JnC;QAiKgB,YAAY;QACZ,WAAW,EAAA;IAlK3B;MAwKY,cAAc,EAAA;IAxK1B;MA4KY,cAAc;MACd,aAAa;MACb,2BAA2B;MAC3B,wBAAwB,EAAA;MA/KpC;QAkLgB,YAAY;QACZ,WAAW,EAAA;MAnL3B;QAsLgB,iBAAiB;QACjB,oBAAoB,EAAA;MAvLpC;QA2LgB,mBAAmB;QACnB,cAAc;QACd,WAAW,EAAA;MA7L3B;QAiMgB,WAAW;QACX,uBAAuB;QACvB,eAAe,EAAA;IAnM/B;MAwMY,cAAc,EAAA;IAxM1B;MA4MY,yBAAyB;MACzB,cAAc,EAAA;EA7M1B;IAkNQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,mDAAmD;IACnD,YAAY;IACZ,mBAAmB;IACnB,eAAe,EAAA;IAxNvB;MA2NY,0BAA0B,EAAA;IA3NtC;MA+NY,iBAAiB;MACjB,YAAY;MACZ,aAAa;MACb,+BAA+B,EAAA;MAlO3C;QAqOgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,eAAe,EAAA;MAxO/B;QA4OgB,cAAc;QAEd,aAAa;QACb,mBAAmB;QACnB,iBAAiB,EAAA;QAhPjC;UAmPoB,YAAY,EAAA;IAnPhC;MAyPY,WAAW;MACX,WAAW;MACX,YAAY;MACZ,yBAAyB,EAAA;MA5PrC;QA+PgB,mBAAmB,EAAA;MA/PnC;QAmQgB,mBAAmB,EAAA;MAnQnC;QAwQgB,qBAAsB,EAAA;MAxQtC;QA4QgB,YAAY;QACZ,WAAW,EAAA;MA7Q3B;QAiRgB,cACJ,EAAA;MAlRZ;QAqRgB,kBACJ,EAAA;MAtRZ;QAyRgB,kBACJ,EAAA;MA1RZ;QA4RgB,kBAEJ,EAAA;MA9RZ;QAgSgB,kBAEJ,EAAA;EAlSZ;IAuSQ,6BAAqC;IACrC,WAAW;IACX,cAAc;IACd,WAAW;IACX,aAAa;IACb,qBAAqB;IACrB,qBAAqB;IACrB,iBAAiB;IACjB,gBAAgB,EAAA;IA/SxB;MAkTY,WAAW;MACX,YAAY;MACZ,qBAAqB;MACrB,qBAAqB;MACrB,WAAW;MACX,cAAc,EAAA;IAvT1B;MA2TY,WAAW;MACX,YAAY;MACZ,WAAW;MACX,cAAc;MACd,YAAY;MACZ,eAAe;MACf,qBAAqB;MACrB,uBAAuB;MACvB,kCAAkC;MAClC,WAAW;MACX,aAAa;MACb,yBAAyB,EAAA;MAtUrC;QAyUgB,UAAU;QACV,oBAAoB,EAAA;EA1UpC;IAgVQ,kBAAkB;IAClB,kBAAkB;IAClB,wBAAwB;IACxB,YAAY;IACZ,MAAM;IACN,OAAO;IAEP,kCAAkC;IAClC,yBAAyB;IACzB,YAAY;IACZ,eAAe;IAEf,aAAa;IACb,qBAAqB;IACrB,uBAAuB;IAEvB,iBAAiB;IAEjB,aAAa;IACb,kBAAkB,EAAA;EAnW1B;IAuWQ,WAAW;IACX,cAAc,EAAA;EAxWtB;IA4WQ,kBAAkB;IAClB,WAAW;IACX,YAAY;IACZ,8BAAoC;IACpC,aAAa;IACb,yBAAyB;IACzB,MAAK,EAAA;IAlXb;MAqXY,kBAAkB;MAClB,oBAAoB;MACpB,iBAAiB;MACjB,gBAAgB;MAChB,mBAAmB;MACnB,iBAAiB;MAEjB,aAAa;MACb,2BAA2B;MAC3B,0CAA0C,EAAA;MA9XtD;QAiYgB,WAAW;QACX,cAAc;QACd,gBAAgB;QAChB,aAAa;QACb,eAAe;QACf,YAAY,EAAA;MAtY5B;QA0YgB,WAAW;QACX,cAAc;QACd,aAAa;QACb,wBAAwB;QACxB,2BAA2B;QAC3B,YAAY,EAAA;QA/Y5B;UAkZoB,eAAe;UACf,oBAAoB;UACpB,iBAAgB;UAChB,eAAe;UACf,uBAAuB;UACvB,aAAa;UACb,qBAAqB;UACrB,kBAAkB;UAClB,YAAY;UACZ,mBAAmB,EAAA;UA3ZvC;YA8ZwB,YAAY,EAAA;UA9ZpC;YAkawB,eAAe,EAAA","sourcesContent":["#node-editor-graph-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 120px) 120px;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    font: 14px \"acumin-pro\";   \r\n\r\n    &.popup {\r\n        grid-template-columns: 100%;\r\n        overflow: hidden;\r\n    }\r\n\r\n    .wait-screen {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: 100%;\r\n        width: 100%;\r\n        background: #464646;\r\n        opacity: 0.95;\r\n        color:white;\r\n        font: 24px \"acumin-pro\";  \r\n        position: absolute;\r\n        top: 0;\r\n        left: 0; \r\n\r\n        &.hidden {\r\n            visibility: hidden;\r\n        }\r\n    }\r\n\r\n    #nodeList {\r\n        grid-row: 1 / span 2;\r\n        grid-column: 1;\r\n    }\r\n\r\n    #leftGrab {\r\n        grid-row: 1 / span 2;\r\n        grid-column: 2;\r\n        cursor: ew-resize;\r\n    }\r\n\r\n    #rightGrab {\r\n        grid-row: 1 / span 2;\r\n        grid-column: 4;\r\n        cursor: ew-resize;\r\n    }\r\n\r\n    .diagram-container {\r\n        grid-row: 1;\r\n        grid-column: 3;\r\n        background: #5f5b60;\r\n        width: 100%;\r\n        height: 100%;\r\n\r\n        .diagram {\r\n            display: none;\r\n            width: 100%;\r\n            height: 100%;\r\n        }\r\n    }\r\n\r\n    .right-panel {\r\n        grid-row: 1 / span 2;\r\n        grid-column: 5;\r\n        display: grid;\r\n        grid-template-rows: 1fr 40px auto 40px;\r\n        grid-template-columns: 100%;\r\n        height: 100%;\r\n        overflow-y: auto;\r\n    }\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n\r\n    #preview-mesh-bar {\r\n        grid-row: 2;\r\n        grid-column: 1;\r\n        display: grid;\r\n        grid-template-columns: auto 1fr 40px 40px 40px;\r\n        align-items: center;\r\n        font-size: 18px;\r\n        background-color: #555555;\r\n\r\n        #file-picker {\r\n            display: none;\r\n        }\r\n\r\n        .listLine {\r\n            grid-column: 1;\r\n            height: 40px;\r\n            display: grid;\r\n            grid-template-columns: 0px 1fr;  \r\n    \r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n                font-size: 14px;\r\n            }\r\n    \r\n            .options {\r\n                grid-column: 2;\r\n                \r\n                display: flex;\r\n                align-items: center;   \r\n                margin-left: 5px;\r\n    \r\n                select {\r\n                    width: 115px;\r\n                }\r\n            } \r\n        }\r\n\r\n        .button{\r\n            color: #ffffff;\r\n            width: 40px;\r\n            height: 40px;\r\n            transform-origin: 50% 50%;\r\n            \r\n            &:active {\r\n                transform: scale(0.90);\r\n            }\r\n\r\n            &:hover {\r\n                background: #3f3461;\r\n            }\r\n            \r\n            &.selected {\r\n                background: #9379e6;\r\n            } \r\n\r\n            img{\r\n                height: 24px;\r\n                width: 24px;\r\n            }\r\n        }\r\n\r\n\r\n        #play-button {\r\n            grid-column: 3;\r\n        }\r\n\r\n        #color-picker-button {\r\n            grid-column: 4;\r\n            display: grid;\r\n            grid-template-columns: 100%;\r\n            grid-template-rows: 100%;\r\n\r\n            img {\r\n                height: 24px;\r\n                width: 24px;  \r\n            }\r\n            #color-picker-image {                \r\n                padding-left: 7px;\r\n                padding-bottom: 38px;\r\n            }\r\n\r\n            #color-picker {\r\n                transform: scale(0);\r\n                grid-column: 1;\r\n                grid-row: 1;\r\n            }\r\n\r\n            #color-picker-label {\r\n                width: 100%;\r\n                background: transparent;\r\n                cursor: pointer;            \r\n            }\r\n        }\r\n\r\n        #preview-new-window {\r\n            grid-column: 5;\r\n        }\r\n\r\n        select {\r\n            background-color: #a3a3a3;\r\n            color: #333333;\r\n        }\r\n    }\r\n\r\n    #preview-config-bar {\r\n        grid-row: 4;\r\n        grid-column: 1;\r\n        display: grid;\r\n        grid-template-columns: 40px 40px 40px 1fr 40px 40px;\r\n        color: white;\r\n        align-items: center;\r\n        font-size: 18px;    \r\n\r\n        &.extended {\r\n            grid-template-columns: 1fr;\r\n        }\r\n\r\n        .listLine {\r\n            padding-left: 5px;\r\n            height: 30px;\r\n            display: grid;\r\n            grid-template-columns: 1fr auto;\r\n    \r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n                font-size: 14px;\r\n            }\r\n    \r\n            .options {\r\n                grid-column: 2;\r\n                \r\n                display: flex;\r\n                align-items: center;   \r\n                margin-right: 5px;\r\n    \r\n                select {\r\n                    width: 115px;\r\n                }\r\n            } \r\n        }\r\n\r\n        .button {\r\n            width: 40px;\r\n            grid-row: 1;\r\n            height: 40px;\r\n            transform-origin: 50% 50%;\r\n\r\n            &:hover {\r\n                background: #3f3461;\r\n            }\r\n\r\n            &.selected {\r\n                background: #9379e6;\r\n            } \r\n            \r\n\r\n            &:active {\r\n                transform: scale(0.90);\r\n            }\r\n\r\n            img{\r\n                height: auto;\r\n                width: 100%;\r\n            }\r\n\r\n            &.back-face {\r\n                grid-column: 6\r\n            }\r\n\r\n            &.depth-pass {\r\n                grid-column: 5 / 6\r\n            }\r\n\r\n            &.hemispheric-light{\r\n                grid-column: 3 / 4\r\n            }\r\n            &.direction-light-1{\r\n                grid-column: 2 / 3\r\n\r\n            }\r\n            &.direction-light-0{\r\n                grid-column: 1 / 2\r\n                \r\n            }\r\n        }\r\n    }\r\n    \r\n    #preview {\r\n        border-top: 1px solid rgb(85, 85, 85);\r\n        grid-row: 3;\r\n        grid-column: 1;\r\n        width: 100%;\r\n        display: grid;\r\n        outline: 0 !important;\r\n        padding: 0 !important;\r\n        user-select: none;\r\n        overflow: hidden;\r\n\r\n        #preview-canvas {\r\n            width: 100%;\r\n            height: 100%;\r\n            outline: 0 !important;\r\n            padding: 0 !important;\r\n            grid-row: 1;\r\n            grid-column: 1;            \r\n        }\r\n\r\n        .waitPanel {\r\n            width: 100%;\r\n            height: 100%;\r\n            grid-row: 1;\r\n            grid-column: 1;  \r\n            color: white;\r\n            font-size: 18px;\r\n            align-content: center;\r\n            justify-content: center;\r\n            background: rgba(20, 20, 20, 0.95);    \r\n            z-index: 10;      \r\n            display: grid;\r\n            transition: opacity 250ms;\r\n\r\n            &.hidden {\r\n                opacity: 0;\r\n                pointer-events: none;\r\n            }\r\n        }\r\n    }\r\n\r\n    .blocker {\r\n        visibility: hidden;\r\n        position: absolute;\r\n        width: calc(100% - 40px);\r\n        height: 100%;\r\n        top: 0;\r\n        left: 0;\r\n\r\n        background: rgba(20, 20, 20, 0.95);    \r\n        font-family: \"acumin-pro\";\r\n        color: white;\r\n        font-size: 24px;\r\n\r\n        display: grid;\r\n        align-content: center;\r\n        justify-content: center;\r\n\r\n        user-select: none;\r\n\r\n        padding: 20px;\r\n        text-align: center;\r\n    }\r\n\r\n    #log-console {\r\n        grid-row: 2;\r\n        grid-column: 3;\r\n    }\r\n\r\n    .dialog-container {\r\n        position: absolute;\r\n        width: 100%;\r\n        height: 100%;\r\n        background: rgba(0.1, 0.1, 0.1, 0.6);\r\n        display: grid;\r\n        font-family: \"acumin-pro\";\r\n        top:0;\r\n\r\n        .dialog {\r\n            align-self: center;\r\n            justify-self: center;\r\n            min-height: 140px;\r\n            max-width: 400px;\r\n            border-radius: 10px;\r\n            background: white;\r\n\r\n            display: grid;\r\n            grid-template-columns: 100%;\r\n            grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n            .dialog-message {\r\n                grid-row: 1;\r\n                grid-column: 1;\r\n                margin-top: 20px;\r\n                padding: 10px;\r\n                font-size: 18px;\r\n                color: black;\r\n            }\r\n\r\n            .dialog-buttons {\r\n                grid-row: 2;\r\n                grid-column: 1;\r\n                display: grid;\r\n                grid-template-rows: 100%;\r\n                grid-template-columns: 100%;\r\n                color: white;\r\n\r\n                .dialog-button-ok {\r\n                    cursor: pointer;\r\n                    justify-self: center;\r\n                    background:green;\r\n                    min-width: 80px;\r\n                    justify-content: center;\r\n                    display: grid;\r\n                    align-content: center;\r\n                    align-self: center;\r\n                    height: 35px;      \r\n                    border-radius: 10px;\r\n\r\n                    &:hover {\r\n                        opacity: 0.8;\r\n                    }\r\n\r\n                    &.error {\r\n                        background: red;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!******************************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \******************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr auto;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container.with-hints {\n    height: 380px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n  .color-picker-container .color-picker-warning {\n    color: black;\n    font-size: 11px;\n    padding: 4px;\n    justify-self: left;\n    align-self: center;\n    grid-row: 6;\n    grid-column: 1; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr auto;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container.with-hints {\n    height: 380px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n  .color-picker-container .color-picker-warning {\n    color: black;\n    font-size: 11px;\n    padding: 4px;\n    justify-self: left;\n    align-self: center;\n    grid-row: 6;\n    grid-column: 1; }\n", "",{"version":3,"sources":["webpack://./sharedUiComponents/colorPicker/colorPicker.scss"],"names":[],"mappings":"AAAA;EACI,YAAY;EACZ,aAAa;EACb,uBAAuB;EACvB,aAAa;EACb,2BAA2B;EAC3B,+CAA+C;EAC/C,mCAAmC;EACnC,mBAAmB;EACnB,eAAe,EAAA;EATnB;IAYQ,aAAa,EAAA;EAZrB;IAgBQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,2BAA2B;IAC3B,wBAAwB;IACxB,kBAAkB;IAClB,eAAe,EAAA;IAtBvB;MAyBY,WAAW;MACX,cAAc;MAEd,2EAAwE;MACxE,mEAAgE,EAAA;IA7B5E;MAiCY,WAAW;MACX,cAAc;MAEd,mEAAgE;MAChE,2DAAwD,EAAA;IArCpE;MAyCY,oBAAoB;MACpB,UAAU;MACV,WAAW;MACX,kGAA0F;MAC1F,kBAAkB;MAClB,gCAAgC;MAChC,kBAAkB,EAAA;EA/C9B;IAoDQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,YAAY;IACZ,8BAA8B;IAC9B,wBAAwB,EAAA;IAzDhC;MA4DY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,oBAAoB;MACpB,WAAW;MACX,YAAY;MACZ,mBAAmB;MACnB,uBAAuB,EAAA;IAnEnC;MAuEY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,YAAY;MACZ,kBAAkB;MAClB,eAAe;MAEf,2GACqD;MACrD,mHAC2D,EAAA;MAjFvE;QAoFgB,oBAAoB;QACpB,UAAU;QACV,YAAY;QACZ,gCAAgC;QAChC,yBAAoC;QACpC,2CAA2C;QAC3C,kBAAkB,EAAA;EA1FlC;IAgGQ,aAAa;IACb,WAAW;IACX,2BAA2B;IAC3B,2BAA2B,EAAA;IAnGnC;MAsGY,oBAAoB;MACpB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,kBAAkB,EAAA;MA1G9B;QA6GgB,WAAW,EAAA;IA7G3B;MAkHY,oBAAoB;MACpB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,YAAW,EAAA;EAtHvB;IA2HQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,YAAY;IACZ,wDAAwD;IACxD,wBAAwB,EAAA;EAhIhC;IAoIQ,WAAW;IACX,cAAc,EAAA;EArItB;IAyIQ,WAAW;IACX,cAAc,EAAA;EA1ItB;IA8IQ,WAAW;IACX,cAAc,EAAA;EA/ItB;IAmJQ,WAAW;IACX,cAAc,EAAA;IApJtB;MAuJY,YAAY,EAAA;EAvJxB;IA4JQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,8BAA8B;IAC9B,wBAAwB,EAAA;IAhKhC;MAmKY,oBAAoB;MACpB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,YAAW,EAAA;IAxKvB;MA4KY,kBAAkB;MAClB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,kBAAkB,EAAA;MAjL9B;QAoLgB,WAAW,EAAA;EApL3B;IA0LQ,YAAY;IACZ,eAAe;IACf,YAAY;IACZ,kBAAkB;IAClB,kBAAkB;IAClB,WAAW;IACX,cAAc,EAAA","sourcesContent":[".color-picker-container {\r\n    width: 320px;\r\n    height: 300px;\r\n    background-color: white;\r\n    display: grid;    \r\n    grid-template-columns: 100%;\r\n    grid-template-rows: 50% 50px 60px 40px 1fr auto;\r\n    font-family: \"acumin-pro-condensed\";\r\n    font-weight: normal;   \r\n    font-size: 14px;\r\n\r\n    &.with-hints {        \r\n        height: 380px;\r\n    }\r\n    \r\n    .color-picker-saturation {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n        cursor: pointer;\r\n    \r\n        .color-picker-saturation-white {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            background: -webkit-linear-gradient(to right, #fff, rgba(255,255,255,0));\r\n            background: linear-gradient(to right, #fff, rgba(255,255,255,0));\r\n        }\r\n\r\n        .color-picker-saturation-black {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            background: -webkit-linear-gradient(to top, #000, rgba(0,0,0,0));\r\n            background: linear-gradient(to top, #000, rgba(0,0,0,0));\r\n        }\r\n\r\n        .color-picker-saturation-cursor {\r\n            pointer-events: none;\r\n            width: 4px;\r\n            height: 4px;\r\n            box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3), 0 0 1px 2px rgba(0,0,0,.4);\r\n            border-radius: 50%;\r\n            transform: translate(-2px, -2px);\r\n            position: absolute;\r\n        }\r\n    }\r\n\r\n    .color-picker-hue {\r\n        grid-row: 2;\r\n        grid-column: 1;\r\n        display: grid;\r\n        margin: 10px;\r\n        grid-template-columns: 24% 76%;\r\n        grid-template-rows: 100%;\r\n\r\n        .color-picker-hue-color {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            align-self: center;\r\n            justify-self: center;\r\n            width: 30px;\r\n            height: 30px;\r\n            border-radius: 15px;\r\n            border: 1px solid black;\r\n        }\r\n\r\n        .color-picker-hue-slider {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            align-self: center;\r\n            height: 16px;\r\n            position: relative;\r\n            cursor: pointer;\r\n            \r\n            background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0\r\n                    33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\r\n            background: -webkit-linear-gradient(to right, #f00 0%, #ff0\r\n                17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);                \r\n\r\n            .color-picker-hue-cursor {\r\n                pointer-events: none;\r\n                width: 8px;\r\n                height: 18px;\r\n                transform: translate(-4px, -2px);\r\n                background-color: rgb(248, 248, 248);\r\n                box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\r\n                position: absolute;\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker-component {\r\n        display: grid;\r\n        margin: 5px;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: 50% 50%;\r\n\r\n        .color-picker-component-value {\r\n            justify-self: center;\r\n            align-self: center;\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-bottom: 4px;\r\n\r\n            input {\r\n                width: 50px;\r\n            }\r\n        }\r\n\r\n        .color-picker-component-label {\r\n            justify-self: center;\r\n            align-self: center;\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            color:black;\r\n        }\r\n    }\r\n\r\n    .color-picker-rgb {\r\n        grid-row: 3;\r\n        grid-column: 1;\r\n        display: grid;\r\n        margin: 10px;\r\n        grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\r\n        grid-template-rows: 100%;\r\n    }\r\n\r\n    .red {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }\r\n\r\n    .green {\r\n        grid-row: 1;\r\n        grid-column: 3;\r\n    }\r\n\r\n    .blue {\r\n        grid-row: 1;\r\n        grid-column: 5;\r\n    }\r\n\r\n    .alpha {\r\n        grid-row: 1;\r\n        grid-column: 7;\r\n\r\n        &.grayed {\r\n            opacity: 0.5;\r\n        }\r\n    }\r\n\r\n    .color-picker-hex {\r\n        grid-row: 4;\r\n        grid-column: 1;\r\n        display: grid;       \r\n        grid-template-columns: 20% 80%;\r\n        grid-template-rows: 100%;\r\n\r\n        .color-picker-hex-label {\r\n            justify-self: center;\r\n            align-self: center;\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-left: 10px;\r\n            color:black;\r\n        }\r\n\r\n        .color-picker-hex-value {\r\n            justify-self: left;\r\n            align-self: center;\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            margin-left: 10px;\r\n            margin-right: 10px;\r\n\r\n            input {\r\n                width: 70px;\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker-warning {\r\n        color: black;\r\n        font-size: 11px;\r\n        padding: 4px;\r\n        justify-self: left;\r\n        align-self: center;\r\n        grid-row: 6;\r\n        grid-column: 1;\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10103,27 +10169,27 @@ module.exports = exports;
 */
 // css base code, injected by the css-loader
 // eslint-disable-next-line func-names
-module.exports = function (useSourceMap) {
+module.exports = function (cssWithMappingToString) {
   var list = []; // return the list of modules as css string
 
   list.toString = function toString() {
     return this.map(function (item) {
-      var content = cssWithMappingToString(item, useSourceMap);
+      var content = cssWithMappingToString(item);
 
       if (item[2]) {
         return "@media ".concat(item[2], " {").concat(content, "}");
       }
 
       return content;
-    }).join('');
+    }).join("");
   }; // import a list of modules into the list
   // eslint-disable-next-line func-names
 
 
   list.i = function (modules, mediaQuery, dedupe) {
-    if (typeof modules === 'string') {
+    if (typeof modules === "string") {
       // eslint-disable-next-line no-param-reassign
-      modules = [[null, modules, '']];
+      modules = [[null, modules, ""]];
     }
 
     var alreadyImportedModules = {};
@@ -10162,40 +10228,59 @@ module.exports = function (useSourceMap) {
   return list;
 };
 
-function cssWithMappingToString(item, useSourceMap) {
-  var content = item[1] || ''; // eslint-disable-next-line prefer-destructuring
+/***/ }),
 
-  var cssMapping = item[3];
+/***/ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js":
+/*!*******************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/cssWithMappingToString.js ***!
+  \*******************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr && (typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]); if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+module.exports = function cssWithMappingToString(item) {
+  var _item = _slicedToArray(item, 4),
+      content = _item[1],
+      cssMapping = _item[3];
 
   if (!cssMapping) {
     return content;
   }
 
-  if (useSourceMap && typeof btoa === 'function') {
-    var sourceMapping = toComment(cssMapping);
+  if (typeof btoa === "function") {
+    // eslint-disable-next-line no-undef
+    var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(cssMapping))));
+    var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
+    var sourceMapping = "/*# ".concat(data, " */");
     var sourceURLs = cssMapping.sources.map(function (source) {
-      return "/*# sourceURL=".concat(cssMapping.sourceRoot || '').concat(source, " */");
+      return "/*# sourceURL=".concat(cssMapping.sourceRoot || "").concat(source, " */");
     });
-    return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+    return [content].concat(sourceURLs).concat([sourceMapping]).join("\n");
   }
 
-  return [content].join('\n');
-} // Adapted from convert-source-map (MIT)
-
-
-function toComment(sourceMap) {
-  // eslint-disable-next-line no-undef
-  var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
-  var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
-  return "/*# ".concat(data, " */");
-}
+  return [content].join("\n");
+};
 
 /***/ }),
 
 /***/ "../../node_modules/dagre/index.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/index.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/index.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10237,9 +10322,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/acyclic.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/acyclic.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/acyclic.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10316,9 +10401,9 @@ function undo(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/add-border-segments.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/add-border-segments.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/add-border-segments.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10365,9 +10450,9 @@ function addBorderNode(g, prop, prefix, sg, sgNode, rank) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/coordinate-system.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/coordinate-system.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/coordinate-system.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10449,9 +10534,9 @@ function swapXYOne(attrs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/data/list.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/data/list.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/data/list.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10516,9 +10601,9 @@ function filterOutLinks(k, v) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/debug.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/debug.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/debug.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10561,9 +10646,9 @@ function debugOrdering(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/graphlib.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/graphlib.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/graphlib.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10589,9 +10674,9 @@ module.exports = graphlib;
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/greedy-fas.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/greedy-fas.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/greedy-fas.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10718,9 +10803,9 @@ function assignBucket(buckets, zeroIdx, entry) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/layout.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/layout.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/layout.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11122,9 +11207,9 @@ function canonicalize(attrs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/lodash.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/lodash.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/lodash.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11177,9 +11262,9 @@ module.exports = lodash;
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/nesting-graph.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/nesting-graph.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/nesting-graph.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11320,9 +11405,9 @@ function cleanup(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/normalize.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/normalize.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/normalize.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11422,9 +11507,9 @@ function undo(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/add-subgraph-constraints.js":
-/*!**************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/add-subgraph-constraints.js ***!
-  \**************************************************************************************/
+/*!*************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/add-subgraph-constraints.js ***!
+  \*************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11486,9 +11571,9 @@ function addSubgraphConstraints(g, cg, vs) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/barycenter.js":
-/*!************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/barycenter.js ***!
-  \************************************************************************/
+/*!***********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/barycenter.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11525,9 +11610,9 @@ function barycenter(g, movable) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/build-layer-graph.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/build-layer-graph.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/build-layer-graph.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11609,9 +11694,9 @@ function createRootNode(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/cross-count.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/cross-count.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/cross-count.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11688,9 +11773,9 @@ function twoLayerCrossCount(g, northLayer, southLayer) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/index.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/index.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/index.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11779,9 +11864,9 @@ function assignOrder(g, layering) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/init-order.js":
-/*!************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/init-order.js ***!
-  \************************************************************************/
+/*!***********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/init-order.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11829,9 +11914,9 @@ function initOrder(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/resolve-conflicts.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/resolve-conflicts.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/resolve-conflicts.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11963,9 +12048,9 @@ function mergeEntries(target, source) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/sort-subgraph.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/sort-subgraph.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/sort-subgraph.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12050,9 +12135,9 @@ function mergeBarycenters(target, other) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/order/sort.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/order/sort.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/order/sort.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12118,9 +12203,9 @@ function compareWithBias(bias) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/parent-dummy-chains.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/parent-dummy-chains.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/parent-dummy-chains.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12215,9 +12300,9 @@ function postorder(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/position/bk.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/position/bk.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/position/bk.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12646,9 +12731,9 @@ function width(g, v) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/position/index.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/position/index.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/position/index.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12688,9 +12773,9 @@ function positionY(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/feasible-tree.js":
-/*!**************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/feasible-tree.js ***!
-  \**************************************************************************/
+/*!*************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/rank/feasible-tree.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12789,9 +12874,9 @@ function shiftRanks(t, g, delta) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/index.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/index.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/rank/index.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12849,9 +12934,9 @@ function networkSimplexRanker(g) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/network-simplex.js":
-/*!****************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/network-simplex.js ***!
-  \****************************************************************************/
+/*!***************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/rank/network-simplex.js ***!
+  \***************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13095,9 +13180,9 @@ function isDescendant(tree, vLabel, rootLabel) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/rank/util.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/rank/util.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/rank/util.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13170,9 +13255,9 @@ function slack(g, e) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/util.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/util.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/util.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13420,9 +13505,9 @@ function notime(name, fn) {
 /***/ }),
 
 /***/ "../../node_modules/dagre/lib/version.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/dagre/lib/version.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/dagre/lib/version.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13432,9 +13517,9 @@ module.exports = "0.8.5";
 /***/ }),
 
 /***/ "../../node_modules/graphlib/index.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/index.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/index.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13481,9 +13566,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/components.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/components.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/components.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13519,9 +13604,9 @@ function components(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dfs.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/dfs.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/dfs.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13572,9 +13657,9 @@ function doDfs(g, v, postorder, visited, navigation, acc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dijkstra-all.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/dijkstra-all.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/dijkstra-all.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13593,9 +13678,9 @@ function dijkstraAll(g, weightFunc, edgeFunc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/dijkstra.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/dijkstra.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/dijkstra.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13658,9 +13743,9 @@ function runDijkstra(g, source, weightFn, edgeFn) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/find-cycles.js":
-/*!**************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/find-cycles.js ***!
-  \**************************************************************************/
+/*!*************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/find-cycles.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13679,9 +13764,9 @@ function findCycles(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/floyd-warshall.js":
-/*!*****************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/floyd-warshall.js ***!
-  \*****************************************************************************/
+/*!****************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/floyd-warshall.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13740,9 +13825,9 @@ function runFloydWarshall(g, weightFn, edgeFn) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/index.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/index.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/index.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13764,9 +13849,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/is-acyclic.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/is-acyclic.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/is-acyclic.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13790,9 +13875,9 @@ function isAcyclic(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/postorder.js":
-/*!************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/postorder.js ***!
-  \************************************************************************/
+/*!***********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/postorder.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13808,9 +13893,9 @@ function postorder(g, vs) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/preorder.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/preorder.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/preorder.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13826,9 +13911,9 @@ function preorder(g, vs) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/prim.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/prim.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/prim.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13889,9 +13974,9 @@ function prim(g, weightFunc) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/tarjan.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/tarjan.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/tarjan.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13947,9 +14032,9 @@ function tarjan(g) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/alg/topsort.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/alg/topsort.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/alg/topsort.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13992,9 +14077,9 @@ CycleException.prototype = new Error(); // must be an instance of Error to pass 
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/data/priority-queue.js":
-/*!******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/data/priority-queue.js ***!
-  \******************************************************************************/
+/*!*****************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/data/priority-queue.js ***!
+  \*****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14155,9 +14240,9 @@ PriorityQueue.prototype._swap = function(i, j) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/graph.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/graph.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/graph.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14699,9 +14784,9 @@ function edgeObjToId(isDirected, edgeObj) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/index.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/index.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/index.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14715,9 +14800,9 @@ module.exports = {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/json.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/json.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/json.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14792,9 +14877,9 @@ function read(json) {
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/lodash.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/lodash.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/lodash.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14837,9 +14922,9 @@ module.exports = lodash;
 /***/ }),
 
 /***/ "../../node_modules/graphlib/lib/version.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/graphlib/lib/version.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/graphlib/lib/version.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14849,9 +14934,9 @@ module.exports = '2.1.8';
 /***/ }),
 
 /***/ "../../node_modules/lodash/_DataView.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_DataView.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_DataView.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14867,9 +14952,9 @@ module.exports = DataView;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Hash.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Hash.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Hash.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14910,9 +14995,9 @@ module.exports = Hash;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_ListCache.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_ListCache.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_ListCache.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14953,9 +15038,9 @@ module.exports = ListCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Map.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Map.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Map.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14971,9 +15056,9 @@ module.exports = Map;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_MapCache.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_MapCache.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_MapCache.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15014,9 +15099,9 @@ module.exports = MapCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Promise.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Promise.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Promise.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15032,9 +15117,9 @@ module.exports = Promise;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Set.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Set.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Set.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15050,9 +15135,9 @@ module.exports = Set;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_SetCache.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_SetCache.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_SetCache.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15088,9 +15173,9 @@ module.exports = SetCache;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Stack.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Stack.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Stack.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15126,9 +15211,9 @@ module.exports = Stack;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Symbol.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Symbol.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Symbol.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15143,9 +15228,9 @@ module.exports = Symbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_Uint8Array.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15160,9 +15245,9 @@ module.exports = Uint8Array;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_WeakMap.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_WeakMap.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_WeakMap.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15178,9 +15263,9 @@ module.exports = WeakMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_apply.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_apply.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_apply.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15210,9 +15295,9 @@ module.exports = apply;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayEach.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayEach.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayEach.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15243,9 +15328,9 @@ module.exports = arrayEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayFilter.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15279,9 +15364,9 @@ module.exports = arrayFilter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayIncludes.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayIncludes.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayIncludes.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15307,9 +15392,9 @@ module.exports = arrayIncludes;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayIncludesWith.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayIncludesWith.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayIncludesWith.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15340,9 +15425,9 @@ module.exports = arrayIncludesWith;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayLikeKeys.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15400,9 +15485,9 @@ module.exports = arrayLikeKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayMap.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayMap.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayMap.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15432,9 +15517,9 @@ module.exports = arrayMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayPush.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayPush.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayPush.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15463,9 +15548,9 @@ module.exports = arrayPush;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arrayReduce.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arrayReduce.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arrayReduce.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15500,9 +15585,9 @@ module.exports = arrayReduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_arraySome.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_arraySome.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_arraySome.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15534,9 +15619,9 @@ module.exports = arraySome;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_asciiSize.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_asciiSize.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_asciiSize.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15557,9 +15642,9 @@ module.exports = asciiSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assignMergeValue.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15588,9 +15673,9 @@ module.exports = assignMergeValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assignValue.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_assignValue.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_assignValue.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15627,9 +15712,9 @@ module.exports = assignValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_assocIndexOf.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15659,9 +15744,9 @@ module.exports = assocIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssign.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseAssign.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseAssign.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15687,9 +15772,9 @@ module.exports = baseAssign;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssignIn.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15715,9 +15800,9 @@ module.exports = baseAssignIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseAssignValue.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15751,9 +15836,9 @@ module.exports = baseAssignValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseClone.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseClone.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseClone.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15928,9 +16013,9 @@ module.exports = baseClone;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseCreate.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseCreate.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseCreate.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15969,9 +16054,9 @@ module.exports = baseCreate;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseEach.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseEach.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseEach.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15994,9 +16079,9 @@ module.exports = baseEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseExtremum.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseExtremum.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseExtremum.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16037,9 +16122,9 @@ module.exports = baseExtremum;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFilter.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFilter.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseFilter.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16069,9 +16154,9 @@ module.exports = baseFilter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFindIndex.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFindIndex.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseFindIndex.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16104,9 +16189,9 @@ module.exports = baseFindIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFlatten.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFlatten.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseFlatten.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16153,9 +16238,9 @@ module.exports = baseFlatten;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseFor.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseFor.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseFor.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16180,9 +16265,9 @@ module.exports = baseFor;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseForOwn.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16207,9 +16292,9 @@ module.exports = baseForOwn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGet.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGet.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseGet.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16242,9 +16327,9 @@ module.exports = baseGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGetAllKeys.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16273,9 +16358,9 @@ module.exports = baseGetAllKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGetTag.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16312,9 +16397,9 @@ module.exports = baseGetTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseGt.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseGt.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseGt.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16337,9 +16422,9 @@ module.exports = baseGt;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseHas.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseHas.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseHas.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16367,9 +16452,9 @@ module.exports = baseHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseHasIn.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16391,9 +16476,9 @@ module.exports = baseHasIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIndexOf.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIndexOf.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIndexOf.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16422,9 +16507,9 @@ module.exports = baseIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsArguments.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16451,9 +16536,9 @@ module.exports = baseIsArguments;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsEqual.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16490,9 +16575,9 @@ module.exports = baseIsEqual;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsEqualDeep.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16584,9 +16669,9 @@ module.exports = baseIsEqualDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsMap.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16613,9 +16698,9 @@ module.exports = baseIsMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsMatch.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16686,9 +16771,9 @@ module.exports = baseIsMatch;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsNaN.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsNaN.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsNaN.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16709,9 +16794,9 @@ module.exports = baseIsNaN;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsNative.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16767,9 +16852,9 @@ module.exports = baseIsNative;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsSet.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16796,9 +16881,9 @@ module.exports = baseIsSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIsTypedArray.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16867,9 +16952,9 @@ module.exports = baseIsTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseIteratee.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16909,9 +16994,9 @@ module.exports = baseIteratee;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseKeys.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseKeys.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseKeys.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16950,9 +17035,9 @@ module.exports = baseKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseKeysIn.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16994,9 +17079,9 @@ module.exports = baseKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseLt.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseLt.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseLt.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17019,9 +17104,9 @@ module.exports = baseLt;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMap.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMap.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseMap.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17052,9 +17137,9 @@ module.exports = baseMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMatches.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMatches.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseMatches.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17085,9 +17170,9 @@ module.exports = baseMatches;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMatchesProperty.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17129,9 +17214,9 @@ module.exports = baseMatchesProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMerge.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMerge.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseMerge.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17182,9 +17267,9 @@ module.exports = baseMerge;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseMergeDeep.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17287,9 +17372,9 @@ module.exports = baseMergeDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseOrderBy.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseOrderBy.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseOrderBy.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17347,9 +17432,9 @@ module.exports = baseOrderBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePick.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_basePick.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_basePick.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17377,9 +17462,9 @@ module.exports = basePick;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePickBy.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_basePickBy.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_basePickBy.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17418,9 +17503,9 @@ module.exports = basePickBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseProperty.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseProperty.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseProperty.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17443,9 +17528,9 @@ module.exports = baseProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_basePropertyDeep.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17470,9 +17555,9 @@ module.exports = basePropertyDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseRange.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseRange.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseRange.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17509,9 +17594,9 @@ module.exports = baseRange;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseReduce.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseReduce.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseReduce.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17543,9 +17628,9 @@ module.exports = baseReduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseRest.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseRest.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseRest.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17571,9 +17656,9 @@ module.exports = baseRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSet.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseSet.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseSet.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17633,9 +17718,9 @@ module.exports = baseSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSetToString.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17666,9 +17751,9 @@ module.exports = baseSetToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseSortBy.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseSortBy.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseSortBy.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17698,9 +17783,9 @@ module.exports = baseSortBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseTimes.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseTimes.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseTimes.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17729,9 +17814,9 @@ module.exports = baseTimes;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseToString.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseToString.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseToString.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17777,9 +17862,9 @@ module.exports = baseToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseTrim.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseTrim.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseTrim.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17807,9 +17892,9 @@ module.exports = baseTrim;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseUnary.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseUnary.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseUnary.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17832,9 +17917,9 @@ module.exports = baseUnary;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseUniq.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseUniq.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseUniq.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17915,9 +18000,9 @@ module.exports = baseUniq;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseValues.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseValues.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseValues.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17945,9 +18030,9 @@ module.exports = baseValues;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_baseZipObject.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_baseZipObject.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_baseZipObject.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17979,9 +18064,9 @@ module.exports = baseZipObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cacheHas.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cacheHas.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cacheHas.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18003,9 +18088,9 @@ module.exports = cacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_castFunction.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_castFunction.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_castFunction.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18028,9 +18113,9 @@ module.exports = castFunction;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_castPath.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_castPath.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_castPath.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18060,9 +18145,9 @@ module.exports = castPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneArrayBuffer.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18087,9 +18172,9 @@ module.exports = cloneArrayBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneBuffer.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18134,9 +18219,9 @@ module.exports = cloneBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneDataView.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18161,9 +18246,9 @@ module.exports = cloneDataView;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneRegExp.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18189,9 +18274,9 @@ module.exports = cloneRegExp;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneSymbol.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18218,9 +18303,9 @@ module.exports = cloneSymbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_cloneTypedArray.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18245,9 +18330,9 @@ module.exports = cloneTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_compareAscending.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_compareAscending.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_compareAscending.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18297,9 +18382,9 @@ module.exports = compareAscending;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_compareMultiple.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_compareMultiple.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_compareMultiple.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18352,9 +18437,9 @@ module.exports = compareMultiple;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copyArray.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copyArray.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_copyArray.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18383,9 +18468,9 @@ module.exports = copyArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copyObject.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copyObject.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_copyObject.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18434,9 +18519,9 @@ module.exports = copyObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copySymbols.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copySymbols.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_copySymbols.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18461,9 +18546,9 @@ module.exports = copySymbols;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_copySymbolsIn.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18488,9 +18573,9 @@ module.exports = copySymbolsIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_coreJsData.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_coreJsData.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_coreJsData.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18505,9 +18590,9 @@ module.exports = coreJsData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createAssigner.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createAssigner.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_createAssigner.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18553,9 +18638,9 @@ module.exports = createAssigner;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createBaseEach.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18596,9 +18681,9 @@ module.exports = createBaseEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createBaseFor.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18632,9 +18717,9 @@ module.exports = createBaseFor;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createFind.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createFind.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_createFind.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18668,9 +18753,9 @@ module.exports = createFind;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createRange.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createRange.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_createRange.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18709,9 +18794,9 @@ module.exports = createRange;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_createSet.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_createSet.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_createSet.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18739,9 +18824,9 @@ module.exports = createSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_defineProperty.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_defineProperty.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_defineProperty.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18761,9 +18846,9 @@ module.exports = defineProperty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalArrays.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_equalArrays.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_equalArrays.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18856,9 +18941,9 @@ module.exports = equalArrays;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalByTag.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_equalByTag.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_equalByTag.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18979,9 +19064,9 @@ module.exports = equalByTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_equalObjects.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_equalObjects.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_equalObjects.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19080,9 +19165,9 @@ module.exports = equalObjects;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_flatRest.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_flatRest.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_flatRest.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19107,9 +19192,9 @@ module.exports = flatRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_freeGlobal.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19123,9 +19208,9 @@ module.exports = freeGlobal;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getAllKeys.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19150,9 +19235,9 @@ module.exports = getAllKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getAllKeysIn.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19178,9 +19263,9 @@ module.exports = getAllKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getMapData.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getMapData.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getMapData.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19207,9 +19292,9 @@ module.exports = getMapData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getMatchData.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getMatchData.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getMatchData.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19242,9 +19327,9 @@ module.exports = getMatchData;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getNative.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getNative.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getNative.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19270,9 +19355,9 @@ module.exports = getNative;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getPrototype.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getPrototype.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getPrototype.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19287,9 +19372,9 @@ module.exports = getPrototype;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getRawTag.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getRawTag.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getRawTag.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19344,9 +19429,9 @@ module.exports = getRawTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getSymbols.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getSymbols.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getSymbols.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19385,9 +19470,9 @@ module.exports = getSymbols;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getSymbolsIn.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19421,9 +19506,9 @@ module.exports = getSymbolsIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getTag.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getTag.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getTag.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19490,9 +19575,9 @@ module.exports = getTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_getValue.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_getValue.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_getValue.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19514,9 +19599,9 @@ module.exports = getValue;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hasPath.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hasPath.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hasPath.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19564,9 +19649,9 @@ module.exports = hasPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hasUnicode.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hasUnicode.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hasUnicode.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19601,9 +19686,9 @@ module.exports = hasUnicode;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashClear.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashClear.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hashClear.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19627,9 +19712,9 @@ module.exports = hashClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashDelete.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashDelete.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hashDelete.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19655,9 +19740,9 @@ module.exports = hashDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashGet.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashGet.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hashGet.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19696,9 +19781,9 @@ module.exports = hashGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashHas.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashHas.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hashHas.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19730,9 +19815,9 @@ module.exports = hashHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_hashSet.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_hashSet.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_hashSet.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19764,9 +19849,9 @@ module.exports = hashSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneArray.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19801,9 +19886,9 @@ module.exports = initCloneArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneByTag.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19889,9 +19974,9 @@ module.exports = initCloneByTag;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_initCloneObject.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19918,9 +20003,9 @@ module.exports = initCloneObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isFlattenable.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isFlattenable.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isFlattenable.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19949,9 +20034,9 @@ module.exports = isFlattenable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isIndex.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isIndex.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isIndex.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19985,9 +20070,9 @@ module.exports = isIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isIterateeCall.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20026,9 +20111,9 @@ module.exports = isIterateeCall;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isKey.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isKey.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isKey.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20066,9 +20151,9 @@ module.exports = isKey;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isKeyable.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isKeyable.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isKeyable.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20092,9 +20177,9 @@ module.exports = isKeyable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isMasked.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isMasked.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isMasked.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20123,9 +20208,9 @@ module.exports = isMasked;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isPrototype.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isPrototype.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isPrototype.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20152,9 +20237,9 @@ module.exports = isPrototype;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_isStrictComparable.js":
-/*!************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
-  \************************************************************************/
+/*!***********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20178,9 +20263,9 @@ module.exports = isStrictComparable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheClear.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20202,9 +20287,9 @@ module.exports = listCacheClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheDelete.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20248,9 +20333,9 @@ module.exports = listCacheDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheGet.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20278,9 +20363,9 @@ module.exports = listCacheGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheHas.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20305,9 +20390,9 @@ module.exports = listCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_listCacheSet.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20342,9 +20427,9 @@ module.exports = listCacheSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheClear.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20374,9 +20459,9 @@ module.exports = mapCacheClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheDelete.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20403,9 +20488,9 @@ module.exports = mapCacheDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheGet.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20430,9 +20515,9 @@ module.exports = mapCacheGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheHas.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20457,9 +20542,9 @@ module.exports = mapCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapCacheSet.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20490,9 +20575,9 @@ module.exports = mapCacheSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_mapToArray.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_mapToArray.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_mapToArray.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20519,9 +20604,9 @@ module.exports = mapToArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_matchesStrictComparable.js":
-/*!*****************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
-  \*****************************************************************************/
+/*!****************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20550,9 +20635,9 @@ module.exports = matchesStrictComparable;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_memoizeCapped.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20587,9 +20672,9 @@ module.exports = memoizeCapped;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeCreate.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20604,9 +20689,9 @@ module.exports = nativeCreate;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeKeys.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20621,9 +20706,9 @@ module.exports = nativeKeys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nativeKeysIn.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20652,9 +20737,9 @@ module.exports = nativeKeysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_nodeUtil.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20694,9 +20779,9 @@ module.exports = nodeUtil;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_objectToString.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_objectToString.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_objectToString.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20727,9 +20812,9 @@ module.exports = objectToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_overArg.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_overArg.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_overArg.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20753,9 +20838,9 @@ module.exports = overArg;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_overRest.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_overRest.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_overRest.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20800,9 +20885,9 @@ module.exports = overRest;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_root.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_root.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_root.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20820,9 +20905,9 @@ module.exports = root;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_safeGet.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_safeGet.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_safeGet.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20852,9 +20937,9 @@ module.exports = safeGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setCacheAdd.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20882,9 +20967,9 @@ module.exports = setCacheAdd;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setCacheHas.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20907,9 +20992,9 @@ module.exports = setCacheHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setToArray.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setToArray.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_setToArray.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20936,9 +21021,9 @@ module.exports = setToArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_setToString.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_setToString.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_setToString.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20961,9 +21046,9 @@ module.exports = setToString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_shortOut.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_shortOut.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_shortOut.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21009,9 +21094,9 @@ module.exports = shortOut;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackClear.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackClear.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stackClear.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21035,9 +21120,9 @@ module.exports = stackClear;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackDelete.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackDelete.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stackDelete.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21064,9 +21149,9 @@ module.exports = stackDelete;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackGet.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackGet.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stackGet.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21089,9 +21174,9 @@ module.exports = stackGet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackHas.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackHas.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stackHas.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21114,9 +21199,9 @@ module.exports = stackHas;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stackSet.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stackSet.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stackSet.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21159,9 +21244,9 @@ module.exports = stackSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_strictIndexOf.js":
-/*!*******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_strictIndexOf.js ***!
-  \*******************************************************************/
+/*!******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_strictIndexOf.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21193,9 +21278,9 @@ module.exports = strictIndexOf;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stringSize.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stringSize.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stringSize.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21222,9 +21307,9 @@ module.exports = stringSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_stringToPath.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_stringToPath.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_stringToPath.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21260,9 +21345,9 @@ module.exports = stringToPath;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_toKey.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_toKey.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_toKey.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21292,9 +21377,9 @@ module.exports = toKey;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_toSource.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_toSource.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_toSource.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21329,9 +21414,9 @@ module.exports = toSource;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_trimmedEndIndex.js":
-/*!*********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_trimmedEndIndex.js ***!
-  \*********************************************************************/
+/*!********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_trimmedEndIndex.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21359,9 +21444,9 @@ module.exports = trimmedEndIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/_unicodeSize.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/_unicodeSize.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21414,9 +21499,9 @@ module.exports = unicodeSize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/clone.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/clone.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/clone.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21461,9 +21546,9 @@ module.exports = clone;
 /***/ }),
 
 /***/ "../../node_modules/lodash/cloneDeep.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/cloneDeep.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/cloneDeep.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21501,9 +21586,9 @@ module.exports = cloneDeep;
 /***/ }),
 
 /***/ "../../node_modules/lodash/constant.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/constant.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/constant.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21538,9 +21623,9 @@ module.exports = constant;
 /***/ }),
 
 /***/ "../../node_modules/lodash/defaults.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/defaults.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/defaults.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21613,9 +21698,9 @@ module.exports = defaults;
 /***/ }),
 
 /***/ "../../node_modules/lodash/each.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/each.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/each.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21625,9 +21710,9 @@ module.exports = __webpack_require__(/*! ./forEach */ "../../node_modules/lodash
 /***/ }),
 
 /***/ "../../node_modules/lodash/eq.js":
-/*!*******************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/eq.js ***!
-  \*******************************************************/
+/*!******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/eq.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21673,9 +21758,9 @@ module.exports = eq;
 /***/ }),
 
 /***/ "../../node_modules/lodash/filter.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/filter.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/filter.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21736,9 +21821,9 @@ module.exports = filter;
 /***/ }),
 
 /***/ "../../node_modules/lodash/find.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/find.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/find.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21789,9 +21874,9 @@ module.exports = find;
 /***/ }),
 
 /***/ "../../node_modules/lodash/findIndex.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/findIndex.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/findIndex.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21855,9 +21940,9 @@ module.exports = findIndex;
 /***/ }),
 
 /***/ "../../node_modules/lodash/flatten.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/flatten.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/flatten.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21888,9 +21973,9 @@ module.exports = flatten;
 /***/ }),
 
 /***/ "../../node_modules/lodash/forEach.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/forEach.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/forEach.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21940,9 +22025,9 @@ module.exports = forEach;
 /***/ }),
 
 /***/ "../../node_modules/lodash/forIn.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/forIn.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/forIn.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21990,9 +22075,9 @@ module.exports = forIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/get.js":
-/*!********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/get.js ***!
-  \********************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/get.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22034,9 +22119,9 @@ module.exports = get;
 /***/ }),
 
 /***/ "../../node_modules/lodash/has.js":
-/*!********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/has.js ***!
-  \********************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/has.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22080,9 +22165,9 @@ module.exports = has;
 /***/ }),
 
 /***/ "../../node_modules/lodash/hasIn.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/hasIn.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/hasIn.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22125,9 +22210,9 @@ module.exports = hasIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/identity.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/identity.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/identity.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22157,9 +22242,9 @@ module.exports = identity;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArguments.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArguments.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isArguments.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22204,9 +22289,9 @@ module.exports = isArguments;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArray.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArray.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isArray.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22241,9 +22326,9 @@ module.exports = isArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArrayLike.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArrayLike.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isArrayLike.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22285,9 +22370,9 @@ module.exports = isArrayLike;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isArrayLikeObject.js":
-/*!**********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
-  \**********************************************************************/
+/*!*********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22329,9 +22414,9 @@ module.exports = isArrayLikeObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isBuffer.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isBuffer.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isBuffer.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22379,9 +22464,9 @@ module.exports = isBuffer;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isEmpty.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isEmpty.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isEmpty.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22467,9 +22552,9 @@ module.exports = isEmpty;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isFunction.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isFunction.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isFunction.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22515,9 +22600,9 @@ module.exports = isFunction;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isLength.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isLength.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isLength.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22561,9 +22646,9 @@ module.exports = isLength;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isMap.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isMap.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isMap.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22599,9 +22684,9 @@ module.exports = isMap;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isObject.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isObject.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isObject.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22641,9 +22726,9 @@ module.exports = isObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isObjectLike.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isObjectLike.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isObjectLike.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22681,9 +22766,9 @@ module.exports = isObjectLike;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isPlainObject.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isPlainObject.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isPlainObject.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22754,9 +22839,9 @@ module.exports = isPlainObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isSet.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isSet.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isSet.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22792,9 +22877,9 @@ module.exports = isSet;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isString.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isString.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isString.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22833,9 +22918,9 @@ module.exports = isString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isSymbol.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isSymbol.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isSymbol.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22873,9 +22958,9 @@ module.exports = isSymbol;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isTypedArray.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isTypedArray.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isTypedArray.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22911,9 +22996,9 @@ module.exports = isTypedArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/isUndefined.js":
-/*!****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/isUndefined.js ***!
-  \****************************************************************/
+/*!***************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/isUndefined.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22944,9 +23029,9 @@ module.exports = isUndefined;
 /***/ }),
 
 /***/ "../../node_modules/lodash/keys.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/keys.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/keys.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -22992,9 +23077,9 @@ module.exports = keys;
 /***/ }),
 
 /***/ "../../node_modules/lodash/keysIn.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/keysIn.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/keysIn.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23035,9 +23120,9 @@ module.exports = keysIn;
 /***/ }),
 
 /***/ "../../node_modules/lodash/last.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/last.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/last.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23066,9 +23151,9 @@ module.exports = last;
 /***/ }),
 
 /***/ "../../node_modules/lodash/map.js":
-/*!********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/map.js ***!
-  \********************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/map.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23130,9 +23215,9 @@ module.exports = map;
 /***/ }),
 
 /***/ "../../node_modules/lodash/mapValues.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/mapValues.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/mapValues.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23184,9 +23269,9 @@ module.exports = mapValues;
 /***/ }),
 
 /***/ "../../node_modules/lodash/max.js":
-/*!********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/max.js ***!
-  \********************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/max.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23224,9 +23309,9 @@ module.exports = max;
 /***/ }),
 
 /***/ "../../node_modules/lodash/memoize.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/memoize.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/memoize.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23308,9 +23393,9 @@ module.exports = memoize;
 /***/ }),
 
 /***/ "../../node_modules/lodash/merge.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/merge.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/merge.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23358,9 +23443,9 @@ module.exports = merge;
 /***/ }),
 
 /***/ "../../node_modules/lodash/min.js":
-/*!********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/min.js ***!
-  \********************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/min.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23398,9 +23483,9 @@ module.exports = min;
 /***/ }),
 
 /***/ "../../node_modules/lodash/minBy.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/minBy.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/minBy.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23443,9 +23528,9 @@ module.exports = minBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/noop.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/noop.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/noop.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23471,9 +23556,9 @@ module.exports = noop;
 /***/ }),
 
 /***/ "../../node_modules/lodash/now.js":
-/*!********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/now.js ***!
-  \********************************************************/
+/*!*******************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/now.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23505,9 +23590,9 @@ module.exports = now;
 /***/ }),
 
 /***/ "../../node_modules/lodash/pick.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/pick.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/pick.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23541,9 +23626,9 @@ module.exports = pick;
 /***/ }),
 
 /***/ "../../node_modules/lodash/property.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/property.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/property.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23584,9 +23669,9 @@ module.exports = property;
 /***/ }),
 
 /***/ "../../node_modules/lodash/range.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/range.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/range.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23641,9 +23726,9 @@ module.exports = range;
 /***/ }),
 
 /***/ "../../node_modules/lodash/reduce.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/reduce.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/reduce.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23703,9 +23788,9 @@ module.exports = reduce;
 /***/ }),
 
 /***/ "../../node_modules/lodash/size.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/size.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/size.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23760,9 +23845,9 @@ module.exports = size;
 /***/ }),
 
 /***/ "../../node_modules/lodash/sortBy.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/sortBy.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/sortBy.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23819,9 +23904,9 @@ module.exports = sortBy;
 /***/ }),
 
 /***/ "../../node_modules/lodash/stubArray.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/stubArray.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/stubArray.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23853,9 +23938,9 @@ module.exports = stubArray;
 /***/ }),
 
 /***/ "../../node_modules/lodash/stubFalse.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/stubFalse.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/stubFalse.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23882,9 +23967,9 @@ module.exports = stubFalse;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toFinite.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/toFinite.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/toFinite.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23935,9 +24020,9 @@ module.exports = toFinite;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toInteger.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/toInteger.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/toInteger.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -23982,9 +24067,9 @@ module.exports = toInteger;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toNumber.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/toNumber.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/toNumber.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24057,9 +24142,9 @@ module.exports = toNumber;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toPlainObject.js":
-/*!******************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/toPlainObject.js ***!
-  \******************************************************************/
+/*!*****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/toPlainObject.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24100,9 +24185,9 @@ module.exports = toPlainObject;
 /***/ }),
 
 /***/ "../../node_modules/lodash/toString.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/toString.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/toString.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24139,9 +24224,9 @@ module.exports = toString;
 /***/ }),
 
 /***/ "../../node_modules/lodash/transform.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/transform.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/transform.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24215,9 +24300,9 @@ module.exports = transform;
 /***/ }),
 
 /***/ "../../node_modules/lodash/union.js":
-/*!**********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/union.js ***!
-  \**********************************************************/
+/*!*********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/union.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24252,9 +24337,9 @@ module.exports = union;
 /***/ }),
 
 /***/ "../../node_modules/lodash/uniqueId.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/uniqueId.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/uniqueId.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24291,9 +24376,9 @@ module.exports = uniqueId;
 /***/ }),
 
 /***/ "../../node_modules/lodash/values.js":
-/*!***********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/values.js ***!
-  \***********************************************************/
+/*!**********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/values.js ***!
+  \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24336,9 +24421,9 @@ module.exports = values;
 /***/ }),
 
 /***/ "../../node_modules/lodash/zipObject.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/lodash/zipObject.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/lodash/zipObject.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24371,9 +24456,9 @@ module.exports = zipObject;
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/object-assign/index.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24473,9 +24558,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/process/browser.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/process/browser.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -24668,9 +24753,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24782,9 +24867,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \********************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25385,9 +25470,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25411,9 +25496,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25435,9 +25520,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50459,9 +50544,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50504,9 +50589,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50697,9 +50782,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-is/index.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/index.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -50714,9 +50799,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -52638,9 +52723,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/index.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -52655,9 +52740,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*****************************************************************************************/
+/*!****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53016,9 +53101,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53886,9 +53971,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53903,9 +53988,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -53920,9 +54005,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -54118,9 +54203,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \************************************************************************************************/
+/*!***********************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -54398,9 +54483,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -54473,9 +54558,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -57566,7 +57651,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     _this.props.globalState.hostDocument.defaultView.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
                 }
                 else {
-                    _this.props.globalState.hostDocument.defaultView.alert("Unable to save your node material. It may be too large (" + (dataToSend.payload.length / 1024).toFixed(2) + " KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.");
+                    _this.props.globalState.hostDocument.defaultView.alert("Unable to save your node material. It may be too large (".concat((dataToSend.payload.length / 1024).toFixed(2), " KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again."));
                 }
             }
         };
@@ -57779,7 +57864,7 @@ var ClampDisplayManager = /** @class */ (function () {
     ClampDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
         var clampBlock = block;
         contentArea.classList.add("clamp-block");
-        contentArea.innerHTML = "[" + clampBlock.minimum + ", " + clampBlock.maximum + "]";
+        contentArea.innerHTML = "[".concat(clampBlock.minimum, ", ").concat(clampBlock.maximum, "]");
     };
     return ClampDisplayManager;
 }());
@@ -57915,8 +58000,8 @@ var GradientDisplayManager = /** @class */ (function () {
     };
     GradientDisplayManager.prototype.getBackgroundColor = function (block) {
         var gradientBlock = block;
-        var gradients = gradientBlock.colorSteps.map(function (c) { return "rgb(" + c.color.r * 255 + ", " + c.color.g * 255 + ", " + c.color.b * 255 + ") " + c.step * 100 + "%"; });
-        return gradients.length ? "linear-gradient(90deg, " + gradients.join(", ") + ")" : 'black';
+        var gradients = gradientBlock.colorSteps.map(function (c) { return "rgb(".concat(c.color.r * 255, ", ").concat(c.color.g * 255, ", ").concat(c.color.b * 255, ") ").concat(c.step * 100, "%"); });
+        return gradients.length ? "linear-gradient(90deg, ".concat(gradients.join(", "), ")") : 'black';
     };
     GradientDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
         contentArea.classList.add("gradient-block");
@@ -58038,7 +58123,7 @@ var InputDisplayManager = /** @class */ (function () {
     };
     InputDisplayManager.prototype.getHeaderText = function (block) {
         var inputBlock = block;
-        var name = inputBlock.name + " (" + InputDisplayManager.GetBaseType(inputBlock.output.type) + ")";
+        var name = "".concat(inputBlock.name, " (").concat(InputDisplayManager.GetBaseType(inputBlock.output.type), ")");
         if (inputBlock.isAttribute) {
             name = InputDisplayManager.GetBaseType(inputBlock.output.type);
         }
@@ -58119,15 +58204,15 @@ var InputDisplayManager = /** @class */ (function () {
                     break;
                 case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector2:
                     var vec2Value = inputBlock.value;
-                    value = "(" + vec2Value.x.toFixed(2) + ", " + vec2Value.y.toFixed(2) + ")";
+                    value = "(".concat(vec2Value.x.toFixed(2), ", ").concat(vec2Value.y.toFixed(2), ")");
                     break;
                 case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                     var vec3Value = inputBlock.value;
-                    value = "(" + vec3Value.x.toFixed(2) + ", " + vec3Value.y.toFixed(2) + ", " + vec3Value.z.toFixed(2) + ")";
+                    value = "(".concat(vec3Value.x.toFixed(2), ", ").concat(vec3Value.y.toFixed(2), ", ").concat(vec3Value.z.toFixed(2), ")");
                     break;
                 case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Vector4:
                     var vec4Value = inputBlock.value;
-                    value = "(" + vec4Value.x.toFixed(2) + ", " + vec4Value.y.toFixed(2) + ", " + vec4Value.z.toFixed(2) + ", " + vec4Value.w.toFixed(2) + ")";
+                    value = "(".concat(vec4Value.x.toFixed(2), ", ").concat(vec4Value.y.toFixed(2), ", ").concat(vec4Value.z.toFixed(2), ", ").concat(vec4Value.w.toFixed(2), ")");
                     break;
             }
         }
@@ -58253,7 +58338,7 @@ var RemapDisplayManager = /** @class */ (function () {
         var targetRangeX = remapBlock.targetMin.isConnected ? this._extractInputValue(remapBlock.targetMin) : remapBlock.targetRange.x;
         var targetRangeY = remapBlock.targetMax.isConnected ? this._extractInputValue(remapBlock.targetMax) : remapBlock.targetRange.y;
         contentArea.classList.add("remap-block");
-        contentArea.innerHTML = "[" + sourceRangeX + ", " + sourceRangeY + "] -> [" + targetRangeX + ", " + targetRangeY + "]";
+        contentArea.innerHTML = "[".concat(sourceRangeX, ", ").concat(sourceRangeY, "] -> [").concat(targetRangeX, ", ").concat(targetRangeY, "]");
     };
     return RemapDisplayManager;
 }());
@@ -58525,7 +58610,7 @@ var FrameNodePort = /** @class */ (function (_super) {
         var block = connectionPoint.ownerBlock;
         portContainer.classList.add("portLine");
         if (framePortId !== null) {
-            portContainer.dataset.framePortId = "" + framePortId;
+            portContainer.dataset.framePortId = "".concat(framePortId);
         }
         root.appendChild(portContainer);
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
@@ -58887,10 +58972,10 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         return gridSize * Math.ceil(position / gridSize);
     };
     GraphCanvasComponent.prototype.updateTransform = function () {
-        this._rootContainer.style.transform = "translate(" + this._x + "px, " + this._y + "px) scale(" + this._zoom + ")";
+        this._rootContainer.style.transform = "translate(".concat(this._x, "px, ").concat(this._y, "px) scale(").concat(this._zoom, ")");
         if (babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ShowGrid", true)) {
-            this._hostCanvas.style.backgroundSize = this._gridSize * this._zoom + "px " + this._gridSize * this._zoom + "px";
-            this._hostCanvas.style.backgroundPosition = this._x + "px " + this._y + "px";
+            this._hostCanvas.style.backgroundSize = "".concat(this._gridSize * this._zoom, "px ").concat(this._gridSize * this._zoom, "px");
+            this._hostCanvas.style.backgroundPosition = "".concat(this._x, "px ").concat(this._y, "px");
         }
         else {
             this._hostCanvas.style.backgroundSize = "0";
@@ -59052,20 +59137,20 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var localX = evt.pageX - rootRect.left;
             var localY = evt.pageY - rootRect.top;
             if (localX > this._selectionStartX) {
-                this._selectionBox.style.left = this._selectionStartX / this.zoom + "px";
-                this._selectionBox.style.width = (localX - this._selectionStartX) / this.zoom + "px";
+                this._selectionBox.style.left = "".concat(this._selectionStartX / this.zoom, "px");
+                this._selectionBox.style.width = "".concat((localX - this._selectionStartX) / this.zoom, "px");
             }
             else {
-                this._selectionBox.style.left = localX / this.zoom + "px";
-                this._selectionBox.style.width = (this._selectionStartX - localX) / this.zoom + "px";
+                this._selectionBox.style.left = "".concat(localX / this.zoom, "px");
+                this._selectionBox.style.width = "".concat((this._selectionStartX - localX) / this.zoom, "px");
             }
             if (localY > this._selectionStartY) {
-                this._selectionBox.style.top = this._selectionStartY / this.zoom + "px";
-                this._selectionBox.style.height = (localY - this._selectionStartY) / this.zoom + "px";
+                this._selectionBox.style.top = "".concat(this._selectionStartY / this.zoom, "px");
+                this._selectionBox.style.height = "".concat((localY - this._selectionStartY) / this.zoom, "px");
             }
             else {
-                this._selectionBox.style.top = localY / this.zoom + "px";
-                this._selectionBox.style.height = (this._selectionStartY - localY) / this.zoom + "px";
+                this._selectionBox.style.top = "".concat(localY / this.zoom, "px");
+                this._selectionBox.style.height = "".concat((this._selectionStartY - localY) / this.zoom, "px");
             }
             this.props.globalState.onSelectionBoxMoved.notifyObservers(this._selectionBox.getBoundingClientRect());
             return;
@@ -59076,20 +59161,20 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var localX = evt.pageX - rootRect.left;
             var localY = evt.pageY - rootRect.top;
             if (localX > this._selectionStartX) {
-                this._frameCandidate.style.left = this._selectionStartX / this.zoom + "px";
-                this._frameCandidate.style.width = (localX - this._selectionStartX) / this.zoom + "px";
+                this._frameCandidate.style.left = "".concat(this._selectionStartX / this.zoom, "px");
+                this._frameCandidate.style.width = "".concat((localX - this._selectionStartX) / this.zoom, "px");
             }
             else {
-                this._frameCandidate.style.left = localX / this.zoom + "px";
-                this._frameCandidate.style.width = (this._selectionStartX - localX) / this.zoom + "px";
+                this._frameCandidate.style.left = "".concat(localX / this.zoom, "px");
+                this._frameCandidate.style.width = "".concat((this._selectionStartX - localX) / this.zoom, "px");
             }
             if (localY > this._selectionStartY) {
-                this._frameCandidate.style.top = this._selectionStartY / this.zoom + "px";
-                this._frameCandidate.style.height = (localY - this._selectionStartY) / this.zoom + "px";
+                this._frameCandidate.style.top = "".concat(this._selectionStartY / this.zoom, "px");
+                this._frameCandidate.style.height = "".concat((localY - this._selectionStartY) / this.zoom, "px");
             }
             else {
-                this._frameCandidate.style.top = localY / this.zoom + "px";
-                this._frameCandidate.style.height = (this._selectionStartY - localY) / this.zoom + "px";
+                this._frameCandidate.style.top = "".concat(localY / this.zoom, "px");
+                this._frameCandidate.style.height = "".concat((this._selectionStartY - localY) / this.zoom, "px");
             }
             return;
         }
@@ -59143,8 +59228,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var rootRect = this.canvasContainer.getBoundingClientRect();
             this._selectionStartX = evt.pageX - rootRect.left;
             this._selectionStartY = evt.pageY - rootRect.top;
-            this._selectionBox.style.left = this._selectionStartX / this.zoom + "px";
-            this._selectionBox.style.top = this._selectionStartY / this.zoom + "px";
+            this._selectionBox.style.left = "".concat(this._selectionStartX / this.zoom, "px");
+            this._selectionBox.style.top = "".concat(this._selectionStartY / this.zoom, "px");
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
             return;
@@ -59157,8 +59242,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var rootRect = this.canvasContainer.getBoundingClientRect();
             this._selectionStartX = evt.pageX - rootRect.left;
             this._selectionStartY = evt.pageY - rootRect.top;
-            this._frameCandidate.style.left = this._selectionStartX / this.zoom + "px";
-            this._frameCandidate.style.top = this._selectionStartY / this.zoom + "px";
+            this._frameCandidate.style.left = "".concat(this._selectionStartX / this.zoom, "px");
+            this._frameCandidate.style.top = "".concat(this._selectionStartY / this.zoom, "px");
             this._frameCandidate.style.width = "0px";
             this._frameCandidate.style.height = "0px";
             return;
@@ -60452,9 +60537,9 @@ var GraphFrame = /** @class */ (function () {
         },
         set: function (value) {
             this._color = value;
-            this._headerElement.style.background = "rgba(" + value.r * 255 + ", " + value.g * 255 + ", " + value.b * 255 + ", 1)";
-            this._headerElement.style.borderColor = "rgba(" + value.r * 255 + ", " + value.g * 255 + ", " + value.b * 255 + ", 1)";
-            this.element.style.background = "rgba(" + value.r * 255 + ", " + value.g * 255 + ", " + value.b * 255 + ", 0.7)";
+            this._headerElement.style.background = "rgba(".concat(value.r * 255, ", ").concat(value.g * 255, ", ").concat(value.b * 255, ", 1)");
+            this._headerElement.style.borderColor = "rgba(".concat(value.r * 255, ", ").concat(value.g * 255, ", ").concat(value.b * 255, ", 1)");
+            this.element.style.background = "rgba(".concat(value.r * 255, ", ").concat(value.g * 255, ", ").concat(value.b * 255, ", 0.7)");
         },
         enumerable: false,
         configurable: true
@@ -60469,7 +60554,7 @@ var GraphFrame = /** @class */ (function () {
             }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
-            this.element.style.left = this._gridAlignedX + "px";
+            this.element.style.left = "".concat(this._gridAlignedX, "px");
         },
         enumerable: false,
         configurable: true
@@ -60484,7 +60569,7 @@ var GraphFrame = /** @class */ (function () {
             }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
-            this.element.style.top = this._gridAlignedY + "px";
+            this.element.style.top = "".concat(this._gridAlignedY, "px");
         },
         enumerable: false,
         configurable: true
@@ -60500,7 +60585,7 @@ var GraphFrame = /** @class */ (function () {
             var viableWidth = value > this._minFrameWidth ? value : this._minFrameWidth;
             this._width = viableWidth;
             var gridAlignedRight = this._ownerCanvas.getGridPositionCeil(viableWidth + this._gridAlignedX);
-            this.element.style.width = gridAlignedRight - this._gridAlignedX + "px";
+            this.element.style.width = "".concat(gridAlignedRight - this._gridAlignedX, "px");
         },
         enumerable: false,
         configurable: true
@@ -60515,7 +60600,7 @@ var GraphFrame = /** @class */ (function () {
             }
             this._height = value;
             var gridAlignedBottom = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedY);
-            this.element.style.height = gridAlignedBottom - this._gridAlignedY + "px";
+            this.element.style.height = "".concat(gridAlignedBottom - this._gridAlignedY, "px");
         },
         enumerable: false,
         configurable: true
@@ -60662,7 +60747,7 @@ var GraphFrame = /** @class */ (function () {
         var _a;
         var _b;
         // update UI
-        var indexInElementArray = elementsArray.findIndex(function (elem) { return elem.dataset.framePortId === "" + nodePort.framePortId; });
+        var indexInElementArray = elementsArray.findIndex(function (elem) { return elem.dataset.framePortId === "".concat(nodePort.framePortId); });
         if (indexInElementArray === 0) {
             return;
         }
@@ -60719,7 +60804,7 @@ var GraphFrame = /** @class */ (function () {
         var _a;
         var _b;
         // update UI
-        var indexInElementArray = elementsArray.findIndex(function (elem) { return elem.dataset.framePortId === "" + nodePort.framePortId; });
+        var indexInElementArray = elementsArray.findIndex(function (elem) { return elem.dataset.framePortId === "".concat(nodePort.framePortId); });
         if (indexInElementArray === elementsArray.length - 1) {
             return;
         }
@@ -60763,27 +60848,27 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype._expandLeft = function (widthModification) {
         var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
         var frameElementLeft = parseFloat(this.element.style.left.replace("px", ""));
-        this.element.style.width = frameElementWidth - widthModification + "px";
-        this.element.style.left = frameElementLeft + widthModification + "px";
+        this.element.style.width = "".concat(frameElementWidth - widthModification, "px");
+        this.element.style.left = "".concat(frameElementLeft + widthModification, "px");
         this.updateMinHeightWithComments();
     };
     GraphFrame.prototype._expandTop = function (heightModification) {
         var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
         var frameElementTop = parseFloat(this.element.style.top.replace("px", ""));
-        this.element.style.height = frameElementHeight - heightModification + "px";
-        this.element.style.top = frameElementTop + heightModification + "px";
+        this.element.style.height = "".concat(frameElementHeight - heightModification, "px");
+        this.element.style.top = "".concat(frameElementTop + heightModification, "px");
     };
     GraphFrame.prototype._expandRight = function (widthModification, x) {
         var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
         if ((frameElementWidth + widthModification) > 20) {
             this._mouseStartPointX = x;
-            this.element.style.width = frameElementWidth + widthModification + "px";
+            this.element.style.width = "".concat(frameElementWidth + widthModification, "px");
         }
         this.updateMinHeightWithComments();
     };
     GraphFrame.prototype._expandBottom = function (heightModification) {
         var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
-        this.element.style.height = frameElementHeight + heightModification + "px";
+        this.element.style.height = "".concat(frameElementHeight + heightModification, "px");
     };
     GraphFrame.prototype.dispose = function () {
         var _a;
@@ -61054,7 +61139,7 @@ var GraphNode = /** @class */ (function () {
             }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
-            this._visual.style.left = this._gridAlignedX + "px";
+            this._visual.style.left = "".concat(this._gridAlignedX, "px");
             this._refreshLinks();
             this._refreshFrames();
         },
@@ -61071,7 +61156,7 @@ var GraphNode = /** @class */ (function () {
             }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
-            this._visual.style.top = this._gridAlignedY + "px";
+            this._visual.style.top = "".concat(this._gridAlignedY, "px");
             this._refreshLinks();
             this._refreshFrames();
         },
@@ -61507,7 +61592,7 @@ var NodeLink = /** @class */ (function () {
             endY = (rectB.top - yOffset + 0.5 * rectB.height) / zoom;
         }
         if (straight) {
-            this._path.setAttribute("d", "M" + startX + "," + startY + " L" + endX + "," + endY);
+            this._path.setAttribute("d", "M".concat(startX, ",").concat(startY, " L").concat(endX, ",").concat(endY));
             this._path.setAttribute("stroke-dasharray", "10, 10");
             this._path.setAttribute("stroke-linecap", "round");
         }
@@ -61515,8 +61600,8 @@ var NodeLink = /** @class */ (function () {
             var deltaX = endX - startX;
             var deltaY = endY - startY;
             var tangentLength = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY) * 0.5, 300);
-            this._path.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + tangentLength) + "," + startY + " " + (endX - tangentLength) + "," + endY + " " + endX + "," + endY);
-            this._selectionPath.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + tangentLength) + "," + startY + " " + (endX - tangentLength) + "," + endY + " " + endX + "," + endY);
+            this._path.setAttribute("d", "M".concat(startX, ",").concat(startY, " C").concat(startX + tangentLength, ",").concat(startY, " ").concat(endX - tangentLength, ",").concat(endY, " ").concat(endX, ",").concat(endY));
+            this._selectionPath.setAttribute("d", "M".concat(startX, ",").concat(startY, " C").concat(startX + tangentLength, ",").concat(startY, " ").concat(endX - tangentLength, ",").concat(endY, " ").concat(endX, ",").concat(endY));
         }
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor);
     };
@@ -62092,7 +62177,7 @@ var GeneralPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                 (!this.props.block.isInput || !this.props.block.isAttribute) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(_this.props.block); }, validator: function (newName) {
                         if (!_this.props.block.validateBlockName(newName)) {
-                            _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"" + newName + "\" is a reserved name, please choose another");
+                            _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("\"".concat(newName, "\" is a reserved name, please choose another"));
                             return false;
                         }
                         return true;
@@ -62370,7 +62455,7 @@ var GradientStepComponent = /** @class */ (function (_super) {
         var _this = this;
         var step = this.props.step;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-step" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#" + this.props.lineIndex),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#".concat(this.props.lineIndex)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_colorPickerComponent__WEBPACK_IMPORTED_MODULE_3__["ColorPickerLineComponent"], { value: step.color, globalState: this.props.globalState, onColorChanged: function (color) {
                         _this.updateColor(color);
@@ -64311,7 +64396,7 @@ var GraphEditor = /** @class */ (function (_super) {
         this._startX = evt.clientX;
     };
     GraphEditor.prototype.buildColumnLayout = function () {
-        return this._leftWidth + "px 4px calc(100% - " + (this._leftWidth + 8 + this._rightWidth) + "px) 4px " + this._rightWidth + "px";
+        return "".concat(this._leftWidth, "px 4px calc(100% - ").concat(this._leftWidth + 8 + this._rightWidth, "px) 4px ").concat(this._rightWidth, "px");
     };
     GraphEditor.prototype.emitNewBlock = function (event) {
         var _this = this;
@@ -64369,7 +64454,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 for (var _b = 0, _c = this._blocks; _b < _c.length; _b++) {
                     var other = _c[_b];
                     if (other !== block_1 && other.getClassName() === className) {
-                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("You can only have one " + className + " per graph");
+                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("You can only have one ".concat(className, " per graph"));
                         return;
                     }
                 }
@@ -64822,7 +64907,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? " disabled" : "") }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl".concat(!!this.props.disabled ? " disabled" : "") }))));
     };
     CheckBoxLineComponent._UniqueIdSeed = 0;
     return CheckBoxLineComponent;
@@ -65819,7 +65904,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
     NumericInputComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
-            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": ")),
+            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, "".concat(this.props.label, ": "))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return (_this.props.globalState.blockKeyboardEvents = true); }, onBlur: function (evt) {
                     _this.props.globalState.blockKeyboardEvents = false;
                 }, step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
@@ -66541,7 +66626,7 @@ var Vector2LineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: ".concat(this.state.value.x.toFixed(2), ", Y: ").concat(this.state.value.y.toFixed(2))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
@@ -66640,7 +66725,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: ".concat(this.state.value.x.toFixed(2), ", Y: ").concat(this.state.value.y.toFixed(2), ", Z: ").concat(this.state.value.z.toFixed(2))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
@@ -66750,7 +66835,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: " + this.state.value.x.toFixed(2) + ", Y: " + this.state.value.y.toFixed(2) + ", Z: " + this.state.value.z.toFixed(2) + ", W: " + this.state.value.w.toFixed(2)),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "vector" }, "X: ".concat(this.state.value.x.toFixed(2), ", Y: ").concat(this.state.value.y.toFixed(2), ", Z: ").concat(this.state.value.z.toFixed(2), ", W: ").concat(this.state.value.w.toFixed(2))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
@@ -66972,8 +67057,8 @@ var ColorPicker = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
-                        top: -(hsv.b * 100) + 100 + "%",
-                        left: hsv.g * 100 + "%",
+                        top: "".concat(-(hsv.b * 100) + 100, "%"),
+                        left: "".concat(hsv.g * 100, "%"),
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
@@ -66981,7 +67066,7 @@ var ColorPicker = /** @class */ (function (_super) {
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
-                            left: (hsv.r / 360.0) * 100 + "%",
+                            left: "".concat((hsv.r / 360.0) * 100, "%"),
                             border: "1px solid " + colorHexRef,
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },

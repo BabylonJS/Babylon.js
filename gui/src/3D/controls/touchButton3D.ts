@@ -81,13 +81,9 @@ export class TouchButton3D extends Button3D {
      * @param collisionMesh the new collision mesh for the button
      */
     public set collisionMesh(collisionMesh: Mesh) {
-        if (this._collisionMesh) {
-            this._collisionMesh.dispose();
-        }
-
-        // parent the mesh to sync transforms
-        if (!collisionMesh.parent && this.mesh) {
-            collisionMesh.setParent(this.mesh);
+        // Remove the GUI3DManager's data from the previous collision mesh's reserved data store
+        if (this._collisionMesh?.reservedDataStore?.GUI3D) {
+            this._collisionMesh.reservedDataStore.GUI3D = {};
         }
 
         this._collisionMesh = collisionMesh;

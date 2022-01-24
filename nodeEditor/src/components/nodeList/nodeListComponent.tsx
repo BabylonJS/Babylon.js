@@ -44,7 +44,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         VectorMergerBlock: "Combines up to four input floats into a vector",
         VectorSplitterBlock: "Separates vectors input channels into individual floats",
         Color3: "A color made up of red, green, and blue channel values",
-        Color4: "A color made up of red, green, blue, and alpha channel values",
+        Color4: "A color made up of red, green, blue, and alpha channel values",        
+        MaterialAlphaBlock: "A float representing the alpha value of the material",
         DeltaTimeBlock: "A float representing the time that has passed since the last frame was rendered",
         Float: "A floating point number representing a value with a fractional component",
         TextureBlock: "A node for reading a linked or embedded texture file",
@@ -160,7 +161,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         CloudBlock: "Generate Fractal Brownian Motion Clouds",
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
-        TwirlBlock: "Apply a twirl rotation"
+        TwirlBlock: "Apply a twirl rotation",
+        ElbowBlock: "Passthrough block mostly used to organize your graph"
     };
 
     private _customFrameList: { [key: string]: string };
@@ -311,6 +313,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ReflectionTextureBlock",
                 "TimeBlock",
                 "DeltaTimeBlock",
+                "MaterialAlphaBlock",
                 "FragCoordBlock",
                 "ScreenSizeBlock",
                 "ImageSourceBlock",
@@ -375,6 +378,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ViewProjectionMatrixBlock",
                 "ProjectionMatrixBlock",
                 "MatrixBuilderBlock",
+            ],
+            Misc: [
+                "ElbowBlock",
             ],
             Mesh: [
                 "InstancesBlock",
