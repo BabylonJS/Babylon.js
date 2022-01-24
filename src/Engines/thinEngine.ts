@@ -1117,11 +1117,11 @@ export class ThinEngine {
         }
 
         if (!this._glVendor) {
-            this._glVendor = "Unknown vendor";
+            this._glVendor = this._gl.getParameter(this._gl.VENDOR) || "Unknown vendor";
         }
 
         if (!this._glRenderer) {
-            this._glRenderer = "Unknown renderer";
+            this._glRenderer = this._gl.getParameter(this._gl.RENDERER) || "Unknown renderer";
         }
 
         // Constants
