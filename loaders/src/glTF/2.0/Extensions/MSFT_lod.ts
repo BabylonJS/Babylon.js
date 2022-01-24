@@ -153,11 +153,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
             const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
             this._loader.logOpen(`${extensionContext}`);
-            const transformNodes: Nullable<TransformNode>[] = [];
-
-            for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
-                transformNodes.push(null);
-            }
 
             for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                 const nodeLOD = nodeLODs[indexLOD];
@@ -167,42 +162,13 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                 }
 
-                const assignChild = (babylonTransformNode: TransformNode, index: number) => {
+                const assignWrap = (babylonTransformNode: TransformNode) => {
+                    assign(babylonTransformNode);
                     babylonTransformNode.setEnabled(false);
-                    transformNodes[index] = babylonTransformNode;
-
-                    let fullArray = true;
-                    for (let i = 0; i < transformNodes.length; i++) {
-                        if (!transformNodes[i]) {
-                            fullArray = false;
-                        }
-                    }
-
-                    const lod0 = transformNodes[transformNodes.length - 1];
-                    if (fullArray && lod0 && this._isMesh(lod0)) {
-                        const screenCoverages = lod0.metadata?.gltf?.extras?.MSFT_screencoverage as number[];
-
-                        if (screenCoverages && screenCoverages.length) {
-                            screenCoverages.reverse();
-                            lod0.useLODScreenCoverage = true;
-                            for (let i = 0; i < transformNodes.length - 1; i++) {
-                                const transformNode = transformNodes[i];
-                                if (transformNode && this._isMesh(transformNode)) {
-                                    lod0.addLODLevel(screenCoverages[i + 1], transformNode);
-                                }
-                            }
-                            if (screenCoverages[0] > 0) {
-                                // Adding empty LOD
-                                lod0.addLODLevel(screenCoverages[0], null);
-                            }
-                        }
-                    }
                 };
 
-                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, (node: TransformNode) => assignChild(node, indexLOD)).then((babylonMesh) => {
-                    const screenCoverages = (nodeLODs[nodeLODs.length - 1]._babylonTransformNode as Mesh).metadata?.gltf?.extras?.MSFT_screencoverage;
-
-                    if (indexLOD !== 0 && !screenCoverages) {
+                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, assignWrap).then((babylonMesh) => {
+                    if (indexLOD !== 0) {
                         // TODO: should not rely on _babylonTransformNode
                         const previousNodeLOD = nodeLODs[indexLOD - 1];
                         if (previousNodeLOD._babylonTransformNode) {
@@ -211,7 +177,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                         }
                     }
 
-                    assign(babylonMesh);
                     babylonMesh.setEnabled(true);
                     return babylonMesh;
                 });
@@ -232,13 +197,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public _loadMaterialAsync(
-        context: string,
-        material: IMaterial,
-        babylonMesh: Nullable<Mesh>,
-        babylonDrawMode: number,
-        assign: (babylonMaterial: Material) => void
-    ): Nullable<Promise<Material>> {
+    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
         // Don't load material LODs if already loading a node LOD.
         if (this._nodeIndexLOD) {
             return null;
@@ -257,26 +216,24 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     this._materialIndexLOD = indexLOD;
                 }
 
-                const promise = this._loader
-                    ._loadMaterialAsync(`/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                        if (indexLOD === 0) {
-                            assign(babylonMaterial);
-                        }
-                    })
-                    .then((babylonMaterial) => {
-                        if (indexLOD !== 0) {
-                            assign(babylonMaterial);
+                const promise = this._loader._loadMaterialAsync(`/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                    if (indexLOD === 0) {
+                        assign(babylonMaterial);
+                    }
+                }).then((babylonMaterial) => {
+                    if (indexLOD !== 0) {
+                        assign(babylonMaterial);
 
-                            // TODO: should not rely on _data
-                            const previousDataLOD = materialLODs[indexLOD - 1]._data!;
-                            if (previousDataLOD[babylonDrawMode]) {
-                                this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
-                                delete previousDataLOD[babylonDrawMode];
-                            }
+                        // TODO: should not rely on _data
+                        const previousDataLOD = materialLODs[indexLOD - 1]._data!;
+                        if (previousDataLOD[babylonDrawMode]) {
+                            this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
+                            delete previousDataLOD[babylonDrawMode];
                         }
+                    }
 
-                        return babylonMaterial;
-                    });
+                    return babylonMaterial;
+                });
 
                 this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
 
@@ -353,22 +310,15 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         return null;
     }
 
-    private _isMesh(mesh: TransformNode | Mesh): mesh is Mesh {
-        return !!(mesh as Mesh).addLODLevel;
-    }
-
     private _loadBufferLOD(bufferLODs: Array<IBufferInfo>, indexLOD: number): void {
         const bufferLOD = bufferLODs[indexLOD];
         if (bufferLOD) {
             this._loader.log(`Loading buffer range [${bufferLOD.start}-${bufferLOD.end}]`);
-            this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then(
-                (data) => {
-                    bufferLOD.loaded.resolve(data);
-                },
-                (error) => {
-                    bufferLOD.loaded.reject(error);
-                }
-            );
+            this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then((data) => {
+                bufferLOD.loaded.resolve(data);
+            }, (error) => {
+                bufferLOD.loaded.reject(error);
+            });
         }
     }
 
