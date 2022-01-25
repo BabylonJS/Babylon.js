@@ -113,9 +113,9 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
         const to = this.props.context.toKey;
 
         let range = to - from;
-        let stepCounts = Math.min(20, to - from);
-        let offset = (range / stepCounts) | 0;
         let convertRatio = range / this._viewWidth;
+        let dist = 25; // x distance between consecutive ticks
+        let offset = Math.floor(dist * convertRatio);
 
         let steps = [];
 
