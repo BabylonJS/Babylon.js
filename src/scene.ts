@@ -3932,7 +3932,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._bindFrameBuffer(this._activeCamera);
         }
 
-        var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
+        var useMultiview = camera._renderingMultiview;
         if (useMultiview) {
             this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
         } else {
@@ -4045,8 +4045,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
-        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || camera._renderingMultiview()) {
-            if (camera._renderingMultiview() && !this._multiviewSceneUbo) {
+        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || camera._renderingMultiview) {
+            if (camera._renderingMultiview && !this._multiviewSceneUbo) {
                 this._createMultiviewUbo();
             }
             this._renderForCamera(camera, undefined, bindFrameBuffer);

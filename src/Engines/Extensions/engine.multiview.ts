@@ -99,7 +99,7 @@ declare module "../../Cameras/camera" {
          * @hidden
          * For WebXR cameras that are rendering to multiview texture arrays.
          */
-        _renderingMultiview(): boolean;
+        _renderingMultiview: boolean;
 
         /**
          * @hidden
@@ -114,10 +114,6 @@ declare module "../../Cameras/camera" {
 Camera.prototype._useMultiviewToSingleView = false;
 
 Camera.prototype._multiviewTexture = null;
-
-Camera.prototype._renderingMultiview = function() {
-    return this.outputRenderTarget && this.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview;
-};
 
 Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, height: number) {
     if (!this._multiviewTexture) {
