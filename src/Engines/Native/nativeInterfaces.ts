@@ -27,7 +27,7 @@ export interface INativeEngine {
     createTexture(): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
-    loadRawTexture2DArray(texture: WebGLTexture, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType : number) : void;
+    loadRawTexture2DArray(texture: WebGLTexture, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean) : void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
