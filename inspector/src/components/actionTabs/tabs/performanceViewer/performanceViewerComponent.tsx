@@ -22,6 +22,7 @@ interface IPerformanceViewerComponentProps {
 
 // arbitrary window size
 const initialWindowSize = { width: 1024, height: 512 };
+const initialGraphSize = { width: 724, height: 512 };
 
 export enum IPerfMetadataCategory {
     Count = "Count",
@@ -98,6 +99,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
                             layoutObservable={layoutObservable}
                             returnToLiveObservable={returnToLiveObservable}
                             performanceCollector={performanceCollector}
+                            initialGraphSize={initialGraphSize}
                         />
                     ),
                 },

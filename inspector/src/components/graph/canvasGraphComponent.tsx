@@ -14,15 +14,21 @@ interface ICanvasGraphComponentProps {
     layoutObservable?: Observable<IPerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
     onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+    initialGraphSize?: {width: number, height: number};
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
-    const { id, collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable } = props;
+    const { id, collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable, initialGraphSize } = props;
     const canvasRef: React.MutableRefObject<HTMLCanvasElement | null> = useRef(null);
 
     useEffect(() => {
         if (!canvasRef.current) {
             return;
+        }
+
+        if (initialGraphSize) {
+            canvasRef.current.width = initialGraphSize.width;
+            canvasRef.current.height = initialGraphSize.height;
         }
 
         let cs: CanvasGraphService | undefined;
