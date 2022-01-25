@@ -70,10 +70,10 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
         let minFrame = this.props.context.referenceMinFrame;
         let maxFrame = this.props.context.referenceMaxFrame;
 
-        let stepCounts = 20;
         let range = maxFrame - minFrame;
-        let offset = (range / stepCounts) | 0;
         let convertRatio = range / this._GraphAbsoluteWidth;
+        let dist = Math.max(25 * this._viewScale, 35) ; // x distance between consecutive ticks
+        let offset = Math.floor(dist * convertRatio);
 
         let steps = [];
 
