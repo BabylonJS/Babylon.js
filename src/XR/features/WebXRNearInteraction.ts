@@ -208,7 +208,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRNearInteractionOptions) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
-        this._options.nearInteractionControllerMode = WebXRNearControllerMode.CENTERED_IN_FRONT;
+        if (this._options.nearInteractionControllerMode === undefined) {
+            this._options.nearInteractionControllerMode = WebXRNearControllerMode.CENTERED_IN_FRONT;
+        }
+
         if (this._options.farInteractionFeature) {
             this._farInteractionFeature = this._options.farInteractionFeature;
         }
