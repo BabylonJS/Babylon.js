@@ -470,6 +470,7 @@ export class Sound {
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
             this._offset = options.offset ?? undefined;
+            this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
