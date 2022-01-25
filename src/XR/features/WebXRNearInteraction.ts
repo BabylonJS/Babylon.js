@@ -20,6 +20,7 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
+import { Material } from "../../Materials/Material";
 import { Animation } from "../../Animations/animation";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 // side effects
@@ -120,6 +121,11 @@ export interface IWebXRNearInteractionOptions {
      * Near interaction mode for motion controllers
      */
     nearInteractionControllerMode?: WebXRNearControllerMode;
+
+    /**
+     * Optional material for the motion controller orb, if enabled
+     */
+    motionControllerOrbMaterial?: Material;
 }
 
 /**
@@ -347,6 +353,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return;
         }
 
+        // Don't always break to allow for animation fallthrough on rare cases of multi-transitions
         if (newState > controllerData.currentAnimationState) {
             switch(controllerData.currentAnimationState) {
                 case ControllerOrbAnimationState.DEHYDRATED: {
@@ -386,25 +393,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     private readonly _hoverRadius = 0.1;
     private readonly _pickRadius = 0.02;
     private readonly _nearGrabLengthScale = 5;
-    private _touchPointQuaternion = new Quaternion();
-    private _touchPointOrientationVector = Vector3.Zero();
 
-    private _processTouchPoint(id: string, transform: XRRigidTransform) {
+    private _processTouchPoint(id: string, position: Vector3, orientation: Quaternion) {
         const controllerData = this._controllers[id];
 
-        let axisRHSMultiplier = this._scene.useRightHandedSystem ? 1 : -1;
-        let touchPointPosition = transform.position;
-        const touchPointOrientation = transform.orientation;
-        this._touchPointQuaternion.set(
-            touchPointOrientation.x,
-            touchPointOrientation.y,
-            touchPointOrientation.z * axisRHSMultiplier,
-            touchPointOrientation.w * axisRHSMultiplier
-        );
+        // Position and orientation could be temporary values, se we take care of them before calling any functions that use temporary vectors/quaternions
+        controllerData.grabRay.origin.copyFrom(position);
+        orientation.toEulerAnglesToRef(TmpVectors.Vector3[0]);
+        controllerData.grabRay.direction.copyFrom(TmpVectors.Vector3[0]);
 
-        // set near interaction grab ray parameters
-        const nearGrabRayLength = this._nearGrabLengthScale * this._hoverRadius;
-        controllerData.grabRay.origin.set(touchPointPosition.x, touchPointPosition.y, touchPointPosition.z * axisRHSMultiplier);
 
         if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT && !(controllerData.xrController?.inputSource.hand)) {
             // offset the touch point in the direction the transform is facing
@@ -412,11 +409,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             controllerData.grabRay.origin.addInPlace(this._tmpRay.direction.scale(0.05));
         }
 
-        this._touchPointQuaternion.toEulerAnglesToRef(this._touchPointOrientationVector);
-        controllerData.grabRay.direction.set(this._touchPointOrientationVector.x, this._touchPointOrientationVector.y, this._touchPointOrientationVector.z);
-        controllerData.grabRay.length = nearGrabRayLength;
-
-        // set positions for near pick and hover
+        controllerData.grabRay.length = this._nearGrabLengthScale * this._hoverRadius;
         controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin);
     }
 
@@ -442,25 +435,26 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     if (xrIndexTip) {
                         let indexTipPose = _xrFrame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
                         if (indexTipPose && indexTipPose.transform) {
-                            this._processTouchPoint(id, indexTipPose.transform);
+                            let axisRHSMultiplier = this._scene.useRightHandedSystem ? 1 : -1;
+                            TmpVectors.Vector3[0].set(indexTipPose.transform.position.x, indexTipPose.transform.position.y, indexTipPose.transform.position.z * axisRHSMultiplier);
+                            TmpVectors.Quaternion[0].set(
+                                indexTipPose.transform.orientation.x,
+                                indexTipPose.transform.orientation.y,
+                                indexTipPose.transform.orientation.z * axisRHSMultiplier,
+                                indexTipPose.transform.orientation.w * axisRHSMultiplier
+                            );
+
+                            this._processTouchPoint(id, TmpVectors.Vector3[0], TmpVectors.Quaternion[0]);
                         }
                     }
                 }
-                else if (controllerData.xrController.inputSource.gamepad) {
-                    const controller = controllerData.xrController.inputSource;
-                    if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_ON_CONTROLLER) {
-                        // Try to get the grip space, with a target ray space fallback
-                        let controllerPose = _xrFrame.getPose(controller.gripSpace || controller.targetRaySpace, this._xrSessionManager.referenceSpace);
-                        if (controllerPose && controllerPose.transform) {
-                            this._processTouchPoint(id, controllerPose.transform);
-                        }
+                else if (controllerData.xrController.inputSource.gamepad && this._options.nearInteractionControllerMode !== WebXRNearControllerMode.DISABLED) {
+                    let controllerPose = controllerData.xrController.pointer;
+                    if (controllerData.xrController.grip && this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_ON_CONTROLLER) {
+                        controllerPose = controllerData.xrController.grip;
                     }
-                    else if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT) {
-                        let controllerPose = _xrFrame.getPose(controller.targetRaySpace, this._xrSessionManager.referenceSpace);
-                        if (controllerPose && controllerPose.transform) {
-                            this._processTouchPoint(id, controllerPose.transform);
-                        }
-                    }
+
+                    this._processTouchPoint(id, controllerPose.position, controllerPose.rotationQuaternion!);
                 }
             } else {
                 return;
@@ -558,15 +552,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             }
 
             // Update the interaction animation. Only updates if the visible touch mesh is active
+            let state = ControllerOrbAnimationState.DEHYDRATED;
             if (controllerData.grabInteraction || controllerData.nearInteraction) {
-                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.TOUCH);
+                state  = ControllerOrbAnimationState.TOUCH;
+            } else if (controllerData.hoverInteraction) {
+                state  = ControllerOrbAnimationState.HOVER;
             }
-            else if (controllerData.hoverInteraction) {
-                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.HOVER);
-            }
-            else {
-                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.DEHYDRATED);
-            }
+            this._handleTransitionAnimation(controllerData, state);
         });
     }
 
@@ -768,6 +760,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
     }
 
+    private readonly _hoverSize = new Vector3(0.03, 0.03, 0.03);
+    private readonly _touchSize = new Vector3(0.04, 0.04, 0.04);
+    private readonly _hydrateTransitionSize = new Vector3(0.035, 0.035, 0.035);
+    private readonly _touchHoverTransitionSize = new Vector3(0.024, 0.024, 0.024);
+    private readonly _hoverTouchTransitionSize = new Vector3(0.046, 0.046, 0.046);
+
     private _generateNewTouchPointMesh() {
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
@@ -777,32 +775,36 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         touchCollisionMesh.isVisible = false;
 
         // Generate the material for the touch mesh visuals
-        NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene).then((nodeMaterial) => {
-            touchCollisionMesh.material = nodeMaterial;
-        });
+        if (this._options.motionControllerOrbMaterial) {
+            touchCollisionMesh.material = this._options.motionControllerOrbMaterial;
+        } else {
+            NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene).then((nodeMaterial) => {
+                touchCollisionMesh.material = nodeMaterial;
+            });
+        }
 
         const easingFunction = new QuadraticEase();
         easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
 
         let touchKeys = [
-            {frame:  0, value: new Vector3(0.03, 0.03, 0.03)},
-            {frame: 10, value: new Vector3(0.046, 0.046, 0.046)},
-            {frame: 18, value: new Vector3(0.04, 0.04, 0.04)}
+            {frame:  0, value: this._hoverSize},
+            {frame: 10, value: this._hoverTouchTransitionSize},
+            {frame: 18, value: this._touchSize}
         ];
         let releaseKeys = [
-            {frame:  0, value: new Vector3(0.04, 0.04, 0.04)},
-            {frame: 10, value: new Vector3(0.024, 0.024, 0.024)},
-            {frame: 18, value: new Vector3(0.03, 0.03, 0.03)}
+            {frame:  0, value: this._touchSize},
+            {frame: 10, value: this._touchHoverTransitionSize},
+            {frame: 18, value: this._hoverSize}
         ];
         let hydrateKeys = [
-            {frame:  0, value: new Vector3(0.0, 0.0, 0.0)},
-            {frame: 12, value: new Vector3(0.035, 0.035, 0.035)},
-            {frame: 15, value: new Vector3(0.03, 0.03, 0.03)}
+            {frame:  0, value: Vector3.ZeroReadOnly},
+            {frame: 12, value: this._hydrateTransitionSize},
+            {frame: 15, value: this._hoverSize}
         ];
         let dehydrateKeys = [
-            {frame:  0, value: new Vector3(0.03, 0.03, 0.03)},
-            {frame: 10, value: new Vector3(0.0, 0.0, 0.0)},
-            {frame: 15, value: new Vector3(0.0, 0.0, 0.0)}
+            {frame:  0, value: this._hoverSize},
+            {frame: 10, value: Vector3.ZeroReadOnly},
+            {frame: 15, value: Vector3.ZeroReadOnly}
         ];
 
         let touchAction = new Animation("touch", "scaling", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
