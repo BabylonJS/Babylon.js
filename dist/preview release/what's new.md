@@ -172,6 +172,7 @@
 - Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Added support for custom blocks ([BlakeOne](https://github.com/BlakeOne), [Popov72](https://github.com/Popov72))
+- Added a `ClipPlanes` block to support scene clip planes ([Popov72](https://github.com/Popov72))
 
 ### GUI
 
