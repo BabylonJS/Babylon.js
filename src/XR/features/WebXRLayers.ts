@@ -180,12 +180,15 @@ const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
     scaleFactor: 1.0,
 };
 
-const defaultMultiviewXRProjectionLayerInit: XRProjectionLayerInit = {
-    textureType: "texture-array",
-    colorFormat: 0x1908,
-    depthFormat: 0x88F0,
-    scaleFactor: 1.0,
-};
+/**
+ * Configuration options of the layers feature
+ */
+export interface IWebXRLayersOptions {
+    /**
+     * Whether to try initializing the base projection layer as a multiview render target, if multiview is supported.
+     */
+    preferMultiviewOnInit?: boolean;
+}
 
 /**
  * Exposes the WebXR Layers API.
@@ -209,7 +212,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
 
-    constructor(_xrSessionManager: WebXRSessionManager) {
+    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRLayersOptions = {}) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "layers";
     }
@@ -230,10 +233,12 @@ export class WebXRLayers extends WebXRAbstractFeature {
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers = [];
 
-        const projectionLayerParams = engine.getCaps().multiview
-            ? defaultMultiviewXRProjectionLayerInit
-            : defaultXRProjectionLayerInit;
-        this.addXRSessionLayer(this.createProjectionLayer(projectionLayerParams));
+        const projectionLayerInit = defaultXRProjectionLayerInit;
+        const projectionLayerMultiview = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
+        if (projectionLayerMultiview) {
+            projectionLayerInit.textureType = 'texture-array';
+        }
+        this.addXRSessionLayer(this.createProjectionLayer(projectionLayerInit, projectionLayerMultiview));
 
         return true;
     }
@@ -318,7 +323,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
 WebXRFeaturesManager.AddWebXRFeature(
     WebXRLayers.Name,
     (xrSessionManager, options) => {
-        return () => new WebXRLayers(xrSessionManager);
+        return () => new WebXRLayers(xrSessionManager, options);
     },
     WebXRLayers.Version,
     false
