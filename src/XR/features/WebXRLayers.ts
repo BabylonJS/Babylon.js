@@ -234,7 +234,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers = [];
 
-        const projectionLayerInit = defaultXRProjectionLayerInit;
+        const projectionLayerInit = { ...defaultXRProjectionLayerInit };
         const projectionLayerMultiview = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
         if (projectionLayerMultiview) {
             projectionLayerInit.textureType = 'texture-array';
