@@ -2046,8 +2046,7 @@ export class NativeEngine extends Engine {
         texture.is3D = false;
         texture.depth = depth;
 
-        if (texture._hardwareTexture) 
-        {
+        if (texture._hardwareTexture) {
             var webGLTexture = texture._hardwareTexture.underlyingResource;
             this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY, samplingMode, compression, textureType);
         }
