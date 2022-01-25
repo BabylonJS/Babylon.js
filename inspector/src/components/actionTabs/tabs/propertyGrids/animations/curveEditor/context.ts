@@ -24,6 +24,7 @@ export class Context {
     activeFrame: number;
     fromKey: number;
     toKey: number;
+    useExistingPlayRange: boolean = false;
     forwardAnimation = true;
     isPlaying: boolean;
     clipLength: number;
@@ -101,8 +102,10 @@ export class Context {
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = keys[keys.length - 1].frame;
         
-        this.fromKey = this.fromKey !== undefined ? this.fromKey : keys[0].frame;
-        this.toKey = this.toKey !== undefined ? this.toKey : keys[keys.length - 1].frame;
+        if (!this.useExistingPlayRange) {
+            this.fromKey = this.referenceMinFrame;
+            this.toKey = this.referenceMaxFrame;
+        }
 
         this.snippetId = animation.snippetId;
 
