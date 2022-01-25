@@ -398,6 +398,7 @@
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
 - Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
+- Fix memory leak and incorrect data copy in KTX2 ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
 
