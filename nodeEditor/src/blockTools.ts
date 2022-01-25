@@ -86,6 +86,7 @@ import { VoronoiNoiseBlock } from 'babylonjs/Materials/Node/Blocks/voronoiNoiseB
 import { ScreenSpaceBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSpaceBlock';
 import { TwirlBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/twirlBlock';
 import { ElbowBlock } from 'babylonjs/Materials/Node/Blocks/elbowBlock';
+import { ClipPlanesBlock } from 'babylonjs/Materials/Node/Blocks/Dual/clipPlanesBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -574,6 +575,8 @@ export class BlockTools {
                 return andBlock;
             case "ImageSourceBlock":
                 return new ImageSourceBlock("ImageSource");
+            case "ClipPlanesBlock":
+                return new ClipPlanesBlock("ClipPlanes");
         }
 
         return null;
