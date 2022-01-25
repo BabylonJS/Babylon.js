@@ -19,7 +19,9 @@ import { BoundingSphere } from "../../Culling/boundingSphere";
 import { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
-import { FresnelParameters } from "../../Materials/fresnelParameters";
+import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
+import { Animation } from "../../Animations/animation";
+import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 // side effects
 import "../../Meshes/subMesh.project";
 
@@ -31,10 +33,13 @@ type ControllerData = {
     onSqueezeButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
     onFrameObserver?: Nullable<Observer<XRFrame>>;
     meshUnderPointer: Nullable<AbstractMesh>;
-    nearInteractionMesh: Nullable<AbstractMesh>;
+    nearInteractionTargetMesh: Nullable<AbstractMesh>;
     pick: Nullable<PickingInfo>;
     id: number;
     touchCollisionMesh: AbstractMesh;
+    touchCollisionMeshFunction: (isTouch: boolean) => void;
+    hydrateCollisionMeshFunction: (isHydration: boolean) => void;
+    currentAnimationState: ControllerOrbAnimationState;
     grabRay: Ray;
     nearInteraction: boolean;
     hoverInteraction: boolean;
@@ -43,6 +48,14 @@ type ControllerData = {
     eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
     pickedPointVisualCue: AbstractMesh;
 };
+
+// Tracks the interaction animation state when using a motion controller with a near interaction orb
+enum ControllerOrbAnimationState {
+    DEHYDRATED,
+    HYDRATED,
+    HOVER,
+    TOUCH
+}
 
 export enum WebXRNearControllerMode {
     /**
@@ -115,20 +128,18 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return;
         }
         // get two new meshes
-        const touchCollisionMesh = this._generateNewTouchPointMesh();
+        const {touchCollisionMesh, touchCollisionMeshFunction, hydrateCollisionMeshFunction} = this._generateNewTouchPointMesh();
         const selectionMesh = this._generateVisualCue();
-
-        if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT &&
-            !xrController.inputSource.hand) {
-            touchCollisionMesh.isVisible = true;
-        }
 
         this._controllers[xrController.uniqueId] = {
             xrController,
             meshUnderPointer: null,
-            nearInteractionMesh: null,
+            nearInteractionTargetMesh: null,
             pick: null,
             touchCollisionMesh,
+            touchCollisionMeshFunction: touchCollisionMeshFunction,
+            hydrateCollisionMeshFunction: hydrateCollisionMeshFunction,
+            currentAnimationState: ControllerOrbAnimationState.DEHYDRATED,
             grabRay: new Ray(new Vector3(), new Vector3()),
             hoverInteraction: false,
             nearInteraction: false,
@@ -318,6 +329,49 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         return true;
     }
 
+    private _handleTransitionAnimation(controllerData: ControllerData, newState: ControllerOrbAnimationState) {
+        if (controllerData.currentAnimationState === newState ||
+            this._options.nearInteractionControllerMode !== WebXRNearControllerMode.CENTERED_IN_FRONT ||
+            !!controllerData.xrController?.inputSource.hand) {
+            return;
+        }
+
+        if (newState > controllerData.currentAnimationState) {
+            switch(controllerData.currentAnimationState) {
+                case ControllerOrbAnimationState.DEHYDRATED: {
+                    controllerData.hydrateCollisionMeshFunction(true);
+                    if (newState === ControllerOrbAnimationState.HOVER) {
+                        break;
+                    }
+                }
+                case ControllerOrbAnimationState.HOVER: {
+                    controllerData.touchCollisionMeshFunction(true);
+                    if (newState === ControllerOrbAnimationState.TOUCH) {
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            switch(controllerData.currentAnimationState) {
+                case ControllerOrbAnimationState.TOUCH: {
+                    controllerData.touchCollisionMeshFunction(false);
+                    if (newState === ControllerOrbAnimationState.HOVER) {
+                        break;
+                    }
+                }
+                case ControllerOrbAnimationState.HOVER: {
+                    controllerData.hydrateCollisionMeshFunction(false);
+                    if (newState === ControllerOrbAnimationState.DEHYDRATED) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        controllerData.currentAnimationState = newState;
+    }
+
     private readonly _hoverRadius = 0.1;
     private readonly _pickRadius = 0.02;
     private readonly _nearGrabLengthScale = 5;
@@ -479,33 +533,30 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.pickedPointVisualCue.position.copyFrom(controllerData.pick.pickedPoint);
                     controllerData.pickedPointVisualCue.isVisible = true;
 
-                    if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT &&
-                        !controllerData.xrController.inputSource.hand) {
-                        controllerData.touchCollisionMesh.isVisible = true;
-                        controllerData.touchCollisionMesh.material!.alpha = this._getAlphaFromPick(controllerData.pick);
-                    }
-
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
                         this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, true);
                     }
                 } else {
                     controllerData.meshUnderPointer = null;
                     controllerData.pickedPointVisualCue.isVisible = false;
-                    controllerData.touchCollisionMesh.isVisible = false;
 
                     if (this._farInteractionFeature && this._farInteractionFeature.attached) {
                         this._farInteractionFeature._setPointerSelectionDisabledByPointerId(controllerData.id, false);
                     }
                 }
             }
-        });
-    }
 
-    // Generates an alpha value based on the distance from the interaction. An alpha of 0 when just entering the hover range, up to an alpha of 1 when touching
-    private _getAlphaFromPick(pick: PickingInfo) {
-        let hoverDelta = this._hoverRadius - this._pickRadius;
-        let alpha = (this._hoverRadius - pick.distance) / hoverDelta;
-        return Math.max(Math.min(1.0, alpha), 0);
+            // Update the interaction animation. Only updates if the visible touch mesh is active
+            if (controllerData.grabInteraction || controllerData.nearInteraction) {
+                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.TOUCH);
+            }
+            else if (controllerData.hoverInteraction) {
+                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.HYDRATED);
+            }
+            else {
+                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.DEHYDRATED);
+            }
+        });
     }
 
     private get _utilityLayerScene() {
@@ -564,13 +615,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             // Near pick pointer event
             if (controllerData.nearInteraction && controllerData.pick && controllerData.pick.hit) {
-                if (!controllerData.nearInteractionMesh) {
+                if (!controllerData.nearInteractionTargetMesh) {
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                    controllerData.nearInteractionMesh = controllerData.meshUnderPointer;
+                    controllerData.nearInteractionTargetMesh = controllerData.meshUnderPointer;
                 }
-            } else if (controllerData.nearInteractionMesh && controllerData.pick) {
+            } else if (controllerData.nearInteractionTargetMesh && controllerData.pick) {
                 this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                controllerData.nearInteractionMesh = null;
+                controllerData.nearInteractionTargetMesh = null;
             }
         });
 
@@ -582,13 +633,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (pressed && controllerData.pick && controllerData.meshUnderPointer && this._nearGrabPredicate(controllerData.meshUnderPointer)) {
                     controllerData.grabInteraction = true;
                     controllerData.pickedPointVisualCue.isVisible = false;
-                    controllerData.touchCollisionMesh.scaling.scaleInPlace(1.2);
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                 } else if (!pressed && controllerData.pick && controllerData.grabInteraction) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
                     controllerData.pickedPointVisualCue.isVisible = true;
-                    controllerData.touchCollisionMesh.scaling.scaleInPlace(1 / 1.2);
                 }
             } else {
                 if (pressed && !this._options.enableNearInteractionOnAllControllers && !this._options.disableSwitchOnClick) {
@@ -712,19 +761,72 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
 
-        let touchMesh = CreateSphere("PickSphere", { diameter: 1 }, meshCreationScene);
-        touchMesh.scaling.set(this._pickRadius, this._pickRadius, this._pickRadius);
-        touchMesh.isVisible = false;
+        let touchCollisionMesh = CreateSphere("PickSphere", { diameter: 1 }, meshCreationScene);
+        touchCollisionMesh.scaling.set(this._pickRadius, this._pickRadius, this._pickRadius);
+        touchCollisionMesh.isVisible = false;
 
-        // Set up a red fresnel effect
-        touchMesh.material = new StandardMaterial("touchPointMesh", meshCreationScene);
-        (touchMesh.material as StandardMaterial).diffuseColor = Color3.Red();
-        (touchMesh.material as StandardMaterial).diffuseFresnelParameters = new FresnelParameters();
-        (touchMesh.material as StandardMaterial).diffuseFresnelParameters.bias = 0.5;
-        (touchMesh.material as StandardMaterial).diffuseFresnelParameters.leftColor = Color3.Black();
-        (touchMesh.material as StandardMaterial).diffuseFresnelParameters.rightColor = Color3.White();
+        // Generate the material for the touch mesh visuals
+        NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene).then(nodeMaterial => {
+            touchCollisionMesh.material = nodeMaterial;
+        });
 
-        return touchMesh;
+        const easingFunction = new QuadraticEase();
+        easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+
+        let touchKeys = [
+            {frame:  0, value: new Vector3(0.03, 0.03, 0.03)},
+            {frame: 10, value: new Vector3(0.046, 0.046, 0.046)},
+            {frame: 18, value: new Vector3(0.04, 0.04, 0.04)}
+        ];
+        let releaseKeys = [
+            {frame:  0, value: new Vector3(0.04, 0.04, 0.04)},
+            {frame: 10, value: new Vector3(0.024, 0.024, 0.024)},
+            {frame: 18, value: new Vector3(0.03, 0.03, 0.03)}
+        ];
+        let hydrateKeys = [
+            {frame:  0, value: new Vector3(0.0, 0.0, 0.0)},
+            {frame: 12, value: new Vector3(0.035, 0.035, 0.035)},
+            {frame: 15, value: new Vector3(0.03, 0.03, 0.03)}
+        ];
+        let dehydrateKeys = [
+            {frame:  0, value: new Vector3(0.03, 0.03, 0.03)},
+            {frame: 10, value: new Vector3(0.0, 0.0, 0.0)},
+            {frame: 15, value: new Vector3(0.0, 0.0, 0.0)}
+        ];
+
+        let touchAction = new Animation("touch", "scaling", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        let releaseAction = new Animation("release", "scaling", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        let hydrateAction = new Animation("hydrate", "scaling", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        let dehydrateAction = new Animation("dehydrate", "scaling", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+
+        touchAction.setEasingFunction(easingFunction);
+        releaseAction.setEasingFunction(easingFunction);
+        hydrateAction.setEasingFunction(easingFunction);
+        dehydrateAction.setEasingFunction(easingFunction);
+
+        touchAction.setKeys(touchKeys);
+        releaseAction.setKeys(releaseKeys);
+        hydrateAction.setKeys(hydrateKeys);
+        dehydrateAction.setKeys(dehydrateKeys);
+
+        let touchCollisionMeshFunction = (isTouch: boolean) => {
+            let action = isTouch ? touchAction : releaseAction;
+            meshCreationScene.beginDirectAnimation(touchCollisionMesh, [action], 0, 18, false, 1);
+        };
+
+        let hydrateCollisionMeshFunction = (isHydration: boolean) => {
+            let action = isHydration ? hydrateAction : dehydrateAction;
+            if (isHydration) {
+                touchCollisionMesh.isVisible = true;
+            }
+            meshCreationScene.beginDirectAnimation(touchCollisionMesh, [action], 0, 15, false, 1, () => {
+                if (!isHydration) {
+                    touchCollisionMesh.isVisible = false;
+                }
+            });
+        };
+
+        return {touchCollisionMesh, touchCollisionMeshFunction, hydrateCollisionMeshFunction};
     }
 
     private _pickWithSphere(controllerData: ControllerData, radius: number, sceneToUse: Scene, predicate: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo> {
