@@ -1,3 +1,4 @@
+import { Engine } from "../Engines/engine";
 import { WebGLHardwareTexture } from "../Engines/WebGL/webGLHardwareTexture";
 import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -46,12 +47,21 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
     protected _renderTargetTextures = new Array<RenderTargetTexture>();
     protected _framebufferDimensions: Nullable<{ framebufferWidth: number, framebufferHeight: number }>;
 
-    private _glContext: WebGLRenderingContext;
+    private _engine: Engine;
 
     constructor(
         private readonly _scene: Scene,
         public readonly layerWrapper: WebXRLayerWrapper) {
-        this._glContext = _scene.getEngine()._gl;
+        this._engine = _scene.getEngine();
+    }
+
+    private _createInternalTexture(textureSize: { width: number, height: number }, texture: WebGLTexture): InternalTexture {
+        const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
+        internalTexture.width = textureSize.width;
+        internalTexture.height = textureSize.height;
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._engine._gl);
+        internalTexture.isReady = true;
+        return internalTexture;
     }
 
     protected _createRenderTargetTexture(
@@ -61,15 +71,16 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         colorTexture?: WebGLTexture,
         depthStencilTexture?: WebGLTexture,
         multiview?: boolean): RenderTargetTexture {
-        const engine = this._scene.getEngine();
-        if (!engine) {
+        if (!this._engine) {
             throw new Error("Engine is disposed");
         }
 
+        const textureSize = { width, height };
+
         // Create render target texture from the internal texture
         const renderTargetTexture = multiview
-            ? new MultiviewRenderTarget(this._scene, { width, height })
-            : new RenderTargetTexture("XR renderTargetTexture", { width, height }, this._scene);
+            ? new MultiviewRenderTarget(this._scene, textureSize)
+            : new RenderTargetTexture("XR renderTargetTexture", textureSize, this._scene);
         const renderTargetWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
         // Set the framebuffer, make sure it works in all scenarios - emulator, no layers and layers
         if (framebuffer || !colorTexture) {
@@ -81,12 +92,8 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
             if (multiview) {
                 renderTargetWrapper._colorTextureArray = colorTexture;
             } else {
-                const internalTexture = new InternalTexture(engine, InternalTextureSource.Unknown, true);
-                internalTexture.width = width;
-                internalTexture.height = height;
-                internalTexture._hardwareTexture = new WebGLHardwareTexture(colorTexture, this._glContext);
+                const internalTexture = this._createInternalTexture(textureSize, colorTexture);
                 renderTargetWrapper.setTexture(internalTexture, 0);
-                internalTexture.isReady = true;
                 renderTargetTexture._texture = internalTexture;
             }
         }
@@ -95,12 +102,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
             if (multiview) {
                 renderTargetWrapper._depthStencilTextureArray = depthStencilTexture;
             } else {
-                const internalDSTexture = new InternalTexture(engine, InternalTextureSource.DepthStencil, true);
-                internalDSTexture.width = width;
-                internalDSTexture.height = height;
-                internalDSTexture._hardwareTexture = new WebGLHardwareTexture(depthStencilTexture, this._glContext);
-                internalDSTexture.isReady = true;
-                renderTargetWrapper._depthStencilTexture = internalDSTexture;
+                renderTargetWrapper._depthStencilTexture = this._createInternalTexture(textureSize, depthStencilTexture);
             }
         }
 
