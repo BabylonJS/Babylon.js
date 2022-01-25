@@ -51,9 +51,17 @@ type ControllerData = {
 
 // Tracks the interaction animation state when using a motion controller with a near interaction orb
 enum ControllerOrbAnimationState {
+    /**
+     * Orb is invisible
+     */
     DEHYDRATED,
-    HYDRATED,
+    /**
+     * Orb is visible and inside the hover range
+     */
     HOVER,
+    /**
+     * Orb is visible and touching a near interaction target
+     */
     TOUCH
 }
 
@@ -554,7 +562,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.TOUCH);
             }
             else if (controllerData.hoverInteraction) {
-                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.HYDRATED);
+                this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.HOVER);
             }
             else {
                 this._handleTransitionAnimation(controllerData, ControllerOrbAnimationState.DEHYDRATED);
