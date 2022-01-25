@@ -769,7 +769,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         touchCollisionMesh.isVisible = false;
 
         // Generate the material for the touch mesh visuals
-        NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene).then(nodeMaterial => {
+        NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene).then((nodeMaterial) => {
             touchCollisionMesh.material = nodeMaterial;
         });
 
