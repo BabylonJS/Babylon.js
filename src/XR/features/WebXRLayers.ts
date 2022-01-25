@@ -47,11 +47,11 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
 
     protected _getRenderTargetForSubImage(subImage: XRWebGLSubImage, eye: XREye) {
         const lastSubImage = this._lastSubImages.get(eye);
-        const subImageIndex = eye == 'left' ? 0 : 1;
-        if (!this._renderTargetTextures[subImageIndex] ||
+        const eyeIndex = eye == 'left' ? 0 : 1;
+        if (!this._renderTargetTextures[eyeIndex] ||
             lastSubImage?.textureWidth !== subImage.textureWidth ||
             lastSubImage?.textureHeight != subImage.textureHeight) {
-            this._renderTargetTextures[subImageIndex] = this._createRenderTargetTexture(
+            this._renderTargetTextures[eyeIndex] = this._createRenderTargetTexture(
                 subImage.textureWidth,
                 subImage.textureHeight,
                 null,
@@ -67,7 +67,7 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
 
         this._lastSubImages.set(eye, subImage);
 
-        return this._renderTargetTextures[subImageIndex];
+        return this._renderTargetTextures[eyeIndex];
     }
 
     private _getSubImageForEye(eye: XREye): Nullable<XRWebGLSubImage> {
@@ -186,6 +186,7 @@ const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
 export interface IWebXRLayersOptions {
     /**
      * Whether to try initializing the base projection layer as a multiview render target, if multiview is supported.
+     * Defaults to false.
      */
     preferMultiviewOnInit?: boolean;
 }
@@ -271,6 +272,12 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (multiview && params.textureType !== 'texture-array') {
             throw new Error("Projection layers can only be made multiview if they use texture arrays. Set the textureType parameter to 'texture-array'.");
         }
+
+        // TODO (rgerd): Support RTT's that are bound to sub-images in the texture array.
+        if (!multiview && params.textureType === 'texture-array') {
+            throw new Error("We currently only support multiview rendering when the textureType parameter is set to 'texture-array'.");
+        }
+
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
         return new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
     }
