@@ -41,6 +41,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         from: 0,
         to: 0,
         loop: false,
+        initialized: false
     };
 
     constructor(props: IAnimationGridComponentProps) {
@@ -152,6 +153,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                 this._animationControl.from = this._mainAnimatable.fromFrame;
                 this._animationControl.to = this._mainAnimatable.toFrame;
                 this._animationControl.loop = this._mainAnimatable.loopAnimation;
+                this._animationControl.initialized = true;
             }
         }
 
@@ -165,6 +167,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             this._animationCurveEditorContext.scene = this.props.scene;
             this._animationCurveEditorContext.fromKey = this._animationControl.from;
             this._animationCurveEditorContext.toKey = this._animationControl.to;
+            this._animationCurveEditorContext.useExistingPlayRange = this._animationControl.initialized;
         }
 
         return (
