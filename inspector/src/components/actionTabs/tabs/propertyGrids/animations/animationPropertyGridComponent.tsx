@@ -163,6 +163,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             this._animationCurveEditorContext.animations = animations;
             this._animationCurveEditorContext.target = this.props.animatable;
             this._animationCurveEditorContext.scene = this.props.scene;
+            this._animationCurveEditorContext.fromKey = this._animationControl.from;
+            this._animationCurveEditorContext.toKey = this._animationControl.to;
         }
 
         return (
