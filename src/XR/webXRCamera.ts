@@ -211,7 +211,6 @@ export class WebXRCamera extends FreeCamera {
             this._updateNumberOfRigCameras(pose.views.length);
         }
 
-        let multiview = false;
         pose.views.forEach((view: XRView, i: number) => {
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
@@ -243,22 +242,21 @@ export class WebXRCamera extends FreeCamera {
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
-            let renderTargetTexture = null;
             // first camera?
             if (i === 0) {
                 this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
-
-                renderTargetTexture = this._xrSessionManager.getRenderTargetTextureForView(view);
-                // For multiview, the render target texture is the same per-view (just the slice index is different),
-                // so we only need to set the output render target once for the rig parent.
-                if (renderTargetTexture?._texture?.isMultiview) {
-                    this._xrSessionManager.trySetViewportForView(this.viewport, view);
-                    this.outputRenderTarget = renderTargetTexture;
-                    multiview = true;
-                }
             }
 
-            if (!multiview) {
+            let renderTargetTexture = this._xrSessionManager.getRenderTargetTextureForView(view);
+            this._renderingMultiview = renderTargetTexture?._texture?.isMultiview || false;
+            if (this._renderingMultiview) {
+                // For multiview, the render target texture is the same per-view (just the slice index is different),
+                // so we only need to set the output render target once for the rig parent.
+                if (i == 0) {
+                    this._xrSessionManager.trySetViewportForView(this.viewport, view);
+                    this.outputRenderTarget = renderTargetTexture;
+                }
+            } else {
                 // Update viewport
                 this._xrSessionManager.trySetViewportForView(currentRig.viewport, view);
 
