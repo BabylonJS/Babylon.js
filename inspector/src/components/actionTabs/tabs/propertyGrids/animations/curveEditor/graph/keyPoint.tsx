@@ -565,9 +565,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             const isLockedTangent =
                 keys[this.props.keyId].lockedTangent &&
                 this.props.keyId !== 0 &&
-                this.props.keyId !== keys.length - 1 &&
-                keys[this.props.keyId].inTangent !== undefined &&
-                keys[this.props.keyId].outTangent !== undefined;
+                this.props.keyId !== keys.length - 1;
 
             let angleDiff = 0;
             let tmpVector = TmpVectors.Vector2[0];
