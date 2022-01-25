@@ -259,12 +259,15 @@ export class WebXRLayers extends WebXRAbstractFeature {
     /**
      * Creates a new XRProjectionLayer.
      * @param params an object providing configuration options for the new XRProjectionLayer.
-     * If the texture type is set to 'texture-array', multiview rendering will be used.
+     * @param multiview whether the projection layer should render with multiview.
      * @returns the projection layer
      */
-    public createProjectionLayer(params = defaultXRProjectionLayerInit): WebXRProjectionLayerWrapper {
+    public createProjectionLayer(params = defaultXRProjectionLayerInit, multiview = false): WebXRProjectionLayerWrapper {
+        if (multiview && params.textureType !== 'texture-array') {
+            throw new Error("Projection layers can only be made multiview if they use texture arrays. Set the textureType parameter to 'texture-array'.");
+        }
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
-        return new WebXRProjectionLayerWrapper(projLayer, params.textureType === 'texture-array', this._xrWebGLBinding);
+        return new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
     }
 
     /**
