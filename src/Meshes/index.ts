@@ -24,4 +24,3 @@ export * from "./WebGL/webGLDataBuffer";
 export * from "./WebGPU/webgpuDataBuffer";
 import "./thinInstanceMesh";
 export * from "./thinInstanceMesh";
-export * from "./errors";

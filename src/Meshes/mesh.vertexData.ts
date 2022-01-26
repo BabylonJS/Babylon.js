@@ -6,12 +6,12 @@ import { Color4, Color3 } from '../Maths/math.color';
 import { Logger } from '../Misc/logger';
 import { nativeOverride } from '../Misc/decorators';
 import { Coroutine, makeSyncFunction, runCoroutineSync } from '../Misc/coroutine';
+import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { BaseError } from "../Misc/baseError";
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
-import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { MeshInvalidOrEmptyPositionsError } from "./errors";
 declare type PolyhedronData= import("./geodesicMesh").PolyhedronData;
 
 /**
@@ -642,7 +642,7 @@ export class VertexData {
 
     private _validate(): void {
         if (!this.positions) {
-            throw new MeshInvalidOrEmptyPositionsError("Positions are required");
+            throw new BaseError("Positions are required", "MeshInvalidPositionsError");
         }
 
         const getElementCount = (kind: string, values: FloatArray) => {

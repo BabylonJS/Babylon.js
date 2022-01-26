@@ -16,7 +16,7 @@ import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
 import { DecodeBase64UrlToBinary, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { StringTools } from 'babylonjs/Misc/stringTools';
-import { GlTFLoaderUnexpectedMagicError } from "./errors";
+import { BaseError } from "babylonjs/Misc/baseError";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -828,7 +828,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             const magic = dataReader.readUint32();
             if (magic !== Binary.Magic) {
-                throw new GlTFLoaderUnexpectedMagicError("Unexpected magic: " + magic);
+                throw new BaseError("Unexpected magic: " + magic, "GLTFLoaderUnexpectedMagicError");
             }
 
             const version = dataReader.readUint32();

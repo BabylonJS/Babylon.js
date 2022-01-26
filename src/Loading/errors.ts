@@ -5,24 +5,15 @@ import { BaseError } from "../Misc/baseError";
  */
 export class SceneLoaderError extends BaseError {
     /**
-     * The inner exception
-     */
-    private _innerException: any;
-
-    /**
      * Creates a new SceneLoaderError
      * @param message defines the message of the error
+     * @param innerException the inner exception
+     * @param errorCode the error code
      */
-    constructor(message: string, innerException?: any) {
-        super(message);
-
-        this._innerException = innerException;
+    constructor(message: string, innerException?: Error) {
+        super(message, undefined, innerException);
 
         this.name = "SceneLoaderError";
         BaseError._setPrototypeOf(this, SceneLoaderError.prototype);
-    }
-
-    public get innerException() {
-        return this._innerException;
     }
 }

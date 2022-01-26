@@ -454,7 +454,8 @@ export class SceneLoader {
 
         if (message) {
             errorMessage += `: ${message}`;
-        } else if (exception) {
+        }
+        else if (exception) {
             errorMessage += `: ${exception}`;
         }
 
