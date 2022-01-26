@@ -368,10 +368,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         var pickedPoint = this._pickWithRayOnDragPlane(ray);
 
         if (pickedPoint) {
+            PivotTools._RemoveAndStorePivotPoint(this.attachedNode);
+
             if (this.updateDragPlane) {
                 this._updateDragPlanePosition(ray, pickedPoint);
             }
-
             var dragLength = 0;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
@@ -389,6 +390,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._targetPosition.addInPlace(this._dragDelta);
             this.onDragObservable.notifyObservers({ dragDistance: dragLength, delta: this._dragDelta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerId });
             this.lastDragPosition.copyFrom(pickedPoint);
+
+            PivotTools._RestorePivotPoint(this.attachedNode);
         }
     }
 
