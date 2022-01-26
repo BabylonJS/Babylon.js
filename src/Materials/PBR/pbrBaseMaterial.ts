@@ -913,7 +913,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
     }
 
