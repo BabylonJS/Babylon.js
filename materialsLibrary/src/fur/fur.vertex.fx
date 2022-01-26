@@ -70,7 +70,11 @@ float Rand(vec3 rv) {
 	return fract(sin(x) * 43758.5453);
 }
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
 	#include<instancesVertex>
     #include<bonesVertex>
@@ -171,4 +175,6 @@ float r = Rand(position);
 #ifdef POINTSIZE
 	gl_PointSize = pointSize;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

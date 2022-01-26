@@ -4,7 +4,7 @@ import { VertexBuffer } from "babylonjs/Buffers/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import { MeshPrimitiveMode, IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
+import { MeshPrimitiveMode, IKHRDracoMeshCompression, AccessorComponentType } from "babylonjs-gltf2interface";
 import { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -63,11 +63,37 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
                 }
             }
 
-            const attributes: { [kind: string]: number } = {};
+            const attributes: {
+                [kind: string]: number
+            } = {};
+            const dividers: {
+                [kind: string]: number
+            } = {};
             const loadAttribute = (name: string, kind: string) => {
                 const uniqueId = extension.attributes[name];
-                if (uniqueId == undefined) {
+                if (uniqueId === undefined || primitive.attributes[name] === undefined) {
                     return;
+                }
+
+                attributes[kind] = uniqueId;
+                const accessor = ArrayItem.Get(`${context}/attributes/${name}`, this._loader.gltf.accessors, primitive.attributes[name]);
+                if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
+                    let divider = 1;
+                    switch (accessor.componentType) {
+                        case AccessorComponentType.BYTE:
+                            divider = 127.0;
+                            break;
+                        case AccessorComponentType.UNSIGNED_BYTE:
+                            divider = 255.0;
+                            break;
+                        case AccessorComponentType.SHORT:
+                            divider = 32767.0;
+                            break;
+                        case AccessorComponentType.UNSIGNED_SHORT:
+                            divider = 65535.0;
+                            break;
+                    }
+                    dividers[kind] = divider;
                 }
 
                 babylonMesh._delayInfo = babylonMesh._delayInfo || [];
@@ -75,7 +101,6 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
                     babylonMesh._delayInfo.push(kind);
                 }
 
-                attributes[kind] = uniqueId;
             };
 
             loadAttribute("POSITION", VertexBuffer.PositionKind);
@@ -95,7 +120,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
-                    return dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
+                    return dracoCompression.decodeMeshAsync(data, attributes, dividers).then((babylonVertexData) => {
                         const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
                         babylonVertexData.applyToGeometry(babylonGeometry);
                         return babylonGeometry;

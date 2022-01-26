@@ -10,6 +10,10 @@ import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
 type TransformNode = import('../Meshes/transformNode').TransformNode;
 
+var _ExtractAsInt = (value: number) => {
+    return parseInt(value.toString().replace(/\W/g, ""));
+};
+
 /**
  * Class representing a vector containing 2 coordinates
  */
@@ -47,8 +51,10 @@ export class Vector2 {
      * @returns the Vector2 hash code as a number
      */
     public getHashCode(): number {
-        let hash = this.x | 0;
-        hash = (hash * 397) ^ (this.y | 0);
+        const x = _ExtractAsInt(this.x);
+        const y = _ExtractAsInt(this.y);
+        let hash = x;
+        hash = (hash * 397) ^ y;
         return hash;
     }
 
@@ -836,9 +842,13 @@ export class Vector3 {
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        let hash = this._x | 0;
-        hash = (hash * 397) ^ (this._y | 0);
-        hash = (hash * 397) ^ (this._z | 0);
+        const x = _ExtractAsInt(this._x);
+        const y = _ExtractAsInt(this._y);
+        const z = _ExtractAsInt(this._z);
+
+        let hash = x;
+        hash = (hash * 397) ^ y;
+        hash = (hash * 397) ^ z;
         return hash;
     }
 
@@ -2409,6 +2419,7 @@ export class Vector3 {
      * @param axis2 defines the second axis
      * @param axis3 defines the third axis
      * @returns a new Vector3
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
      */
     public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
         var rotation = Vector3.Zero();
@@ -2473,10 +2484,15 @@ export class Vector4 {
      * @returns a unique hash code
      */
     public getHashCode(): number {
-        let hash = this.x | 0;
-        hash = (hash * 397) ^ (this.y | 0);
-        hash = (hash * 397) ^ (this.z | 0);
-        hash = (hash * 397) ^ (this.w | 0);
+        const x = _ExtractAsInt(this.x);
+        const y = _ExtractAsInt(this.y);
+        const z = _ExtractAsInt(this.z);
+        const w = _ExtractAsInt(this.w);
+
+        let hash = x;
+        hash = (hash * 397) ^ y;
+        hash = (hash * 397) ^ z;
+        hash = (hash * 397) ^ w;
         return hash;
     }
 
@@ -3307,10 +3323,15 @@ export class Quaternion {
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        let hash = this._x | 0;
-        hash = (hash * 397) ^ (this._y | 0);
-        hash = (hash * 397) ^ (this._z | 0);
-        hash = (hash * 397) ^ (this._w | 0);
+        const x = _ExtractAsInt(this._x);
+        const y = _ExtractAsInt(this._y);
+        const z = _ExtractAsInt(this._z);
+        const w = _ExtractAsInt(this._w);
+
+        let hash = x;
+        hash = (hash * 397) ^ y;
+        hash = (hash * 397) ^ z;
+        hash = (hash * 397) ^ w;
         return hash;
     }
 
@@ -4738,9 +4759,9 @@ export class Matrix {
      * @returns the hash code
      */
     public getHashCode(): number {
-        let hash = this._m[0] | 0;
+        let hash = _ExtractAsInt(this._m[0]);
         for (let i = 1; i < 16; i++) {
-            hash = (hash * 397) ^ (this._m[i] | 0);
+            hash = (hash * 397) ^ _ExtractAsInt(this._m[i]);
         }
         return hash;
     }

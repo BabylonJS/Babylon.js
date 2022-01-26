@@ -6,6 +6,7 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
 const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
@@ -32,7 +33,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CheckBoxLineComponent
                     iconLabel={"Clip children"}
                     icon={clipContentsIcon}
-                    label=""
+                    label="CLIP CHILDREN"
                     target={stackPanel}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -40,10 +41,21 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CheckBoxLineComponent
                     iconLabel={"Vertical"}
                     icon={verticalMarginIcon}
-                    label=""
+                    label="VERTICAL"
                     target={stackPanel}
                     propertyName="isVertical"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <FloatLineComponent
+                    lockObject={this.props.lockObject}
+                    label=""
+                    icon={verticalMarginIcon}
+                    iconLabel="spacing"
+                    target={stackPanel}
+                    propertyName="spacing"
+                    defaultValue={0}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onChange={() => stackPanel._markAsDirty()}
                 />
             </div>
         );

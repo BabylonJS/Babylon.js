@@ -11,10 +11,12 @@ import {
     TimestampUnit,
     ITooltipPreprocessedInformation,
     IPerfTooltipHoverPosition,
+    IVisibleRangeChangedObservableProps,
 } from "./graphSupportingTypes";
 import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
+import { Observable } from "babylonjs/Misc/observable";
 
 const defaultColor = "#000";
 const axisColor = "#c0c4c8";
@@ -84,6 +86,12 @@ const tooltipDebounceTime = 32;
 // time in ms to wait between draws
 const drawThrottleTime = 15;
 
+// What distance percentage in the x axis between two points makes us break the line and draw a "no data" box instead
+const maxXDistancePercBetweenLinePoints = 0.1;
+
+// Color used to draw the rectangle that indicates no collection of data
+const noDataRectangleColor = "#aaaaaa";
+
 /**
  * This function will debounce calls to functions.
  *
@@ -139,6 +147,7 @@ export class CanvasGraphService {
     private _tickerItems: IPerfTicker[];
     private _preprocessedTooltipInfo: ITooltipPreprocessedInformation;
     private _numberOfTickers: number;
+    private _onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
 
     private readonly _addonFontLineHeight: number;
     private readonly _defaultLineHeight: number;
@@ -169,6 +178,7 @@ export class CanvasGraphService {
         this._tickerItems = [];
         this._preprocessedTooltipInfo = { focusedId: "", longestText: "", numberOfTooltipItems: 0, xForActualTimestamp: 0 };
         this._numberOfTickers = 0;
+        this._onVisibleRangeChangedObservable = settings.onVisibleRangeChangedObservable;
 
         for (let i = 0; i < maximumDatasetsAllowed; i++) {
             this._tooltipItems.push({ text: "", color: "" });
@@ -227,6 +237,9 @@ export class CanvasGraphService {
     public resetDataPosition() {
         this._position = null;
     }
+
+    private _prevPointById: Map<string, [number, number]> = new Map<string, [number, number]>();
+    private _prevValueById: Map<string, number> = new Map<string, number>();
 
     /**
      * This method draws the data and sets up the appropriate scales.
@@ -312,11 +325,17 @@ export class CanvasGraphService {
         // process, and then draw our points
         this.datasets.ids.forEach((id, idOffset) => {
             let valueMinMax: IPerfMinMax | undefined;
+            let prevPoint = this._prevPointById.get(id);
+            let prevValue = this._prevValueById.get(id);
 
             // we have already calculated  the min and max while getting the tickers, so use those.
             for (let i = 0; i < this._numberOfTickers; i++) {
                 if (this._tickerItems[i].id === id) {
-                    valueMinMax = this._tickerItems[i];
+                    valueMinMax = {...this._tickerItems[i]};
+                    // Extend the min max range by 1% of its total range
+                    const delta = valueMinMax.max - valueMinMax.min;
+                    valueMinMax.min -= 0.01 * delta;
+                    valueMinMax.max += 0.01 * delta;
                 }
             }
 
@@ -334,7 +353,8 @@ export class CanvasGraphService {
                 ctx.globalAlpha = backgroundLineAlpha;
             }
 
-            let prevPoint: [number, number] | undefined;
+            const smoothingFactor = 0.2;
+
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
@@ -346,18 +366,36 @@ export class CanvasGraphService {
                 const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
                 const value = this.datasets.data.at(valueIndex);
 
+                if (prevValue === undefined) {
+                    prevValue = value;
+                    this._prevValueById.set(id, prevValue);
+                }
+                const smoothedValue = smoothingFactor * value + (1 - smoothingFactor) * prevValue;
+
                 const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
-                const drawableValue = this._getPixelForNumber(value, valueMinMax, top, bottom - top, true);
+                const drawableValue = this._getPixelForNumber(smoothedValue, valueMinMax, top, bottom - top, true);
 
                 if (prevPoint === undefined) {
                     prevPoint = [drawableTime, drawableValue];
+                    this._prevPointById.set(id, prevPoint);
                 }
 
-                ctx.moveTo(prevPoint[0], prevPoint[1]);
-                ctx.lineTo(drawableTime, drawableValue);
+                const xDifference = drawableTime - prevPoint[0];
+                const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
+                if (skipLine) {
+                    ctx.fillStyle = noDataRectangleColor;
+                    ctx.fillRect(prevPoint[0], top, xDifference, bottom - top);
+                } else {
+                    if (prevPoint[0] < drawableTime) {
+                        ctx.moveTo(prevPoint[0], prevPoint[1]);
+                        ctx.lineTo(drawableTime, drawableValue);
+                    }
+                }
                 prevPoint[0] = drawableTime;
                 prevPoint[1] = drawableValue;
+                this._prevValueById.set(id, smoothedValue);
             }
+
             ctx.stroke();
         });
 
@@ -377,6 +415,7 @@ export class CanvasGraphService {
         // create the ticker objects for each of the non hidden items.
         let longestText: string = "";
         this._numberOfTickers = 0;
+        const valueMap = new Map<string, IPerfMinMax>();
         this.datasets.ids.forEach((id, idOffset) => {
             if (!!this.metadata.get(id)?.hidden) {
                 return;
@@ -385,6 +424,11 @@ export class CanvasGraphService {
             const valueMinMax = this._getMinMax(bounds, idOffset);
             const latestValue = this.datasets.data.at(this.datasets.startingIndices.at(bounds.end - 1) + PerformanceViewerCollector.SliceDataOffset + idOffset);
             const text = `${id}: ${latestValue.toFixed(2)} (max: ${valueMinMax.max.toFixed(2)}, min: ${valueMinMax.min.toFixed(2)})`;
+            valueMap.set(id, {
+                min: valueMinMax.min,
+                max: valueMinMax.max,
+                current: latestValue,
+            });
             if (text.length > longestText.length) {
                 longestText = text;
             }
@@ -394,6 +438,7 @@ export class CanvasGraphService {
             this._tickerItems[this._numberOfTickers].text = text;
             this._numberOfTickers++;
         });
+        this._onVisibleRangeChangedObservable?.notifyObservers({ valueMap });
 
         ctx.save();
         ctx.font = graphAddonFont;
@@ -410,17 +455,6 @@ export class CanvasGraphService {
             this._tickerTextCache.width = width;
         }
 
-        drawableArea.right -= width;
-
-        const textHeight = this._addonFontLineHeight + Math.floor(tickerHorizontalPadding / 2);
-
-        const x = drawableArea.right + tickerHorizontalPadding;
-        let y = drawableArea.top + textHeight;
-        for (let i = 0; i < this._numberOfTickers; i++) {
-            const tickerItem = this._tickerItems[i];
-            ctx.fillText(tickerItem.text, x, y);
-            y += textHeight;
-        }
         ctx.restore();
     }
 
@@ -674,7 +708,7 @@ export class CanvasGraphService {
     private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
-        let normalizedValue = max !== min ? (num - min) / (max - min) : 1;
+        let normalizedValue = Math.abs(max - min) > 0.001 ? (num - min) / (max - min) : 0.5;
 
         // if we should make this a [1, 0] range instead (higher numbers = smaller pixel value)
         if (shouldFlipValue) {
@@ -1110,6 +1144,8 @@ export class CanvasGraphService {
         }
 
         this._panPosition.xPos = event.clientX;
+        this._prevPointById.clear();
+        this._prevValueById.clear();
     };
 
     /**

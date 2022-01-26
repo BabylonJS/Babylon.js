@@ -35,6 +35,7 @@ import { Plane } from "../Maths/math.plane";
 import { TransformNode } from "./transformNode";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
+declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
 declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
@@ -2914,9 +2915,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var updatableNormals = false;
         var kindIndex: number;
         var kind: string;
+
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
             var vertexBuffer = <VertexBuffer>this.getVertexBuffer(kind);
+
+            // Check data consistency
+            const vertexData = vertexBuffer.getData();
+            if (vertexData instanceof Array || vertexData instanceof Float32Array) {
+                if (vertexData.length === 0) {
+                    continue;
+                }
+            }
 
             if (kind === VertexBuffer.NormalKind) {
                 updatableNormals = vertexBuffer.isUpdatable();
@@ -2943,6 +2953,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
                 kind = kinds[kindIndex];
+                if (!vbs[kind]) {
+                    continue;
+                }
+
                 var stride = vbs[kind].getStrideSize();
 
                 for (var offset = 0; offset < stride; offset++) {
@@ -2994,6 +3008,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Updating vertex buffers
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
+
+            if (!newdata[kind]) {
+                continue;
+            }
+
             this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
         }
 
@@ -3486,11 +3505,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Material
         if (this.material) {
             if (!this.material.doNotSerialize) {
-                serializationObject.materialId = this.material.id;
+                serializationObject.materialUniqueId = this.material.uniqueId;
+                serializationObject.materialId = this.material.id; // back compat
             }
         } else {
             this.material = null;
-            serializationObject.materialId = this._scene.defaultMaterial.id;
+            serializationObject.materialUniqueId = this._scene.defaultMaterial.uniqueId;
+            serializationObject.materialId = this._scene.defaultMaterial.id; // back compat
         }
 
         // Morph targets
@@ -3699,6 +3720,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /** @hidden */
+    public static _GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
+        throw _WarnImport("GoldbergMesh");
+    };
+
+    /** @hidden */
     public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         throw _WarnImport("LinesMesh");
     };
@@ -3717,6 +3743,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = Mesh._LinesMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "GroundMesh") {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GoldbergMesh") {
+            mesh = Mesh._GoldbergMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
         }
@@ -3788,7 +3816,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Parent
-        if (parsedMesh.parentId) {
+        if (parsedMesh.parentId !== undefined) {
             mesh._waitingParentId = parsedMesh.parentId;
         }
 
@@ -3870,10 +3898,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Material
-        if (parsedMesh.materialId) {
-            mesh.setMaterialById(parsedMesh.materialId);
-        } else {
-            mesh.material = null;
+        if (parsedMesh.materialUniqueId) {
+            mesh._waitingMaterialId = parsedMesh.materialUniqueId;
+        }
+        else if (parsedMesh.materialId) {
+            mesh._waitingMaterialId = parsedMesh.materialId;
         }
 
         // Morph targets
@@ -3950,7 +3979,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     instance.metadata = parsedInstance.metadata;
                 }
 
-                if (parsedInstance.parentId) {
+                if (parsedInstance.parentId !== undefined) {
                     instance._waitingParentId = parsedInstance.parentId;
                 }
 
@@ -4500,6 +4529,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             instance._indexInSourceMeshInstanceArray = -1;
             this.instances.pop();
         }
+    }
+
+    /** @hidden */
+    public _shouldConvertRHS() {
+        return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
     }
 }
 

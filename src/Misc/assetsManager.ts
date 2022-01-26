@@ -928,10 +928,10 @@ export class AssetsManager {
      * @param taskName defines the name of the new task
      * @param meshesNames defines the name of meshes to load
      * @param rootUrl defines the root url to use to locate files
-     * @param sceneFilename defines the filename of the scene file
+     * @param sceneFilename defines the filename of the scene file or the File itself
      * @returns a new ContainerAssetTask object
      */
-    public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): ContainerAssetTask {
+    public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): ContainerAssetTask {
         var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
         this._tasks.push(task);
 
@@ -943,10 +943,10 @@ export class AssetsManager {
      * @param taskName defines the name of the new task
      * @param meshesNames defines the name of meshes to load
      * @param rootUrl defines the root url to use to locate files
-     * @param sceneFilename defines the filename of the scene file
+     * @param sceneFilename defines the filename of the scene file or the File itself
      * @returns a new MeshAssetTask object
      */
-    public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): MeshAssetTask {
+    public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): MeshAssetTask {
         var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
         this._tasks.push(task);
 
@@ -1151,12 +1151,27 @@ export class AssetsManager {
 
             if (this.onTaskError) {
                 this.onTaskError(task);
+            } else if (!task.onError) {
+                Logger.Error(this._formatTaskErrorMessage(task));
             }
             this.onTaskErrorObservable.notifyObservers(task);
             this._decreaseWaitingTasksCount(task);
         };
 
         task.run(this._scene, done, error);
+    }
+
+    private _formatTaskErrorMessage(task: AbstractAssetTask) {
+        let errorMessage = "Unable to complete task " + task.name;
+
+        if (task.errorObject.message) {
+            errorMessage += `: ${task.errorObject.message}`;
+        }
+        if (task.errorObject.exception) {
+            errorMessage += `: ${task.errorObject.exception}`;
+        }
+
+        return errorMessage;
     }
 
     /**

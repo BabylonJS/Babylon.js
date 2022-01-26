@@ -269,6 +269,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
+     * Gets the current value of the refreshId counter
+     */
+    public get currentRefreshId() {
+        return this._currentRefreshId;
+    }
+
+    /**
      * Sets a specific material to be used to render a mesh/a list of meshes in this render target texture
      * @param mesh mesh or array of meshes
      * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering in the case of a cube texture (6 rendering) and a 2D texture array (as many rendering as the length of the array)
@@ -434,13 +441,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Creates a depth stencil texture.
      * This is only available in WebGL 2 or with the depth texture extension available.
-     * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode
-     * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
-     * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
-     * @param samples sample count of the depth/stencil texture
+     * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode (default: 0)
+     * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture (default: true)
+     * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
+     * @param samples sample count of the depth/stencil texture (default: 1)
+     * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
      */
-    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1): void {
-        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples);
+    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1, format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT): void {
+        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format);
     }
 
     private _releaseRenderPassId(): void {
@@ -1229,7 +1237,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      *  This will remove the attached framebuffer objects. The texture will not be able to be used as render target anymore
      */
     public disposeFramebufferObjects(): void {
-        this._renderTarget?._swapAndDie(null);
+        this._renderTarget?.dispose(true);
     }
 
     /**

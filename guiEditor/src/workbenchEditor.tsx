@@ -8,8 +8,9 @@ import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
-
 import { CommandBarComponent } from "./components/commandBarComponent";
+import { GuiGizmoComponent } from "./diagram/guiGizmo";
+import { Nullable } from "babylonjs/types";
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -20,6 +21,7 @@ const gridIcon: string = require("../public/imgs/gridIcon.svg");
 const stackPanelIcon: string = require("../public/imgs/stackPanelIcon.svg");
 const textBoxIcon: string = require("../public/imgs/textBoxIcon.svg");
 const sliderIcon: string = require("../public/imgs/sliderIcon.svg");
+const imageBasedSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
 const buttonIcon: string = require("../public/imgs/buttonIcon.svg");
 const passwordFieldIcon: string = require("../public/imgs/passwordFieldIcon.svg");
 const checkboxIcon: string = require("../public/imgs/checkboxIcon.svg");
@@ -46,20 +48,14 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
-    private _toolBarIconSize = 55;
+    private _toolBarIconSize = 40;
 
-    private _onWidgetKeyUpPointer: any;
     private _popUpWindow: Window;
+    private _draggedItem: Nullable<string>;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
     }
 
@@ -256,8 +252,19 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                     {this.createToolbar()}
                     {/* The gui workbench diagram */}
-                    <div className="diagram-container">
+                    <div className="diagram-container"
+                        onDrop={(event) => {
+                            if (this._draggedItem != null) {
+                                this.onCreate(this._draggedItem);
+                            }
+                            this._draggedItem = null;
+
+                        }}
+                        onDragOver={(event) => {
+                            event.preventDefault();
+                        }}>
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                        <GuiGizmoComponent globalState={this.props.globalState} />
                     </div>
 
                     <div
@@ -401,6 +408,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 },
             },
             {
+                label: "ImageBasedSlider",
+                icon: imageBasedSliderIcon,
+                onClick: () => {
+                    this.onCreate("ImageBasedSlider");
+                },
+            },
+            {
                 label: "VirtualKeyboard",
                 icon: keyboardIcon,
                 onClick: () => {
@@ -421,6 +435,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.props.globalState.guiGizmo.onUp();
         this.forceUpdate();
     }
 
@@ -436,6 +451,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     <div
                                         className={"toolbar-label" + (m.isActive ? " active" : "")}
                                         key={m.label}
+                                        onDragStart={(evt) => { this._draggedItem = m.label }}
                                         onClick={() => {
                                             if (!m.onClick) {
                                                 this.forceUpdate();
@@ -449,8 +465,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     >
                                         {!m.icon && <div className="toolbar-label-text">{(m.isActive ? "> " : "") + m.label}</div>}
                                         {m.icon && (
-                                            <div className="toolbar-icon">
-                                                <img src={m.icon} />
+                                            <div className="toolbar-icon" draggable={true}>
+                                                <img src={m.icon} width="40px" height={"40px"} />
                                             </div>
                                         )}
                                         {m.onCheck && (

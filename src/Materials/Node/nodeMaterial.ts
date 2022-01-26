@@ -538,6 +538,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets or sets a boolean indicating that alpha blending must be enabled no matter what alpha value or alpha channel of the FragmentBlock are
+     */
+     @serialize()
+    public forceAlphaBlending = false;
+
+    /**
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
      */
@@ -545,7 +551,7 @@ export class NodeMaterial extends PushMaterial {
         if (this.ignoreAlpha) {
             return false;
         }
-        return (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
+        return this.forceAlphaBlending || (this.alpha < 1.0) || (this._sharedData && this._sharedData.hints.needAlphaBlending);
     }
 
     /**
@@ -1033,7 +1039,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Connection points
         for (var inputBlock of this._sharedData.inputBlocks) {
-            inputBlock._transmit(effect, this.getScene());
+            inputBlock._transmit(effect, this.getScene(), this);
         }
     }
 
@@ -1304,7 +1310,7 @@ export class NodeMaterial extends PushMaterial {
 
                 // Connection points
                 for (var inputBlock of sharedData.inputBlocks) {
-                    inputBlock._transmit(effect, scene);
+                    inputBlock._transmit(effect, scene, this);
                 }
             }
         } else if (!this.isFrozen) {
@@ -1383,7 +1389,17 @@ export class NodeMaterial extends PushMaterial {
             block.dispose();
         }
 
+        this.attachedBlocks = [];
+        (this._sharedData as any) = null;
+        (this._vertexCompilationState as any) = null;
+        (this._fragmentCompilationState as any) = null;
+
         this.onBuildObservable.clear();
+
+        if (this._imageProcessingObserver) {
+            this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
+            this._imageProcessingObserver = null;
+        }
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
@@ -1867,6 +1883,10 @@ export class NodeMaterial extends PushMaterial {
         }
 
         this.comment = source.comment;
+
+        if (source.forceAlphaBlending !== undefined) {
+            this.forceAlphaBlending = source.forceAlphaBlending;
+        }
 
         if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;

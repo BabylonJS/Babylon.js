@@ -59,6 +59,9 @@ varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
 
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
     vec3 positionUpdated = position;

@@ -25,7 +25,12 @@ export enum TextWrapping {
     /**
      * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
      */
-    Ellipsis,
+    Ellipsis = 2,
+
+    /**
+     * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+     */
+    WordWrapEllipsis
 }
 
 /**
@@ -293,7 +298,7 @@ export class TextBlock extends Control {
         super._processMeasures(parentMeasure, context);
 
         // Prepare lines
-        this._lines = this._breakLines(this._currentMeasure.width, context);
+        this._lines = this._breakLines(this._currentMeasure.width, this._currentMeasure.height, context);
         this.onLinesReadyObservable.notifyObservers(this);
 
         let maxLineWidth: number = 0;
@@ -308,13 +313,13 @@ export class TextBlock extends Control {
 
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                let newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
+                let newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            let newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
+            let newHeight = (this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
 
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 let lineSpacing = 0;
@@ -402,7 +407,7 @@ export class TextBlock extends Control {
         }
     }
 
-    protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
+    protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[] {
         var lines = [];
         var _lines = this.text.split("\n");
 
@@ -413,6 +418,10 @@ export class TextBlock extends Control {
         } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
+            }
+        } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
+            for (var _line of _lines) {
+                lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
             for (var _line of _lines) {
@@ -483,6 +492,25 @@ export class TextBlock extends Control {
         return lines;
     }
 
+    protected _parseLineWordWrapEllipsis(line: string = "", width: number, height: number, context: ICanvasRenderingContext): object[] {
+        var lines = this._parseLineWordWrap(line, width, context);
+        for (var n = 1; n <= lines.length; n++) {
+            const currentHeight = this._computeHeightForLinesOf(n);
+            if (currentHeight > height && n > 1) {
+                var lastLine = lines[n - 2] as {text: string; width: number};
+                var currentLine = lines[n - 1] as {text: string; width: number};
+                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text + currentLine.text}`, width, context);
+                var linesToRemove = lines.length - n + 1;
+                for (var i = 0; i < linesToRemove; i++) {
+                    lines.pop();
+                }
+                return lines;
+            }
+        }
+
+        return lines;
+    }
+
     protected _renderLines(context: ICanvasRenderingContext): void {
         var height = this._currentMeasure.height;
         var rootY = 0;
@@ -516,35 +544,38 @@ export class TextBlock extends Control {
         }
     }
 
+    private _computeHeightForLinesOf(lineCount: number): number {
+        let newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
+
+        if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
+            let lineSpacing = 0;
+            if (this._lineSpacing.isPixel) {
+                lineSpacing = this._lineSpacing.getValue(this._host);
+            } else {
+                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+            }
+
+            newHeight += (lineCount - 1) * lineSpacing;
+        }
+
+        return newHeight;
+    }
+
     /**
      * Given a width constraint applied on the text block, find the expected height
      * @returns expected height
      */
     public computeExpectedHeight(): number {
         if (this.text && this.widthInPixels) {
-            // Shoudl abstract platform instead of using LastCreatedEngine
+            // Should abstract platform instead of using LastCreatedEngine
             const context = Engine.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
             if (context) {
                 this._applyStates(context);
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
                 }
-                const lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
-
-                let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
-
-                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                    let lineSpacing = 0;
-                    if (this._lineSpacing.isPixel) {
-                        lineSpacing = this._lineSpacing.getValue(this._host);
-                    } else {
-                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
-                    }
-
-                    newHeight += (lines.length - 1) * lineSpacing;
-                }
-
-                return newHeight;
+                const lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, this.heightInPixels - this._paddingTopInPixels - this._paddingBottomInPixels, context);
+                return this._computeHeightForLinesOf(lines.length);
             }
         }
         return 0;

@@ -24,6 +24,27 @@ const numPointsColHeader = "numPoints";
 // regex to capture all carriage returns in the string.
 const carriageReturnRegex = /\r/g;
 
+// string to use as separator when exporting extra information along with the dataset id
+const exportedDataSeparator = "@";
+
+/**
+ * Callback strategy and optional category for data collection
+ */
+interface IPerformanceViewerStrategyParameter {
+    /**
+     * The strategy for collecting data. Available strategies are located on the PerfCollectionStrategy class
+     */
+    strategyCallback: PerfStrategyInitialization;
+    /**
+     * Category for displaying this strategy on the viewer. Can be undefined or an empty string, in which case the strategy will be displayed on top
+     */
+    category?: string;
+    /**
+     * Starts hidden
+     */
+    hidden?: boolean;
+}
+
 /**
  * The collector class handles the collection and storage of data into the appropriate array.
  * The collector also handles notifying any observers of any updates.
@@ -33,6 +54,7 @@ export class PerformanceViewerCollector {
     private _strategies: Map<string, IPerfViewerCollectionStrategy>;
     private _startingTimestamp: number;
     private _hasLoadedData: boolean;
+    private _isStarted: boolean;
     private readonly _customEventObservable: Observable<IPerfCustomEvent>;
     private readonly _eventRestoreSet: Set<string>;
 
@@ -69,11 +91,11 @@ export class PerformanceViewerCollector {
      * @param _scene the scene to collect on.
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
-    constructor(private _scene: Scene, _enabledStrategyCallbacks?: PerfStrategyInitialization[]) {
+    constructor(private _scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]) {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
-            startingIndices: new DynamicFloat32Array(initialArraySize)
+            startingIndices: new DynamicFloat32Array(initialArraySize),
         };
         this._strategies = new Map<string, IPerfViewerCollectionStrategy>();
         this._datasetMeta = new Map<string, IPerfMetadata>();
@@ -92,9 +114,10 @@ export class PerformanceViewerCollector {
      * if not we will increment our counter and record the value of the counter at the end of each frame. The value recorded is 0 if no sendEvent method is called, within a frame.
      * @param name The name of the event to register
      * @param forceUpdate if the code should force add an event, and replace the last one.
+     * @param category the category for that event
      * @returns The event registered, used in sendEvent
      */
-    public registerEvent(name: string, forceUpdate?: boolean): IPerfCustomEvent | undefined {
+    public registerEvent(name: string, forceUpdate?: boolean, category?: string): IPerfCustomEvent | undefined {
         if (this._strategies.has(name) && !forceUpdate) {
             return;
         }
@@ -131,15 +154,15 @@ export class PerformanceViewerCollector {
                 dispose: () => {
                     scene.onAfterRenderObservable.remove(afterRenderObserver);
                     this._customEventObservable.remove(stringObserver);
-                }
+                },
             };
         };
         const event: IPerfCustomEvent = {
-            name
+            name,
         };
 
         this._eventRestoreSet.add(name);
-        this.addCollectionStrategies(strategy);
+        this.addCollectionStrategies({ strategyCallback: strategy, category });
 
         return event;
     }
@@ -167,8 +190,8 @@ export class PerformanceViewerCollector {
      * This method adds additional collection strategies for data collection purposes.
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
-    public addCollectionStrategies(...strategyCallbacks: PerfStrategyInitialization[]) {
-        for (const strategyCallback of strategyCallbacks) {
+    public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
+        for (let { strategyCallback, category, hidden } of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
                 strategy.dispose();
@@ -177,8 +200,14 @@ export class PerformanceViewerCollector {
 
             this.datasets.ids.push(strategy.id);
 
+            if (category) {
+                category = category.replace(new RegExp(exportedDataSeparator, "g"), "");
+            }
+
             this._datasetMeta.set(strategy.id, {
                 color: this._getHexColorFromId(strategy.id),
+                category,
+                hidden,
             });
 
             this._strategies.set(strategy.id, strategy);
@@ -203,7 +232,7 @@ export class PerformanceViewerCollector {
         // then we build the string octet by octet.
         let hex = "#";
         for (let i = 0; i < numberOfBitsInHexcode; i += 8) {
-            const octet = (hash >> i) & 0xFF;
+            const octet = (hash >> i) & 0xff;
             hex += (hexPadding + octet.toString(16)).substr(-2);
         }
 
@@ -224,7 +253,8 @@ export class PerformanceViewerCollector {
 
         if (numberOfIndices > 0) {
             const previousStartingIndex = this.datasets.startingIndices.at(numberOfIndices - 1);
-            startingIndex = previousStartingIndex + this.datasets.data.at(previousStartingIndex + PerformanceViewerCollector.NumberOfPointsOffset) + PerformanceViewerCollector.SliceDataOffset;
+            startingIndex =
+                previousStartingIndex + this.datasets.data.at(previousStartingIndex + PerformanceViewerCollector.NumberOfPointsOffset) + PerformanceViewerCollector.SliceDataOffset;
         }
 
         this.datasets.startingIndices.push(startingIndex);
@@ -253,7 +283,7 @@ export class PerformanceViewerCollector {
 
             this.datasetObservable.notifyObservers(slice);
         }
-    }
+    };
 
     /**
      * Collects and then sends the latest slice to any observers by using the appropriate strategy when the user wants.
@@ -281,7 +311,6 @@ export class PerformanceViewerCollector {
         if (this.datasetObservable.hasObservers()) {
             this.datasetObservable.notifyObservers(slice);
         }
-
     }
 
     /**
@@ -333,16 +362,15 @@ export class PerformanceViewerCollector {
      * Given a string containing file data, this function parses the file data into the datasets object.
      * It returns a boolean to indicate if this object was successfully loaded with the data.
      * @param data string content representing the file data.
+     * @param keepDatasetMeta if it should use reuse the existing dataset metadata
      * @returns true if the data was successfully loaded, false otherwise.
      */
-    public loadFromFileData(data: string): boolean {
-        const lines =
-            data.replace(carriageReturnRegex, '').split('\n')
-                .map((line) => (
-                    line.split(',')
-                        .filter((s) =>  s.length > 0)
-                ))
-                .filter((line) => line.length > 0);
+    public loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean {
+        const lines = data
+            .replace(carriageReturnRegex, "")
+            .split("\n")
+            .map((line) => line.split(",").filter((s) => s.length > 0))
+            .filter((line) => line.length > 0);
         const timestampIndex = 0;
         const numPointsIndex = PerformanceViewerCollector.NumberOfPointsOffset;
         if (lines.length < 2) {
@@ -352,7 +380,7 @@ export class PerformanceViewerCollector {
         const parsedDatasets: IPerfDatasets = {
             ids: [],
             data: new DynamicFloat32Array(initialArraySize),
-            startingIndices: new DynamicFloat32Array(initialArraySize)
+            startingIndices: new DynamicFloat32Array(initialArraySize),
         };
 
         // parse first line seperately to populate ids!
@@ -362,9 +390,13 @@ export class PerformanceViewerCollector {
             return false;
         }
 
+        const idCategoryMap: Map<string, string> = new Map<string, string>();
+
         // populate the ids.
         for (let i = PerformanceViewerCollector.SliceDataOffset; i < firstLine.length; i++) {
-            parsedDatasets.ids.push(firstLine[i]);
+            let [id, category] = firstLine[i].split(exportedDataSeparator);
+            parsedDatasets.ids.push(id);
+            idCategoryMap.set(id, category);
         }
 
         let startingIndex = 0;
@@ -402,13 +434,19 @@ export class PerformanceViewerCollector {
         this.datasets.ids = parsedDatasets.ids;
         this.datasets.data = parsedDatasets.data;
         this.datasets.startingIndices = parsedDatasets.startingIndices;
-        this._datasetMeta.clear();
+        if (!keepDatasetMeta) {
+            this._datasetMeta.clear();
+        }
         this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
 
         // populate metadata.
-        for (const id of this.datasets.ids) {
-            this._datasetMeta.set(id, {color: this._getHexColorFromId(id)});
+        if (!keepDatasetMeta) {
+            for (const id of this.datasets.ids) {
+                const category = idCategoryMap.get(id);
+
+                this._datasetMeta.set(id, { category, color: this._getHexColorFromId(id) });
+            }
         }
         this.metadataObservable.notifyObservers(this._datasetMeta);
         this._hasLoadedData = true;
@@ -424,6 +462,12 @@ export class PerformanceViewerCollector {
         csvContent += `${timestampColHeader},${numPointsColHeader}`;
         for (let i = 0; i < this.datasets.ids.length; i++) {
             csvContent += `,${this.datasets.ids[i]}`;
+            if (this._datasetMeta) {
+                const meta = this._datasetMeta.get(this.datasets.ids[i]);
+                if (meta?.category) {
+                    csvContent += `${exportedDataSeparator}${meta.category}`;
+                }
+            }
         }
         csvContent += "\n";
         // create the data lines
@@ -447,7 +491,7 @@ export class PerformanceViewerCollector {
         }
 
         const fileName = `${new Date().toISOString()}-perfdata.csv`;
-        Tools.Download(new Blob([csvContent], {type: "text/csv"}), fileName);
+        Tools.Download(new Blob([csvContent], { type: "text/csv" }), fileName);
     }
     /**
      * Starts the realtime collection of data.
@@ -457,30 +501,42 @@ export class PerformanceViewerCollector {
         if (!shouldPreserve) {
             this.datasets.data = new DynamicFloat32Array(initialArraySize);
             this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
+            this._startingTimestamp = PrecisionDate.Now;
+        } else if (this._startingTimestamp === undefined) {
+            this._startingTimestamp = PrecisionDate.Now;
         }
-        this._startingTimestamp = PrecisionDate.Now;
         this._scene.onAfterRenderObservable.add(this._collectDataAtFrame);
         this._restoreStringEvents();
+        this._isStarted = true;
     }
 
     /**
      * Stops the collection of data.
      */
     public stop() {
-        this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._isStarted = false;
+    }
+
+    /**
+     * Returns if the perf collector has been started or not.
+     */
+    public get isStarted(): boolean {
+        return this._isStarted;
     }
 
     /**
      * Disposes of the object
      */
     public dispose() {
-        this._scene.onBeforeRenderObservable.removeCallback(this._collectDataAtFrame);
+        this._scene.onAfterRenderObservable.removeCallback(this._collectDataAtFrame);
         this._datasetMeta.clear();
         this._strategies.forEach((strategy) => {
             strategy.dispose();
         });
         this.datasetObservable.clear();
         this.metadataObservable.clear();
+        this._isStarted = false;
         (<any>this.datasets) = null;
     }
 }

@@ -276,7 +276,7 @@ export class VertexData {
         return this;
     }
 
-    private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this) as typeof this._applyToCoroutine);
+    private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this));
 
     /** @hidden */
     public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
@@ -937,7 +937,7 @@ export class VertexData {
       * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
       * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
       * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-      * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+      * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
       * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
       * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
       * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)

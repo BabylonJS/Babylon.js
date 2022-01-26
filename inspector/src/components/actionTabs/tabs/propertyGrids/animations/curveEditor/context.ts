@@ -24,6 +24,7 @@ export class Context {
     activeFrame: number;
     fromKey: number;
     toKey: number;
+    useExistingPlayRange: boolean = false;
     forwardAnimation = true;
     isPlaying: boolean;
     clipLength: number;
@@ -84,6 +85,11 @@ export class Context {
 
     onSelectToActivated = new Observable<{ from: number; to: number }>();
 
+    lockLastFrameValue: boolean = false;
+    lockLastFrameFrame: boolean = false;
+
+    // value frame inTangent outTangent
+    onActiveKeyDataChanged = new Observable<number>();
     public prepare() {
         this.isPlaying = false;
         if (!this.animations || !this.animations.length) {
@@ -92,11 +98,15 @@ export class Context {
 
         const animation = this.useTargetAnimations ? (this.animations[0] as TargetedAnimation).animation : (this.animations[0] as Animation);
         const keys = animation.getKeys();
-        this.fromKey = keys[0].frame;
-        this.toKey = keys[keys.length - 1].frame;
-
+        
         this.referenceMinFrame = 0;
-        this.referenceMaxFrame = this.toKey;
+        this.referenceMaxFrame = keys[keys.length - 1].frame;
+        
+        if (!this.useExistingPlayRange) {
+            this.fromKey = this.referenceMinFrame;
+            this.toKey = this.referenceMaxFrame;
+        }
+
         this.snippetId = animation.snippetId;
 
         this.clipLength = this.referenceMaxFrame;

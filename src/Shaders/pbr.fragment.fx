@@ -260,43 +260,47 @@ void main(void) {
     #ifdef REFLECTION
         reflectionOutParams reflectionOut;
 
-        reflectionBlock(
-            vPositionW,
-            normalW,
-            alphaG,
-            vReflectionMicrosurfaceInfos,
-            vReflectionInfos,
-            vReflectionColor,
-        #ifdef ANISOTROPIC
-            anisotropicOut,
-        #endif
-        #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            NdotVUnclamped,
-        #endif
-        #ifdef LINEARSPECULARREFLECTION
-            roughness,
-        #endif
-            reflectionSampler,
-        #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-            vEnvironmentIrradiance,
-        #endif
-        #ifdef USESPHERICALFROMREFLECTIONMAP
-            #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                reflectionMatrix,
+        #ifndef USE_CUSTOM_REFLECTION
+            reflectionBlock(
+                vPositionW,
+                normalW,
+                alphaG,
+                vReflectionMicrosurfaceInfos,
+                vReflectionInfos,
+                vReflectionColor,
+            #ifdef ANISOTROPIC
+                anisotropicOut,
             #endif
+            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                NdotVUnclamped,
+            #endif
+            #ifdef LINEARSPECULARREFLECTION
+                roughness,
+            #endif
+                reflectionSampler,
+            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                vEnvironmentIrradiance,
+            #endif
+            #ifdef USESPHERICALFROMREFLECTIONMAP
+                #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
+                    reflectionMatrix,
+                #endif
+            #endif
+            #ifdef USEIRRADIANCEMAP
+                irradianceSampler,
+            #endif
+            #ifndef LODBASEDMICROSFURACE
+                reflectionSamplerLow,
+                reflectionSamplerHigh,
+            #endif
+            #ifdef REALTIME_FILTERING
+                vReflectionFilteringInfo,
+            #endif
+                reflectionOut
+            );
+        #else
+            #define CUSTOM_REFLECTION
         #endif
-        #ifdef USEIRRADIANCEMAP
-            irradianceSampler,
-        #endif
-        #ifndef LODBASEDMICROSFURACE
-            reflectionSamplerLow,
-            reflectionSamplerHigh,
-        #endif
-        #ifdef REALTIME_FILTERING
-            vReflectionFilteringInfo,
-        #endif
-            reflectionOut
-        );
     #endif
 
     // ___________________ Compute Reflectance aka R0 F0 info _________________________
@@ -612,7 +616,7 @@ void main(void) {
             float scatteringDiffusionProfile = 255.;
         #endif
 
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(clamp(irradiance, vec3(0.), vec3(1.)), writeGeometryInfo * scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
     #endif
@@ -631,7 +635,7 @@ void main(void) {
 
     #ifdef PREPASS_REFLECTIVITY
         #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, writeGeometryInfo);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, baseReflectivity.a * writeGeometryInfo);
         #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
@@ -653,4 +657,7 @@ void main(void) {
 #endif
 
     #include<pbrDebug>
+
+    #define CUSTOM_FRAGMENT_MAIN_END
+
 }

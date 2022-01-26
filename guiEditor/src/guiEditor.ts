@@ -4,11 +4,13 @@ import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "./sharedUiComponents/lines/popup";
 import { Observable } from "babylonjs/Misc/observable";
+import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 
 /**
  * Interface used to specify creation options for the gui editor
  */
 export interface IGUIEditorOptions {
+    liveGuiTexture?: AdvancedDynamicTexture;
     customLoad: { label: string; action: (data: string) => Promise<string>; } | undefined;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<string> };
@@ -26,11 +28,10 @@ export class GUIEditor {
      * @param options defines the options to use to configure the gui editor
      */
     public static async Show(options: IGUIEditorOptions) {
-        if (this._CurrentState) {
-            var popupWindow = (Popup as any)["gui-editor"];
-            if (popupWindow) {
-                popupWindow.close();
-            }
+        let hostElement = options.hostElement;
+
+        // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
+        if (this._CurrentState && hostElement) {
             if (options.currentSnippetToken) {
                 try {
                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -41,13 +42,18 @@ export class GUIEditor {
             return;
         }
 
-        let hostElement = options.hostElement;
-
         if (!hostElement) {
-            hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800)!;
+            var popupWindow = (Popup as any)["gui-editor"];
+            if (popupWindow) {
+                popupWindow.close();
+            }
+            hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800)!;
         }
 
         let globalState = new GlobalState();
+        if (options.liveGuiTexture) {
+            globalState.liveGuiTexture = options.liveGuiTexture;
+        }
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
@@ -61,7 +67,7 @@ export class GUIEditor {
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            await globalState.workbench.createGUICanvas();
+            globalState.workbench.createGUICanvas();
             if (options.currentSnippetToken) {
                 try {
                     await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -69,7 +75,6 @@ export class GUIEditor {
                 } catch (error) {
                     //swallow and continue
                 }
-
             }
         }
 
@@ -92,6 +97,8 @@ export class GUIEditor {
                 }
             };
         }
-        window.addEventListener("beforeunload", () => { });
+        globalState.hostWindow.addEventListener("beforeunload", () => {
+            globalState.onPopupClosedObservable.notifyObservers();
+        });
     }
 }

@@ -48,15 +48,16 @@ export class BabylonFileLoaderConfiguration {
 }
 
 var tempIndexContainer: {[key: string]: Node} = {};
+const tempMaterialIndexContainer: {[key: string]: Material} = {};
 
-var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
+var parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
         return null;
     }
 
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
         var parsedMaterial = parsedData.materials[index];
-        if (parsedMaterial.id === id) {
+        if (predicate(parsedMaterial)) {
             return Material.Parse(parsedMaterial, scene, rootUrl);
         }
     }
@@ -70,7 +71,7 @@ var isDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number>)
             return true;
         }
     }
-    if (mesh.parentId && hierarchyIds.indexOf(mesh.parentId) !== -1) {
+    if (mesh.parentId !== undefined && hierarchyIds.indexOf(mesh.parentId) !== -1) {
         hierarchyIds.push(mesh.id);
         return true;
     }
@@ -118,13 +119,21 @@ var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 };
 
 var findParent = (parentId: any, scene: Scene) => {
-    if (isNaN(parentId)) {
+    if (typeof parentId !== "number") {
         return scene.getLastEntryById(parentId);
     }
 
     let parent = tempIndexContainer[parentId];
 
     return parent;
+};
+
+const findMaterial = (materialId: any, scene: Scene) => {
+    if (typeof materialId !== "number") {
+        return scene.getLastMaterialById(materialId, true);
+    }
+
+    return tempMaterialIndexContainer[materialId];
 };
 
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
@@ -232,6 +241,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMaterial = parsedData.materials[index];
                 var mat = Material.Parse(parsedMaterial, scene, rootUrl);
                 if (mat) {
+                    tempMaterialIndexContainer[parsedMaterial.uniqueId || parsedMaterial.id] = mat;
                     container.materials.push(mat);
                     mat._parentContainer = container;
                     log += (index === 0 ? "\n\tMaterials:" : "");
@@ -253,6 +263,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
                 var parsedMultiMaterial = parsedData.multiMaterials[index];
                 var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                tempMaterialIndexContainer[parsedMultiMaterial.uniqueId || parsedMultiMaterial.id] = mmat;
                 container.multiMaterials.push(mmat);
                 mmat._parentContainer = container;
 
@@ -385,7 +396,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Browsing all the graph to connect the dots
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             var camera = scene.cameras[index];
-            if (camera._waitingParentId) {
+            if (camera._waitingParentId !== null) {
                 camera.parent = findParent(camera._waitingParentId, scene);
                 camera._waitingParentId = null;
             }
@@ -393,7 +404,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
 
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             let light = scene.lights[index];
-            if (light && light._waitingParentId) {
+            if (light && light._waitingParentId !== null) {
                 light.parent = findParent(light._waitingParentId, scene);
                 light._waitingParentId = null;
             }
@@ -402,14 +413,14 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         // Connect parents & children and parse actions and lods
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             var transformNode = scene.transformNodes[index];
-            if (transformNode._waitingParentId) {
+            if (transformNode._waitingParentId !== null) {
                 transformNode.parent = findParent(transformNode._waitingParentId, scene);
                 transformNode._waitingParentId = null;
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             var mesh = scene.meshes[index];
-            if (mesh._waitingParentId) {
+            if (mesh._waitingParentId !== null) {
                 mesh.parent = findParent(mesh._waitingParentId, scene);
                 mesh._waitingParentId = null;
             }
@@ -417,6 +428,22 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 loadDetailLevels(scene, mesh);
             }
         }
+
+        // link multimats with materials
+        scene.multiMaterials.forEach((multimat) => {
+                multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
+                    multimat.subMaterials.push(findMaterial(subMaterial, scene));
+                });
+                multimat._waitingSubMaterialsUniqueIds = [];
+        });
+
+        // link meshes with materials
+        scene.meshes.forEach((mesh) => {
+            if (mesh._waitingMaterialId !== null) {
+                mesh.material = findMaterial(mesh._waitingMaterialId, scene);
+                mesh._waitingMaterialId = null;
+            }
+        });
 
         // link skeleton transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
@@ -545,9 +572,21 @@ SceneLoader.RegisterPlugin({
             }
 
             var hierarchyIds = new Array<number>();
+
+            // Transform nodes (the overall idea is to load all of them as this is super fast and then get rid of the ones we don't need)
+            var loadedTransformNodes = [];
+            if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
+                for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                    const parsedTransformNode = parsedData.transformNodes[index];
+                    loadedTransformNodes.push(TransformNode.Parse(parsedTransformNode, scene, rootUrl));
+                }
+            }
+
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 var loadedSkeletonsIds = [];
-                var loadedMaterialsIds = [];
+                var loadedMaterialsIds : string[] = [];
+                const loadedMaterialsUniqueIds : string[] = [];
+                var loadedMorphTargetsIds = [];
                 var index: number;
                 var cache: number;
                 for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
@@ -589,22 +628,30 @@ SceneLoader.RegisterPlugin({
                         }
 
                         // Material ?
-                        if (parsedMesh.materialId) {
-                            var materialFound = (loadedMaterialsIds.indexOf(parsedMesh.materialId) !== -1);
+                        if (parsedMesh.materialUniqueId || parsedMesh.materialId) {
+                            // if we have a unique ID, look up and store in loadedMaterialsUniqueIds, else use loadedMaterialsIds
+                            const materialArray = parsedMesh.materialUniqueId ? loadedMaterialsUniqueIds : loadedMaterialsIds;
+                            var materialFound = (materialArray.indexOf(parsedMesh.materialUniqueId || parsedMesh.materialId) !== -1);
                             if (materialFound === false && parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
+                                // Loads a submaterial of a multimaterial
+                                const loadSubMaterial = (subMatId: string, predicate: (parsedMaterial: any) => boolean) => {
+                                    materialArray.push(subMatId);
+                                    var mat = parseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
+                                    if (mat) {
+                                        log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    }
+                                };
                                 for (var multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
-                                    var parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
-                                    if (parsedMultiMaterial.id === parsedMesh.materialId) {
-                                        for (var matIndex = 0, matCache = parsedMultiMaterial.materials.length; matIndex < matCache; matIndex++) {
-                                            var subMatId = parsedMultiMaterial.materials[matIndex];
-                                            loadedMaterialsIds.push(subMatId);
-                                            var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
-                                            if (mat) {
-                                                log += "\n\tMaterial " + mat.toString(fullDetails);
-                                            }
+                                    const parsedMultiMaterial = parsedData.multiMaterials[multimatIndex];
+                                    if ((parsedMesh.materialUniqueId && parsedMultiMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMultiMaterial.id === parsedMesh.materialId) {
+                                        if (parsedMultiMaterial.materialsUniqueIds) { // if the materials inside the multimat are stored by unique id
+                                            parsedMultiMaterial.materialsUniqueIds.forEach((subMatId: string) => loadSubMaterial(subMatId, (parsedMaterial) => parsedMaterial.uniqueId === subMatId));
+                                        } else { // if the mats are stored by id instead
+                                            parsedMultiMaterial.materials.forEach((subMatId: string) => loadSubMaterial(subMatId, (parsedMaterial) => parsedMaterial.id === subMatId));
                                         }
-                                        loadedMaterialsIds.push(parsedMultiMaterial.id);
+                                        materialArray.push(parsedMultiMaterial.uniqueId || parsedMultiMaterial.id);
                                         var mmat = MultiMaterial.ParseMultiMaterial(parsedMultiMaterial, scene);
+                                        tempMaterialIndexContainer[parsedMultiMaterial.uniqueId || parsedMultiMaterial.id] = mmat;
                                         if (mmat) {
                                             materialFound = true;
                                             log += "\n\tMulti-Material " + mmat.toString(fullDetails);
@@ -615,8 +662,8 @@ SceneLoader.RegisterPlugin({
                             }
 
                             if (materialFound === false) {
-                                loadedMaterialsIds.push(parsedMesh.materialId);
-                                var mat = parseMaterialById(parsedMesh.materialId, parsedData, scene, rootUrl);
+                                materialArray.push(parsedMesh.materialUniqueId || parsedMesh.materialId);
+                                var mat = parseMaterialByPredicate((parsedMaterial) => (parsedMesh.MaterialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId || parsedMaterial.id === parsedMesh.materialId), parsedData, scene, rootUrl);
                                 if (!mat) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {
@@ -628,7 +675,7 @@ SceneLoader.RegisterPlugin({
                         // Skeleton ?
                         if (parsedMesh.skeletonId > -1 && parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
                             var skeletonAlreadyLoaded = (loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1);
-                            if (skeletonAlreadyLoaded === false) {
+                            if (!skeletonAlreadyLoaded) {
                                 for (var skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     var parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
@@ -642,9 +689,17 @@ SceneLoader.RegisterPlugin({
                         }
 
                         // Morph targets ?
-                        if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-                            for (var managerData of parsedData.morphTargetManagers) {
-                                MorphTargetManager.Parse(managerData, scene);
+                        if (parsedMesh.morphTargetManagerId > -1 && parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                            var morphTargetAlreadyLoaded = (loadedMorphTargetsIds.indexOf(parsedMesh.morphTargetManagerId) > -1);
+                            if (!morphTargetAlreadyLoaded) {
+                                for (var morphTargetIndex = 0, morphTargetCache = parsedData.morphTargetManagers.length; morphTargetIndex < morphTargetCache; morphTargetIndex++) {
+                                    var parsedMorphTarget = parsedData.morphTargetManagers[morphTargetIndex];
+                                    if (parsedMorphTarget.id === parsedMesh.morphTargetManagerId) {
+                                        var morphTarget = MorphTargetManager.Parse(parsedMorphTarget, scene);
+                                        loadedMorphTargetsIds.push(morphTarget.uniqueId);
+                                        log += "\n\Morph target " + morphTarget.toString();
+                                    }
+                                }
                             }
                         }
 
@@ -654,17 +709,51 @@ SceneLoader.RegisterPlugin({
                     }
                 }
 
+                 // link multimats with materials
+                scene.multiMaterials.forEach((multimat) => {
+                    multimat._waitingSubMaterialsUniqueIds.forEach((subMaterial) => {
+                        multimat.subMaterials.push(findMaterial(subMaterial, scene));
+                    });
+                    multimat._waitingSubMaterialsUniqueIds = [];
+                });
+
+                // link meshes with materials
+                scene.meshes.forEach((mesh) => {
+                    if (mesh._waitingMaterialId !== null) {
+                        mesh.material = findMaterial(mesh._waitingMaterialId, scene);
+                        mesh._waitingMaterialId = null;
+                    }
+                });
+
                 // Connecting parents and lods
+                for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                    var transformNode = scene.transformNodes[index];
+                    if (transformNode._waitingParentId !== null) {
+                        transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        transformNode._waitingParentId = null;
+                    }
+                }
                 var currentMesh: AbstractMesh;
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingParentId) {
+                    if (currentMesh._waitingParentId !== null) {
                         currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        if (currentMesh.parent?.getClassName() === "TransformNode") {
+                            const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent as TransformNode);
+                            if (loadedTransformNodeIndex > -1) {
+                                loadedTransformNodes.splice(loadedTransformNodeIndex, 1);
+                            }
+                        }
                         currentMesh._waitingParentId = null;
                     }
                     if (currentMesh._waitingData.lods) {
                         loadDetailLevels(scene, currentMesh);
                     }
+                }
+
+                // Remove unused transform nodes
+                for (const transformNode of loadedTransformNodes) {
+                    transformNode.dispose();
                 }
 
                 // link skeleton transform nodes
@@ -760,6 +849,10 @@ SceneLoader.RegisterPlugin({
             }
             if (parsedData.gravity !== undefined && parsedData.gravity !== null) {
                 scene.gravity = Vector3.FromArray(parsedData.gravity);
+            }
+
+            if (parsedData.useRightHandedSystem !== undefined) {
+                scene.useRightHandedSystem = !!parsedData.useRightHandedSystem;
             }
 
             // Fog

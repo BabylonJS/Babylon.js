@@ -37,7 +37,9 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     /** @hidden */
     public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
     /** @hidden */
-    public _copyInvertYBindGroupd: GPUBindGroup;
+    public _copyInvertYBindGroup: GPUBindGroup;
+    /** @hidden */
+    public _copyInvertYBindGroupWithOfst: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;
     private _webgpuMSAATexture: Nullable<GPUTexture>;
@@ -55,6 +57,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     }
 
     public view: Nullable<GPUTextureView>;
+    public viewForWriting: Nullable<GPUTextureView>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
     public textureUsages = 0;
     public textureAdditionalUsages = 0;
@@ -63,14 +66,11 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture = existingTexture;
         this._webgpuMSAATexture = null;
         this.view = null;
+        this.viewForWriting = null;
     }
 
     public set(hardwareTexture: GPUTexture): void {
         this._webgpuTexture = hardwareTexture;
-    }
-
-    public setMSAATexture(hardwareTexture: GPUTexture): void {
-        this._webgpuMSAATexture = hardwareTexture;
     }
 
     public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
@@ -87,14 +87,21 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         });
     }
 
-    public createView(descriptor?: GPUTextureViewDescriptor): void {
+    public createView(descriptor?: GPUTextureViewDescriptor, createViewForWriting = false): void {
         this.view = this._webgpuTexture!.createView(descriptor);
+        if (createViewForWriting && descriptor) {
+            const saveNumMipMaps = descriptor.mipLevelCount;
+            descriptor.mipLevelCount = 1;
+            this.viewForWriting = this._webgpuTexture!.createView(descriptor);
+            descriptor.mipLevelCount = saveNumMipMaps;
+        }
     }
 
     public reset(): void {
         this._webgpuTexture = null;
         this._webgpuMSAATexture = null;
         this.view = null;
+        this.viewForWriting = null;
     }
 
     public release(): void {

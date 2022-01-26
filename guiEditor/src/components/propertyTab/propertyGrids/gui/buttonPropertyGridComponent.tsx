@@ -36,9 +36,9 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <CheckBoxLineComponent
+                    label="CLIP CONTENT"
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
-                    label=""
                     target={rectangle}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

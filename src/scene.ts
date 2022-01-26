@@ -696,6 +696,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
 
+    /**
+     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
+     */
+    public skipPointerMovePicking = false;
+
     /** Callback called when a pointer move is detected */
     public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
@@ -2314,6 +2319,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Remove from the scene if found
             this.skeletons.splice(index, 1);
             this.onSkeletonRemovedObservable.notifyObservers(toRemove);
+
+            // Clean active container
+            this._executeActiveContainerCleanup(this._activeSkeletons);
         }
 
         return index;
@@ -2402,6 +2410,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         var index = this.particleSystems.indexOf(toRemove);
         if (index !== -1) {
             this.particleSystems.splice(index, 1);
+
+            // Clean active container
+            this._executeActiveContainerCleanup(this._activeParticleSystems);
         }
         return index;
     }
@@ -2780,12 +2791,20 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added material using a given id
      * @param id defines the material's Id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
      * @return the last material with the given id or null if none found.
      */
-    public getLastMaterialById(id: string): Nullable<Material> {
-        for (var index = this.materials.length - 1; index >= 0; index--) {
+    public getLastMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
+        for (let index = this.materials.length - 1; index >= 0; index--) {
             if (this.materials[index].id === id) {
                 return this.materials[index];
+            }
+        }
+        if (allowMultiMaterials) {
+            for (let index = this.multiMaterials.length - 1; index >= 0; index--) {
+                if (this.multiMaterials[index].id === id) {
+                    return this.multiMaterials[index];
+                }
             }
         }
 
@@ -3677,6 +3696,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this;
     }
 
+    private _executeActiveContainerCleanup(container: SmartArray<any>) {
+        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+
+        if (!isInFastMode && this._activeMeshesFrozen && this._activeMeshes.length) {
+            return; // Do not execute in frozen mode
+        }
+
+        // We need to ensure we are not in the rendering loop
+        this.onBeforeRenderObservable.addOnce(() => container.dispose());
+    }
+
     private _evaluateActiveMeshes(): void {
         if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
             if (this._activeMeshes.length > 0) {
@@ -3919,7 +3949,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._bindFrameBuffer(this._activeCamera);
         }
 
-        var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
+        var useMultiview = camera._renderingMultiview;
         if (useMultiview) {
             this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
         } else {
@@ -4032,7 +4062,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
-        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
+        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || camera._renderingMultiview) {
+            if (camera._renderingMultiview && !this._multiviewSceneUbo) {
+                this._createMultiviewUbo();
+            }
             this._renderForCamera(camera, undefined, bindFrameBuffer);
             this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
@@ -4195,14 +4228,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Resets the draw wrappers cache of all meshes
+     * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
      */
-    public resetDrawCache(): void {
+    public resetDrawCache(passId?: number): void {
         if (!this.meshes) {
              return;
         }
 
         for (const mesh of this.meshes) {
-            mesh.resetDrawCache();
+            mesh.resetDrawCache(passId);
         }
     }
 
@@ -4346,7 +4380,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 throw new Error("No camera defined");
             }
 
-            this._processSubCameras(this.activeCamera, false);
+            this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
         }
 
         // Intersection checks
@@ -4722,9 +4756,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param result defines the ray where to store the picking ray
      * @param camera defines the camera to use for the picking
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
+     * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
      * @returns the current scene
      */
-    public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false): Scene {
+    public createPickingRayToRef(x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false, enableDistantPicking = false): Scene {
         throw _WarnImport("Ray");
     }
 

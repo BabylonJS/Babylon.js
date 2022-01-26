@@ -6,6 +6,7 @@ import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
 import { TmpVectors } from "babylonjs/Maths/math.vector";
+import { Observable } from "babylonjs/Misc/observable";
 
 import { Button3D } from "./button3D";
 
@@ -18,6 +19,15 @@ export class TouchButton3D extends Button3D {
     // 'front' direction. If Vector3.Zero, there is no front and all directions of interaction are accepted
     private _collidableFrontDirection: Vector3;
     protected _isNearPressed = false;
+
+    private _isToggleButton = false;
+    private _toggleState = false;
+    private _toggleButtonCallback = () => { this._onToggle(!this._toggleState); };
+
+    /**
+     * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
+     */
+    public onToggleObservable = new Observable<boolean>();
 
     /**
      * Creates a new touchable button
@@ -71,13 +81,9 @@ export class TouchButton3D extends Button3D {
      * @param collisionMesh the new collision mesh for the button
      */
     public set collisionMesh(collisionMesh: Mesh) {
-        if (this._collisionMesh) {
-            this._collisionMesh.dispose();
-        }
-
-        // parent the mesh to sync transforms
-        if (!collisionMesh.parent && this.mesh) {
-            collisionMesh.setParent(this.mesh);
+        // Remove the GUI3DManager's data from the previous collision mesh's reserved data store
+        if (this._collisionMesh?.reservedDataStore?.GUI3D) {
+            this._collisionMesh.reservedDataStore.GUI3D = {};
         }
 
         this._collisionMesh = collisionMesh;
@@ -85,6 +91,51 @@ export class TouchButton3D extends Button3D {
         this._collisionMesh.isNearPickable = true;
 
         this.collidableFrontDirection = collisionMesh.forward;
+    }
+
+    /**
+     * Setter for if this TouchButton3D should be treated as a toggle button
+     * @param value If this TouchHolographicButton should act like a toggle button
+     */
+    public set isToggleButton(value: boolean) {
+        if (value === this._isToggleButton) {
+            return;
+        }
+
+        this._isToggleButton = value;
+
+        if (value) {
+            this.onPointerUpObservable.add(this._toggleButtonCallback);
+        }
+        else {
+            this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+
+            // Safety check, reset the button if it's toggled on but no longer a toggle button
+            if (this._toggleState) {
+                this._onToggle(false);
+            }
+        }
+    }
+    public get isToggleButton() {
+        return this._isToggleButton;
+    }
+
+    /**
+     * A public entrypoint to set the toggle state of the TouchHolographicButton. Only works if 'isToggleButton' is true
+     * @param newState The new state to set the TouchHolographicButton's toggle state to
+     */
+    public set isToggled(newState: boolean) {
+        if (this._isToggleButton && this._toggleState !== newState) {
+            this._onToggle(newState);
+        }
+    }
+    public get isToggled() {
+        return this._toggleState;
+    }
+
+    protected _onToggle(newState: boolean) {
+        this._toggleState = newState;
+        this.onToggleObservable.notifyObservers(newState);
     }
 
     // Returns true if the collidable is in front of the button, or if the button has no front direction
@@ -143,6 +194,10 @@ export class TouchButton3D extends Button3D {
      */
     public dispose() {
         super.dispose();
+
+        // Clean up toggle observables
+        this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
+        this.onToggleObservable.clear();
 
         if (this._collisionMesh) {
             this._collisionMesh.dispose();

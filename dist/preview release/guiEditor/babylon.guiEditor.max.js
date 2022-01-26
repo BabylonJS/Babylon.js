@@ -117,7 +117,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findIconDefinition", function() { return findIconDefinition; });
 /*!
- * Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 function _typeof(obj) {
@@ -314,7 +314,7 @@ var STYLE_TO_PREFIX = {
   'kit': 'fak'
 };
 var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome ([5 ]*)(Solid|Regular|Light|Duotone|Brands|Free|Pro|Kit).*/; // TODO: do we need to handle font-weight for kit SVG pseudo-elements?
+var FONT_FAMILY_PATTERN = /Font Awesome ([5 ]*)(Solid|Regular|Light|Duotone|Brands|Free|Pro|Kit).*/i; // TODO: do we need to handle font-weight for kit SVG pseudo-elements?
 
 var FONT_WEIGHT_TO_PREFIX = {
   '900': 'fas',
@@ -1214,7 +1214,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.15.3\"";
+var preamble = "FA \"5.15.4\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -2560,7 +2560,7 @@ var autoReplace = function autoReplace() {
 /*!***************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
   \***************************************************************************************************************/
-/*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
+/*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVest, faVestPatches, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3529,6 +3529,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVenus", function() { return faVenus; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVenusDouble", function() { return faVenusDouble; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVenusMars", function() { return faVenusMars; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVest", function() { return faVest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVestPatches", function() { return faVestPatches; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVial", function() { return faVial; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVials", function() { return faVials; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faVideo", function() { return faVideo; });
@@ -3567,6 +3569,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faXRay", function() { return faXRay; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faYenSign", function() { return faYenSign; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faYinYang", function() { return faYinYang; });
+/*!
+ * Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ */
 var prefix = "fas";
 var faAd = {
   prefix: 'fas',
@@ -3591,7 +3597,7 @@ var faAdjust = {
 var faAirFreshener = {
   prefix: 'fas',
   iconName: 'air-freshener',
-  icon: [384, 512, [], "f5d0", "M378.94 321.41L284.7 224h49.22c15.3 0 23.66-16.6 13.86-27.53L234.45 69.96c3.43-6.61 5.55-14 5.55-21.96 0-26.51-21.49-48-48-48s-48 21.49-48 48c0 7.96 2.12 15.35 5.55 21.96L36.22 196.47C26.42 207.4 34.78 224 50.08 224H99.3L5.06 321.41C-6.69 333.56 3.34 352 21.7 352H160v32H48c-8.84 0-16 7.16-16 16v96c0 8.84 7.16 16 16 16h288c8.84 0 16-7.16 16-16v-96c0-8.84-7.16-16-16-16H224v-32h138.3c18.36 0 28.39-18.44 16.64-30.59zM192 31.98c8.85 0 16.02 7.17 16.02 16.02 0 8.84-7.17 16.02-16.02 16.02S175.98 56.84 175.98 48c0-8.85 7.17-16.02 16.02-16.02zM304 432v32H80v-32h224z"]
+  icon: [512, 512, [], "f5d0", "M224 160H96C43 160 0 203 0 256V480C0 497.625 14.375 512 32 512H288C305.625 512 320 497.625 320 480V256C320 203 277 160 224 160ZM160 416C115.875 416 80 380.125 80 336S115.875 256 160 256S240 291.875 240 336S204.125 416 160 416ZM224 32C224 14.375 209.625 0 192 0H128C110.375 0 96 14.375 96 32V128H224V32ZM381.781 51.578C383 50.969 384 49.359 384 48C384 46.625 383 45.031 381.781 44.422L352 32L339.562 2.219C338.969 1 337.375 0 336 0S333.031 1 332.406 2.219L320 32L290.219 44.422C289 45.031 288 46.625 288 48C288 49.359 289 50.969 290.219 51.578L320 64L332.406 93.781C333.031 95 334.625 96 336 96S338.969 95 339.562 93.781L352 64L381.781 51.578ZM448 64L460.406 93.781C461.031 95 462.625 96 464 96S466.969 95 467.562 93.781L480 64L509.781 51.578C511 50.969 512 49.359 512 48C512 46.625 511 45.031 509.781 44.422L480 32L467.562 2.219C466.969 1 465.375 0 464 0S461.031 1 460.406 2.219L448 32L418.219 44.422C417 45.031 416 46.625 416 48C416 49.359 417 50.969 418.219 51.578L448 64ZM480 224L467.562 194.219C466.969 193 465.375 192 464 192S461.031 193 460.406 194.219L448 224L418.219 236.422C417 237.031 416 238.625 416 240C416 241.359 417 242.969 418.219 243.578L448 256L460.406 285.781C461.031 287 462.625 288 464 288S466.969 287 467.562 285.781L480 256L509.781 243.578C511 242.969 512 241.359 512 240C512 238.625 511 237.031 509.781 236.422L480 224ZM445.781 147.578C447 146.969 448 145.359 448 144C448 142.625 447 141.031 445.781 140.422L416 128L403.562 98.219C402.969 97 401.375 96 400 96S397.031 97 396.406 98.219L384 128L354.219 140.422C353 141.031 352 142.625 352 144C352 145.359 353 146.969 354.219 147.578L384 160L396.406 189.781C397.031 191 398.625 192 400 192S402.969 191 403.562 189.781L416 160L445.781 147.578Z"]
 };
 var faAlignCenter = {
   prefix: 'fas',
@@ -3836,12 +3842,12 @@ var faBacon = {
 var faBacteria = {
   prefix: 'fas',
   iconName: 'bacteria',
-  icon: [640, 512, [], "f959", "M272.35,226.4A17.71,17.71,0,0,0,281.46,203l-4-9.08a121.29,121.29,0,0,1,12.36-3.08A83.34,83.34,0,0,0,323.57,177l10,9a17.76,17.76,0,1,0,23.92-26.27l-9.72-8.76a83.12,83.12,0,0,0,11.65-48.18l11.85-3.51a17.73,17.73,0,1,0-10.15-34l-11.34,3.36a84,84,0,0,0-36.38-35.57l2.84-10.85a17.8,17.8,0,0,0-34.47-8.93l-2.82,10.78a83.25,83.25,0,0,0-16.74,1.1C250.83,27,240,30.22,229.1,33.39l-3.38-9.46a17.8,17.8,0,0,0-33.56,11.89l3.49,9.8a286.74,286.74,0,0,0-43.94,23.57l-6.32-8.43a17.9,17.9,0,0,0-24.94-3.6A17.69,17.69,0,0,0,116.84,82l6.45,8.61a286.59,286.59,0,0,0-34.95,35.33l-8.82-6.42a17.84,17.84,0,0,0-24.89,3.86,17.66,17.66,0,0,0,3.88,24.77l8.88,6.47a286.6,286.6,0,0,0-23,43.91l-10.48-3.59a17.73,17.73,0,1,0-11.59,33.52L32.67,232c-2.79,10-5.79,19.84-7.52,30.22a83.16,83.16,0,0,0-.82,19l-11.58,3.43a17.73,17.73,0,1,0,10.13,34l11.27-3.33a83.51,83.51,0,0,0,36.39,35.43l-2.88,11.06a17.81,17.81,0,0,0,34.48,8.92l2.87-11c1,0,2.07.26,3.1.26a83.39,83.39,0,0,0,45.65-13.88l8.59,8.8a17.77,17.77,0,0,0,25.56-24.7l-9.14-9.37a83.41,83.41,0,0,0,12.08-31.05,119.08,119.08,0,0,1,3.87-15.53l9,4.22a17.74,17.74,0,1,0,15.15-32.09l-8.8-4.11c.67-1,1.2-2.08,1.9-3.05a119.89,119.89,0,0,1,7.87-9.41,121.73,121.73,0,0,1,11.65-11.4,119.49,119.49,0,0,1,9.94-7.82c1.12-.77,2.32-1.42,3.47-2.15l3.92,8.85a17.86,17.86,0,0,0,16.32,10.58A18.14,18.14,0,0,0,272.35,226.4ZM128,256a32,32,0,1,1,32-32A32,32,0,0,1,128,256Zm80-96a16,16,0,1,1,16-16A16,16,0,0,1,208,160Zm431.26,45.3a17.79,17.79,0,0,0-17.06-12.69,17.55,17.55,0,0,0-5.08.74l-11.27,3.33a83.61,83.61,0,0,0-36.39-35.43l2.88-11.06a17.81,17.81,0,0,0-34.48-8.91l-2.87,11c-1,0-2.07-.26-3.1-.26a83.32,83.32,0,0,0-45.65,13.89l-8.59-8.81a17.77,17.77,0,0,0-25.56,24.7l9.14,9.37a83.28,83.28,0,0,0-12.08,31.06,119.34,119.34,0,0,1-3.87,15.52l-9-4.22a17.74,17.74,0,1,0-15.15,32.09l8.8,4.11c-.67,1-1.2,2.08-1.89,3.05a117.71,117.71,0,0,1-7.94,9.47,119,119,0,0,1-11.57,11.33,121.59,121.59,0,0,1-10,7.83c-1.12.77-2.32,1.42-3.47,2.15l-3.92-8.85a17.86,17.86,0,0,0-16.32-10.58,18.14,18.14,0,0,0-7.18,1.5A17.71,17.71,0,0,0,358.54,309l4,9.08a118.71,118.71,0,0,1-12.36,3.08,83.34,83.34,0,0,0-33.77,13.9l-10-9a17.77,17.77,0,1,0-23.92,26.28l9.72,8.75a83.12,83.12,0,0,0-11.65,48.18l-11.86,3.51a17.73,17.73,0,1,0,10.16,34l11.34-3.36A84,84,0,0,0,326.61,479l-2.84,10.85a17.8,17.8,0,0,0,34.47,8.93L361.06,488a83.3,83.3,0,0,0,16.74-1.1c11.37-1.89,22.24-5.07,33.1-8.24l3.38,9.46a17.8,17.8,0,0,0,33.56-11.89l-3.49-9.79a287.66,287.66,0,0,0,43.94-23.58l6.32,8.43a17.88,17.88,0,0,0,24.93,3.6A17.67,17.67,0,0,0,523.16,430l-6.45-8.61a287.37,287.37,0,0,0,34.95-35.34l8.82,6.42a17.76,17.76,0,1,0,21-28.63l-8.88-6.46a287.17,287.17,0,0,0,23-43.92l10.48,3.59a17.73,17.73,0,1,0,11.59-33.52L607.33,280c2.79-10,5.79-19.84,7.52-30.21a83.27,83.27,0,0,0,.82-19.05l11.58-3.43A17.7,17.7,0,0,0,639.26,205.3ZM416,416a32,32,0,1,1,32-32A32,32,0,0,1,416,416Z"]
+  icon: [640, 512, [], "e059", "M272.35,226.4A17.71,17.71,0,0,0,281.46,203l-4-9.08a121.29,121.29,0,0,1,12.36-3.08A83.34,83.34,0,0,0,323.57,177l10,9a17.76,17.76,0,1,0,23.92-26.27l-9.72-8.76a83.12,83.12,0,0,0,11.65-48.18l11.85-3.51a17.73,17.73,0,1,0-10.15-34l-11.34,3.36a84,84,0,0,0-36.38-35.57l2.84-10.85a17.8,17.8,0,0,0-34.47-8.93l-2.82,10.78a83.25,83.25,0,0,0-16.74,1.1C250.83,27,240,30.22,229.1,33.39l-3.38-9.46a17.8,17.8,0,0,0-33.56,11.89l3.49,9.8a286.74,286.74,0,0,0-43.94,23.57l-6.32-8.43a17.9,17.9,0,0,0-24.94-3.6A17.69,17.69,0,0,0,116.84,82l6.45,8.61a286.59,286.59,0,0,0-34.95,35.33l-8.82-6.42a17.84,17.84,0,0,0-24.89,3.86,17.66,17.66,0,0,0,3.88,24.77l8.88,6.47a286.6,286.6,0,0,0-23,43.91l-10.48-3.59a17.73,17.73,0,1,0-11.59,33.52L32.67,232c-2.79,10-5.79,19.84-7.52,30.22a83.16,83.16,0,0,0-.82,19l-11.58,3.43a17.73,17.73,0,1,0,10.13,34l11.27-3.33a83.51,83.51,0,0,0,36.39,35.43l-2.88,11.06a17.81,17.81,0,0,0,34.48,8.92l2.87-11c1,0,2.07.26,3.1.26a83.39,83.39,0,0,0,45.65-13.88l8.59,8.8a17.77,17.77,0,0,0,25.56-24.7l-9.14-9.37a83.41,83.41,0,0,0,12.08-31.05,119.08,119.08,0,0,1,3.87-15.53l9,4.22a17.74,17.74,0,1,0,15.15-32.09l-8.8-4.11c.67-1,1.2-2.08,1.9-3.05a119.89,119.89,0,0,1,7.87-9.41,121.73,121.73,0,0,1,11.65-11.4,119.49,119.49,0,0,1,9.94-7.82c1.12-.77,2.32-1.42,3.47-2.15l3.92,8.85a17.86,17.86,0,0,0,16.32,10.58A18.14,18.14,0,0,0,272.35,226.4ZM128,256a32,32,0,1,1,32-32A32,32,0,0,1,128,256Zm80-96a16,16,0,1,1,16-16A16,16,0,0,1,208,160Zm431.26,45.3a17.79,17.79,0,0,0-17.06-12.69,17.55,17.55,0,0,0-5.08.74l-11.27,3.33a83.61,83.61,0,0,0-36.39-35.43l2.88-11.06a17.81,17.81,0,0,0-34.48-8.91l-2.87,11c-1,0-2.07-.26-3.1-.26a83.32,83.32,0,0,0-45.65,13.89l-8.59-8.81a17.77,17.77,0,0,0-25.56,24.7l9.14,9.37a83.28,83.28,0,0,0-12.08,31.06,119.34,119.34,0,0,1-3.87,15.52l-9-4.22a17.74,17.74,0,1,0-15.15,32.09l8.8,4.11c-.67,1-1.2,2.08-1.89,3.05a117.71,117.71,0,0,1-7.94,9.47,119,119,0,0,1-11.57,11.33,121.59,121.59,0,0,1-10,7.83c-1.12.77-2.32,1.42-3.47,2.15l-3.92-8.85a17.86,17.86,0,0,0-16.32-10.58,18.14,18.14,0,0,0-7.18,1.5A17.71,17.71,0,0,0,358.54,309l4,9.08a118.71,118.71,0,0,1-12.36,3.08,83.34,83.34,0,0,0-33.77,13.9l-10-9a17.77,17.77,0,1,0-23.92,26.28l9.72,8.75a83.12,83.12,0,0,0-11.65,48.18l-11.86,3.51a17.73,17.73,0,1,0,10.16,34l11.34-3.36A84,84,0,0,0,326.61,479l-2.84,10.85a17.8,17.8,0,0,0,34.47,8.93L361.06,488a83.3,83.3,0,0,0,16.74-1.1c11.37-1.89,22.24-5.07,33.1-8.24l3.38,9.46a17.8,17.8,0,0,0,33.56-11.89l-3.49-9.79a287.66,287.66,0,0,0,43.94-23.58l6.32,8.43a17.88,17.88,0,0,0,24.93,3.6A17.67,17.67,0,0,0,523.16,430l-6.45-8.61a287.37,287.37,0,0,0,34.95-35.34l8.82,6.42a17.76,17.76,0,1,0,21-28.63l-8.88-6.46a287.17,287.17,0,0,0,23-43.92l10.48,3.59a17.73,17.73,0,1,0,11.59-33.52L607.33,280c2.79-10,5.79-19.84,7.52-30.21a83.27,83.27,0,0,0,.82-19.05l11.58-3.43A17.7,17.7,0,0,0,639.26,205.3ZM416,416a32,32,0,1,1,32-32A32,32,0,0,1,416,416Z"]
 };
 var faBacterium = {
   prefix: 'fas',
   iconName: 'bacterium',
-  icon: [512, 512, [], "f95a", "M511,102.93A23.76,23.76,0,0,0,481.47,87l-15.12,4.48a111.85,111.85,0,0,0-48.5-47.42l3.79-14.47a23.74,23.74,0,0,0-46-11.91l-3.76,14.37a111.94,111.94,0,0,0-22.33,1.47,386.74,386.74,0,0,0-44.33,10.41l-4.3-12a23.74,23.74,0,0,0-44.75,15.85l4.3,12.05a383.4,383.4,0,0,0-58.69,31.83l-8-10.63a23.85,23.85,0,0,0-33.24-4.8,23.57,23.57,0,0,0-4.83,33.09l8,10.63a386.14,386.14,0,0,0-46.7,47.44l-11-8a23.68,23.68,0,1,0-28,38.17l11.09,8.06a383.45,383.45,0,0,0-30.92,58.75l-12.93-4.43a23.65,23.65,0,1,0-15.47,44.69l13,4.48a385.81,385.81,0,0,0-9.3,40.53A111.58,111.58,0,0,0,32.44,375L17,379.56a23.64,23.64,0,0,0,13.51,45.31l15-4.44a111.49,111.49,0,0,0,48.53,47.24l-3.85,14.75a23.66,23.66,0,0,0,17,28.83,24.7,24.7,0,0,0,6,.75,23.73,23.73,0,0,0,23-17.7L140,479.67c1.37.05,2.77.35,4.13.35A111.22,111.22,0,0,0,205,461.5l11.45,11.74a23.7,23.7,0,0,0,34.08-32.93l-12.19-12.5a111,111,0,0,0,16.11-41.4,158.69,158.69,0,0,1,5.16-20.71l12,5.64a23.66,23.66,0,1,0,20.19-42.79l-11.72-5.49c.89-1.32,1.59-2.77,2.52-4.06a157.86,157.86,0,0,1,10.46-12.49,159.5,159.5,0,0,1,15.59-15.28,162.18,162.18,0,0,1,13.23-10.4c1.5-1,3.1-1.89,4.63-2.87l5.23,11.8a23.74,23.74,0,0,0,43.48-19.08l-5.36-12.11a158.87,158.87,0,0,1,16.49-4.1,111,111,0,0,0,45-18.54l13.33,12a23.69,23.69,0,1,0,31.88-35l-12.94-11.67A110.83,110.83,0,0,0,479.21,137L495,132.32A23.61,23.61,0,0,0,511,102.93ZM160,368a48,48,0,1,1,48-48A48,48,0,0,1,160,368Zm80-136a24,24,0,1,1,24-24A24,24,0,0,1,240,232Z"]
+  icon: [512, 512, [], "e05a", "M511,102.93A23.76,23.76,0,0,0,481.47,87l-15.12,4.48a111.85,111.85,0,0,0-48.5-47.42l3.79-14.47a23.74,23.74,0,0,0-46-11.91l-3.76,14.37a111.94,111.94,0,0,0-22.33,1.47,386.74,386.74,0,0,0-44.33,10.41l-4.3-12a23.74,23.74,0,0,0-44.75,15.85l4.3,12.05a383.4,383.4,0,0,0-58.69,31.83l-8-10.63a23.85,23.85,0,0,0-33.24-4.8,23.57,23.57,0,0,0-4.83,33.09l8,10.63a386.14,386.14,0,0,0-46.7,47.44l-11-8a23.68,23.68,0,1,0-28,38.17l11.09,8.06a383.45,383.45,0,0,0-30.92,58.75l-12.93-4.43a23.65,23.65,0,1,0-15.47,44.69l13,4.48a385.81,385.81,0,0,0-9.3,40.53A111.58,111.58,0,0,0,32.44,375L17,379.56a23.64,23.64,0,0,0,13.51,45.31l15-4.44a111.49,111.49,0,0,0,48.53,47.24l-3.85,14.75a23.66,23.66,0,0,0,17,28.83,24.7,24.7,0,0,0,6,.75,23.73,23.73,0,0,0,23-17.7L140,479.67c1.37.05,2.77.35,4.13.35A111.22,111.22,0,0,0,205,461.5l11.45,11.74a23.7,23.7,0,0,0,34.08-32.93l-12.19-12.5a111,111,0,0,0,16.11-41.4,158.69,158.69,0,0,1,5.16-20.71l12,5.64a23.66,23.66,0,1,0,20.19-42.79l-11.72-5.49c.89-1.32,1.59-2.77,2.52-4.06a157.86,157.86,0,0,1,10.46-12.49,159.5,159.5,0,0,1,15.59-15.28,162.18,162.18,0,0,1,13.23-10.4c1.5-1,3.1-1.89,4.63-2.87l5.23,11.8a23.74,23.74,0,0,0,43.48-19.08l-5.36-12.11a158.87,158.87,0,0,1,16.49-4.1,111,111,0,0,0,45-18.54l13.33,12a23.69,23.69,0,1,0,31.88-35l-12.94-11.67A110.83,110.83,0,0,0,479.21,137L495,132.32A23.61,23.61,0,0,0,511,102.93ZM160,368a48,48,0,1,1,48-48A48,48,0,0,1,160,368Zm80-136a24,24,0,1,1,24-24A24,24,0,0,1,240,232Z"]
 };
 var faBahai = {
   prefix: 'fas',
@@ -4086,7 +4092,7 @@ var faBoxOpen = {
 var faBoxTissue = {
   prefix: 'fas',
   iconName: 'box-tissue',
-  icon: [512, 512, [], "f95b", "M383.88,287.82l64-192H338.47a70.2,70.2,0,0,1-66.59-48,70.21,70.21,0,0,0-66.6-48H63.88l64,288Zm-384,192a32,32,0,0,0,32,32h448a32,32,0,0,0,32-32v-64H-.12Zm480-256H438.94l-21.33,64h14.27a16,16,0,0,1,0,32h-352a16,16,0,1,1,0-32H95.09l-14.22-64h-49a32,32,0,0,0-32,32v128h512v-128A32,32,0,0,0,479.88,223.82Z"]
+  icon: [512, 512, [], "e05b", "M383.88,287.82l64-192H338.47a70.2,70.2,0,0,1-66.59-48,70.21,70.21,0,0,0-66.6-48H63.88l64,288Zm-384,192a32,32,0,0,0,32,32h448a32,32,0,0,0,32-32v-64H-.12Zm480-256H438.94l-21.33,64h14.27a16,16,0,0,1,0,32h-352a16,16,0,1,1,0-32H95.09l-14.22-64h-49a32,32,0,0,0-32,32v128h512v-128A32,32,0,0,0,479.88,223.82Z"]
 };
 var faBoxes = {
   prefix: 'fas',
@@ -5141,7 +5147,7 @@ var faFastForward = {
 var faFaucet = {
   prefix: 'fas',
   iconName: 'faucet',
-  icon: [512, 512, [], "f905", "M352,256H313.39c-15.71-13.44-35.46-23.07-57.39-28V180.44l-32-3.38-32,3.38V228c-21.93,5-41.68,14.6-57.39,28H16A16,16,0,0,0,0,272v96a16,16,0,0,0,16,16h92.79C129.38,421.73,173,448,224,448s94.62-26.27,115.21-64H352a32,32,0,0,1,32,32,32,32,0,0,0,32,32h64a32,32,0,0,0,32-32A160,160,0,0,0,352,256ZM81.59,159.91l142.41-15,142.41,15c9.42,1,17.59-6.81,17.59-16.8V112.89c0-10-8.17-17.8-17.59-16.81L256,107.74V80a16,16,0,0,0-16-16H208a16,16,0,0,0-16,16v27.74L81.59,96.08C72.17,95.09,64,102.9,64,112.89v30.22C64,153.1,72.17,160.91,81.59,159.91Z"]
+  icon: [512, 512, [], "e005", "M352,256H313.39c-15.71-13.44-35.46-23.07-57.39-28V180.44l-32-3.38-32,3.38V228c-21.93,5-41.68,14.6-57.39,28H16A16,16,0,0,0,0,272v96a16,16,0,0,0,16,16h92.79C129.38,421.73,173,448,224,448s94.62-26.27,115.21-64H352a32,32,0,0,1,32,32,32,32,0,0,0,32,32h64a32,32,0,0,0,32-32A160,160,0,0,0,352,256ZM81.59,159.91l142.41-15,142.41,15c9.42,1,17.59-6.81,17.59-16.8V112.89c0-10-8.17-17.8-17.59-16.81L256,107.74V80a16,16,0,0,0-16-16H208a16,16,0,0,0-16,16v27.74L81.59,96.08C72.17,95.09,64,102.9,64,112.89v30.22C64,153.1,72.17,160.91,81.59,159.91Z"]
 };
 var faFax = {
   prefix: 'fas',
@@ -5671,7 +5677,7 @@ var faHandHoldingHeart = {
 var faHandHoldingMedical = {
   prefix: 'fas',
   iconName: 'hand-holding-medical',
-  icon: [576, 512, [], "f95c", "M159.88,175.82h64v64a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-64h64a16,16,0,0,0,16-16v-64a16,16,0,0,0-16-16h-64v-64a16,16,0,0,0-16-16h-64a16,16,0,0,0-16,16v64h-64a16,16,0,0,0-16,16v64A16,16,0,0,0,159.88,175.82ZM568.07,336.13a39.91,39.91,0,0,0-55.93-8.47L392.47,415.84H271.86a16,16,0,0,1,0-32H350.1c16,0,30.75-10.87,33.37-26.61a32.06,32.06,0,0,0-31.62-37.38h-160a117.7,117.7,0,0,0-74.12,26.25l-46.5,37.74H15.87a16.11,16.11,0,0,0-16,16v96a16.11,16.11,0,0,0,16,16h347a104.8,104.8,0,0,0,61.7-20.27L559.6,392A40,40,0,0,0,568.07,336.13Z"]
+  icon: [576, 512, [], "e05c", "M159.88,175.82h64v64a16,16,0,0,0,16,16h64a16,16,0,0,0,16-16v-64h64a16,16,0,0,0,16-16v-64a16,16,0,0,0-16-16h-64v-64a16,16,0,0,0-16-16h-64a16,16,0,0,0-16,16v64h-64a16,16,0,0,0-16,16v64A16,16,0,0,0,159.88,175.82ZM568.07,336.13a39.91,39.91,0,0,0-55.93-8.47L392.47,415.84H271.86a16,16,0,0,1,0-32H350.1c16,0,30.75-10.87,33.37-26.61a32.06,32.06,0,0,0-31.62-37.38h-160a117.7,117.7,0,0,0-74.12,26.25l-46.5,37.74H15.87a16.11,16.11,0,0,0-16,16v96a16.11,16.11,0,0,0,16,16h347a104.8,104.8,0,0,0,61.7-20.27L559.6,392A40,40,0,0,0,568.07,336.13Z"]
 };
 var faHandHoldingUsd = {
   prefix: 'fas',
@@ -5741,7 +5747,7 @@ var faHandScissors = {
 var faHandSparkles = {
   prefix: 'fas',
   iconName: 'hand-sparkles',
-  icon: [640, 512, [], "f95d", "M106.66,170.64l.09,0,49.55-20.65a7.32,7.32,0,0,0,3.68-6h0a7.29,7.29,0,0,0-3.68-6l-49.57-20.67-.07,0L86,67.68a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L3.7,138A7.29,7.29,0,0,0,0,144H0a7.32,7.32,0,0,0,3.68,6L53.27,170.6l.07,0L74,220.26a6.65,6.65,0,0,0,11.92,0l20.69-49.62ZM471.38,467.41l-1-.42-1-.5a38.67,38.67,0,0,1,0-69.14l1-.49,1-.43,37.49-15.63,15.63-37.48.41-1,.47-.95c3.85-7.74,10.58-13.63,18.35-17.34,0-1.33.25-2.69.27-4V144a32,32,0,0,0-64,0v72a8,8,0,0,1-8,8H456a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H360a8,8,0,0,1-8-8V32a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H264a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0v241l-23.59-32.49a40,40,0,0,0-64.71,47.09L229.3,492.21A48.07,48.07,0,0,0,268.09,512H465.7c19.24,0,35.65-11.73,43.24-28.79l-.07-.17ZM349.79,339.52,320,351.93l-12.42,29.78a4,4,0,0,1-7.15,0L288,351.93l-29.79-12.41a4,4,0,0,1,0-7.16L288,319.94l12.42-29.78a4,4,0,0,1,7.15,0L320,319.94l29.79,12.42a4,4,0,0,1,0,7.16ZM640,431.91a7.28,7.28,0,0,0-3.68-6l-49.57-20.67-.07,0L566,355.63a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L483.7,426a7.28,7.28,0,0,0-3.68,6h0a7.29,7.29,0,0,0,3.68,5.95l49.57,20.67.07,0L554,508.21a6.65,6.65,0,0,0,11.92,0l20.69-49.62h0l.09,0,49.55-20.66a7.29,7.29,0,0,0,3.68-5.95h0Z"]
+  icon: [640, 512, [], "e05d", "M106.66,170.64l.09,0,49.55-20.65a7.32,7.32,0,0,0,3.68-6h0a7.29,7.29,0,0,0-3.68-6l-49.57-20.67-.07,0L86,67.68a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L3.7,138A7.29,7.29,0,0,0,0,144H0a7.32,7.32,0,0,0,3.68,6L53.27,170.6l.07,0L74,220.26a6.65,6.65,0,0,0,11.92,0l20.69-49.62ZM471.38,467.41l-1-.42-1-.5a38.67,38.67,0,0,1,0-69.14l1-.49,1-.43,37.49-15.63,15.63-37.48.41-1,.47-.95c3.85-7.74,10.58-13.63,18.35-17.34,0-1.33.25-2.69.27-4V144a32,32,0,0,0-64,0v72a8,8,0,0,1-8,8H456a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H360a8,8,0,0,1-8-8V32a32,32,0,0,0-64,0V216a8,8,0,0,1-8,8H264a8,8,0,0,1-8-8V64a32,32,0,0,0-64,0v241l-23.59-32.49a40,40,0,0,0-64.71,47.09L229.3,492.21A48.07,48.07,0,0,0,268.09,512H465.7c19.24,0,35.65-11.73,43.24-28.79l-.07-.17ZM349.79,339.52,320,351.93l-12.42,29.78a4,4,0,0,1-7.15,0L288,351.93l-29.79-12.41a4,4,0,0,1,0-7.16L288,319.94l12.42-29.78a4,4,0,0,1,7.15,0L320,319.94l29.79,12.42a4,4,0,0,1,0,7.16ZM640,431.91a7.28,7.28,0,0,0-3.68-6l-49.57-20.67-.07,0L566,355.63a6.66,6.66,0,0,0-11.92,0l-20.7,49.63-.05,0L483.7,426a7.28,7.28,0,0,0-3.68,6h0a7.29,7.29,0,0,0,3.68,5.95l49.57,20.67.07,0L554,508.21a6.65,6.65,0,0,0,11.92,0l20.69-49.62h0l.09,0,49.55-20.66a7.29,7.29,0,0,0,3.68-5.95h0Z"]
 };
 var faHandSpock = {
   prefix: 'fas',
@@ -5761,7 +5767,7 @@ var faHandsHelping = {
 var faHandsWash = {
   prefix: 'fas',
   iconName: 'hands-wash',
-  icon: [576, 512, [], "f95e", "M496,224a48,48,0,1,0-48-48A48,48,0,0,0,496,224ZM311.47,178.45A56.77,56.77,0,0,1,328,176a56,56,0,0,1,19,3.49l15.35-48.61A24,24,0,0,0,342,99.74c-11.53-1.35-22.21,6.44-25.71,17.51l-20.9,66.17ZM93.65,386.33c.8-.19,1.54-.54,2.35-.71V359.93a156,156,0,0,1,107.06-148l73.7-22.76L310.92,81.05a24,24,0,0,0-20.33-31.11c-11.53-1.34-22.22,6.45-25.72,17.52L231.42,173.88a8,8,0,0,1-15.26-4.83L259.53,31.26A24,24,0,0,0,239.2.15C227.67-1.19,217,6.6,213.49,17.66L165.56,169.37a8,8,0,1,1-15.26-4.82l38.56-122a24,24,0,0,0-20.33-31.11C157,10,146.32,17.83,142.82,28.9l-60,189.85L80.76,168.7A24,24,0,0,0,56.9,144.55c-13.23-.05-24.72,10.54-24.9,23.86V281.14A123.69,123.69,0,0,0,93.65,386.33ZM519.1,336H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,279.84,498.71,272,487.1,272H288l47.09-17.06a24,24,0,0,0-14.18-45.88L213.19,242.31A123.88,123.88,0,0,0,128,360v25.65a79.78,79.78,0,0,1,58,108.63A118.9,118.9,0,0,0,248,512H456a24,24,0,0,0,23.54-28.76C477.35,471.84,466.71,464,455.1,464H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,407.84,498.71,400,487.1,400H360a8,8,0,0,1,0-16H520a24,24,0,0,0,23.54-28.76C541.35,343.84,530.71,336,519.1,336ZM416,64a32,32,0,1,0-32-32A32,32,0,0,0,416,64ZM112,416a48,48,0,1,0,48,48A48,48,0,0,0,112,416Z"]
+  icon: [576, 512, [], "e05e", "M496,224a48,48,0,1,0-48-48A48,48,0,0,0,496,224ZM311.47,178.45A56.77,56.77,0,0,1,328,176a56,56,0,0,1,19,3.49l15.35-48.61A24,24,0,0,0,342,99.74c-11.53-1.35-22.21,6.44-25.71,17.51l-20.9,66.17ZM93.65,386.33c.8-.19,1.54-.54,2.35-.71V359.93a156,156,0,0,1,107.06-148l73.7-22.76L310.92,81.05a24,24,0,0,0-20.33-31.11c-11.53-1.34-22.22,6.45-25.72,17.52L231.42,173.88a8,8,0,0,1-15.26-4.83L259.53,31.26A24,24,0,0,0,239.2.15C227.67-1.19,217,6.6,213.49,17.66L165.56,169.37a8,8,0,1,1-15.26-4.82l38.56-122a24,24,0,0,0-20.33-31.11C157,10,146.32,17.83,142.82,28.9l-60,189.85L80.76,168.7A24,24,0,0,0,56.9,144.55c-13.23-.05-24.72,10.54-24.9,23.86V281.14A123.69,123.69,0,0,0,93.65,386.33ZM519.1,336H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,279.84,498.71,272,487.1,272H288l47.09-17.06a24,24,0,0,0-14.18-45.88L213.19,242.31A123.88,123.88,0,0,0,128,360v25.65a79.78,79.78,0,0,1,58,108.63A118.9,118.9,0,0,0,248,512H456a24,24,0,0,0,23.54-28.76C477.35,471.84,466.71,464,455.1,464H360a8,8,0,0,1,0-16H488a24,24,0,0,0,23.54-28.76C509.35,407.84,498.71,400,487.1,400H360a8,8,0,0,1,0-16H520a24,24,0,0,0,23.54-28.76C541.35,343.84,530.71,336,519.1,336ZM416,64a32,32,0,1,0-32-32A32,32,0,0,0,416,64ZM112,416a48,48,0,1,0,48,48A48,48,0,0,0,112,416Z"]
 };
 var faHandshake = {
   prefix: 'fas',
@@ -5771,12 +5777,12 @@ var faHandshake = {
 var faHandshakeAltSlash = {
   prefix: 'fas',
   iconName: 'handshake-alt-slash',
-  icon: [640, 512, [], "f95f", "M358.59,195.6,504.2,313.8a63.4,63.4,0,0,1,22.21,37.91H624a16.05,16.05,0,0,0,16-16V143.91A16,16,0,0,0,624,128H512L457.41,73.41A32,32,0,0,0,434.8,64H348.91a32,32,0,0,0-21.61,8.41l-88.12,80.68-25.69-19.85L289.09,64H205.3a32,32,0,0,0-22.6,9.41l-20.34,20.3L45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.54,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45L303.4,202.72l32.69-29.92,27-24.7a16,16,0,0,1,21.61,23.61ZM16,128A16.05,16.05,0,0,0,0,144V335.91a16,16,0,0,0,16,16H146.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L23.56,128Z"]
+  icon: [640, 512, [], "e05f", "M358.59,195.6,504.2,313.8a63.4,63.4,0,0,1,22.21,37.91H624a16.05,16.05,0,0,0,16-16V143.91A16,16,0,0,0,624,128H512L457.41,73.41A32,32,0,0,0,434.8,64H348.91a32,32,0,0,0-21.61,8.41l-88.12,80.68-25.69-19.85L289.09,64H205.3a32,32,0,0,0-22.6,9.41l-20.34,20.3L45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.54,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45L303.4,202.72l32.69-29.92,27-24.7a16,16,0,0,1,21.61,23.61ZM16,128A16.05,16.05,0,0,0,0,144V335.91a16,16,0,0,0,16,16H146.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L23.56,128Z"]
 };
 var faHandshakeSlash = {
   prefix: 'fas',
   iconName: 'handshake-slash',
-  icon: [640, 512, [], "f960", "M0,128.21V384H64a32,32,0,0,0,32-32V184L23.83,128.21ZM48,320.1a16,16,0,1,1-16,16A16,16,0,0,1,48,320.1Zm80,31.81h18.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L128,208.72Zm416-223.7V352.1a32,32,0,0,0,32,32h64V128.21ZM592,352.1a16,16,0,1,1,16-16A16,16,0,0,1,592,352.1ZM303.33,202.67l59.58-54.57a16,16,0,0,1,21.59,23.61L358.41,195.6,504,313.8a73.08,73.08,0,0,1,7.91,7.7V128L457.3,73.41A31.76,31.76,0,0,0,434.7,64H348.8a31.93,31.93,0,0,0-21.6,8.41l-88.07,80.64-25.64-19.81L289.09,64H205.3a32,32,0,0,0-22.6,9.41L162.36,93.72,45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.65-25.27a16,16,0,0,0-2.82-22.45Z"]
+  icon: [640, 512, [], "e060", "M0,128.21V384H64a32,32,0,0,0,32-32V184L23.83,128.21ZM48,320.1a16,16,0,1,1-16,16A16,16,0,0,1,48,320.1Zm80,31.81h18.3l90.5,81.89a64,64,0,0,0,90-9.3l.2-.2,17.91,15.5a37.16,37.16,0,0,0,52.29-5.39l8.8-10.82L128,208.72Zm416-223.7V352.1a32,32,0,0,0,32,32h64V128.21ZM592,352.1a16,16,0,1,1,16-16A16,16,0,0,1,592,352.1ZM303.33,202.67l59.58-54.57a16,16,0,0,1,21.59,23.61L358.41,195.6,504,313.8a73.08,73.08,0,0,1,7.91,7.7V128L457.3,73.41A31.76,31.76,0,0,0,434.7,64H348.8a31.93,31.93,0,0,0-21.6,8.41l-88.07,80.64-25.64-19.81L289.09,64H205.3a32,32,0,0,0-22.6,9.41L162.36,93.72,45.47,3.38A16,16,0,0,0,23,6.19L3.38,31.46A16,16,0,0,0,6.19,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.65-25.27a16,16,0,0,0-2.82-22.45Z"]
 };
 var faHanukiah = {
   prefix: 'fas',
@@ -5816,22 +5822,22 @@ var faHdd = {
 var faHeadSideCough = {
   prefix: 'fas',
   iconName: 'head-side-cough',
-  icon: [640, 512, [], "f961", "M616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304ZM552,416a24,24,0,1,0,24,24A24,24,0,0,0,552,416Zm-64-56a24,24,0,1,0,24,24A24,24,0,0,0,488,360ZM616,464a24,24,0,1,0,24,24A24,24,0,0,0,616,464Zm0-104a24,24,0,1,0,24,24A24,24,0,0,0,616,360Zm-64-40a24,24,0,1,0,24,24A24,24,0,0,0,552,320Zm-74.78-45c-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192C86,0,0,86,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320a32,32,0,0,1,0-64h96V320h32A32,32,0,0,0,477.22,275ZM288,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,288,224Z"]
+  icon: [640, 512, [], "e061", "M616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304ZM552,416a24,24,0,1,0,24,24A24,24,0,0,0,552,416Zm-64-56a24,24,0,1,0,24,24A24,24,0,0,0,488,360ZM616,464a24,24,0,1,0,24,24A24,24,0,0,0,616,464Zm0-104a24,24,0,1,0,24,24A24,24,0,0,0,616,360Zm-64-40a24,24,0,1,0,24,24A24,24,0,0,0,552,320Zm-74.78-45c-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192C86,0,0,86,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320a32,32,0,0,1,0-64h96V320h32A32,32,0,0,0,477.22,275ZM288,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,288,224Z"]
 };
 var faHeadSideCoughSlash = {
   prefix: 'fas',
   iconName: 'head-side-cough-slash',
-  icon: [640, 512, [], "f962", "M454.11,319.21c19.56-3.81,31.62-25,23.11-44.21-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192A190.64,190.64,0,0,0,84.18,33.3L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM313.39,210.45,263.61,172c5.88-7.14,14.43-12,24.36-12a32.06,32.06,0,0,1,32,32C320,199,317.24,205.17,313.39,210.45ZM616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304Zm-64,64a24,24,0,1,0-24-24A24,24,0,0,0,552,368ZM288,384a32,32,0,0,1,32-32h19.54L20.73,105.59A190.86,190.86,0,0,0,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320A32,32,0,0,1,288,384Zm328-24a24,24,0,1,0,24,24A24,24,0,0,0,616,360Z"]
+  icon: [640, 512, [], "e062", "M454.11,319.21c19.56-3.81,31.62-25,23.11-44.21-21-47.12-48.5-151.75-73.12-186.75A208.13,208.13,0,0,0,234.1,0H192A190.64,190.64,0,0,0,84.18,33.3L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM313.39,210.45,263.61,172c5.88-7.14,14.43-12,24.36-12a32.06,32.06,0,0,1,32,32C320,199,317.24,205.17,313.39,210.45ZM616,304a24,24,0,1,0-24-24A24,24,0,0,0,616,304Zm-64,64a24,24,0,1,0-24-24A24,24,0,0,0,552,368ZM288,384a32,32,0,0,1,32-32h19.54L20.73,105.59A190.86,190.86,0,0,0,0,192c0,56.75,24.75,107.62,64,142.88V512H288V480h64a64,64,0,0,0,64-64H320A32,32,0,0,1,288,384Zm328-24a24,24,0,1,0,24,24A24,24,0,0,0,616,360Z"]
 };
 var faHeadSideMask = {
   prefix: 'fas',
   iconName: 'head-side-mask',
-  icon: [512, 512, [], "f963", "M.15,184.42C-2.17,244.21,23,298.06,64,334.88V512H224V316.51L3.67,156.25A182.28,182.28,0,0,0,.15,184.42ZM509.22,275c-21-47.12-48.5-151.75-73.12-186.75A208.11,208.11,0,0,0,266.11,0H200C117,0,42.48,50.57,13.25,123.65L239.21,288H511.76A31.35,31.35,0,0,0,509.22,275ZM320,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,320,224Zm16,144H496l16-48H256V512H401.88a64,64,0,0,0,60.71-43.76L464,464H336a16,16,0,0,1,0-32H474.67l10.67-32H336a16,16,0,0,1,0-32Z"]
+  icon: [512, 512, [], "e063", "M.15,184.42C-2.17,244.21,23,298.06,64,334.88V512H224V316.51L3.67,156.25A182.28,182.28,0,0,0,.15,184.42ZM509.22,275c-21-47.12-48.5-151.75-73.12-186.75A208.11,208.11,0,0,0,266.11,0H200C117,0,42.48,50.57,13.25,123.65L239.21,288H511.76A31.35,31.35,0,0,0,509.22,275ZM320,224a32,32,0,1,1,32-32A32.07,32.07,0,0,1,320,224Zm16,144H496l16-48H256V512H401.88a64,64,0,0,0,60.71-43.76L464,464H336a16,16,0,0,1,0-32H474.67l10.67-32H336a16,16,0,0,1,0-32Z"]
 };
 var faHeadSideVirus = {
   prefix: 'fas',
   iconName: 'head-side-virus',
-  icon: [512, 512, [], "f964", "M272,240a16,16,0,1,0,16,16A16,16,0,0,0,272,240Zm-64-64a16,16,0,1,0,16,16A16,16,0,0,0,208,176Zm301.2,99c-20.93-47.12-48.43-151.73-73.07-186.75A207.9,207.9,0,0,0,266.09,0H192C86,0,0,86,0,192A191.23,191.23,0,0,0,64,334.81V512H320V448h64a64,64,0,0,0,64-64V320H480A32,32,0,0,0,509.2,275ZM368,240H355.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C290.47,297.09,256,311.37,256,339.88V352a16,16,0,0,1-32,0V339.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H112a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V96a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C313.09,173.53,327.37,208,355.88,208H368a16,16,0,0,1,0,32Z"]
+  icon: [512, 512, [], "e064", "M272,240a16,16,0,1,0,16,16A16,16,0,0,0,272,240Zm-64-64a16,16,0,1,0,16,16A16,16,0,0,0,208,176Zm301.2,99c-20.93-47.12-48.43-151.73-73.07-186.75A207.9,207.9,0,0,0,266.09,0H192C86,0,0,86,0,192A191.23,191.23,0,0,0,64,334.81V512H320V448h64a64,64,0,0,0,64-64V320H480A32,32,0,0,0,509.2,275ZM368,240H355.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C290.47,297.09,256,311.37,256,339.88V352a16,16,0,0,1-32,0V339.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H112a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V96a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C313.09,173.53,327.37,208,355.88,208H368a16,16,0,0,1,0,32Z"]
 };
 var faHeading = {
   prefix: 'fas',
@@ -5981,7 +5987,7 @@ var faHouseDamage = {
 var faHouseUser = {
   prefix: 'fas',
   iconName: 'house-user',
-  icon: [576, 512, [], "f965", "M570.69,236.27,512,184.44V48a16,16,0,0,0-16-16H432a16,16,0,0,0-16,16V99.67L314.78,10.3C308.5,4.61,296.53,0,288,0s-20.46,4.61-26.74,10.3l-256,226A18.27,18.27,0,0,0,0,248.2a18.64,18.64,0,0,0,4.09,10.71L25.5,282.7a21.14,21.14,0,0,0,12,5.3,21.67,21.67,0,0,0,10.69-4.11l15.9-14V480a32,32,0,0,0,32,32H480a32,32,0,0,0,32-32V269.88l15.91,14A21.94,21.94,0,0,0,538.63,288a20.89,20.89,0,0,0,11.87-5.31l21.41-23.81A21.64,21.64,0,0,0,576,248.19,21,21,0,0,0,570.69,236.27ZM288,176a64,64,0,1,1-64,64A64,64,0,0,1,288,176ZM400,448H176a16,16,0,0,1-16-16,96,96,0,0,1,96-96h64a96,96,0,0,1,96,96A16,16,0,0,1,400,448Z"]
+  icon: [576, 512, [], "e065", "M570.69,236.27,512,184.44V48a16,16,0,0,0-16-16H432a16,16,0,0,0-16,16V99.67L314.78,10.3C308.5,4.61,296.53,0,288,0s-20.46,4.61-26.74,10.3l-256,226A18.27,18.27,0,0,0,0,248.2a18.64,18.64,0,0,0,4.09,10.71L25.5,282.7a21.14,21.14,0,0,0,12,5.3,21.67,21.67,0,0,0,10.69-4.11l15.9-14V480a32,32,0,0,0,32,32H480a32,32,0,0,0,32-32V269.88l15.91,14A21.94,21.94,0,0,0,538.63,288a20.89,20.89,0,0,0,11.87-5.31l21.41-23.81A21.64,21.64,0,0,0,576,248.19,21,21,0,0,0,570.69,236.27ZM288,176a64,64,0,1,1-64,64A64,64,0,0,1,288,176ZM400,448H176a16,16,0,0,1-16-16,96,96,0,0,1,96-96h64a96,96,0,0,1,96,96A16,16,0,0,1,400,448Z"]
 };
 var faHryvnia = {
   prefix: 'fas',
@@ -6151,7 +6157,7 @@ var faLaptopCode = {
 var faLaptopHouse = {
   prefix: 'fas',
   iconName: 'laptop-house',
-  icon: [640, 512, [], "f966", "M272,288H208a16,16,0,0,1-16-16V208a16,16,0,0,1,16-16h64a16,16,0,0,1,16,16v37.12C299.11,232.24,315,224,332.8,224H469.74l6.65-7.53A16.51,16.51,0,0,0,480,207a16.31,16.31,0,0,0-4.75-10.61L416,144V48a16,16,0,0,0-16-16H368a16,16,0,0,0-16,16V87.3L263.5,8.92C258,4,247.45,0,240.05,0s-17.93,4-23.47,8.92L4.78,196.42A16.15,16.15,0,0,0,0,207a16.4,16.4,0,0,0,3.55,9.39L22.34,237.7A16.22,16.22,0,0,0,33,242.48,16.51,16.51,0,0,0,42.34,239L64,219.88V384a32,32,0,0,0,32,32H272ZM629.33,448H592V288c0-17.67-12.89-32-28.8-32H332.8c-15.91,0-28.8,14.33-28.8,32V448H266.67A10.67,10.67,0,0,0,256,458.67v10.66A42.82,42.82,0,0,0,298.6,512H597.4A42.82,42.82,0,0,0,640,469.33V458.67A10.67,10.67,0,0,0,629.33,448ZM544,448H352V304H544Z"]
+  icon: [640, 512, [], "e066", "M272,288H208a16,16,0,0,1-16-16V208a16,16,0,0,1,16-16h64a16,16,0,0,1,16,16v37.12C299.11,232.24,315,224,332.8,224H469.74l6.65-7.53A16.51,16.51,0,0,0,480,207a16.31,16.31,0,0,0-4.75-10.61L416,144V48a16,16,0,0,0-16-16H368a16,16,0,0,0-16,16V87.3L263.5,8.92C258,4,247.45,0,240.05,0s-17.93,4-23.47,8.92L4.78,196.42A16.15,16.15,0,0,0,0,207a16.4,16.4,0,0,0,3.55,9.39L22.34,237.7A16.22,16.22,0,0,0,33,242.48,16.51,16.51,0,0,0,42.34,239L64,219.88V384a32,32,0,0,0,32,32H272ZM629.33,448H592V288c0-17.67-12.89-32-28.8-32H332.8c-15.91,0-28.8,14.33-28.8,32V448H266.67A10.67,10.67,0,0,0,256,458.67v10.66A42.82,42.82,0,0,0,298.6,512H597.4A42.82,42.82,0,0,0,640,469.33V458.67A10.67,10.67,0,0,0,629.33,448ZM544,448H352V304H544Z"]
 };
 var faLaptopMedical = {
   prefix: 'fas',
@@ -6306,7 +6312,7 @@ var faLungs = {
 var faLungsVirus = {
   prefix: 'fas',
   iconName: 'lungs-virus',
-  icon: [640, 512, [], "f967", "M344,150.68V16A16,16,0,0,0,328,0H312a16,16,0,0,0-16,16V150.68a46.45,46.45,0,0,1,48,0ZM195.54,444.46a48.06,48.06,0,0,1,0-67.88l8.58-8.58H192a48,48,0,0,1,0-96h12.12l-8.58-8.57a48,48,0,0,1,60.46-74V161.75C256,125.38,224.62,96,186,96c-44,0-58,28.5-80.12,63.13a819.52,819.52,0,0,0-102,231A113.16,113.16,0,0,0,0,419.75C0,481,62.5,525.26,125.25,508.38l59.5-15.87a98.51,98.51,0,0,0,52.5-34.75,46.49,46.49,0,0,1-41.71-13.3Zm226.29-22.63a16,16,0,0,0,0-22.62l-8.58-8.58C393.09,370.47,407.37,336,435.88,336H448a16,16,0,0,0,0-32H435.88c-28.51,0-42.79-34.47-22.63-54.62l8.58-8.58a16,16,0,0,0-22.63-22.63l-8.57,8.58C370.47,246.91,336,232.63,336,204.12V192a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.58c20.16,20.15,5.88,54.62-22.63,54.62H192a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.58a16,16,0,1,0,22.63,22.62l8.57-8.57C269.53,393.1,304,407.38,304,435.88V448a16,16,0,0,0,32,0V435.88c0-28.5,34.47-42.78,54.63-22.62l8.57,8.57a16,16,0,0,0,22.63,0ZM288,304a16,16,0,1,1,16-16A16,16,0,0,1,288,304Zm64,64a16,16,0,1,1,16-16A16,16,0,0,1,352,368Zm284.12,22.13a819.52,819.52,0,0,0-102-231C512,124.5,498,96,454,96c-38.62,0-70,29.38-70,65.75v27.72a48,48,0,0,1,60.46,74L435.88,272H448a48,48,0,0,1,0,96H435.88l8.58,8.58a47.7,47.7,0,0,1-41.71,81.18,98.51,98.51,0,0,0,52.5,34.75l59.5,15.87C577.5,525.26,640,481,640,419.75A113.16,113.16,0,0,0,636.12,390.13Z"]
+  icon: [640, 512, [], "e067", "M344,150.68V16A16,16,0,0,0,328,0H312a16,16,0,0,0-16,16V150.68a46.45,46.45,0,0,1,48,0ZM195.54,444.46a48.06,48.06,0,0,1,0-67.88l8.58-8.58H192a48,48,0,0,1,0-96h12.12l-8.58-8.57a48,48,0,0,1,60.46-74V161.75C256,125.38,224.62,96,186,96c-44,0-58,28.5-80.12,63.13a819.52,819.52,0,0,0-102,231A113.16,113.16,0,0,0,0,419.75C0,481,62.5,525.26,125.25,508.38l59.5-15.87a98.51,98.51,0,0,0,52.5-34.75,46.49,46.49,0,0,1-41.71-13.3Zm226.29-22.63a16,16,0,0,0,0-22.62l-8.58-8.58C393.09,370.47,407.37,336,435.88,336H448a16,16,0,0,0,0-32H435.88c-28.51,0-42.79-34.47-22.63-54.62l8.58-8.58a16,16,0,0,0-22.63-22.63l-8.57,8.58C370.47,246.91,336,232.63,336,204.12V192a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.58c20.16,20.15,5.88,54.62-22.63,54.62H192a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.58a16,16,0,1,0,22.63,22.62l8.57-8.57C269.53,393.1,304,407.38,304,435.88V448a16,16,0,0,0,32,0V435.88c0-28.5,34.47-42.78,54.63-22.62l8.57,8.57a16,16,0,0,0,22.63,0ZM288,304a16,16,0,1,1,16-16A16,16,0,0,1,288,304Zm64,64a16,16,0,1,1,16-16A16,16,0,0,1,352,368Zm284.12,22.13a819.52,819.52,0,0,0-102-231C512,124.5,498,96,454,96c-38.62,0-70,29.38-70,65.75v27.72a48,48,0,0,1,60.46,74L435.88,272H448a48,48,0,0,1,0,96H435.88l8.58,8.58a47.7,47.7,0,0,1-41.71,81.18,98.51,98.51,0,0,0,52.5,34.75l59.5,15.87C577.5,525.26,640,481,640,419.75A113.16,113.16,0,0,0,636.12,390.13Z"]
 };
 var faMagic = {
   prefix: 'fas',
@@ -6761,7 +6767,7 @@ var faPencilRuler = {
 var faPeopleArrows = {
   prefix: 'fas',
   iconName: 'people-arrows',
-  icon: [576, 512, [], "f968", "M96,128A64,64,0,1,0,32,64,64,64,0,0,0,96,128Zm0,176.08a44.11,44.11,0,0,1,13.64-32L181.77,204c1.65-1.55,3.77-2.31,5.61-3.57A63.91,63.91,0,0,0,128,160H64A64,64,0,0,0,0,224v96a32,32,0,0,0,32,32V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V383.61l-50.36-47.53A44.08,44.08,0,0,1,96,304.08ZM480,128a64,64,0,1,0-64-64A64,64,0,0,0,480,128Zm32,32H448a63.91,63.91,0,0,0-59.38,40.42c1.84,1.27,4,2,5.62,3.59l72.12,68.06a44.37,44.37,0,0,1,0,64L416,383.62V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V352a32,32,0,0,0,32-32V224A64,64,0,0,0,512,160ZM444.4,295.34l-72.12-68.06A12,12,0,0,0,352,236v36H224V236a12,12,0,0,0-20.28-8.73L131.6,295.34a12.4,12.4,0,0,0,0,17.47l72.12,68.07A12,12,0,0,0,224,372.14V336H352v36.14a12,12,0,0,0,20.28,8.74l72.12-68.07A12.4,12.4,0,0,0,444.4,295.34Z"]
+  icon: [576, 512, [], "e068", "M96,128A64,64,0,1,0,32,64,64,64,0,0,0,96,128Zm0,176.08a44.11,44.11,0,0,1,13.64-32L181.77,204c1.65-1.55,3.77-2.31,5.61-3.57A63.91,63.91,0,0,0,128,160H64A64,64,0,0,0,0,224v96a32,32,0,0,0,32,32V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V383.61l-50.36-47.53A44.08,44.08,0,0,1,96,304.08ZM480,128a64,64,0,1,0-64-64A64,64,0,0,0,480,128Zm32,32H448a63.91,63.91,0,0,0-59.38,40.42c1.84,1.27,4,2,5.62,3.59l72.12,68.06a44.37,44.37,0,0,1,0,64L416,383.62V480a32,32,0,0,0,32,32h64a32,32,0,0,0,32-32V352a32,32,0,0,0,32-32V224A64,64,0,0,0,512,160ZM444.4,295.34l-72.12-68.06A12,12,0,0,0,352,236v36H224V236a12,12,0,0,0-20.28-8.73L131.6,295.34a12.4,12.4,0,0,0,0,17.47l72.12,68.07A12,12,0,0,0,224,372.14V336H352v36.14a12,12,0,0,0,20.28,8.74l72.12-68.07A12.4,12.4,0,0,0,444.4,295.34Z"]
 };
 var faPeopleCarry = {
   prefix: 'fas',
@@ -6861,7 +6867,7 @@ var faPlaneDeparture = {
 var faPlaneSlash = {
   prefix: 'fas',
   iconName: 'plane-slash',
-  icon: [640, 512, [], "f969", "M32.48,147.88,64,256,32.48,364.13A16,16,0,0,0,48,384H88a16,16,0,0,0,12.8-6.41L144,320H246.85l-49,171.59A16,16,0,0,0,213.2,512h65.5a16,16,0,0,0,13.89-8.06l66.6-116.54L34.35,136.34A15.47,15.47,0,0,0,32.48,147.88ZM633.82,458.09,455.14,320H512c35.34,0,96-28.66,96-64s-60.66-64-96-64H397.7L292.61,8.06C290.06,3.61,283.84,0,278.71,0H213.2a16,16,0,0,0-15.38,20.39l36.94,129.29L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09Z"]
+  icon: [640, 512, [], "e069", "M32.48,147.88,64,256,32.48,364.13A16,16,0,0,0,48,384H88a16,16,0,0,0,12.8-6.41L144,320H246.85l-49,171.59A16,16,0,0,0,213.2,512h65.5a16,16,0,0,0,13.89-8.06l66.6-116.54L34.35,136.34A15.47,15.47,0,0,0,32.48,147.88ZM633.82,458.09,455.14,320H512c35.34,0,96-28.66,96-64s-60.66-64-96-64H397.7L292.61,8.06C290.06,3.61,283.84,0,278.71,0H213.2a16,16,0,0,0-15.38,20.39l36.94,129.29L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09Z"]
 };
 var faPlay = {
   prefix: 'fas',
@@ -6981,12 +6987,12 @@ var faProjectDiagram = {
 var faPumpMedical = {
   prefix: 'fas',
   iconName: 'pump-medical',
-  icon: [384, 512, [], "f96a", "M235.51,159.82H84.24A64,64,0,0,0,20.51,218L.14,442a64,64,0,0,0,63.74,69.8h192A64,64,0,0,0,319.61,442L299.24,218A64,64,0,0,0,235.51,159.82Zm4.37,173.33a13.35,13.35,0,0,1-13.34,13.34h-40v40a13.33,13.33,0,0,1-13.33,13.33H146.54a13.33,13.33,0,0,1-13.33-13.33v-40h-40a13.34,13.34,0,0,1-13.33-13.34V306.49a13.33,13.33,0,0,1,13.33-13.34h40v-40a13.33,13.33,0,0,1,13.33-13.33h26.67a13.33,13.33,0,0,1,13.33,13.33v40h40a13.34,13.34,0,0,1,13.34,13.34ZM379.19,93.88,335.87,50.56a64,64,0,0,0-45.24-18.74H223.88a32,32,0,0,0-32-32h-64a32,32,0,0,0-32,32v96h128v-32h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.19,93.88Z"]
+  icon: [384, 512, [], "e06a", "M235.51,159.82H84.24A64,64,0,0,0,20.51,218L.14,442a64,64,0,0,0,63.74,69.8h192A64,64,0,0,0,319.61,442L299.24,218A64,64,0,0,0,235.51,159.82Zm4.37,173.33a13.35,13.35,0,0,1-13.34,13.34h-40v40a13.33,13.33,0,0,1-13.33,13.33H146.54a13.33,13.33,0,0,1-13.33-13.33v-40h-40a13.34,13.34,0,0,1-13.33-13.34V306.49a13.33,13.33,0,0,1,13.33-13.34h40v-40a13.33,13.33,0,0,1,13.33-13.33h26.67a13.33,13.33,0,0,1,13.33,13.33v40h40a13.34,13.34,0,0,1,13.34,13.34ZM379.19,93.88,335.87,50.56a64,64,0,0,0-45.24-18.74H223.88a32,32,0,0,0-32-32h-64a32,32,0,0,0-32,32v96h128v-32h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.19,93.88Z"]
 };
 var faPumpSoap = {
   prefix: 'fas',
   iconName: 'pump-soap',
-  icon: [384, 512, [], "f96b", "M235.63,160H84.37a64,64,0,0,0-63.74,58.21L.27,442.21A64,64,0,0,0,64,512H256a64,64,0,0,0,63.74-69.79l-20.36-224A64,64,0,0,0,235.63,160ZM160,416c-33.12,0-60-26.33-60-58.75,0-25,35.7-75.47,52-97.27A10,10,0,0,1,168,260c16.33,21.8,52,72.27,52,97.27C220,389.67,193.12,416,160,416ZM379.31,94.06,336,50.74A64,64,0,0,0,290.75,32H224A32,32,0,0,0,192,0H128A32,32,0,0,0,96,32v96H224V96h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.31,94.06Z"]
+  icon: [384, 512, [], "e06b", "M235.63,160H84.37a64,64,0,0,0-63.74,58.21L.27,442.21A64,64,0,0,0,64,512H256a64,64,0,0,0,63.74-69.79l-20.36-224A64,64,0,0,0,235.63,160ZM160,416c-33.12,0-60-26.33-60-58.75,0-25,35.7-75.47,52-97.27A10,10,0,0,1,168,260c16.33,21.8,52,72.27,52,97.27C220,389.67,193.12,416,160,416ZM379.31,94.06,336,50.74A64,64,0,0,0,290.75,32H224A32,32,0,0,0,192,0H128A32,32,0,0,0,96,32v96H224V96h66.75l43.31,43.31a16,16,0,0,0,22.63,0l22.62-22.62A16,16,0,0,0,379.31,94.06Z"]
 };
 var faPuzzlePiece = {
   prefix: 'fas',
@@ -7301,7 +7307,7 @@ var faShieldAlt = {
 var faShieldVirus = {
   prefix: 'fas',
   iconName: 'shield-virus',
-  icon: [512, 512, [], "f96c", "M224,192a16,16,0,1,0,16,16A16,16,0,0,0,224,192ZM466.5,83.68l-192-80A57.4,57.4,0,0,0,256.05,0a57.4,57.4,0,0,0-18.46,3.67l-192,80A47.93,47.93,0,0,0,16,128C16,326.5,130.5,463.72,237.5,508.32a48.09,48.09,0,0,0,36.91,0C360.09,472.61,496,349.3,496,128A48,48,0,0,0,466.5,83.68ZM384,256H371.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C306.47,313.09,272,327.37,272,355.88V368a16,16,0,0,1-32,0V355.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H128a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V112a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C329.09,189.53,343.37,224,371.88,224H384a16,16,0,0,1,0,32Zm-96,0a16,16,0,1,0,16,16A16,16,0,0,0,288,256Z"]
+  icon: [512, 512, [], "e06c", "M224,192a16,16,0,1,0,16,16A16,16,0,0,0,224,192ZM466.5,83.68l-192-80A57.4,57.4,0,0,0,256.05,0a57.4,57.4,0,0,0-18.46,3.67l-192,80A47.93,47.93,0,0,0,16,128C16,326.5,130.5,463.72,237.5,508.32a48.09,48.09,0,0,0,36.91,0C360.09,472.61,496,349.3,496,128A48,48,0,0,0,466.5,83.68ZM384,256H371.88c-28.51,0-42.79,34.47-22.63,54.63l8.58,8.57a16,16,0,1,1-22.63,22.63l-8.57-8.58C306.47,313.09,272,327.37,272,355.88V368a16,16,0,0,1-32,0V355.88c0-28.51-34.47-42.79-54.63-22.63l-8.57,8.58a16,16,0,0,1-22.63-22.63l8.58-8.57c20.16-20.16,5.88-54.63-22.63-54.63H128a16,16,0,0,1,0-32h12.12c28.51,0,42.79-34.47,22.63-54.63l-8.58-8.57a16,16,0,0,1,22.63-22.63l8.57,8.58c20.16,20.16,54.63,5.88,54.63-22.63V112a16,16,0,0,1,32,0v12.12c0,28.51,34.47,42.79,54.63,22.63l8.57-8.58a16,16,0,0,1,22.63,22.63l-8.58,8.57C329.09,189.53,343.37,224,371.88,224H384a16,16,0,0,1,0,32Zm-96,0a16,16,0,1,0,16,16A16,16,0,0,0,288,256Z"]
 };
 var faShip = {
   prefix: 'fas',
@@ -7381,7 +7387,7 @@ var faSimCard = {
 var faSink = {
   prefix: 'fas',
   iconName: 'sink',
-  icon: [512, 512, [], "f96d", "M32,416a96,96,0,0,0,96,96H384a96,96,0,0,0,96-96V384H32ZM496,288H400V256h64a16,16,0,0,0,16-16V224a16,16,0,0,0-16-16H384a32,32,0,0,0-32,32v48H288V96a32,32,0,0,1,64,0v16a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V96A96.16,96.16,0,0,0,300.87,1.86C255.29,10.71,224,53.36,224,99.79V288H160V240a32,32,0,0,0-32-32H48a16,16,0,0,0-16,16v16a16,16,0,0,0,16,16h64v32H16A16,16,0,0,0,0,304v32a16,16,0,0,0,16,16H496a16,16,0,0,0,16-16V304A16,16,0,0,0,496,288Z"]
+  icon: [512, 512, [], "e06d", "M32,416a96,96,0,0,0,96,96H384a96,96,0,0,0,96-96V384H32ZM496,288H400V256h64a16,16,0,0,0,16-16V224a16,16,0,0,0-16-16H384a32,32,0,0,0-32,32v48H288V96a32,32,0,0,1,64,0v16a16,16,0,0,0,16,16h32a16,16,0,0,0,16-16V96A96.16,96.16,0,0,0,300.87,1.86C255.29,10.71,224,53.36,224,99.79V288H160V240a32,32,0,0,0-32-32H48a16,16,0,0,0-16,16v16a16,16,0,0,0,16,16h64v32H16A16,16,0,0,0,0,304v32a16,16,0,0,0,16,16H496a16,16,0,0,0,16-16V304A16,16,0,0,0,496,288Z"]
 };
 var faSitemap = {
   prefix: 'fas',
@@ -7486,7 +7492,7 @@ var faSnowplow = {
 var faSoap = {
   prefix: 'fas',
   iconName: 'soap',
-  icon: [512, 512, [], "f96e", "M416,192a95.42,95.42,0,0,1-30.94,70.21A95.8,95.8,0,0,1,352,448H160a96,96,0,0,1,0-192h88.91A95.3,95.3,0,0,1,224,192H96A96,96,0,0,0,0,288V416a96,96,0,0,0,96,96H416a96,96,0,0,0,96-96V288A96,96,0,0,0,416,192Zm-96,64a64,64,0,1,0-64-64A64,64,0,0,0,320,256ZM208,96a48,48,0,1,0-48-48A48,48,0,0,0,208,96ZM384,64a32,32,0,1,0-32-32A32,32,0,0,0,384,64ZM160,288a64,64,0,0,0,0,128H352a64,64,0,0,0,0-128Z"]
+  icon: [512, 512, [], "e06e", "M416,192a95.42,95.42,0,0,1-30.94,70.21A95.8,95.8,0,0,1,352,448H160a96,96,0,0,1,0-192h88.91A95.3,95.3,0,0,1,224,192H96A96,96,0,0,0,0,288V416a96,96,0,0,0,96,96H416a96,96,0,0,0,96-96V288A96,96,0,0,0,416,192Zm-96,64a64,64,0,1,0-64-64A64,64,0,0,0,320,256ZM208,96a48,48,0,1,0-48-48A48,48,0,0,0,208,96ZM384,64a32,32,0,1,0-32-32A32,32,0,0,0,384,64ZM160,288a64,64,0,0,0,0,128H352a64,64,0,0,0,0-128Z"]
 };
 var faSocks = {
   prefix: 'fas',
@@ -7696,7 +7702,7 @@ var faStopwatch = {
 var faStopwatch20 = {
   prefix: 'fas',
   iconName: 'stopwatch-20',
-  icon: [448, 512, [], "f96f", "M398.5,190.91l.59-.61,26.59-26.58a16,16,0,0,0,0-22.63L403,118.41a16,16,0,0,0-22.63,0l-24.68,24.68A206.68,206.68,0,0,0,256,98.5V64h32a16,16,0,0,0,16-16V16A16,16,0,0,0,288,0H160a16.05,16.05,0,0,0-16,16V48a16.05,16.05,0,0,0,16,16h32V98.5A207.92,207.92,0,0,0,16.09,297.57C12.64,411.5,106.76,510.22,220.72,512,337.13,513.77,432,420,432,304A206,206,0,0,0,398.5,190.91ZM204.37,377.55a8.2,8.2,0,0,1,8.32,8.07v22.31a8.2,8.2,0,0,1-8.32,8.07H121.52a16.46,16.46,0,0,1-16.61-17.62c2.78-35.22,14.67-57.41,38.45-91.37,20.42-29.19,27.1-37.32,27.1-62.34,0-16.92-1.79-24.27-12.21-24.27-9.39,0-12.69,7.4-12.69,22.68v5.23a8.2,8.2,0,0,1-8.33,8.07h-24.9a8.2,8.2,0,0,1-8.33-8.07v-4.07c0-27.3,8.48-60.24,56.43-60.24,43,0,55.57,25.85,55.57,61,0,35.58-12.44,51.21-34.35,81.31-11.56,15-24.61,35.57-26.41,51.2ZM344,352.32c0,35.16-12.3,63.68-57.23,63.68C243.19,416,232,386.48,232,352.55V247.22c0-40.73,19.58-63.22,56.2-63.22C325,184,344,206.64,344,245.3ZM287.87,221.73c-9.41,0-13.23,7.5-13.23,20V357.68c0,13.11,3.59,20.59,13.23,20.59s13-8,13-21.27V241.06C300.89,229.79,297.88,221.73,287.87,221.73Z"]
+  icon: [448, 512, [], "e06f", "M398.5,190.91l.59-.61,26.59-26.58a16,16,0,0,0,0-22.63L403,118.41a16,16,0,0,0-22.63,0l-24.68,24.68A206.68,206.68,0,0,0,256,98.5V64h32a16,16,0,0,0,16-16V16A16,16,0,0,0,288,0H160a16.05,16.05,0,0,0-16,16V48a16.05,16.05,0,0,0,16,16h32V98.5A207.92,207.92,0,0,0,16.09,297.57C12.64,411.5,106.76,510.22,220.72,512,337.13,513.77,432,420,432,304A206,206,0,0,0,398.5,190.91ZM204.37,377.55a8.2,8.2,0,0,1,8.32,8.07v22.31a8.2,8.2,0,0,1-8.32,8.07H121.52a16.46,16.46,0,0,1-16.61-17.62c2.78-35.22,14.67-57.41,38.45-91.37,20.42-29.19,27.1-37.32,27.1-62.34,0-16.92-1.79-24.27-12.21-24.27-9.39,0-12.69,7.4-12.69,22.68v5.23a8.2,8.2,0,0,1-8.33,8.07h-24.9a8.2,8.2,0,0,1-8.33-8.07v-4.07c0-27.3,8.48-60.24,56.43-60.24,43,0,55.57,25.85,55.57,61,0,35.58-12.44,51.21-34.35,81.31-11.56,15-24.61,35.57-26.41,51.2ZM344,352.32c0,35.16-12.3,63.68-57.23,63.68C243.19,416,232,386.48,232,352.55V247.22c0-40.73,19.58-63.22,56.2-63.22C325,184,344,206.64,344,245.3ZM287.87,221.73c-9.41,0-13.23,7.5-13.23,20V357.68c0,13.11,3.59,20.59,13.23,20.59s13-8,13-21.27V241.06C300.89,229.79,297.88,221.73,287.87,221.73Z"]
 };
 var faStore = {
   prefix: 'fas',
@@ -7711,12 +7717,12 @@ var faStoreAlt = {
 var faStoreAltSlash = {
   prefix: 'fas',
   iconName: 'store-alt-slash',
-  icon: [640, 512, [], "f970", "M17.89,123.62,5.51,142.2c-14.2,21.3,1,49.8,26.59,49.8h74.26ZM576,413.42V224H512V364L384,265V224H330.92l-41.4-32H608c25.5,0,40.7-28.5,26.59-49.8l-85.29-128A32.18,32.18,0,0,0,522.6,0H117.42A31.87,31.87,0,0,0,90.81,14.2l-10.66,16L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.81l19.64-25.26a16,16,0,0,0-2.81-22.45ZM320,384H128V224H64V480a32,32,0,0,0,32,32H352a32,32,0,0,0,32-32V406.59l-64-49.47Z"]
+  icon: [640, 512, [], "e070", "M17.89,123.62,5.51,142.2c-14.2,21.3,1,49.8,26.59,49.8h74.26ZM576,413.42V224H512V364L384,265V224H330.92l-41.4-32H608c25.5,0,40.7-28.5,26.59-49.8l-85.29-128A32.18,32.18,0,0,0,522.6,0H117.42A31.87,31.87,0,0,0,90.81,14.2l-10.66,16L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.81l19.64-25.26a16,16,0,0,0-2.81-22.45ZM320,384H128V224H64V480a32,32,0,0,0,32,32H352a32,32,0,0,0,32-32V406.59l-64-49.47Z"]
 };
 var faStoreSlash = {
   prefix: 'fas',
   iconName: 'store-slash',
-  icon: [640, 512, [], "f971", "M121.51,384V284.2a119.43,119.43,0,0,1-28,3.8,123.46,123.46,0,0,1-17.1-1.2,114.88,114.88,0,0,1-15.58-3.6V480c0,17.7,13.59,32,30.4,32H505.75L348.42,384Zm-28-128.09c25.1,0,47.29-10.72,64-27.24L24,120.05c-30.52,53.39-2.45,126.53,56.49,135A95.68,95.68,0,0,0,93.48,255.91ZM602.13,458.09,547.2,413.41V283.2a93.5,93.5,0,0,1-15.57,3.6,127.31,127.31,0,0,1-17.29,1.2,114.89,114.89,0,0,1-28-3.8v79.68L348.52,251.77a88.06,88.06,0,0,0,25.41,4.14c28.11,0,53-13,70.11-33.11,17.19,20.11,42.08,33.11,70.11,33.11a94.31,94.31,0,0,0,13-.91c59.66-8.41,88-82.8,56.06-136.4L521.55,15A30.1,30.1,0,0,0,495.81,0H112A30.11,30.11,0,0,0,86.27,15L76.88,30.78,43.19,3.38A14.68,14.68,0,0,0,21.86,6.19L3.2,31.45A16.58,16.58,0,0,0,5.87,53.91L564.81,508.63a14.69,14.69,0,0,0,21.33-2.82l18.66-25.26A16.58,16.58,0,0,0,602.13,458.09Z"]
+  icon: [640, 512, [], "e071", "M121.51,384V284.2a119.43,119.43,0,0,1-28,3.8,123.46,123.46,0,0,1-17.1-1.2,114.88,114.88,0,0,1-15.58-3.6V480c0,17.7,13.59,32,30.4,32H505.75L348.42,384Zm-28-128.09c25.1,0,47.29-10.72,64-27.24L24,120.05c-30.52,53.39-2.45,126.53,56.49,135A95.68,95.68,0,0,0,93.48,255.91ZM602.13,458.09,547.2,413.41V283.2a93.5,93.5,0,0,1-15.57,3.6,127.31,127.31,0,0,1-17.29,1.2,114.89,114.89,0,0,1-28-3.8v79.68L348.52,251.77a88.06,88.06,0,0,0,25.41,4.14c28.11,0,53-13,70.11-33.11,17.19,20.11,42.08,33.11,70.11,33.11a94.31,94.31,0,0,0,13-.91c59.66-8.41,88-82.8,56.06-136.4L521.55,15A30.1,30.1,0,0,0,495.81,0H112A30.11,30.11,0,0,0,86.27,15L76.88,30.78,43.19,3.38A14.68,14.68,0,0,0,21.86,6.19L3.2,31.45A16.58,16.58,0,0,0,5.87,53.91L564.81,508.63a14.69,14.69,0,0,0,21.33-2.82l18.66-25.26A16.58,16.58,0,0,0,602.13,458.09Z"]
 };
 var faStream = {
   prefix: 'fas',
@@ -8021,7 +8027,7 @@ var faToiletPaper = {
 var faToiletPaperSlash = {
   prefix: 'fas',
   iconName: 'toilet-paper-slash',
-  icon: [640, 512, [], "f972", "M64,192V364.13c0,41.12-9.75,62.75-31.12,126.87A16,16,0,0,0,48,512H328.86a31.87,31.87,0,0,0,30.38-21.87c9.31-27.83,18-53.35,22.18-85.55l-316-244.25C64.53,170.66,64,181.19,64,192ZM633.82,458.09l-102-78.81C575.28,360.91,608,284.32,608,192,608,86,565,0,512,0s-96,86-96,192c0,42,7,80.4,18.43,112L384,265V192c0-83.62,23.63-153.5,60.5-192H160c-23.33,0-44.63,16.83-61.26,44.53L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09ZM512,256c-17.63,0-32-28.62-32-64s14.37-64,32-64,32,28.63,32,64S529.62,256,512,256Z"]
+  icon: [640, 512, [], "e072", "M64,192V364.13c0,41.12-9.75,62.75-31.12,126.87A16,16,0,0,0,48,512H328.86a31.87,31.87,0,0,0,30.38-21.87c9.31-27.83,18-53.35,22.18-85.55l-316-244.25C64.53,170.66,64,181.19,64,192ZM633.82,458.09l-102-78.81C575.28,360.91,608,284.32,608,192,608,86,565,0,512,0s-96,86-96,192c0,42,7,80.4,18.43,112L384,265V192c0-83.62,23.63-153.5,60.5-192H160c-23.33,0-44.63,16.83-61.26,44.53L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09ZM512,256c-17.63,0-32-28.62-32-64s14.37-64,32-64,32,28.63,32,64S529.62,256,512,256Z"]
 };
 var faToolbox = {
   prefix: 'fas',
@@ -8066,7 +8072,7 @@ var faTrafficLight = {
 var faTrailer = {
   prefix: 'fas',
   iconName: 'trailer',
-  icon: [640, 512, [], "f941", "M624,320H544V80a16,16,0,0,0-16-16H16A16,16,0,0,0,0,80V368a16,16,0,0,0,16,16H65.61c7.83-54.21,54-96,110.39-96s102.56,41.79,110.39,96H624a16,16,0,0,0,16-16V336A16,16,0,0,0,624,320ZM96,243.68a176.29,176.29,0,0,0-32,20.71V136a8,8,0,0,1,8-8H88a8,8,0,0,1,8,8Zm96-18.54c-5.31-.49-10.57-1.14-16-1.14s-10.69.65-16,1.14V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,39.25a176.29,176.29,0,0,0-32-20.71V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8ZM384,320H352V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,0H448V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm-304,0a80,80,0,1,0,80,80A80,80,0,0,0,176,320Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,176,432Z"]
+  icon: [640, 512, [], "e041", "M624,320H544V80a16,16,0,0,0-16-16H16A16,16,0,0,0,0,80V368a16,16,0,0,0,16,16H65.61c7.83-54.21,54-96,110.39-96s102.56,41.79,110.39,96H624a16,16,0,0,0,16-16V336A16,16,0,0,0,624,320ZM96,243.68a176.29,176.29,0,0,0-32,20.71V136a8,8,0,0,1,8-8H88a8,8,0,0,1,8,8Zm96-18.54c-5.31-.49-10.57-1.14-16-1.14s-10.69.65-16,1.14V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,39.25a176.29,176.29,0,0,0-32-20.71V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8ZM384,320H352V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm96,0H448V136a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8Zm-304,0a80,80,0,1,0,80,80A80,80,0,0,0,176,320Zm0,112a32,32,0,1,1,32-32A32,32,0,0,1,176,432Z"]
 };
 var faTrain = {
   prefix: 'fas',
@@ -8346,7 +8352,7 @@ var faUsersCog = {
 var faUsersSlash = {
   prefix: 'fas',
   iconName: 'users-slash',
-  icon: [640, 512, [], "f973", "M132.65,212.32,36.21,137.78A63.4,63.4,0,0,0,32,160a63.84,63.84,0,0,0,100.65,52.32Zm40.44,62.28A63.79,63.79,0,0,0,128,256H64A64.06,64.06,0,0,0,0,320v32a32,32,0,0,0,32,32H97.91A146.62,146.62,0,0,1,173.09,274.6ZM544,224a64,64,0,1,0-64-64A64.06,64.06,0,0,0,544,224ZM500.56,355.11a114.24,114.24,0,0,0-84.47-65.28L361,247.23c41.46-16.3,71-55.92,71-103.23A111.93,111.93,0,0,0,320,32c-57.14,0-103.69,42.83-110.6,98.08L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM128,403.21V432a48,48,0,0,0,48,48H464a47.45,47.45,0,0,0,12.57-1.87L232,289.13C173.74,294.83,128,343.42,128,403.21ZM576,256H512a63.79,63.79,0,0,0-45.09,18.6A146.29,146.29,0,0,1,542,384h66a32,32,0,0,0,32-32V320A64.06,64.06,0,0,0,576,256Z"]
+  icon: [640, 512, [], "e073", "M132.65,212.32,36.21,137.78A63.4,63.4,0,0,0,32,160a63.84,63.84,0,0,0,100.65,52.32Zm40.44,62.28A63.79,63.79,0,0,0,128,256H64A64.06,64.06,0,0,0,0,320v32a32,32,0,0,0,32,32H97.91A146.62,146.62,0,0,1,173.09,274.6ZM544,224a64,64,0,1,0-64-64A64.06,64.06,0,0,0,544,224ZM500.56,355.11a114.24,114.24,0,0,0-84.47-65.28L361,247.23c41.46-16.3,71-55.92,71-103.23A111.93,111.93,0,0,0,320,32c-57.14,0-103.69,42.83-110.6,98.08L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.46A16,16,0,0,0,6.18,53.91L594.53,508.63A16,16,0,0,0,617,505.82l19.64-25.27a16,16,0,0,0-2.81-22.45ZM128,403.21V432a48,48,0,0,0,48,48H464a47.45,47.45,0,0,0,12.57-1.87L232,289.13C173.74,294.83,128,343.42,128,403.21ZM576,256H512a63.79,63.79,0,0,0-45.09,18.6A146.29,146.29,0,0,1,542,384h66a32,32,0,0,0,32-32V320A64.06,64.06,0,0,0,576,256Z"]
 };
 var faUtensilSpoon = {
   prefix: 'fas',
@@ -8378,6 +8384,16 @@ var faVenusMars = {
   iconName: 'venus-mars',
   icon: [576, 512, [], "f228", "M564 0h-79c-10.7 0-16 12.9-8.5 20.5l16.9 16.9-48.7 48.7C422.5 72.1 396.2 64 368 64c-33.7 0-64.6 11.6-89.2 30.9 14 16.7 25 36 32.1 57.1 14.5-14.8 34.7-24 57.1-24 44.1 0 80 35.9 80 80s-35.9 80-80 80c-22.3 0-42.6-9.2-57.1-24-7.1 21.1-18 40.4-32.1 57.1 24.5 19.4 55.5 30.9 89.2 30.9 79.5 0 144-64.5 144-144 0-28.2-8.1-54.5-22.1-76.7l48.7-48.7 16.9 16.9c2.4 2.4 5.4 3.5 8.4 3.5 6.2 0 12.1-4.8 12.1-12V12c0-6.6-5.4-12-12-12zM144 64C64.5 64 0 128.5 0 208c0 68.5 47.9 125.9 112 140.4V400H76c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h36v36c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12v-36h36c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-36v-51.6c64.1-14.6 112-71.9 112-140.4 0-79.5-64.5-144-144-144zm0 224c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"]
 };
+var faVest = {
+  prefix: 'fas',
+  iconName: 'vest',
+  icon: [448, 512, [], "e085", "M437.252,239.877,384,160V32A32,32,0,0,0,352,0H320a24.021,24.021,0,0,0-13.312,4.031l-25,16.672a103.794,103.794,0,0,1-115.376,0l-25-16.672A24.021,24.021,0,0,0,128,0H96A32,32,0,0,0,64,32V160L10.748,239.877A64,64,0,0,0,0,275.377V480a32,32,0,0,0,32,32H192V288a31.987,31.987,0,0,1,1.643-10.119L207.135,237.4,150.188,66.564A151.518,151.518,0,0,0,224,86.234a151.55,151.55,0,0,0,73.812-19.672L224,288V512H416a32,32,0,0,0,32-32V275.377A64,64,0,0,0,437.252,239.877ZM131.312,371.312l-48,48a16,16,0,0,1-22.624-22.624l48-48a16,16,0,0,1,22.624,22.624Zm256,48a15.992,15.992,0,0,1-22.624,0l-48-48a16,16,0,0,1,22.624-22.624l48,48A15.993,15.993,0,0,1,387.312,419.312Z"]
+};
+var faVestPatches = {
+  prefix: 'fas',
+  iconName: 'vest-patches',
+  icon: [448, 512, [], "e086", "M437.252,239.877,384,160V32A32,32,0,0,0,352,0H320a23.982,23.982,0,0,0-13.312,4.031l-25,16.672a103.794,103.794,0,0,1-115.376,0l-25-16.672A23.982,23.982,0,0,0,128,0H96A32,32,0,0,0,64,32V160L10.748,239.877A64,64,0,0,0,0,275.377V480a32,32,0,0,0,32,32H192V288a31.987,31.987,0,0,1,1.643-10.119L207.135,237.4,150.188,66.561A151.579,151.579,0,0,0,224,86.234a151.565,151.565,0,0,0,73.811-19.668L224,288V512H416a32,32,0,0,0,32-32V275.377A64,64,0,0,0,437.252,239.877ZM63.5,272.484a12.01,12.01,0,0,1,17-16.968l15.5,15.5,15.5-15.5a12.01,12.01,0,0,1,17,16.968L112.984,288,128.5,303.516a12.01,12.01,0,0,1-17,16.968L96,304.984l-15.5,15.5a12.01,12.01,0,0,1-17-16.968L79.016,288ZM96,456a40,40,0,1,1,40-40A40,40,0,0,1,96,456ZM359.227,335.785,310.7,336a6.671,6.671,0,0,1-6.7-6.7l.215-48.574A24.987,24.987,0,0,1,331.43,256.1c12.789,1.162,22.129,12.619,22.056,25.419l-.037,5.057,5.051-.037c12.826-.035,24.236,9.275,25.4,22.076A24.948,24.948,0,0,1,359.227,335.785Z"]
+};
 var faVial = {
   prefix: 'fas',
   iconName: 'vial',
@@ -8406,17 +8422,17 @@ var faVihara = {
 var faVirus = {
   prefix: 'fas',
   iconName: 'virus',
-  icon: [512, 512, [], "f974", "M483.55,227.55H462c-50.68,0-76.07-61.27-40.23-97.11L437,115.19A28.44,28.44,0,0,0,396.8,75L381.56,90.22c-35.84,35.83-97.11,10.45-97.11-40.23V28.44a28.45,28.45,0,0,0-56.9,0V50c0,50.68-61.27,76.06-97.11,40.23L115.2,75A28.44,28.44,0,0,0,75,115.19l15.25,15.25c35.84,35.84,10.45,97.11-40.23,97.11H28.45a28.45,28.45,0,1,0,0,56.89H50c50.68,0,76.07,61.28,40.23,97.12L75,396.8A28.45,28.45,0,0,0,115.2,437l15.24-15.25c35.84-35.84,97.11-10.45,97.11,40.23v21.54a28.45,28.45,0,0,0,56.9,0V462c0-50.68,61.27-76.07,97.11-40.23L396.8,437A28.45,28.45,0,0,0,437,396.8l-15.25-15.24c-35.84-35.84-10.45-97.12,40.23-97.12h21.54a28.45,28.45,0,1,0,0-56.89ZM224,272a48,48,0,1,1,48-48A48,48,0,0,1,224,272Zm80,56a24,24,0,1,1,24-24A24,24,0,0,1,304,328Z"]
+  icon: [512, 512, [], "e074", "M483.55,227.55H462c-50.68,0-76.07-61.27-40.23-97.11L437,115.19A28.44,28.44,0,0,0,396.8,75L381.56,90.22c-35.84,35.83-97.11,10.45-97.11-40.23V28.44a28.45,28.45,0,0,0-56.9,0V50c0,50.68-61.27,76.06-97.11,40.23L115.2,75A28.44,28.44,0,0,0,75,115.19l15.25,15.25c35.84,35.84,10.45,97.11-40.23,97.11H28.45a28.45,28.45,0,1,0,0,56.89H50c50.68,0,76.07,61.28,40.23,97.12L75,396.8A28.45,28.45,0,0,0,115.2,437l15.24-15.25c35.84-35.84,97.11-10.45,97.11,40.23v21.54a28.45,28.45,0,0,0,56.9,0V462c0-50.68,61.27-76.07,97.11-40.23L396.8,437A28.45,28.45,0,0,0,437,396.8l-15.25-15.24c-35.84-35.84-10.45-97.12,40.23-97.12h21.54a28.45,28.45,0,1,0,0-56.89ZM224,272a48,48,0,1,1,48-48A48,48,0,0,1,224,272Zm80,56a24,24,0,1,1,24-24A24,24,0,0,1,304,328Z"]
 };
 var faVirusSlash = {
   prefix: 'fas',
   iconName: 'virus-slash',
-  icon: [640, 512, [], "f975", "M114,227.56H92.44a28.44,28.44,0,0,0,0,56.88H114c50.68,0,76.06,61.28,40.23,97.12L139,396.81A28.44,28.44,0,1,0,179.19,437l15.25-15.25c35.84-35.84,97.11-10.45,97.11,40.23v21.54a28.45,28.45,0,0,0,56.9,0V462c0-26.61,17-45.91,38.22-53.37l-244.5-189A55.58,55.58,0,0,1,114,227.56ZM633.82,458.09,470.62,332c4.17-25.39,24.91-47.52,55.39-47.52h21.55a28.44,28.44,0,1,0,0-56.88H526c-50.68,0-76.06-61.28-40.23-97.12L501,115.19A28.44,28.44,0,0,0,460.81,75L445.56,90.22c-35.84,35.84-97.11,10.46-97.11-40.23V28.45a28.45,28.45,0,0,0-56.9,0V50c0,50.69-61.27,76.07-97.11,40.23L179.19,75A28.43,28.43,0,0,0,139,75c-.13.14-.15.32-.28.46L45.46,3.38A16,16,0,0,0,23,6.19L3.37,31.45A16,16,0,0,0,6.18,53.91L594.54,508.63A16,16,0,0,0,617,505.81l19.64-25.26A16,16,0,0,0,633.82,458.09ZM335.43,227.48l-62.87-48.59A46.55,46.55,0,0,1,288,176a48,48,0,0,1,48,48C336,225.22,335.52,226.29,335.43,227.48Z"]
+  icon: [640, 512, [], "e075", "M114,227.6H92.4C76.7,227.6,64,240.3,64,256s12.7,28.4,28.4,28.4H114c50.7,0,76.1,61.3,40.2,97.1L139,396.8 c-11.5,10.7-12.2,28.7-1.6,40.2s28.7,12.2,40.2,1.6c0.5-0.5,1.1-1,1.6-1.6l15.2-15.2c35.8-35.8,97.1-10.5,97.1,40.2v21.5 c0,15.7,12.8,28.4,28.5,28.4c15.7,0,28.4-12.7,28.4-28.4V462c0-26.6,17-45.9,38.2-53.4l-244.5-189 C133.7,224.7,123.9,227.5,114,227.6z M617,505.8l19.6-25.3c5.4-7,4.2-17-2.8-22.5L470.6,332c4.2-25.4,24.9-47.5,55.4-47.5h21.5 c15.7,0,28.4-12.7,28.4-28.4s-12.7-28.4-28.4-28.4H526c-50.7,0-76.1-61.3-40.2-97.1l15.2-15.3c10.7-11.5,10-29.5-1.6-40.2 c-10.9-10.1-27.7-10.1-38.6,0l-15.2,15.2c-35.8,35.8-97.1,10.5-97.1-40.2V28.5C348.4,12.7,335.7,0,320,0 c-15.7,0-28.4,12.7-28.4,28.4V50c0,50.7-61.3,76.1-97.1,40.2L179.2,75c-11.1-11.1-29.4-10.6-40.5,0.5L45.5,3.4 c-7-5.4-17-4.2-22.5,2.8L3.4,31.5c-5.4,7-4.2,17,2.8,22.5l588.4,454.7C601.5,514.1,611.6,512.8,617,505.8z M335.4,227.5l-62.9-48.6 c4.9-1.8,10.2-2.8,15.4-2.9c26.5,0,48,21.5,48,48C336,225.2,335.5,226.3,335.4,227.5z"]
 };
 var faViruses = {
   prefix: 'fas',
   iconName: 'viruses',
-  icon: [640, 512, [], "f976", "M624,352H611.88c-28.51,0-42.79-34.47-22.63-54.63l8.58-8.57a16,16,0,1,0-22.63-22.63l-8.57,8.58C546.47,294.91,512,280.63,512,252.12V240a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.57c20.16,20.16,5.88,54.63-22.63,54.63H368a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.57a16,16,0,1,0,22.63,22.63l8.57-8.58c20.16-20.16,54.63-5.88,54.63,22.63V496a16,16,0,0,0,32,0V483.88c0-28.51,34.47-42.79,54.63-22.63l8.57,8.58a16,16,0,1,0,22.63-22.63l-8.58-8.57C569.09,418.47,583.37,384,611.88,384H624a16,16,0,0,0,0-32ZM480,384a32,32,0,1,1,32-32A32,32,0,0,1,480,384ZM346.51,213.33h16.16a21.33,21.33,0,0,0,0-42.66H346.51c-38,0-57.05-46-30.17-72.84l11.43-11.44A21.33,21.33,0,0,0,297.6,56.23L286.17,67.66c-26.88,26.88-72.84,7.85-72.84-30.17V21.33a21.33,21.33,0,0,0-42.66,0V37.49c0,38-46,57.05-72.84,30.17L86.4,56.23A21.33,21.33,0,0,0,56.23,86.39L67.66,97.83c26.88,26.88,7.85,72.84-30.17,72.84H21.33a21.33,21.33,0,0,0,0,42.66H37.49c38,0,57.05,46,30.17,72.84L56.23,297.6A21.33,21.33,0,1,0,86.4,327.77l11.43-11.43c26.88-26.88,72.84-7.85,72.84,30.17v16.16a21.33,21.33,0,0,0,42.66,0V346.51c0-38,46-57.05,72.84-30.17l11.43,11.43a21.33,21.33,0,0,0,30.17-30.17l-11.43-11.43C289.46,259.29,308.49,213.33,346.51,213.33ZM160,192a32,32,0,1,1,32-32A32,32,0,0,1,160,192Zm80,32a16,16,0,1,1,16-16A16,16,0,0,1,240,224Z"]
+  icon: [640, 512, [], "e076", "M624,352H611.88c-28.51,0-42.79-34.47-22.63-54.63l8.58-8.57a16,16,0,1,0-22.63-22.63l-8.57,8.58C546.47,294.91,512,280.63,512,252.12V240a16,16,0,0,0-32,0v12.12c0,28.51-34.47,42.79-54.63,22.63l-8.57-8.58a16,16,0,0,0-22.63,22.63l8.58,8.57c20.16,20.16,5.88,54.63-22.63,54.63H368a16,16,0,0,0,0,32h12.12c28.51,0,42.79,34.47,22.63,54.63l-8.58,8.57a16,16,0,1,0,22.63,22.63l8.57-8.58c20.16-20.16,54.63-5.88,54.63,22.63V496a16,16,0,0,0,32,0V483.88c0-28.51,34.47-42.79,54.63-22.63l8.57,8.58a16,16,0,1,0,22.63-22.63l-8.58-8.57C569.09,418.47,583.37,384,611.88,384H624a16,16,0,0,0,0-32ZM480,384a32,32,0,1,1,32-32A32,32,0,0,1,480,384ZM346.51,213.33h16.16a21.33,21.33,0,0,0,0-42.66H346.51c-38,0-57.05-46-30.17-72.84l11.43-11.44A21.33,21.33,0,0,0,297.6,56.23L286.17,67.66c-26.88,26.88-72.84,7.85-72.84-30.17V21.33a21.33,21.33,0,0,0-42.66,0V37.49c0,38-46,57.05-72.84,30.17L86.4,56.23A21.33,21.33,0,0,0,56.23,86.39L67.66,97.83c26.88,26.88,7.85,72.84-30.17,72.84H21.33a21.33,21.33,0,0,0,0,42.66H37.49c38,0,57.05,46,30.17,72.84L56.23,297.6A21.33,21.33,0,1,0,86.4,327.77l11.43-11.43c26.88-26.88,72.84-7.85,72.84,30.17v16.16a21.33,21.33,0,0,0,42.66,0V346.51c0-38,46-57.05,72.84-30.17l11.43,11.43a21.33,21.33,0,0,0,30.17-30.17l-11.43-11.43C289.46,259.29,308.49,213.33,346.51,213.33ZM160,192a32,32,0,1,1,32-32A32,32,0,0,1,160,192Zm80,32a16,16,0,1,1,16-16A16,16,0,0,1,240,224Z"]
 };
 var faVoicemail = {
   prefix: 'fas',
@@ -9531,6 +9547,8 @@ var _iconsCache = {
   faVenus: faVenus,
   faVenusDouble: faVenusDouble,
   faVenusMars: faVenusMars,
+  faVest: faVest,
+  faVestPatches: faVestPatches,
   faVial: faVial,
   faVials: faVials,
   faVideo: faVideo,
@@ -9853,6 +9871,12 @@ function log () {
 }
 
 function normalizeIconArgs(icon) {
+  // this has everything that it needs to be rendered which means it was probably imported
+  // directly from an icon svg package
+  if (icon && _typeof(icon) === 'object' && icon.prefix && icon.iconName && icon.icon) {
+    return icon;
+  }
+
   if (_fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon) {
     return _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__["parse"].icon(icon);
   } // if the icon is null, there's nothing to do
@@ -9863,7 +9887,7 @@ function normalizeIconArgs(icon) {
   } // if the icon is an object and has a prefix and an icon name, return it
 
 
-  if (_typeof(icon) === 'object' && icon.prefix && icon.iconName) {
+  if (icon && _typeof(icon) === 'object' && icon.prefix && icon.iconName) {
     return icon;
   } // if it's an array with length of two
 
@@ -10051,16 +10075,23 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /*!****************************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
   \****************************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #log-console .log.error {\n      color: red; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #log-console .log.error {\n      color: red; }\n", "",{"version":3,"sources":["webpack://./components/log/log.scss"],"names":[],"mappings":"AAAA;EACI,mBAAmB;EACnB,aAAa;EACb,sBAAsB;EACtB,SAAS;EACT,aAAa;EACb,WAAW;EACX,gBAAgB;EAChB,gBAAgB,EAAA;EARpB;IAWQ,YAAY;IACZ,eAAe;IACf,8CAA8C,EAAA;IAbtD;MAgBY,UAAS,EAAA","sourcesContent":["#log-console {\r\n    background: #333333;\r\n    height: 120px;\r\n    box-sizing: border-box;\r\n    margin: 0;\r\n    padding: 10px;\r\n    width: 100%; \r\n    overflow: hidden;\r\n    overflow-y: auto;\r\n\r\n    .log {\r\n        color: white;\r\n        font-size: 14px;\r\n        font-family: 'Courier New', Courier, monospace;\r\n\r\n        &.error {\r\n            color:red;\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10069,16 +10100,23 @@ module.exports = exports;
 /*!********************************************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
   \********************************************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .ge-grid-divider {\n    display: grid;\n    grid-template-columns: 150px 1fr auto; }\n    #ge-propertyTab .ge-grid-divider .textLine {\n      grid-column: auto; }\n  #ge-propertyTab .ge-grid-button-divider {\n    display: grid;\n    grid-template-columns: 60px 60px 60px 60px; }\n  #ge-propertyTab .ge-grid-remove {\n    display: grid;\n    background-color: #c2c2c2;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid-edit {\n    display: grid;\n    background-color: #878787;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid {\n    display: grid;\n    margin-bottom: 5px; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .command-button-alt {\n    cursor: pointer;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt:hover {\n      background-color: #c2c2c2;\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-disabled {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt-disabled .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-disabled .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt-disabled img {\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-active {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: #c2c2c2;\n    filter: invert(1); }\n    #ge-propertyTab .command-button-alt-active .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-active .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: auto;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      padding-top: 4px;\n      display: flex;\n      align-items: left;\n      min-width: 15px; }\n    #ge-propertyTab .textLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      display: none;\n      grid-column: 3;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .ge-divider-short {\n    display: grid;\n    grid-template-columns: 1fr 1fr; }\n  #ge-propertyTab .ge-grid-divider {\n    display: grid;\n    grid-template-columns: 150px 1fr auto; }\n    #ge-propertyTab .ge-grid-divider .textLine {\n      grid-column: auto; }\n  #ge-propertyTab .ge-grid-button-divider {\n    display: grid;\n    grid-template-columns: 60px 60px 60px 60px; }\n  #ge-propertyTab .ge-grid-remove {\n    display: grid;\n    background-color: #c2c2c2;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid-edit {\n    display: grid;\n    background-color: #878787;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid {\n    display: grid;\n    margin-bottom: 5px; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine img {\n      width: 30px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .command-button-alt {\n    cursor: pointer;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt:hover {\n      background-color: #c2c2c2;\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-disabled {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt-disabled .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-disabled .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt-disabled img {\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-active {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: #c2c2c2;\n    filter: invert(1); }\n    #ge-propertyTab .command-button-alt-active .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-active .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine img {\n      width: 30px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 100px;\n      margin-left: 15px; }\n    #ge-propertyTab .checkBoxLine img {\n      width: 30px; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine img {\n      width: 30px; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine img {\n        width: 30px;\n        height: 30px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: auto;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      padding-top: 4px;\n      display: flex;\n      align-items: left;\n      min-width: 15px; }\n    #ge-propertyTab .textLine img {\n      width: 30px; }\n    #ge-propertyTab .textLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      display: none;\n      grid-column: 3;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", "",{"version":3,"sources":["webpack://./components/propertyTab/propertyTab.scss"],"names":[],"mappings":"AAAA;EACI,yBAAiB;EACjB,qBAAgB,EAAA;;AAGpB;EACI,yBAAyB,EAAA;;AAG7B;EACI,iBAAiB;EAIjB,YAAW;EACX,mBAAmB;EACnB,mCAAmC,EAAA;EAPvC;IASQ,YAAY;IACZ,eAAe;IACf,YAAY;IACZ,iBAAiB;IACjB,WAAW;IACX,kBAAkB;IAClB,aAAa;IACb,+BAA+B;IAC/B,yBAAyB;IACzB,sBAAsB;IACtB,qBAAqB;IACrB,iBAAiB,EAAA;IApBzB;MAuBY,kBAAkB;MAClB,iBAAiB;MACjB,cAAc;MACd,WAAW;MACX,YAAY;MACZ,OAAM;MACN,aAAa;MACb,kBAAkB;MAClB,oBAAoB,EAAA;IA/BhC;MAmCY,iBAAiB;MACjB,YAAY;MACZ,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,kBAAkB,EAAA;EAxC9B;IA6CQ,wBAAwB;IACxB,YAAY;IACZ,WAAW;IACX,iBAAiB;IACjB,kBAAkB;IAClB,aAAa;IACb,YAAY;IACZ,uBAAuB;IACvB,uBAAuB,EAAA;EArD/B;IAyDQ,UAAU,EAAA;EAzDlB;IA6DQ,wBAAwB;IACxB,gBAAgB;IAChB,WAAW;IACX,YAAY;IACZ,kBAAkB;IAClB,mBAAmB;IACnB,aAAa;IACb,kBAAkB;IAClB,eAAe,EAAA;EArEvB;IAyEQ,WAAW;IACX,YAAY;IACZ,kBAAkB;IAClB,iBAAwB;IACxB,eAAe,EAAA;EA7EvB;IAiFQ,wBAAwB;IACxB,0CAA0C;IAC1C,UAAU;IACV,WAAW;IACX,YAAY,EAAA;EArFpB;IAwFQ,UAAU,EAAA;EAxFlB;IA2FQ,YAAY,EAAA;EA3FpB;IA+FQ,iBA7FmB;IA8FnB,mBA7FqB;IA8FrB,gBA7FkB;IA8FlB,4BAA4B;IAC5B,aAAa;IACb,wBAAwB;IACxB,yCAAyC,EAAA;IArGjD;MAwGY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,eAAe,EAAA;IA3G3B;MA+GY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAjH/B;MAsHY,cAAc;MACd,WAAW;MACX,iBAAiB;MACjB,UAAU;MACV,aAAa;MACb,mBAAmB;MACnB,iBAAiB,EAAA;IA5H7B;MAgIY,cAAc;MACd,kBAAkB,EAAA;MAjI9B;QAoIgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MAtInC;QA0IgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;QA5InC;UA+IoB,WAAW;UACX,6BAA6B;UAC7B,0BAA0B;UAC1B,wBAAwB;UACxB,yBAAyB;UACzB,uBAAuB;UACvB,kBACJ,EAAA;QAtJhB;;UA0JkB,wBAAwB;UACxB,SAAS,EAAA;QA3J3B;UA+JoB,0BAA0B,EAAA;EA/J9C;IAsKQ,aAAa;IACb,oDAAoD,EAAA;EAvK5D;IA2KQ,aAAa;IACb,8BAA8B,EAAA;EA5KtC;IAgLQ,aAAa;IACb,qCAAqC,EAAA;IAjL7C;MAoLY,iBAAiB,EAAA;EApL7B;IA0LQ,aAAa;IACb,0CAA0C,EAAA;EA3LlD;IA+LQ,aAAa;IACb,yBAAyB;IACzB,kBAAkB;IAClB,iBAAiB,EAAA;EAlMzB;IAsMQ,aAAa;IACb,yBAAyB;IACzB,kBAAkB;IAClB,iBAAiB,EAAA;EAzMzB;IA8MQ,aAAa;IACb,kBAAkB,EAAA;EA/M1B;IAoNQ,iBAAiB;IACjB,iBAnNmB;IAoNnB,mBAnNqB;IAoNrB,gBAnNkB;IAoNlB,4BAA4B;IAC5B,aAAa;IACb,wCAAwC,EAAA;IA1NhD;MA4NY,cAAc;MACd,iBAAiB;MACjB,aAAa;MACb,mBAAmB;MACnB,eAAe,EAAA;IAhO3B;MAoOY,WAAW,EAAA;IApOvB;MAwOY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA1O/B;MA8OY,aAAa;MACb,mBAAmB;MACnB,kBAAkB;MAClB,cAAc;MACd,uBAAuB,EAAA;MAlPnC;QAoPgB,uBAAuB;QACvB,6BAA6B;QAC7B,0BAA0B;QAC1B,wBAAwB;QACxB,yBAAyB;QACzB,uBAAuB;QACvB,kBACJ,EAAA;IA3PZ;MAgQgB,0BAA0B,EAAA;EAhQ1C;IAsQQ,iBApQmB;IAqQnB,YAAY;IACZ,aAAa;IACb,gCAAgC,EAAA;IAzQxC;MA4QY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA9Q/B;MAkRY,aAAa;MACb,mBAAmB;MACnB,cAAc,EAAA;MApR1B;QAuRgB,uBAAuB;QACvB,iBAAiB;QACjB,YAAY,EAAA;EAzR5B;IA+RQ,eAAe;IACf,aAAY;IACZ,wBAAwB;IACxB,2BAA2B,EAAA;IAlSnC;MAqSY,kCAAkC,EAAA;IArS9C;MA0SgB,8CAA8C,EAAA;IA1S9D;MAgTwB,8BAAwC,EAAA;IAhThE;MAuTY,WAAW;MACX,cAAc;MACd,UAAU;MACV,qBAAqB;MACrB,yBAAyB;MACzB,oBAAoB,EAAA;MA5ThC;QA+TgB,UAAU,EAAA;IA/T1B;MAoUY,WAAW;MACX,cAAc,EAAA;MArU1B;QAwUgB,aAAa;QACb,+BAA+B;QAC/B,mBAAmB;QACnB,4BAA4B;QAC5B,mBAzUa;QA0Ub,gBAzUU;QA0UV,kBAAkB;QAClB,eAAe,EAAA;QA/U/B;UAkVoB,kCAAkC;UAClC,iBAAiB;UACjB,cAAc;UACd,aAAa;UACb,mBAAmB,EAAA;QAtVvC;UA0VoB,cAAc;UACd,aAAa;UACb,mBAAmB;UACnB,qBAAqB;UACrB,wBAAwB,EAAA;UA9V5C;YAiWwB,yBAAyB,EAAA;MAjWjD;QAuWgB,mDAAmD,EAAA;MAvWnE;QA2WgB,mDAAmD,EAAA;EA3WnE;IAiXQ,aAAa;IACb,WAAW,EAAA;IAlXnB;MAqXY,YAAY;MACZ,uBAAuB;MACvB,eAAe,EAAA;IAvX3B;MA2XY,eAAe;MACf,QAAQ;MACR,UAAU;MACV,WAAW;MACX,SAAS,EAAA;IA/XrB;MAmYY,UAAU;MACV,kBAAkB,EAAA;EApY9B;IAyYQ,aAAa;IACb,wBAAwB;IACxB,oDAAoD;IACpD,gBAAgB;IAChB,iBAAiB;IACjB,mBAAmB,EAAA;IA9Y3B;MAiZY,WAAW;MACX,cAAc,EAAA;IAlZ1B;MAsZY,WAAW;MACX,cAAc;MACd,eAAe,EAAA;IAxZ3B;MA4ZY,gBAAgB;MAChB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,iBAAiB,EAAA;IAha7B;MAoaY,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,qBAAqB;MACrB,kBAAkB;MAClB,kBAAkB,EAAA;MA1a9B;QA6agB,UAAU,EAAA;IA7a1B;MAkbY,WAAW;MACX,cAAc;MACd,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;MAtbnC;QAybgB,YAAY;QACZ,WAAW,EAAA;MA1b3B;QA6bgB,eAAe,EAAA;IA7b/B;MAkcY,WAAW;MACX,cAAc;MACd,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;MAtcnC;QAwcgB,YAAY;QACZ,WAAW,EAAA;MAzc3B;QA4cgB,eAAe,EAAA;EA5c/B;IAodQ,eAAe;IACf,WAAW,EAAA;IArdnB;MAwdY,aAAa,EAAA;IAxdzB;MA4dY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,YAAY;MACZ,qBAAqB;MACrB,uBAAuB,EAAA;IAjenC;MAqeY,uBAAuB,EAAA;IArenC;MAyeY,wBAAwB;MACxB,uBAAuB,EAAA;IA1enC;MA+egB,uBAAuB,EAAA;EA/evC;IAqfQ,eAAe;IACf,WAAW;IACX,gBAAgB;IAChB,iBAAiB;IAKjB,uBAAuB,EAAA;IA7f/B;MA0fY,aAAa,EAAA;IA1fzB;MA+fY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;IAngBnC;MAsgBY,yBAAyB;MACzB,iBAAiB,EAAA;EAvgB7B;IA4gBQ,eAAe;IACf,oBAAoB;IACpB,WAAW;IACX,gBAAgB;IAChB,iBAAiB;IAKjB,uBAAuB,EAAA;IArhB/B;MAkhBY,aAAa,EAAA;IAlhBzB;MAuhBY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;IA3hBnC;MA+hBY,iBAAiB,EAAA;EA/hB7B;IAqiBQ,eAAe;IACf,oBAAoB;IACpB,WAAW;IACX,gBAAgB;IAChB,iBAAiB;IAKjB,yBAAyB;IACzB,iBAAiB,EAAA;IA/iBzB;MA2iBY,aAAa,EAAA;IA3iBzB;MAijBY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;EArjBnC;IA0jBQ,iBAAiB;IACjB,iBAzjBmB;IA0jBnB,4BAA4B;IAC5B,mBA1jBqB;IA2jBrB,gBA1jBkB;IA2jBlB,aAAa;IACb,wCAAwC,EAAA;IAhkBhD;MAmkBY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,eAAe,EAAA;IAtkB3B;MA0kBY,WAAW,EAAA;IA1kBvB;MA8kBY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAhlB/B;MAolBY,aAAa;MACb,kBAAkB;MAClB,mBAAmB;MACnB,cAAc;MACd,uBAAuB,EAAA;MAxlBnC;QA0lBgB,uBAAuB;QACvB,6BAA6B;QAC7B,0BAA0B;QAC1B,wBAAwB;QACxB,yBAAyB;QACzB,uBAAuB;QACvB,kBACJ,EAAA;IAjmBZ;MAqmBY,cAAc;MAEd,aAAa;MACb,mBAAmB,EAAA;MAxmB/B;QA2mBgB,WAAW,EAAA;MA3mB3B;;QAgnBc,wBAAwB;QACxB,SAAS,EAAA;MAjnBvB;QAqnBgB,0BAA0B,EAAA;EArnB1C;IA2nBQ,iBAznBmB;IA0nBnB,mBAznBqB;IA0nBrB,gBAznBkB;IA0nBlB,aAAa,EAAA;IA9nBrB;MAgoBY,aAAa;MACb,oCAAoC;MACpC,4BAA4B,EAAA;MAloBxC;QAqoBgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MAvoBnC;QA2oBgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,iBAAiB;QACjB,YAAY,EAAA;MA/oB5B;QAmpBgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;IAvpB/B;MA4pBY,aAAa;MACb,kBAAkB;MAClB,8BAAwC,EAAA;MA9pBpD;QAiqBgB,eAAe,EAAA;MAjqB/B;QAqqBgB,aAAa;QACb,+BAA+B,EAAA;MAtqB/C;QA0qBgB,iBAAiB;QACjB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,mBAAmB;QACnB,kBAAkB,EAAA;MA/qBlC;QAmrBgB,YAAY;QACZ,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,yBAAoC,EAAA;EAvrBpD;IA6rBQ,4BAA4B;IAC5B,mBA3rBqB;IA4rBrB,gBA3rBkB;IA4rBlB,aAAa;IACb,mBAAmB;IACnB,sBAAsB;IACtB,mBAAmB,EAAA;IAnsB3B;MAqsBY,aAAa,EAAA;IArsBzB;MAysBY,iCAAiC;MACjC,yBAAyB;MACzB,gBAAgB;MAChB,YAAW;MACX,gBAAgB;MAChB,gBAAgB;MAChB,YAAY;MACZ,eAAe;MACf,kBAAkB;MAClB,kBAAkB,EAAA;IAltB9B;MAstBY,YAAY,EAAA;IAttBxB;MA0tBY,sBAAsB;MACtB,yBAAyB,EAAA;IA3tBrC;MA+tBY,iCAAiC;MACjC,yBAAyB;MACzB,yBAAyB;MACzB,YAAW;MACX,gBAAgB;MAChB,YAAY;MACZ,kBAAkB,EAAA;IAruB9B;MAyuBY,YAAY,EAAA;IAzuBxB;MA6uBY,mBAAmB,EAAA;IA7uB/B;MAivBY,yBAAyB;MACzB,YAAY,EAAA;EAlvBxB;IAuvBQ,iBArvBmB;IAsvBnB,mBArvBqB;IAsvBrB,gBArvBkB;IAsvBlB,4BAA4B;IAC5B,aAAa;IACb,qCAAqC,EAAA;IA5vB7C;MA+vBY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAjwB/B;MAqwBY,aAAa;MACb,mBAAmB;MACnB,cAAc;MACd,YAAY,EAAA;MAxwBxB;QA0wBgB,uBAAuB;QACvB,YAAY,EAAA;EA3wB5B;IAixBQ,iBA/wBmB;IAgxBnB,mBA/wBqB;IAgxBrB,gBA/wBkB;IAgxBlB,4BAA4B;IAC5B,aAAa;IACb,oCAAqC,EAAA;IAtxB7C;MAyxBY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,gBAAgB;MAChB,iBAAiB,EAAA;IA7xB7B;MAiyBY,WAAW,EAAA;IAjyBvB;MAqyBY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAvyB/B;MA2yBY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,kBAAkB,EAAA;MA9yB9B;QAizBgB,kBAAkB;QAClB,cAAc;QACd,YAAY;QACZ,WAAW;QACX,iBAAiB;QACjB,oBAAoB;QACpB,eAAe;QACf,yBAAyB;QACzB,aAAa;QACb,kBAAkB,EAAA;MA1zBlC;QA8zBgB,kBAAkB;QAClB,SAAS;QACT,QAAQ;QACR,cAAc;QACd,WAAW;QACX,YAAY;QACZ,oBAAoB;QACpB,mBAAmB;QACnB,2CAAwC;QACxC,WAAW;QACX,0BAA0B;QAC1B,aAAa;QACb,kBAAkB,EAAA;MA10BlC;QA80BgB,4BAA4B,EAAA;MA90B5C;QAk1BgB,uBAAuB,EAAA;MAl1BvC;QAu1BgB,UAAU;QACV,iBAAwB;QACxB,aAAa;QACb,kBAAkB,EAAA;MA11BlC;QA81BgB,iBAAwB;QACxB,eAAe,EAAA;MA/1B/B;QAm2BgB,UAAU;QACV,mBAA2B;QAC3B,eAAe,EAAA;MAr2B/B;QAy2BgB,mBAA2B;QAC3B,eAAe,EAAA;MA12B/B;QA82BgB,aAAa,EAAA;EA92B7B;IAo3BQ,iBAl3BmB;IAm3BnB,mBAl3BqB;IAm3BrB,gBAl3BkB;IAm3BlB,4BAA4B;IAC5B,aAAa;IACb,oCAAqC,EAAA;IAz3B7C;MA43BY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA93B/B;MAk4BY,WAAW,EAAA;IAl4BvB;MAs4BY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAx4B/B;MA44BY,cAAc;MACd,kBAAkB;MAClB,aAAa;MACb,mBAAmB;MACnB,iBAAiB,EAAA;MAh5B7B;QAm5BgB,YAAY;QACZ,YAAY;QACZ,mBAAmB;QACnB,kBAAkB,EAAA;EAt5BlC;IA45BQ,iBA15BmB;IA25BnB,mBA15BqB;IA25BrB,gBA15BkB;IA25BlB,aAAa,EAAA;IA/5BrB;MAk6BY,4BAA4B;MAC5B,aAAa;MACb,oCAAoC,EAAA;MAp6BhD;QAu6BgB,cAAc;QACd,iBAAiB;QACjB,aAAa;QACb,mBAAmB;QACnB,eAAe,EAAA;MA36B/B;QA+6BgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MAj7BnC;QAq7BgB,WAAW;QACX,YAAY,EAAA;MAt7B5B;QA07BgB,cAAc;QACd,iBAAiB,EAAA;MA37BjC;QA+7BgB,cAAc;QACd,eAAe;QACf,aAAa;QACb,mBAAmB,EAAA;QAl8BnC;UAq8BoB,iBAAiB,EAAA;MAr8BrC;QA08BgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe;QACf,YAAY,EAAA;QA/8B5B;UAi9BoB,YAAY;UACZ,WAAW,EAAA;MAl9B/B;QAu9BgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;QA39B/B;UA89BoB,YAAY;UACZ,WAAW,EAAA;IA/9B/B;MAq+BY,aAAa;MACb,kBAAkB;MAClB,8BAAwC,EAAA;MAv+BpD;QA0+BgB,aAAa;QACb,+BAA+B,EAAA;MA3+B/C;QA++BgB,iBAAiB;QACjB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,mBAAmB;QACnB,kBAAkB,EAAA;MAp/BlC;QAw/BgB,YAAY;QACZ,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,yBAAoC,EAAA;EA5/BpD;IAkgCQ,iBAhgCmB;IAigCnB,mBAhgCqB;IAigCrB,gBAhgCkB;IAigClB,YAAY;IACZ,aAAa;IACb,wCAAwC,EAAA;IAvgChD;MAygCY,cAAc;MACd,iBAAiB;MACjB,gBAAgB;MAChB,aAAa;MACb,iBAAiB;MACjB,eAAe,EAAA;IA9gC3B;MAkhCY,WAAW,EAAA;IAlhCvB;MAshCY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAxhC/B;MA4hCY,cAAc;MACd,mBAAmB;MACnB,uBAAuB;MACvB,gBAAgB;MAChB,eAAe;MACf,YAAY;MACZ,WAAU;MACV,eAAe;MACf,gBAAgB;MAChB,0BAA0B;MAC1B,eAAe,EAAA;IAtiC3B;MA0iCY,aAAa;MACb,cAAc;MACd,mBAAmB;MACnB,uBAAuB;MACvB,gBAAgB;MAChB,eAAe;MACf,YAAY;MACZ,WAAU;MACV,eAAe;MACf,gBAAgB;MAChB,yBAAyB;MACzB,sBAAsB;MACtB,qBAAqB;MACrB,iBAAiB,EAAA;MAvjC7B;QA0jCgB,YAAY,EAAA;MA1jC5B;QA8jCgB,UAAU,EAAA","sourcesContent":[":root {\r\n    --backgroundGrey: #aaaaaa;\r\n    --spacingHeight: 30px;\r\n}\r\n\r\nhr.ge {\r\n    border: 1px solid #d0cece;\r\n}\r\n\r\n#ge-propertyTab {\r\n    user-select: none;\r\n    $line-padding-left: 5px;\r\n    $line-padding-bottom: 0px;\r\n    $line-padding-top: 0px;\r\n    color:black;\r\n    background: #e2e2e2;\r\n    font-family: \"acumin-pro-condensed\";\r\n      #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: white;\r\n        background: white;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            background: white;\r\n            grid-column: 1; \r\n            width: 32px;\r\n            height: 32px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            background: white;\r\n            color: black;\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n    }\r\n\r\n    .range {\r\n        -webkit-appearance: none;\r\n        width: 120px;\r\n        height: 2px;\r\n        background: black;\r\n        border-radius: 5px;\r\n        outline: none;\r\n        opacity: 0.7;\r\n        -webkit-transition: .2s;\r\n        transition: opacity .2s;\r\n    }\r\n    \r\n    .range:hover {\r\n        opacity: 1;\r\n    }\r\n    \r\n    .range::-webkit-slider-thumb {\r\n        -webkit-appearance: none;\r\n        appearance: none;\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: #e2e2e2;\r\n        border: solid;\r\n        border-width: thin;\r\n        cursor: pointer;\r\n    }\r\n    \r\n    .range::-moz-range-thumb {\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: rgb(0, 0, 0);\r\n        cursor: pointer;\r\n    }\r\n\r\n    input[type=\"color\"] {\r\n        -webkit-appearance: none;\r\n        border: 1px solid rgba(255, 255, 255, 0.5);\r\n        padding: 0;\r\n        width: 30px;\r\n        height: 20px;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch-wrapper {\r\n        padding: 0;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch {\r\n        border: none;\r\n    }\r\n\r\n    .sliderLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: auto auto auto 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n\r\n        .slider {\r\n            grid-column: 4;\r\n            grid-row: 1;\r\n            margin-right: 5px;\r\n            width: 90%;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 5px;\r\n        }\r\n\r\n        .floatLine {\r\n            grid-column: 3;\r\n            padding-left: 15px;\r\n            \r\n            .label {\r\n                grid-column: 1;\r\n                display: none;\r\n                align-items: center;\r\n            }\r\n        \r\n            .short {\r\n                grid-column: 1; \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 40px;\r\n                    background-color: transparent;\r\n                    outline-color: transparent;\r\n                    border-left: transparent;\r\n                    border-right: transparent;\r\n                    border-top: transparent;\r\n                    outline-width: 0px\r\n                }\r\n                \r\n                input::-webkit-outer-spin-button,\r\n                input::-webkit-inner-spin-button {\r\n                  -webkit-appearance: none;\r\n                  margin: 0;\r\n                }\r\n    \r\n                input[type=number] {\r\n                    -moz-appearance: textfield;\r\n                }\r\n            }\r\n        }  \r\n    }     \r\n\r\n    .ge-divider {\r\n        display: grid;\r\n        grid-template-columns: auto auto auto auto auto auto;\r\n    }\r\n\r\n    .ge-divider-short {\r\n        display: grid;\r\n        grid-template-columns: 1fr 1fr;\r\n    }\r\n    \r\n    .ge-grid-divider {\r\n        display: grid;\r\n        grid-template-columns: 150px 1fr auto;\r\n        \r\n        .textLine {\r\n            grid-column: auto;\r\n           \r\n        }\r\n    }\r\n\r\n    .ge-grid-button-divider {\r\n        display: grid;\r\n        grid-template-columns: 60px 60px 60px 60px;\r\n    }\r\n\r\n    .ge-grid-remove {\r\n        display: grid;\r\n        background-color: #c2c2c2;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n    }\r\n\r\n    .ge-grid-edit {\r\n        display: grid;\r\n        background-color: #878787;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n\r\n    }\r\n  \r\n    .ge-grid {\r\n        display: grid;\r\n        margin-bottom: 5px;\r\n    }\r\n\r\n\r\n    .textInputLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 15px;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: transparent;\r\n                outline-color: transparent;\r\n                border-left: transparent;\r\n                border-right: transparent;\r\n                border-top: transparent;\r\n                outline-width: 0px\r\n            }\r\n        }\r\n\r\n        .noUnderline {\r\n            input {\r\n                border-bottom: transparent;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .textInputArea {\r\n        padding-left: $line-padding-left;\r\n        height: 100%;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px;\r\n\r\n        .label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            \r\n            textarea {\r\n                width: calc(150% - 5px);\r\n                margin-left: -50%;\r\n                height: 40px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .paneContainer {\r\n        margin-top: 3px;\r\n        display:grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 100%;\r\n        \r\n        .paneList {\r\n            border-left: 3px solid transparent;\r\n        }\r\n\r\n        &:hover {  \r\n            .paneList {                      \r\n                border-left: 3px solid rgba(51, 122, 183, 0.8);\r\n            }\r\n\r\n            .paneContainer-content {\r\n                .header {\r\n                    .title {   \r\n                        border-left: 3px solid rgb(51, 122, 183);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        .paneContainer-highlight-border {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            opacity: 1;\r\n            border: 3px solid red;\r\n            transition: opacity 250ms;\r\n            pointer-events: none;\r\n            \r\n            &.transparent {\r\n                opacity: 0;\r\n            }\r\n        }\r\n\r\n        .paneContainer-content {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            .header {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n                background: #cccccc;    \r\n                height: var(--spacingHeight);\r\n                padding-bottom: $line-padding-bottom;\r\n                padding-top: $line-padding-top;\r\n                padding-right: 5px;                        \r\n                cursor: pointer;\r\n                \r\n                .title {                                \r\n                    border-left: 3px solid transparent;\r\n                    padding-left: 5px;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .collapse {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    justify-items: center;\r\n                    transform-origin: center;\r\n\r\n                    &.closed {\r\n                        transform: rotate(180deg);\r\n                    }\r\n                }                        \r\n            }\r\n\r\n            .paneList > div:not(:last-child) {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n\r\n            .fragment > div:not(:last-child)  {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker {\r\n        height: 150px;\r\n        width: 15px;\r\n\r\n        .color-rect {\r\n            height: 15px;\r\n            border: 1px black solid;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .color-picker-cover {\r\n            position: fixed;\r\n            top: 0px;\r\n            right: 0px;\r\n            bottom: 0px;\r\n            left: 0px;\r\n        }\r\n\r\n        .color-picker-float {\r\n            z-index: 2;\r\n            position: absolute;  \r\n        }                \r\n    }\r\n\r\n    .gradient-step {\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 20px 30px 40px auto 20px 30px;\r\n        padding-top: 5px;\r\n        padding-left: 5px;\r\n        padding-bottom: 5px;\r\n\r\n        .step {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n        }\r\n            \r\n        .color {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .step-value {       \r\n            margin-left: 5px;     \r\n            grid-row: 1;\r\n            grid-column: 3;\r\n            text-align: right;\r\n            margin-right: 5px;\r\n        }\r\n\r\n        .step-slider {            \r\n            grid-row: 1;\r\n            grid-column: 4;\r\n            display: grid;\r\n            justify-content: stretch;\r\n            align-content: center;\r\n            margin-right: -5px;\r\n            padding-left: 12px;\r\n\r\n            input {\r\n                width: 90%;\r\n            }\r\n        }\r\n\r\n        .gradient-copy {            \r\n            grid-row: 1;\r\n            grid-column: 5;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n \r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n        .gradient-delete {            \r\n            grid-row: 1;\r\n            grid-column: 6;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n\r\n    }\r\n\r\n    .command-button {\r\n        cursor: pointer;\r\n        width: auto;\r\n\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            color: white;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        &:hover {\r\n            background-color: white;\r\n        } \r\n        \r\n        .active {\r\n            transform-origin: center;\r\n            background-color: white;\r\n        }\r\n\r\n        img {\r\n            &.active {\r\n                background-color: white;\r\n            }\r\n        }\r\n    }\r\n\r\n    .command-button-alt {\r\n        cursor: pointer;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n        &:hover {\r\n            background-color: #c2c2c2;\r\n            filter: invert(1);\r\n        } \r\n    }\r\n\r\n    .command-button-alt-disabled {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        img {\r\n            filter: invert(1);\r\n        }\r\n    }\r\n\r\n    \r\n    .command-button-alt-active {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: #c2c2c2;\r\n        filter: invert(1);\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n    }\r\n\r\n    .floatLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            padding-left: 15px;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: transparent;\r\n                outline-color: transparent;\r\n                border-left: transparent;\r\n                border-right: transparent;\r\n                border-top: transparent;\r\n                outline-width: 0px\r\n            }\r\n        }\r\n\r\n        .short {\r\n            grid-column: 2;\r\n            \r\n            display: flex;\r\n            align-items: center;\r\n            \r\n            input {\r\n                width: 27px;\r\n            }\r\n            \r\n            input::-webkit-outer-spin-button,\r\n            input::-webkit-inner-spin-button {\r\n              -webkit-appearance: none;\r\n              margin: 0;\r\n            }\r\n\r\n            input[type=number] {\r\n                -moz-appearance: textfield;\r\n            }\r\n        }\r\n    }\r\n\r\n    .vector3Line {\r\n        padding-left:$line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;      \r\n        display: grid;\r\n        .firstLine {\r\n            display: grid;\r\n            grid-template-columns: 1fr auto 20px;\r\n            height: var(--spacingHeight);\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .vector {\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;\r\n                text-align: right;\r\n                opacity: 0.8;\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 3;\r\n                display: grid;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n            }\r\n        }\r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .no-right-margin {\r\n                margin-right: 0;\r\n            }\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }\r\n    }\r\n\r\n    .buttonLine {\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        align-items: center;\r\n        justify-items: stretch;\r\n        padding-bottom: 5px;\r\n        input[type=\"file\"] {\r\n            display: none;\r\n        }\r\n\r\n        .file-upload {            \r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            padding-top: 0px;\r\n            opacity: 0.9;\r\n            cursor: pointer;\r\n            text-align: center;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        .file-upload:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        .file-upload:active {\r\n            transform: scale(0.98);\r\n            transform-origin: 0.5 0.5;\r\n        }\r\n\r\n        button {\r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        button:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        button:active {\r\n            background: #282828;\r\n        }   \r\n        \r\n        button:focus {\r\n            border: 1px solid #424242;\r\n            outline: 0px;\r\n        }  \r\n    }\r\n\r\n    .numeric {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px auto;\r\n\r\n        .numeric-label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .number {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            height: 10px;\r\n            .input {\r\n                width: calc(100% - 5px);\r\n                height: 10px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .checkBoxLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 100px;\r\n            margin-left: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .checkBox {\r\n            grid-column: 3;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 15px;\r\n            \r\n            .lbl {\r\n                position: relative;\r\n                display: block;\r\n                height: 14px;\r\n                width: 34px;\r\n                margin-right: 5px;\r\n                border-radius: 100px;\r\n                cursor: pointer;\r\n                transition: all 0.3s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:after {\r\n                position: absolute;\r\n                left: 3px;\r\n                top: 1px;\r\n                display: block;\r\n                width: 10px;\r\n                height: 10px;\r\n                border-radius: 100px;\r\n                background: #e2e2e2;\r\n                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);\r\n                content: '';\r\n                transition: all 0.15s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:active:after { \r\n                transform: scale(1.15, 0.85); \r\n            }\r\n\r\n            .cbx:checked ~ label { \r\n                background: transparent;\r\n                \r\n            }\r\n\r\n            .cbx:checked ~ label:after {\r\n                left: 20px;\r\n                background: rgb(0, 0, 0);\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled { \r\n                background: rgb(0, 0, 0);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled:after {\r\n                left: 20px;\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx ~ label.disabled {\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .hidden { \r\n                display: none; \r\n            }               \r\n        }                    \r\n    }  \r\n\r\n    .listLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto 1fr auto ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: none;\r\n            align-items: center;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .options {\r\n            grid-column: 2;\r\n            padding-left: 15px;\r\n            display: flex;\r\n            align-items: center;   \r\n            margin-right: 5px;\r\n\r\n            select {\r\n                width: 120px;\r\n                height: 25px;\r\n                border: transparent;\r\n                border-radius: 4px;\r\n            }\r\n        }                    \r\n    }  \r\n                    \r\n    .color3Line {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n\r\n        .firstLine {\r\n            height: var(--spacingHeight);\r\n            display: grid;\r\n            grid-template-columns: auto auto 1fr;\r\n\r\n            .label {\r\n                grid-column: 2;\r\n                padding-left: 5px;\r\n                display: none;\r\n                align-items: center;\r\n                min-width: 15px;\r\n            }\r\n    \r\n            .img {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            img {\r\n                width: 30px;\r\n                height: 30px;\r\n            }\r\n    \r\n            .textInputLine {\r\n                grid-column: 3;\r\n                padding-left: 0px;\r\n            }\r\n    \r\n            .color3 {\r\n                grid-column: 2;                \r\n                margin-top: 6px;\r\n                display: flex;\r\n                align-items: center;            \r\n                \r\n                input {\r\n                    margin-right: 5px;\r\n                }\r\n            }\r\n\r\n            .copy {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n                color: black;\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n        }   \r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }                  \r\n    }     \r\n    \r\n    .textLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: auto;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            padding-top: 4px;\r\n            display: flex;\r\n            align-items: left;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .link-value {\r\n            grid-column: 2;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 140px;\r\n            text-decoration: underline;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .value {\r\n            display: none;\r\n            grid-column: 3;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 200px;\r\n            -webkit-user-select: text; \r\n            -moz-user-select: text;   \r\n            -ms-user-select: text;    \r\n            user-select: text;                \r\n\r\n            &.check {\r\n                color: green;\r\n            }\r\n\r\n            &.uncheck {\r\n                color: red;\r\n            }  \r\n        }\r\n    }    \r\n\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10087,16 +10125,23 @@ module.exports = exports;
 /*!************************************************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
   \************************************************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .addComponent {\n    display: none; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .addComponent {\n    display: none; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 30px 30px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", "",{"version":3,"sources":["webpack://./components/sceneExplorer/sceneExplorer.scss"],"names":[],"mappings":"AAAA;EACI,kBAAkB;EAClB,SAAS;EACT,QAAO;EACP,WAAW;EACX,mCAAmC,EAAA;EALvC;IAOQ,aAAa,EAAA;;AAIrB;EACI,aAAa,EAAA;;AAGjB;EACI,mBAAmB,EAAA;EADvB;IAIQ,aAAa;IACb,eAAe,EAAA;IALvB;MAQY,mBAAmB,EAAA;;AAK/B;EACI,WAAW;EACX,mBAAmB,EAAA;;AAGvB;EACI,mBAAmB;EACnB,YAAY;EACZ,SAAS;EACT,UAAU;EACV,aAAa;EACb,4BAA4B;EAC5B,iCAAiC,EAAA;EAPrC;IAUQ,aAAa,EAAA;EAVrB;IAcQ,YAAY;IACZ,eAAe;IACf,YAAY;IACZ,mBAAmB;IACnB,WAAW;IACX,kBAAkB;IAClB,aAAa;IACb,oCAAoC;IACpC,yBAAyB;IACzB,sBAAsB;IACtB,qBAAqB;IACrB,iBAAiB,EAAA;IAzBzB;MA4BY,kBAAkB;MAClB,cAAc;MACd,WAAW;MACX,YAAY;MACZ,OAAM;MACN,aAAa;MACb,kBAAkB;MAClB,oBAAoB,EAAA;IAnChC;MAuCY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,kBAAkB,EAAA;IA1C9B;MA8CY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,8BAA8B,EAAA;MAjD1C;QAoDgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;MAxD/B;QA4DgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;EAhE/B;IAsEO,WAAW;IAEX,kBAAkB;IAClB,gBAAgB,EAAA;EAzEvB;IA6EQ,aAAa;IACb,oBAAoB,EAAA;IA9E5B;MAiFY,WAAW;MACX,0BAA0B;MAC1B,cAAc;MACd,YAAY;MACZ,UAAU;MACV,gCAA0C;MAC1C,8EAAwF;MACxF,8BAA8B;MAC9B,4BAA4B;MAC5B,4BAA4B;MAC5B,YAAW,EAAA;IA3FvB;MA+FY,gBAAgB,EAAA;IA/F5B;MAmGY,gBAAgB;MAChB,aAAa;MACb,wBAAwB,EAAA;EArGpC;IA0GQ,gBAAgB;IAChB,YAAY;IACZ,eAAe;IACf,kBAAkB;IAClB,YAAY;IAEZ,yBAAyB;IACzB,sBAAsB;IACtB,qBAAqB;IACrB,iBAAiB;IAEjB,kBAAkB;IAClB,aAAa;IACb,mBAAmB,EAAA;IAvH3B;MA0HY,mBAAmB,EAAA;IA1H/B;MA8HY,aAAa;MACb,+BAA+B,EAAA;MA/H3C;QAkIgB,cAAc;QACd,aAAa;QACb,+BAA+B,EAAA;QApI/C;UAuIoB,cAAc;UACd,gBAAgB;UAChB,YAAY;UACZ,eAAe;UACf,qBAAqB;UACrB,iBAAiB;UACjB,YAAY,EAAA;QA7IhC;UAiJoB,cAAc;UACd,aAAa;UACb,mBAAmB,EAAA;MAnJvC;QAwJgB,YAAY;QACZ,cAAc;QACd,kBAAkB,EAAA;EA1JlC;IAkKQ,aAAa;IACb,mBAAmB;IACnB,qBAAqB;IACrB,eAAe,EAAA;EArKvB;IAyKQ,aAAa,EAAA;EAzKrB;IA6KO,cAAc,EAAA;EA7KrB;IAiLQ,gBAAgB;IAChB,YAAY;IACZ,eAAe;IACf,kBAAkB;IAClB,YAAY;IACZ,yBAAyB;IACzB,sBAAsB;IACtB,qBAAqB;IACrB,iBAAiB;IACjB,aAAa;IACb,+BAA+B;IAC/B,6BAA6B,EAAA;IA5LrC;MA8LY,yBAAyB;MACzB,eAAe,EAAA;IA/L3B;MAmMY,6BAA6B;MAC7B,eAAe,EAAA;IApM3B;MAuMY,gCAAgC;MAChC,eAAe,EAAA;IAxM3B;MA6MY,mBAAmB;MACnB,YAAY,EAAA;IA9MxB;MAkNY,uBAAuB;MACvB,YAAY,EAAA;IAnNxB;MAuNY,mBAAoB;MACpB,YAAY,EAAA;IAxNxB;MA4NY,YAAY,EAAA;IA5NxB;MA+NY,cAAc;MACd,YAAY;MACZ,YAAY,EAAA;IAjOxB;MAqOY,YAAY;MACZ,kBAAkB;MAClB,yBAAyB;MACzB,WAAW;MACX,0CAA0C;MAC1C,kBAAkB;MAClB,UAAU;MACV,mBAAmB;MACnB,sBAAsB,EAAA;MA7OlC;QAgPgB,mBAAmB,EAAA;MAhPnC;QAoPgB,aAAa,EAAA;MApP7B;QAwPgB,yBAAyB;QACzB,gBAAgB;QAChB,mBAAmB;QACnB,uBAAuB;QACvB,YAAY,EAAA;QA5P5B;UAgQoB,iBAAiB;UACjB,cAAc,EAAA;IAjQlC;MAuQY,cAAc;MACd,kBAAkB;MAClB,aAAa;MACb,sEAAsE;MACtE,mBAAmB;MACnB,eAAe,EAAA;MA5Q3B;QA+QgB,cAAc;QACd,iBAAiB;QACjB,aAAa;QACb,mBAAmB;QACnB,YAAY,EAAA;MAnR5B;QAuRgB,cAAc;QACd,YAAY,EAAA;QAxR5B;UA2RoB,UAAU,EAAA;MA3R9B;QAgSgB,cAAc;QACd,YAAY,EAAA;QAjS5B;UAoSoB,UAAU,EAAA;MApS9B;QAySgB,cAAc;QACd,YAAY,EAAA;QA1S5B;UA4SoB,UAAU,EAAA;MA5S9B;QAiTgB,cAAc;QACd,YAAY,EAAA;QAlT5B;UAoToB,UAAU,EAAA;MApT9B;QAyTgB,cAAc;QACd,gBAAgB;QAChB,UAAU;QACV,aAAa;QACb,mBAAmB;QACnB,YAAY;QACZ,8BAAwC,EAAA;MA/TxD;QAmUgB,cAAc;QACd,YAAY,EAAA;QApU5B;UAuUoB,UAAU,EAAA;MAvU9B;QA4UgB,cAAc,EAAA;MA5U9B;QAgVgB,WAAW;QACX,cAAc,EAAA;IAjV9B;MAsVY,cAAc;MACd,aAAa;MACb,wCAAwC;MACxC,mBAAmB,EAAA;MAzV/B;QA4VgB,cAAc;QACd,YAAY,EAAA;QA7V5B;UAgWoB,UAAU,EAAA;MAhW9B;QAqWgB,WAAW;QACX,cAAc,EAAA;IAtW9B;MA2WY,cAAc;MACd,aAAa;MACb,6CAA6C;MAC7C,mBAAmB,EAAA;MA9W/B;QAiXgB,cAAc,EAAA;MAjX9B;QAqXgB,cAAc,EAAA;MArX9B;QAyXgB,WAAW;QACX,cAAc,EAAA;IA1X9B;MA+XY,cAAc;MACd,uBAAuB;MACvB,mBAAmB;MACnB,gBAAgB;MAChB,YAAY;MACZ,iBAAiB;MACjB,aAAa;MACb,mBAAmB;MACnB,0BAA0B;MAC1B,YAAY;MACZ,eAAe,EAAA;MAzY3B;QA4YgB,cAAc;QACd,mBAAmB;QACnB,uBAAuB;QACvB,gBAAgB,EAAA","sourcesContent":["#ge-scene-explorer-host {\r\n    position: absolute;\r\n    left: 0px;\r\n    top:0px;\r\n    bottom: 0px;\r\n    font-family: \"acumin-pro-condensed\";\r\n    &:focus {\r\n        outline: none;\r\n    }\r\n}\r\n\r\n#ge-__resizable_base__ {\r\n    display: none;\r\n}\r\n\r\n.ge-context-menu {\r\n    background: #e2e2e2;\r\n\r\n    .react-contextmenu-item {\r\n        padding: 10px;\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: #e2e2e2;\r\n        }\r\n    }\r\n}\r\n\r\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\r\n    z-index: 99;\r\n    transform: scale(1);\r\n}\r\n\r\n#ge-sceneExplorer {\r\n    background: #e2e2e2;\r\n    height: 100%;\r\n    margin: 0;\r\n    padding: 0;\r\n    display: grid;\r\n    grid-template-rows: auto 1fr;\r\n    font: 16px \"acumin-pro-condensed\";\r\n\r\n    &:focus {\r\n        outline: none;\r\n    }\r\n\r\n    #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: black;\r\n        background: #e2e2e2;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr 50px;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            grid-column: 1; \r\n            width: 24px;\r\n            height: 24px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n\r\n        #commands {\r\n            grid-column: 3; \r\n            display: grid;\r\n            align-items: center;  \r\n            grid-template-columns: 1fr 1fr;   \r\n            \r\n            .expand {\r\n                grid-column: 1;\r\n                display: grid;\r\n                align-items: center;   \r\n                justify-items: center;\r\n                cursor: pointer;     \r\n            }\r\n\r\n            .close {\r\n                grid-column: 2;\r\n                display: grid;\r\n                align-items: center;   \r\n                justify-items: center;\r\n                cursor: pointer;     \r\n            }            \r\n        }\r\n    }\r\n\r\n    #tree {\r\n       grid-row: 2; \r\n\r\n       overflow-x: hidden;\r\n       overflow-y: auto;\r\n    }\r\n\r\n    .filter {\r\n        display: flex;\r\n        align-items: stretch;\r\n\r\n        input {\r\n            width: 100%;\r\n            margin: 10px 40px 5px 40px;\r\n            display: block;\r\n            border: none;\r\n            padding: 0;\r\n            border-bottom: solid 1px rgb(51, 122, 183);\r\n            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);\r\n            background-position: -1000px 0;\r\n            background-size: 1000px 100%;\r\n            background-repeat: no-repeat;  \r\n            color:black;    \r\n        }\r\n\r\n        input::placeholder {\r\n            color: lightgray;\r\n        }\r\n\r\n        input:focus  {\r\n            box-shadow: none;\r\n            outline: none;\r\n            background-position: 0 0;\r\n        }\r\n    }\r\n\r\n    .groupContainer {\r\n        margin-left: 0px;\r\n        color: black;\r\n        margin-top: 0px;\r\n        margin-bottom: 0px;\r\n        height: 24px;    \r\n\r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;    \r\n        \r\n        align-self: center;     \r\n        display: grid;\r\n        align-items: center;           \r\n\r\n        &:hover {\r\n            background: #bbbbbb;\r\n        }\r\n\r\n        .expandableHeader {\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px;\r\n\r\n            .text {\r\n                grid-column: 1;\r\n                display: grid;\r\n                grid-template-columns: 20px 1fr;\r\n\r\n                .arrow {\r\n                    grid-column: 1;\r\n                    margin-left: 0px;\r\n                    color: black;\r\n                    cursor: pointer;\r\n                    display: inline-block;\r\n                    margin-right: 6px;\r\n                    opacity: 0.5;\r\n                }\r\n\r\n                .text-value {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n            }\r\n\r\n            .expandAll {                \r\n                opacity: 0.5;\r\n                grid-column: 2;\r\n                margin-right: 10px;  \r\n            }\r\n        }\r\n        \r\n\r\n    }\r\n\r\n    .icon {\r\n        display: grid;\r\n        align-items: center;   \r\n        justify-items: center;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .addComponent {\r\n        display: none;\r\n    }\r\n\r\n    .makeChild{\r\n       grid-column: 3;\r\n    }\r\n\r\n    .itemContainer {\r\n        margin-left: 0px;\r\n        color: black;\r\n        margin-top: 0px;\r\n        margin-bottom: 0px;\r\n        height: 32px;   \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;         \r\n        display: grid;\r\n        grid-template-columns: 20px 1fr;\r\n        border: 2px solid transparent;\r\n        &.hover {\r\n            border: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n\r\n        &.seAbove {\r\n            border-top: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n        &.seBelow {\r\n            border-bottom: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n\r\n        &.selected {\r\n            \r\n            background: #bfbebe;\r\n            color: black;\r\n        }\r\n\r\n        &.dragged {\r\n            background: transparent;\r\n            color: black;\r\n        }\r\n\r\n        &.parent {\r\n            background: #ffffff ;\r\n            color: black;\r\n        }\r\n        \r\n        .isNotActive {\r\n            opacity: 0.3;\r\n        }\r\n        .arrow {\r\n            grid-column: 1;\r\n            color: black;\r\n            opacity: 0.6;\r\n        }\r\n\r\n        .popup {\r\n            width: 200px;\r\n            visibility: hidden;\r\n            background-color: #bbbbbb;\r\n            color: #fff;\r\n            border: 1px solid rgba(255, 255, 255, 0.5);\r\n            position: absolute;\r\n            z-index: 1;\r\n            margin-left: -180px;\r\n            box-sizing: border-box;\r\n\r\n            &.show {\r\n                visibility: visible;\r\n            }\r\n\r\n            &:focus {\r\n                outline: none;\r\n            }\r\n\r\n            .popupMenu {\r\n                padding: 6px 5px 5px 10px;\r\n                overflow: hidden;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                height: 18px;\r\n                \r\n\r\n                &:hover {\r\n                    background: white;\r\n                    color: #333333;\r\n                }\r\n            }\r\n        }\r\n\r\n        .sceneNode {\r\n            grid-column: 2;\r\n            margin-left: -10px;\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\r\n            align-items: center;\r\n            cursor: pointer;         \r\n\r\n            .sceneTitle {\r\n                grid-column: 1;\r\n                margin-right: 5px;     \r\n                display: flex;\r\n                align-items: center;   \r\n                height: 24px;       \r\n            }            \r\n\r\n            .translation {\r\n                grid-column: 2;\r\n                opacity: 0.6;\r\n               \r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .rotation {\r\n                grid-column: 3;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .scaling {\r\n                grid-column: 4;\r\n                opacity: 0.6;\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n            \r\n            .bounding {\r\n                grid-column: 5;\r\n                opacity: 0.6;\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .separator {\r\n                grid-column: 6;\r\n                margin-left: 5px;    \r\n                width: 5px;\r\n                display: flex;\r\n                align-items: center;   \r\n                height: 18px;           \r\n                border-left: solid 1px rgb(51, 122, 183);\r\n            }\r\n\r\n            .pickingMode {\r\n                grid-column: 7;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }\r\n            }\r\n\r\n            .refresh {\r\n                grid-column: 8;\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 9;\r\n            }\r\n        }\r\n        \r\n        .adtextureTools {\r\n            grid-column: 2;\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px auto 5px;\r\n            align-items: center;\r\n            \r\n            .pickingMode {\r\n                grid-column: 2;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 3;\r\n            }\r\n        }         \r\n\r\n        .controlTools {\r\n            grid-column: 2;\r\n            display: grid;\r\n            grid-template-columns: 1fr 30px 30px auto 5px;\r\n            align-items: center;\r\n\r\n            .highlight {\r\n                grid-column: 2;\r\n            }\r\n\r\n            .visibility {\r\n                grid-column: 3;\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 4;\r\n            }\r\n        }   \r\n        \r\n        .title {\r\n            grid-column: 1;\r\n            background: transparent;\r\n            white-space: nowrap;\r\n            overflow: hidden;\r\n            min-width: 0;\r\n            margin-right: 5px;     \r\n            display: grid;\r\n            align-items: center;  \r\n            grid-template-columns: 1fr; \r\n            height: 24px;\r\n            cursor: pointer;\r\n\r\n            .titleText {\r\n                grid-column: 1;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                overflow: hidden;          \r\n            }   \r\n \r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10105,16 +10150,23 @@ module.exports = exports;
 /*!*********************************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
   \*********************************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#workbench-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro-condensed\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#workbench-canvas {\n  grid-column: 1;\n  grid-row: 1;\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro-condensed\";\n  cursor: default;\n  user-select: none;\n  overflow: hidden;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #workbench-canvas #selection-container {\n    pointer-events: none; }\n    #workbench-canvas #selection-container .selection-box {\n      z-index: 10;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #workbench-canvas #workbench-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #workbench-canvas #workbench-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #workbench-canvas #workbench-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #workbench-canvas #workbench-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #workbench-canvas #workbench-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #workbench-canvas #workbench-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #workbench-canvas #workbench-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #workbench-canvas #workbench-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #workbench-canvas #workbench-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #workbench-canvas #workbench-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #workbench-canvas #workbench-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #workbench-canvas #workbench-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #workbench-canvas #workbench-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #workbench-canvas #workbench-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #workbench-canvas #workbench-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #workbench-canvas #workbench-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #workbench-canvas #workbench-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #workbench-canvas #workbench-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #workbench-canvas #workbench-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #workbench-canvas #workbench-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .top-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .right-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle, #workbench-canvas #workbench-container .frame-box.collapsed .left-handle, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .right-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .top-right-corner-handle::after, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #workbench-canvas #workbench-container .frame-box.collapsed .left-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .top-left-corner-handle::before, #workbench-canvas #workbench-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #workbench-canvas #workbench-container #workbench-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #workbench-canvas #workbench-container #workbench-svg-container .link {\n        stroke-width: 4px; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #workbench-canvas #workbench-container #workbench-svg-container .link.hidden {\n          display: none; }\n      #workbench-canvas #workbench-container #workbench-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-svg-container .selection-link:hover, #workbench-canvas #workbench-container #workbench-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #workbench-canvas #workbench-container #workbench-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #workbench-canvas #workbench-container #workbench-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.hidden {\n          display: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #workbench-canvas #workbench-container #workbench-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #workbench-canvas #workbench-container #workbench-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n", "",{"version":3,"sources":["webpack://./diagram/workbenchCanvas.scss"],"names":[],"mappings":"AAAA;EACI,cAAc;EACd,WAAW;EACX,WAAW;EACX,YAAY;EACZ,SAAS;EACT,UAAU;EACV,iCAAiC;EACjC,eAAe;EACf,iBAAiB;EACjB,gBAAgB;EAEhB,mIAE4D,EAAA;EAdhE;IAiBQ,oBAAoB,EAAA;IAjB5B;MAoBY,WAAW;MACX,kCAAkC;MAClC,sBAAsB,EAAA;EAtBlC;IA2BQ,WAAW;IACX,YAAY;IACZ,OAAO;IACP,MAAM;IACN,0BAA0B;IAC1B,aAAa;IACb,wBAAwB;IACxB,2BAA2B,EAAA;IAlCnC;MAqCY,iBAAiB;MACjB,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,WAAW;MACX,YAAY,EAAA;IA1CxB;MA8CY,kBAAkB;MAClB,iCAAiC;MACjC,aAAa;MACb,0CAA0C;MAC1C,2BAA2B;MAC3B,sBAAsB,EAAA;MAnDlC;QAsDgB,uBAAuB;QACvB,uBAAuB;QACvB,UAAU,EAAA;QAxD1B;UA2DoB,eAAe;UACf,iDAAiD,EAAA;UA5DrE;YA+DwB,gBAAgB,EAAA;UA/DxC;YAmEwB,aAAa,EAAA;QAnErC;UAyEwB,mBAAmB;UACnB,uBAAuB;UACvB,gBAAgB,EAAA;MA3ExC;QAiFgB,oBAAoB;QACpB,cAAc;QACd,WAAW;QACX,YAAY;QACZ,6BAA6B;QAC7B,oBAAoB;QACpB,sBAAsB,EAAA;MAvFtC;QA2FgB,WAAW;QACX,cAAc;QACd,mBAA+B;QAC/B,YAAY;QACZ,eAAe;QACf,kBAAkB;QAClB,aAAa;QACb,wBAAwB;QACxB,0DAA0D;QAC1D,qBAAqB;QACrB,gBAAgB,EAAA;QArGhC;UAwGoB,eAAe;UACf,kBAAkB;UAClB,yBAAyB;UACzB,mBAAmB;UACnB,mBAAmB;UACnB,WAAW;UACX,aAAa,EAAA;UA9GjC;YAiHwB,qBAAsB,EAAA;QAjH9C;UAsHoB,cAAc;UACd,WAAW,EAAA;QAvH/B;UA2HoB,cAAc;UACd,WAAW,EAAA;QA5H/B;UAgIoB,cAAc;UACd,WAAW;UACX,aAAa;UACb,YAAY;UACZ,WAAW;UACX,mBAAmB;UACnB,mBAAmB;UACnB,gBAAgB,EAAA;MAvIpC;QA6IgB,aAAa;QACb,WAAW;QACX,cAAc;QACd,eAAe;QACf,kBAAkB;QAClB,qBAAqB,EAAA;MAlJrC;QAuJkB,mBAAmB,EAAA;MAvJrC;QA4JgB,wBAAwB;QACxB,UAAU;QACV,6BAA6B;QAC7B,iBAAiB,EAAA;QA/JjC;UAkKoB,WAAW;UACX,UAAU;UACV,kBAAkB;UAClB,MAAM;UACN,SAAS;UACT,iBAAiB;UACjB,iBAAiB,EAAA;QAxKrC;UA6KoB,eAAe,EAAA;MA7KnC;QAkLgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,UAAU;QACV,iBAAiB,EAAA;QAvLjC;UA0LoB,6BAA6B;UAC7B,iBAAiB;UACjB,kBAAkB;UAClB,SAAS;UACT,YAAY;UACZ,WAAW,EAAA;MA/L/B;QAqMgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,wBAAwB;QACxB,iBAAiB,EAAA;QA1MjC;UA8MoB,6BAA6B;UAC7B,YAAY;UACZ,iBAAiB;UACjB,UAAU;UACV,YAAY;UACZ,WAAW,EAAA;MAnN/B;QAwNgB,wBAAwB;QACxB,UAAU;QACV,6BAA6B;QAC7B,iBAAiB,EAAA;QA3NjC;UA8NoB,WAAW;UACX,UAAU;UACV,kBAAkB;UAClB,MAAM;UACN,SAAS;UACT,iBAAiB,EAAA;MAnOrC;QAyOgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,UAAU;QACV,iBAAiB,EAAA;QA9OjC;UAiPoB,6BAA6B;UAC7B,iBAAiB;UACjB,kBAAkB;UAClB,SAAS;UACT,YAAY;UACZ,WAAW,EAAA;MAtP/B;QA2PgB,6BAA6B;QAC7B,WAAW;QACX,WAAW;QACX,iBAAiB;QACjB,wBAAwB,EAAA;QA/PxC;UAmQoB,6BAA6B;UAC7B,YAAY;UACZ,iBAAiB;UACjB,UAAU;UACV,YAAY;UACZ,WAAW,EAAA;MAxQ/B;QA6QgB,wBAAwB;QACxB,6BAA6B;QAC7B,WAAW;QACX,iBAAiB,EAAA;QAhRjC;UAmRoB,WAAW;UACX,WAAW;UACX,kBAAkB;UAClB,SAAS;UACT,YAAY;UACZ,QAAQ;UACR,OAAO;UACP,mBAAmB;UACnB,iBAAiB;UACjB,WAAW,EAAA;MA5R/B;QAiSgB,wBAAwB;QACxB,6BAA6B;QAC7B,WAAW;QACX,iBAAiB,EAAA;QApSjC;UAuSoB,WAAW;UACX,WAAW;UACX,kBAAkB;UAClB,SAAS;UACT,SAAS;UACT,QAAQ;UACR,OAAO;UACP,gBAAgB;UAChB,iBAAiB;UACjB,YAAY,EAAA;MAhThC;QAsToB,eAAe,EAAA;MAtTnC;QA2TwB,eAAe,EAAA;MA3TvC;QAiUwB,eAAe,EAAA;IAjUvC;MAwUY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,WAAW;MACX,YAAY;MACZ,iBAAiB;MACjB,oBAAoB;MACpB,UAAU,EAAA;MA/UtB;QAkVgB,iBAAiB,EAAA;QAlVjC;UAoVoB,wBAAwB;UACxB,uBAAuB,EAAA;QArV3C;UAyVoB,aAAa,EAAA;MAzVjC;QA8VgB,mBAAmB;QACnB,kBAAkB;QAClB,UAAU;QACV,wBAAwB;QACxB,mBAAmB;QACnB,eAAe,EAAA;QAnW/B;UAsWoB,aAAa,EAAA;QAtWjC;UA0WoB,wBAAwB;UACxB,YAAY,EAAA;IA3WhC;MAiXY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,WAAW;MACX,YAAY,EAAA;MArXxB;QAwXgB,UAAU;QACV,YAAY;QACZ,kBAAkB;QAClB,OAAO;QACP,MAAM;QACN,gBAAgB;QAChB,uBAAuB;QACvB,mBAAmB;QACnB,aAAa;QACb,6BAA6B;QAC7B,2BAA2B;QAC3B,YAAY,EAAA;QAnY5B;UAsYoB,aAAa,EAAA;QAtYjC;UA0YoB,kBAAkB;UAClB,UAAU;UACV,YAAY;UACZ,YAAY;UACZ,gBAAgB;UAChB,kBAAkB;UAClB,YAAY;UACZ,aAAa;UACb,qBAAqB;UACrB,oBAAoB,EAAA;QAnZxC;UAuZoB,oBAAoB;UACpB,cAAc;UACd,YAAY;UAEZ,8BAA8B;UAE9B,uBAAuB;UACvB,mBAAmB,EAAA;QA9ZvC;UAmawB,mBAAmB,EAAA;QAna3C;UAwaoB,WAAW;UACX,cAAc;UACd,uBAAuB;UACvB,4BAA4B;UAC5B,2BAA2B;UAC3B,eAAe;UACf,kBAAkB;UAClB,gBAAgB;UAChB,iBAAiB;UACjB,kBAAkB;UAClB,mBAAmB;UACnB,uBAAuB;UACvB,gBAAgB;UAChB,iBAAiB;UACjB,YAAY,EAAA;UAtbhC;YAybwB,qBAAqB;YACrB,mBAAmB,EAAA;UA1b3C;YA8bwB,qBAAqB;YACrB,mBAAmB,EAAA","sourcesContent":["#workbench-canvas {\r\n    grid-column: 1;\r\n    grid-row: 1;\r\n    width: 100%;\r\n    height: 100%;\r\n    margin: 0;\r\n    padding: 0;            \r\n    font: 14px \"acumin-pro-condensed\";\r\n    cursor: default;\r\n    user-select: none;\r\n    overflow: hidden;\r\n\r\n    background-image:\r\n        linear-gradient(to right, #4F4E4F 1px, transparent 1px),\r\n        linear-gradient(to bottom, #4F4E4F 1px, transparent 1px);  \r\n\r\n    #selection-container {\r\n        pointer-events: none;\r\n        \r\n        .selection-box {\r\n            z-index: 10;\r\n            background: rgba(72, 72, 196, 0.5);\r\n            border: blue solid 2px;\r\n        }\r\n    }\r\n\r\n    #workbench-container {\r\n        width: 100%;\r\n        height: 100%;\r\n        left: 0;\r\n        top: 0;\r\n        transform-origin: left top;\r\n        display: grid;\r\n        grid-template-rows: 100%;          \r\n        grid-template-columns: 100%;          \r\n\r\n        #frame-container {\r\n            overflow: visible;   \r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            position: relative;\r\n            width: 100%;\r\n            height: 100%;             \r\n        }\r\n\r\n        .frame-box {\r\n            position: absolute;\r\n            background: rgba(72, 72, 72, 0.7);\r\n            display: grid;\r\n            grid-template-rows: 40px calc(100% - 40px);\r\n            grid-template-columns: 100%;            \r\n            box-sizing: border-box;\r\n\r\n            &.collapsed {\r\n                height: auto !important;\r\n                width: 200px !important;\r\n                z-index: 3;\r\n\r\n                .frame-box-header {\r\n                    font-size: 16px;\r\n                    grid-template-columns: calc(100% - 37px) 30px 7px;  \r\n                    \r\n                    .frame-box-header-collapse {\r\n                        margin-top: -2px;\r\n                    }\r\n                    \r\n                    .frame-box-header-close {\r\n                        display: none;\r\n                    }\r\n                }\r\n\r\n                .frame-comments.has-comments{\r\n                    .frame-comment-span{\r\n                        white-space: nowrap;\r\n                        text-overflow: ellipsis;\r\n                        overflow: hidden;\r\n                    }\r\n                }\r\n            }\r\n\r\n            .frame-box-border {                \r\n                grid-row: 1 / span 2;\r\n                grid-column: 1;\r\n                width: 100%;\r\n                height: 100%;\r\n                border: transparent solid 4px;\r\n                pointer-events: none;\r\n                box-sizing: border-box;\r\n            }\r\n\r\n            .frame-box-header {\r\n                grid-row: 1;\r\n                grid-column: 1;\r\n                background: rgba(72, 72, 72, 1);    \r\n                color: white;\r\n                font-size: 24px;\r\n                text-align: center;\r\n                display: grid;\r\n                grid-template-rows: 100%;  \r\n                grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;  \r\n                align-content: center;\r\n                overflow: hidden;\r\n\r\n                .frame-box-header-button {\r\n                    cursor: pointer;\r\n                    align-self: center;\r\n                    transform-origin: 50% 50%;\r\n                    transform: scale(1);\r\n                    stroke: transparent;\r\n                    fill: white;\r\n                    display: grid;               \r\n\r\n                    &.down {\r\n                        transform: scale(0.90);\r\n                    }\r\n                }\r\n\r\n                .frame-box-header-collapse {\r\n                    grid-column: 2;\r\n                    grid-row: 1;\r\n                }\r\n\r\n                .frame-box-header-close {\r\n                    grid-column: 4;\r\n                    grid-row: 1;\r\n                }\r\n\r\n                .frame-box-header-title {\r\n                    grid-column: 1;\r\n                    grid-row: 1;\r\n                    display: grid;\r\n                    height: 100%;\r\n                    width: 100%;\r\n                    align-self: stretch;\r\n                    align-items: center;\r\n                    margin-top: -2px;\r\n                }\r\n            }\r\n\r\n\r\n            .frame-comments.has-comments{\r\n                display: grid;\r\n                grid-row: 2;\r\n                grid-column: 1;\r\n                padding: 0 10px;\r\n                font-style: italic;\r\n                word-wrap: break-word;\r\n            }\r\n\r\n            &.selected {\r\n                .frame-box-border {\r\n                  border-color: white;\r\n                }\r\n            }\r\n\r\n            .right-handle {\r\n                grid-area: 1 / 2 / 3 / 2;\r\n                width: 4px;\r\n                background-color: transparent;\r\n                cursor: ew-resize;\r\n\r\n                &::after{\r\n                    content: \"\";\r\n                    width: 8px;\r\n                    position: absolute;\r\n                    top: 0;\r\n                    bottom: 0;\r\n                    margin-left: -4px;\r\n                    cursor: ew-resize;\r\n                    \r\n                }\r\n\r\n                &.collapsed {\r\n                    cursor: pointer;\r\n                }\r\n            }\r\n\r\n            .top-right-corner-handle{\r\n                background-color: transparent;\r\n                height: 4px;\r\n                z-index: 21;\r\n                cursor: ne-resize;\r\n                width: 4px;\r\n                margin-left: -6px;\r\n\r\n                &::after {\r\n                    background-color: transparent;\r\n                    cursor: ne-resize;\r\n                    margin-left: unset;\r\n                    top: -4px;\r\n                    height: 10px;\r\n                    width: 10px;\r\n                }\r\n            }\r\n\r\n\r\n            .bottom-right-corner-handle{\r\n                background-color: transparent;\r\n                height: 0px;\r\n                z-index: 21;\r\n                cursor: nw-resize;\r\n                grid-area: 4 / 2 / 4 / 2;;\r\n                margin-left: -2px;\r\n\r\n\r\n                &::after {\r\n                    background-color: transparent;\r\n                    height: 10px;\r\n                    cursor: nw-resize;\r\n                    top: unset;\r\n                    bottom: -4px;\r\n                    width: 10px;               \r\n                }\r\n            }\r\n\r\n            .left-handle {\r\n                grid-area: 1 / 1 / 3 / 1;\r\n                width: 4px;\r\n                background-color: transparent;\r\n                cursor: ew-resize;\r\n\r\n                &::before{\r\n                    content: \"\";\r\n                    width: 8px;\r\n                    position: absolute;\r\n                    top: 0;\r\n                    bottom: 0;\r\n                    margin-left: -4px;\r\n\r\n                }\r\n            }\r\n\r\n            .top-left-corner-handle{\r\n                background-color: transparent;\r\n                height: 4px;\r\n                z-index: 21;\r\n                cursor: nw-resize;\r\n                width: 4px;\r\n                margin-left: -4px;\r\n\r\n                &::before {\r\n                    background-color: transparent;\r\n                    cursor: nw-resize;\r\n                    margin-left: unset;\r\n                    top: -4px;\r\n                    height: 10px;\r\n                    width: 10px;\r\n                }\r\n            }\r\n\r\n            .bottom-left-corner-handle{\r\n                background-color: transparent;\r\n                height: 0px;\r\n                z-index: 21;\r\n                cursor: sw-resize;\r\n                grid-area: 4 / 1 / 4 / 1;\r\n\r\n\r\n                &::before {\r\n                    background-color: transparent;\r\n                    height: 10px;\r\n                    cursor: sw-resize;\r\n                    top: unset;\r\n                    bottom: -4px;\r\n                    width: 10px;               \r\n                }\r\n            }\r\n\r\n            .top-handle {\r\n                grid-area: 1 / 1 / 1 / 1;\r\n                background-color: transparent;\r\n                height: 4px;\r\n                cursor: ns-resize;\r\n\r\n                &::before{\r\n                    content: \"\";\r\n                    width: 100%;\r\n                    position: absolute;\r\n                    top: -4px;\r\n                    bottom: 100%;\r\n                    right: 0;\r\n                    left: 0;\r\n                    margin-bottom: -8px;\r\n                    cursor: ns-resize;\r\n                    height: 8px;\r\n                }\r\n            }\r\n\r\n            .bottom-handle {\r\n                grid-area: 3 / 1 / 3 / 1;\r\n                background-color: transparent;\r\n                height: 4px;\r\n                cursor: ns-resize;\r\n\r\n                &::after {\r\n                    content: \"\";\r\n                    width: 100%;\r\n                    position: absolute;\r\n                    top: 100%;\r\n                    bottom: 0;\r\n                    right: 0;\r\n                    left: 0;\r\n                    margin-top: -8px;\r\n                    cursor: ns-resize;\r\n                    height: 12px;\r\n                }\r\n            }\r\n            \r\n            &.collapsed{\r\n                .top-handle, .top-right-corner-handle, .right-handle, .bottom-right-corner-handle, .bottom-handle, .bottom-left-corner-handle, .left-handle, .top-left-corner-handle {\r\n                    cursor: default;\r\n                }\r\n\r\n                .right-handle, .bottom-handle, .top-right-corner-handle, .bottom-right-corner-handle{\r\n                    &::after{\r\n                        cursor: default;\r\n                    }\r\n                }\r\n\r\n                .left-handle, .top-handle, .top-left-corner-handle, .bottom-left-corner-handle{\r\n                    &::before{\r\n                        cursor: default;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n        #workbench-svg-container {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            position: relative;\r\n            width: 100%;\r\n            height: 100%;  \r\n            overflow: visible; \r\n            pointer-events: none;\r\n            z-index: 2;\r\n            \r\n            .link {\r\n                stroke-width: 4px;    \r\n                &.selected {                    \r\n                    stroke: white !important;\r\n                    stroke-dasharray: 10, 2;\r\n                }       \r\n\r\n                &.hidden {\r\n                    display: none;\r\n                }\r\n            }\r\n\r\n            .selection-link {\r\n                pointer-events: all;\r\n                stroke-width: 16px;\r\n                opacity: 0;\r\n                transition: opacity 75ms;\r\n                stroke: transparent;                        \r\n                cursor: pointer;\r\n\r\n                &.hidden {\r\n                    display: none;\r\n                }\r\n\r\n                &:hover, &.selected {\r\n                    stroke: white !important;\r\n                    opacity: 0.4;\r\n                }\r\n            }\r\n        }\r\n\r\n        #workbench-canvas-container {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            position: relative;\r\n            width: 100%;\r\n            height: 100%;                  \r\n\r\n            .visual {\r\n                z-index: 4;\r\n                width: 200px;\r\n                position: absolute;\r\n                left: 0;\r\n                top: 0;\r\n                background: gray;\r\n                border: 4px solid black;\r\n                border-radius: 12px;\r\n                display: grid;\r\n                grid-template-rows: 30px auto;\r\n                grid-template-columns: 100%;\r\n                color: white;\r\n\r\n                &.hidden {\r\n                    display: none;\r\n                }\r\n\r\n                .comments {\r\n                    position: absolute;\r\n                    top: -50px;\r\n                    width: 200px;\r\n                    height: 45px;\r\n                    overflow: hidden;                    \r\n                    font-style: italic;\r\n                    opacity: 0.8;\r\n                    display: grid;\r\n                    align-items: flex-end;\r\n                    pointer-events: none;\r\n                }\r\n\r\n                .selection-border {                    \r\n                    grid-row: 1 / span 3;\r\n                    grid-column: 1;\r\n                    margin: -4px;\r\n\r\n                    transition: border-color 100ms;\r\n\r\n                    border: 4px solid black;\r\n                    border-radius: 12px;\r\n                }\r\n\r\n                &.selected {\r\n                    .selection-border {  \r\n                        border-color: white;\r\n                    }\r\n                }\r\n\r\n                .header {\r\n                    grid-row: 1;\r\n                    grid-column: 1;\r\n                    border: 4px solid black;\r\n                    border-top-right-radius: 7px;\r\n                    border-top-left-radius: 7px;\r\n                    font-size: 16px;\r\n                    text-align: center;\r\n                    margin-top: -1px;\r\n                    margin-left: -1px;\r\n                    margin-right: -1px;\r\n                    white-space: nowrap;\r\n                    text-overflow: ellipsis;\r\n                    overflow: hidden;\r\n                    background: black;\r\n                    color: white;\r\n\r\n                    &.constant {\r\n                        border-color: #464348;\r\n                        background: #464348;\r\n                    }\r\n            \r\n                    &.inspector {\r\n                        border-color: #66491b;\r\n                        background: #66491b;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10123,16 +10175,23 @@ module.exports = exports;
 /*!**************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
   \**************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    padding: 5px;\n    padding-left: 7px;\n    height: 35px;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px 40px 40px;\n    align-items: center;\n    font-size: 18px;\n    background-color: #555555; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 40px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      .right-panel #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      .right-panel #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        .right-panel #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    .right-panel #preview-mesh-bar .button {\n      color: #ffffff;\n      width: 40px;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-mesh-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-mesh-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-mesh-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-mesh-bar .button img {\n        height: 40px;\n        width: 100%; }\n    .right-panel #preview-mesh-bar #play-button {\n      grid-column: 3; }\n    .right-panel #preview-mesh-bar #color-picker-button {\n      grid-column: 4;\n      display: grid;\n      grid-template-columns: 100%;\n      grid-template-rows: 100%; }\n      .right-panel #preview-mesh-bar #color-picker-button img {\n        height: 40px;\n        width: 30px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-image {\n        padding-left: 5px;\n        padding-bottom: 38px; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker {\n        transform: scale(0);\n        grid-column: 1;\n        grid-row: 1; }\n      .right-panel #preview-mesh-bar #color-picker-button #color-picker-label {\n        width: 100%;\n        background: transparent;\n        cursor: pointer; }\n    .right-panel #preview-mesh-bar #preview-new-window {\n      grid-column: 5; }\n    .right-panel #preview-mesh-bar select {\n      background-color: #a3a3a3;\n      color: #333333; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 40px 40px 40px 1fr 40px 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 40px;\n      grid-row: 1;\n      height: 40px;\n      transform-origin: 50% 50%; }\n      .right-panel #preview-config-bar .button:hover {\n        background: #3f3461; }\n      .right-panel #preview-config-bar .button.selected {\n        background: #9379e6; }\n      .right-panel #preview-config-bar .button:active {\n        transform: scale(0.9); }\n      .right-panel #preview-config-bar .button img {\n        height: auto;\n        width: 100%; }\n      .right-panel #preview-config-bar .button.back-face {\n        grid-column: 6; }\n      .right-panel #preview-config-bar .button.depth-pass {\n        grid-column: 5 / 6; }\n      .right-panel #preview-config-bar .button.hemispheric-light {\n        grid-column: 3 / 4; }\n      .right-panel #preview-config-bar .button.direction-light-1 {\n        grid-column: 2 / 3; }\n      .right-panel #preview-config-bar .button.direction-light-0 {\n        grid-column: 1 / 2; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo .bounding-box-line {\n  background-color: black;\n  position: absolute;\n  line-height: 1px;\n  height: 1px;\n  pointer-events: none; }\n\n.gizmo .scale-point-container {\n  position: absolute;\n  width: 30px;\n  height: 30px; }\n  .gizmo .scale-point-container .scale-point {\n    top: 10px;\n    left: 10px;\n    position: absolute;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .scale-point-container .rotate-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n  .gizmo .scale-point-container .scale-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n\n.gizmo .pivot-point {\n  width: 30px;\n  height: 30px;\n  background: transparent;\n  position: absolute; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"AAAA;EACI,sBAAiB,EAAA;;AAGrB;EACI,aAAa;EACb,qCAAqC;EACrC,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,iCAAiC,EAAA;;AAGrC;EACI,aAAa;EACb,uBAAuB;EACvB,qBAAqB;EACrB,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,aAAa;EACb,YAAW;EACX,iCAAiC;EACjC,kBAAkB;EAClB,MAAM;EACN,OAAO,EAAA;EAZX;IAeQ,kBAAkB,EAAA;;AAI1B;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAGrB;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAIrB;EACI,mBAAmB;EACnB,oBAAoB;EACpB,cAAc;EACd,YAAY,EAAA;EAJhB;IAOQ,WAAY;IACZ,iBAAiB,EAAA;EARzB;IAWQ,YAAW;IACX,eAAe;IACf,aAAa;IACb,mBAAmB;IACnB,eAAe;IACf,iBAAiB;IACjB,+BAA+B;IAC/B,wBAAwB;IACxB,kBAAkB,EAAA;IAnB1B;MAsBY,iBAAiB;MACjB,eAAe,EAAA;IAvB3B;MA2BY,gCAAgC,EAAA;MA3B5C;QA6BgB,cAAc,EAAA;EA7B9B;IAkCQ,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,kBAAkB;EAClB,aAAa;EACb,WAAW;EACX,cAAc;EACd,mBAAmB;EACnB,WAAW;EACX,YAAY,EAAA;EAPhB;IAUQ,aAAa;IACb,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,oBAAoB;EACpB,cAAc;EACd,aAAa;EACb,sCAAsC;EACtC,2BAA2B;EAC3B,0CAA0C;EAC1C,gBAAgB,EAAA;EAPpB;IAUQ,WAAW;IACX,cAAc,EAAA;EAXtB;IAeQ,aAAa;IACb,uBAAuB;IACvB,qBAAqB;IACrB,YAAY;IACZ,qBAAqB;IACrB,eAAe,EAAA;IApBvB;MAuBY,mBAA6B;MAC7B,YAAY;MACZ,YAAY,EAAA;IAzBxB;MA6BY,mBAA6B;MAC7B,YAAY,EAAA;IA9BxB;MAkCY,wBAAwB;MACxB,kBAAkB,EAAA;;AAK9B;EACI,kBAAkB;EAClB,kBAAkB;EAClB,wBAAwB;EACxB,YAAY;EACZ,MAAM;EACN,OAAO;EAEP,kCAAkC;EAClC,mCAAmC;EACnC,YAAY;EACZ,eAAe;EAEf,aAAa;EACb,qBAAqB;EACrB,uBAAuB;EAEvB,iBAAiB;EAEjB,aAAa;EACb,kBAAkB,EAAA;;AAGtB;EACI,WAAW;EACX,cAAc;EACd,aAAa,EAAA;;AAGjB;EACI,kBAAkB;EAClB,WAAW;EACX,YAAY;EACZ,8BAAoC;EACpC,aAAa;EACb,mCAAmC;EACnC,MAAK,EAAA;EAPT;IAUQ,kBAAkB;IAClB,oBAAoB;IACpB,iBAAiB;IACjB,gBAAgB;IAChB,mBAAmB;IACnB,iBAAiB;IAEjB,aAAa;IACb,2BAA2B;IAC3B,0CAA0C,EAAA;IAnBlD;MAsBY,WAAW;MACX,cAAc;MACd,gBAAgB;MAChB,aAAa;MACb,eAAe;MACf,YAAY,EAAA;IA3BxB;MA+BY,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,2BAA2B;MAC3B,YAAY,EAAA;MApCxB;QAuCgB,eAAe;QACf,oBAAoB;QACpB,iBAAgB;QAChB,eAAe;QACf,uBAAuB;QACvB,aAAa;QACb,qBAAqB;QACrB,kBAAkB;QAClB,YAAY;QACZ,mBAAmB,EAAA;QAhDnC;UAmDoB,YAAY,EAAA;QAnDhC;UAuDoB,eAAe,EAAA;;AAMnC;EAEQ,uBAAuB;EACvB,kBAAkB;EAClB,gBAAgB;EAChB,WAAW;EACX,oBAAoB,EAAA;;AAN5B;EASQ,kBAAkB;EAClB,WAAW;EACX,YAAY,EAAA;EAXpB;IAaY,SAAS;IACT,UAAU;IACV,kBAAkB;IAClB,WAAW;IACX,YAAY;IACZ,uBAAuB;IACvB,0BAAqC,EAAA;EAnBjD;IAsBY,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;EAxB9B;IA2BY,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;;AA7B9B;EAiCQ,WAAW;EACX,YAAY;EACZ,uBAAuB;EACvB,kBAAkB,EAAA","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #5f5b60;\r\n    width: 100%;\r\n    height: 100%;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point-container {\r\n        position: absolute;\r\n        width: 30px;\r\n        height: 30px;\r\n        .scale-point {\r\n            top: 10px;\r\n            left: 10px;\r\n            position: absolute;\r\n            width: 10px;\r\n            height: 10px;\r\n            background: transparent;\r\n            outline: rgb(125, 125, 125) 2px solid;\r\n        }\r\n        .rotate-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n        .scale-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10141,16 +10200,23 @@ module.exports = exports;
 /*!*************************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
   \*************************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, ":root {\n  --selectionGrey: #666666; }\n\n.ge-commands {\n  grid-row: 1;\n  grid-column: 1;\n  user-select: none; }\n  .ge-commands .commands-left {\n    float: left;\n    display: flex; }\n  .ge-commands .commands-right {\n    float: right;\n    display: flex; }\n  .ge-commands.background-ts .command-button img, .ge-commands.background-ts .command-dropdown img {\n    filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%); }\n  .ge-commands.background-ts .command-button .command-dropdown-active, .ge-commands.background-ts .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-ts .command-button:hover img, .ge-commands.background-ts .command-button.activated img, .ge-commands.background-ts .command-dropdown:hover img, .ge-commands.background-ts .command-dropdown.activated img {\n    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important; }\n  .ge-commands.background-js .command-button img, .ge-commands.background-js .command-dropdown img {\n    filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg); }\n  .ge-commands.background-js .command-button .command-dropdown-active, .ge-commands.background-js .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-js .command-button:hover img, .ge-commands.background-js .command-button.activated img, .ge-commands.background-js .command-dropdown:hover img, .ge-commands.background-js .command-dropdown.activated img {\n    filter: invert(17%) !important; }\n  .ge-commands .command-button {\n    cursor: pointer;\n    width: 55px; }\n    .ge-commands .command-button .command-label {\n      display: none; }\n    .ge-commands .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-button:hover {\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button .active {\n      transform-origin: center;\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button img.active {\n      background-color: var(--selectionGrey); }\n  .ge-commands .command-dropdown-root {\n    position: relative;\n    text-transform: uppercase;\n    z-index: 1; }\n  .ge-commands .command-dropdown {\n    cursor: pointer;\n    width: 55px;\n    height: 55px; }\n    .ge-commands .command-dropdown .command-dropdown-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-dropdown .command-dropdown-active {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      font-size: 14px; }\n    .ge-commands .command-dropdown:hover, .ge-commands .command-dropdown.activated {\n      background-color: #666666;\n      color: black; }\n    .ge-commands .command-dropdown:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  .ge-commands .command-dropdown-blocker {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    transform: scale(1);\n    z-index: 1; }\n  .ge-commands.background-js .command-dropdown-content {\n    background: #333333; }\n    .ge-commands.background-js .command-dropdown-content .command-dropdown-label:hover {\n      background: #333333; }\n  .ge-commands.background-ts .command-dropdown-content .command-dropdown-label:hover {\n    background: #333333; }\n  .ge-commands .command-dropdown-content {\n    background: #333333;\n    position: absolute;\n    top: 55px;\n    width: 55px;\n    transform: scale(1); }\n    .ge-commands .command-dropdown-content.toRight {\n      width: 120px; }\n    .ge-commands .command-dropdown-content .command-dropdown-label {\n      color: white;\n      padding: 5px;\n      padding-left: 7px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative; }\n      .ge-commands .command-dropdown-content .command-dropdown-label.active {\n        font-weight: bold;\n        font-size: 20px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label:hover {\n        background: var(--selectionGrey); }\n        .ge-commands .command-dropdown-content .command-dropdown-label:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-text {\n        font-family: Arial;\n        font-size: 12px;\n        grid-column: 1;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-check {\n        grid-column: 2;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-arrow {\n        grid-column: 2;\n        grid-row: 1;\n        font-size: 20px;\n        font-weight: bold;\n        padding-bottom: 10px;\n        padding-left: 4px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .sub-items {\n        position: absolute;\n        left: 200px;\n        top: 0;\n        width: 150px;\n        display: none; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js {\n          background: #bfabff; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts {\n          background: #333333; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item {\n          color: white;\n          padding: 5px;\n          padding-left: 10px;\n          height: 35px;\n          display: grid; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item.checked {\n            background: white;\n            color: black; }\n    .ge-commands .command-dropdown-content .buttonLine {\n      color: white;\n      padding: 5px;\n      padding-left: 7px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative;\n      font-family: Arial;\n      font-size: 12px;\n      grid-column: 1;\n      grid-row: 1; }\n      .ge-commands .command-dropdown-content .buttonLine input[type=\"file\"] {\n        display: none; }\n      .ge-commands .command-dropdown-content .buttonLine.active {\n        font-weight: bold;\n        font-size: 20px;\n        cursor: pointer; }\n      .ge-commands .command-dropdown-content .buttonLine:hover {\n        background: var(--selectionGrey);\n        cursor: pointer; }\n        .ge-commands .command-dropdown-content .buttonLine:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .buttonLine .file-upload {\n        cursor: pointer; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --selectionGrey: #666666; }\n\n.ge-commands {\n  grid-row: 1;\n  grid-column: 1;\n  user-select: none; }\n  .ge-commands .commands-left {\n    float: left;\n    display: flex; }\n  .ge-commands .commands-right {\n    float: right;\n    display: flex; }\n  .ge-commands.background-ts .command-button img, .ge-commands.background-ts .command-dropdown img {\n    filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%); }\n  .ge-commands.background-ts .command-button .command-dropdown-active, .ge-commands.background-ts .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-ts .command-button:hover img, .ge-commands.background-ts .command-button.activated img, .ge-commands.background-ts .command-dropdown:hover img, .ge-commands.background-ts .command-dropdown.activated img {\n    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important; }\n  .ge-commands.background-js .command-button img, .ge-commands.background-js .command-dropdown img {\n    filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg); }\n  .ge-commands.background-js .command-button .command-dropdown-active, .ge-commands.background-js .command-dropdown .command-dropdown-active {\n    color: #333333; }\n  .ge-commands.background-js .command-button:hover img, .ge-commands.background-js .command-button.activated img, .ge-commands.background-js .command-dropdown:hover img, .ge-commands.background-js .command-dropdown.activated img {\n    filter: invert(17%) !important; }\n  .ge-commands .command-button {\n    cursor: pointer;\n    width: 55px; }\n    .ge-commands .command-button .command-label {\n      display: none; }\n    .ge-commands .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-button:hover {\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button .active {\n      transform-origin: center;\n      background-color: var(--selectionGrey); }\n    .ge-commands .command-button img.active {\n      background-color: var(--selectionGrey); }\n  .ge-commands .command-dropdown-root {\n    position: relative;\n    text-transform: uppercase;\n    z-index: 1; }\n  .ge-commands .command-dropdown {\n    cursor: pointer;\n    width: 55px;\n    height: 55px; }\n    .ge-commands .command-dropdown .command-dropdown-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    .ge-commands .command-dropdown .command-dropdown-active {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      font-size: 14px; }\n    .ge-commands .command-dropdown:hover, .ge-commands .command-dropdown.activated {\n      background-color: #666666;\n      color: black; }\n    .ge-commands .command-dropdown:active {\n      transform-origin: center;\n      transform: scale(0.95); }\n  .ge-commands .command-dropdown-blocker {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    transform: scale(1);\n    z-index: 1; }\n  .ge-commands.background-js .command-dropdown-content {\n    background: #333333; }\n    .ge-commands.background-js .command-dropdown-content .command-dropdown-label:hover {\n      background: #333333; }\n  .ge-commands.background-ts .command-dropdown-content .command-dropdown-label:hover {\n    background: #333333; }\n  .ge-commands .command-dropdown-content {\n    background: #333333;\n    position: absolute;\n    top: 55px;\n    width: 55px;\n    transform: scale(1); }\n    .ge-commands .command-dropdown-content.toRight {\n      width: 120px; }\n    .ge-commands .command-dropdown-content .command-dropdown-label {\n      color: white;\n      padding: 5px;\n      padding-left: 7px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative; }\n      .ge-commands .command-dropdown-content .command-dropdown-label.active {\n        font-weight: bold;\n        font-size: 20px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label:hover {\n        background: var(--selectionGrey); }\n        .ge-commands .command-dropdown-content .command-dropdown-label:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-text {\n        font-family: Arial;\n        font-size: 12px;\n        grid-column: 1;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-label-check {\n        grid-column: 2;\n        grid-row: 1; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .command-dropdown-arrow {\n        grid-column: 2;\n        grid-row: 1;\n        font-size: 20px;\n        font-weight: bold;\n        padding-bottom: 10px;\n        padding-left: 4px; }\n      .ge-commands .command-dropdown-content .command-dropdown-label .sub-items {\n        position: absolute;\n        left: 200px;\n        top: 0;\n        width: 150px;\n        display: none; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js {\n          background: #bfabff; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-js .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts {\n          background: #333333; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items.background-ts .sub-item:hover {\n            background-color: #333333;\n            color: white; }\n        .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item {\n          color: white;\n          padding: 5px;\n          padding-left: 10px;\n          height: 35px;\n          display: grid; }\n          .ge-commands .command-dropdown-content .command-dropdown-label .sub-items .sub-item.checked {\n            background: white;\n            color: black; }\n    .ge-commands .command-dropdown-content .buttonLine {\n      color: white;\n      padding: 5px;\n      padding-left: 7px;\n      height: 35px;\n      font-size: 18px;\n      display: grid;\n      align-items: center;\n      cursor: pointer;\n      user-select: none;\n      grid-template-columns: 1fr 20px;\n      grid-template-rows: 100%;\n      position: relative;\n      font-family: Arial;\n      font-size: 12px;\n      grid-column: 1;\n      grid-row: 1; }\n      .ge-commands .command-dropdown-content .buttonLine input[type=\"file\"] {\n        display: none; }\n      .ge-commands .command-dropdown-content .buttonLine.active {\n        font-weight: bold;\n        font-size: 20px;\n        cursor: pointer; }\n      .ge-commands .command-dropdown-content .buttonLine:hover {\n        background: var(--selectionGrey);\n        cursor: pointer; }\n        .ge-commands .command-dropdown-content .buttonLine:hover .sub-items {\n          display: block; }\n      .ge-commands .command-dropdown-content .buttonLine .file-upload {\n        cursor: pointer; }\n", "",{"version":3,"sources":["webpack://./scss/commandBar.scss"],"names":[],"mappings":"AAAA;EACI,wBAAgB,EAAA;;AAGpB;EACI,WAAW;EACX,cAAc;EACd,iBAAiB,EAAA;EAHrB;IAMQ,WAAW;IACX,aAAa,EAAA;EAPrB;IAWQ,YAAY;IACZ,aAAa,EAAA;EAZrB;IAkBgB,gGAAgG,EAAA;EAlBhH;IAsBgB,cAAc,EAAA;EAtB9B;IA2BoB,0GAA0G,EAAA;EA3B9H;IAoCgB,iEAAiE,EAAA;EApCjF;IAwCgB,cAAc,EAAA;EAxC9B;IA6CoB,8BAA8B,EAAA;EA7ClD;IAoDQ,eAAe;IACf,WAAW,EAAA;IArDnB;MAwDY,aAAa,EAAA;IAxDzB;MA4DY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,YAAY;MACZ,qBAAqB;MACrB,uBAAuB,EAAA;IAjEnC;MAqEY,sCAAsC,EAAA;IArElD;MAyEY,wBAAwB;MACxB,sCAAsC,EAAA;IA1ElD;MA+EgB,sCAAsC,EAAA;EA/EtD;IAqFQ,kBAAkB;IAClB,yBAAyB;IACzB,UAAU,EAAA;EAvFlB;IA2FQ,eAAe;IACf,WAAW;IACX,YAAY,EAAA;IA7FpB;MAgGY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;IApGnC;MAwGY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB;MACvB,eAAe,EAAA;IA7G3B;MAiHY,yBAAwB;MACxB,YAAY,EAAA;IAlHxB;MAsHY,wBAAwB;MACxB,sBAAsB,EAAA;EAvHlC;IA4HQ,kBAAkB;IAClB,MAAK;IACL,OAAM;IACN,WAAW;IACX,YAAY;IACZ,mBAAmB;IACnB,UAAU,EAAA;EAlIlB;IAuIY,mBAAmB,EAAA;IAvI/B;MA0IoB,mBAAmB,EAAA;EA1IvC;IAoJoB,mBAAmB,EAAA;EApJvC;IA2JQ,mBAAmB;IACnB,kBAAkB;IAClB,SAAS;IACT,WAAW;IACX,mBAAmB,EAAA;IA/J3B;MAkKY,YAAY,EAAA;IAlKxB;MAsKY,YAAW;MACX,YAAY;MACZ,iBAAiB;MACjB,YAAY;MACZ,eAAe;MACf,aAAa;MACb,mBAAmB;MACnB,eAAe;MACf,iBAAiB;MACjB,+BAA+B;MAC/B,wBAAwB;MACxB,kBAAkB,EAAA;MAjL9B;QAoLgB,iBAAiB;QACjB,eAAe,EAAA;MArL/B;QAyLgB,gCAAgC,EAAA;QAzLhD;UA2LoB,cAAc,EAAA;MA3LlC;QAgMgB,kBAAkB;QAClB,eAAe;QACf,cAAc;QACd,WAAW,EAAA;MAnM3B;QAuMgB,cAAc;QACd,WAAW,EAAA;MAxM3B;QA4MgB,cAAc;QACd,WAAW;QACX,eAAe;QACf,iBAAiB;QACjB,oBAAoB;QACpB,iBAAiB,EAAA;MAjNjC;QAqNgB,kBAAkB;QAClB,WAAW;QACX,MAAM;QACN,YAAY;QACZ,aAAa,EAAA;QAzN7B;UA4NoB,mBAAmB,EAAA;UA5NvC;YA+N4B,yBAAyB;YACzB,YAAY,EAAA;QAhOxC;UAsOoB,mBAAmB,EAAA;UAtOvC;YAyO4B,yBAAyB;YACzB,YAAY,EAAA;QA1OxC;UAgPoB,YAAY;UACZ,YAAY;UACZ,kBAAkB;UAClB,YAAY;UACZ,aAAa,EAAA;UApPjC;YAuPwB,iBAAiB;YACjB,YAAY,EAAA;IAxPpC;MA+PY,YAAW;MACX,YAAY;MACZ,iBAAiB;MACjB,YAAY;MACZ,eAAe;MACf,aAAa;MACb,mBAAmB;MACnB,eAAe;MACf,iBAAiB;MACjB,+BAA+B;MAC/B,wBAAwB;MACxB,kBAAkB;MAClB,kBAAkB;MAClB,eAAe;MACf,cAAc;MACd,WAAW,EAAA;MA9QvB;QAgRgB,aAAa,EAAA;MAhR7B;QAoRgB,iBAAiB;QACjB,eAAe;QACf,eAAe,EAAA;MAtR/B;QA0RgB,gCAAgC;QAIhC,eAAe,EAAA;QA9R/B;UA4RoB,cAAc,EAAA;MA5RlC;QAkSgB,eAAe,EAAA","sourcesContent":[":root {\r\n    --selectionGrey: #666666;\r\n}\r\n\r\n.ge-commands {\r\n    grid-row: 1;\r\n    grid-column: 1;\r\n    user-select: none;\r\n\r\n    .commands-left {\r\n        float: left;\r\n        display: flex;\r\n    }\r\n\r\n    .commands-right {\r\n        float: right;\r\n        display: flex;\r\n    }\r\n\r\n    &.background-ts {\r\n        .command-button, .command-dropdown  {\r\n            img {\r\n                filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);\r\n            }\r\n\r\n            .command-dropdown-active {\r\n                color: #333333;\r\n            }\r\n\r\n            &:hover, &.activated {\r\n                img {\r\n                    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;\r\n                }\r\n            } \r\n        }\r\n    }\r\n\r\n    &.background-js {\r\n        .command-button, .command-dropdown  {\r\n            img {\r\n                filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);\r\n            }\r\n\r\n            .command-dropdown-active {\r\n                color: #333333;\r\n            }\r\n\r\n            &:hover, &.activated {\r\n                img {\r\n                    filter: invert(17%) !important;\r\n                }\r\n            } \r\n        }\r\n    }\r\n\r\n    .command-button {\r\n        cursor: pointer;\r\n        width: 55px;\r\n\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            color: white;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        &:hover {\r\n            background-color: var(--selectionGrey);\r\n        } \r\n        \r\n        .active {\r\n            transform-origin: center;\r\n            background-color: var(--selectionGrey);\r\n        }\r\n\r\n        img {\r\n            &.active {\r\n                background-color: var(--selectionGrey);\r\n            }\r\n        }\r\n    }\r\n\r\n    .command-dropdown-root {\r\n        position: relative;\r\n        text-transform: uppercase;\r\n        z-index: 1;\r\n    }\r\n\r\n    .command-dropdown {        \r\n        cursor: pointer;\r\n        width: 55px;\r\n        height: 55px;\r\n\r\n        .command-dropdown-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        .command-dropdown-active {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n            font-size: 14px;\r\n        }\r\n\r\n        &:hover, &.activated {\r\n            background-color:#666666;\r\n            color: black;\r\n        } \r\n        \r\n        &:active {\r\n            transform-origin: center;\r\n            transform: scale(0.95);\r\n        }\r\n    }\r\n\r\n    .command-dropdown-blocker {\r\n        position: absolute;    \r\n        top:0;\r\n        left:0;\r\n        width: 100%;\r\n        height: 100%;\r\n        transform: scale(1);\r\n        z-index: 1;\r\n    }\r\n\r\n    &.background-js {\r\n        .command-dropdown-content {\r\n            background: #333333;\r\n            .command-dropdown-label {\r\n                &:hover {\r\n                    background: #333333;\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    &.background-ts {\r\n        .command-dropdown-content {\r\n            .command-dropdown-label {\r\n                &:hover {\r\n                    background: #333333;\r\n                }\r\n            }\r\n        }\r\n    }\r\n        \r\n    .command-dropdown-content {\r\n        background: #333333;\r\n        position: absolute;\r\n        top: 55px;\r\n        width: 55px;\r\n        transform: scale(1);\r\n\r\n        &.toRight {\r\n            width: 120px;\r\n        } \r\n        \r\n        .command-dropdown-label {\r\n            color:white;\r\n            padding: 5px;\r\n            padding-left: 7px;\r\n            height: 35px;\r\n            font-size: 18px;\r\n            display: grid;\r\n            align-items: center;\r\n            cursor: pointer;\r\n            user-select: none;\r\n            grid-template-columns: 1fr 20px;\r\n            grid-template-rows: 100%;\r\n            position: relative;\r\n\r\n            &.active {\r\n                font-weight: bold;\r\n                font-size: 20px;\r\n            }\r\n\r\n            &:hover {\r\n                background: var(--selectionGrey);\r\n                .sub-items {\r\n                    display: block;\r\n                }\r\n            } \r\n\r\n            .command-dropdown-label-text {\r\n                font-family: Arial;\r\n                font-size: 12px;\r\n                grid-column: 1;\r\n                grid-row: 1;\r\n            }\r\n\r\n            .command-dropdown-label-check {\r\n                grid-column: 2;\r\n                grid-row: 1;\r\n            }\r\n\r\n            .command-dropdown-arrow {\r\n                grid-column: 2;\r\n                grid-row: 1;    \r\n                font-size: 20px;\r\n                font-weight: bold;\r\n                padding-bottom: 10px;\r\n                padding-left: 4px;\r\n            }\r\n\r\n            .sub-items {\r\n                position: absolute;\r\n                left: 200px;\r\n                top: 0;\r\n                width: 150px;\r\n                display: none;        \r\n    \r\n                &.background-js {\r\n                    background: #bfabff;\r\n                    .sub-item {                      \r\n                        &:hover {\r\n                            background-color: #333333;\r\n                            color: white;\r\n                        }\r\n                    }\r\n                }   \r\n\r\n                &.background-ts {\r\n                    background: #333333;\r\n                    .sub-item {                      \r\n                        &:hover {\r\n                            background-color: #333333;\r\n                            color: white;\r\n                        }\r\n                    }\r\n                }   \r\n                                    \r\n                .sub-item {                      \r\n                    color: white;\r\n                    padding: 5px;\r\n                    padding-left: 10px;\r\n                    height: 35px;\r\n                    display: grid;\r\n\r\n                    &.checked {\r\n                        background: white;\r\n                        color: black;\r\n                    }\r\n                }\r\n            }            \r\n        }\r\n\r\n        .buttonLine {\r\n            color:white;\r\n            padding: 5px;\r\n            padding-left: 7px;\r\n            height: 35px;\r\n            font-size: 18px;\r\n            display: grid;\r\n            align-items: center;\r\n            cursor: pointer;\r\n            user-select: none;\r\n            grid-template-columns: 1fr 20px;\r\n            grid-template-rows: 100%;\r\n            position: relative;\r\n            font-family: Arial;\r\n            font-size: 12px;\r\n            grid-column: 1;\r\n            grid-row: 1;\r\n            input[type=\"file\"] {\r\n                display: none;\r\n            }\r\n\r\n            &.active {\r\n                font-weight: bold;\r\n                font-size: 20px;\r\n                cursor: pointer;\r\n            }\r\n\r\n            &:hover {\r\n                background: var(--selectionGrey);\r\n                .sub-items {\r\n                    display: block;\r\n                }\r\n                cursor: pointer;\r\n            } \r\n\r\n            .file-upload{\r\n                cursor: pointer;\r\n            }\r\n        }\r\n    }\r\n\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10159,16 +10225,23 @@ module.exports = exports;
 /*!*********************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
   \*********************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, "#ge-header {\n  width: 100%;\n  grid-column: 2 / 4;\n  grid-row: 1;\n  padding: 0;\n  margin: 0;\n  display: grid;\n  grid-template-columns: auto 1fr;\n  grid-template-rows: 100%;\n  background: #333333; }\n  #ge-header .command-bar {\n    padding-left: 15px;\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    width: 100%;\n    grid-template-columns: 74px 144px 1fr;\n    grid-template-rows: 100%; }\n    #ge-header .command-bar .language-button {\n      grid-row: 1;\n      grid-column: 2;\n      color: white;\n      width: 144px;\n      font-size: 18px;\n      text-align: center;\n      display: grid;\n      align-content: center;\n      border-top-left-radius: 14px;\n      transform: scale(1);\n      user-select: none; }\n      #ge-header .command-bar .language-button.active {\n        width: 74px;\n        cursor: pointer;\n        grid-column: 1;\n        margin-right: -5px;\n        transform: translateX(10px); }\n\n@media screen and (max-width: 1280px) {\n  #ge-header .logo-area {\n    width: 300px; }\n    #ge-header .logo-area .version .version-text {\n      display: none; }\n    #ge-header .logo-area .version .version-number {\n      font-size: 16px; } }\n\n@media screen and (max-width: 1080px) {\n  #ge-header {\n    grid-template-columns: 100%; }\n    #ge-header .logo-area {\n      width: 100%; }\n      #ge-header .logo-area .version .version-text {\n        display: none; }\n    #ge-header .command-bar {\n      display: none; } }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, "#ge-header {\n  width: 100%;\n  grid-column: 2 / 4;\n  grid-row: 1;\n  padding: 0;\n  margin: 0;\n  display: grid;\n  grid-template-columns: auto 1fr;\n  grid-template-rows: 100%;\n  background: #333333; }\n  #ge-header .command-bar {\n    padding-left: 15px;\n    grid-row: 1;\n    grid-column: 2;\n    display: grid;\n    width: 100%;\n    grid-template-columns: 74px 144px 1fr;\n    grid-template-rows: 100%; }\n    #ge-header .command-bar .language-button {\n      grid-row: 1;\n      grid-column: 2;\n      color: white;\n      width: 144px;\n      font-size: 18px;\n      text-align: center;\n      display: grid;\n      align-content: center;\n      border-top-left-radius: 14px;\n      transform: scale(1);\n      user-select: none; }\n      #ge-header .command-bar .language-button.active {\n        width: 74px;\n        cursor: pointer;\n        grid-column: 1;\n        margin-right: -5px;\n        transform: translateX(10px); }\n\n@media screen and (max-width: 1280px) {\n  #ge-header .logo-area {\n    width: 300px; }\n    #ge-header .logo-area .version .version-text {\n      display: none; }\n    #ge-header .logo-area .version .version-number {\n      font-size: 16px; } }\n\n@media screen and (max-width: 1080px) {\n  #ge-header {\n    grid-template-columns: 100%; }\n    #ge-header .logo-area {\n      width: 100%; }\n      #ge-header .logo-area .version .version-text {\n        display: none; }\n    #ge-header .command-bar {\n      display: none; } }\n", "",{"version":3,"sources":["webpack://./scss/header.scss"],"names":[],"mappings":"AAAA;EACI,WAAW;EACX,kBAAkB;EAClB,WAAW;EACX,UAAU;EACV,SAAS;EACT,aAAa;EACb,+BAA+B;EAC/B,wBAAwB;EACxB,mBAAmB,EAAA;EATvB;IAYQ,kBAAkB;IAClB,WAAW;IACX,cAAc;IACd,aAAa;IACb,WAAW;IACX,qCAAqC;IACrC,wBAAwB,EAAA;IAlBhC;MAqBY,WAAW;MACX,cAAc;MACd,YAAY;MACZ,YAAY;MACZ,eAAe;MACf,kBAAkB;MAClB,aAAa;MACb,qBAAqB;MACrB,4BAA4B;MAC5B,mBAAmB;MACnB,iBAAiB,EAAA;MA/B7B;QAkCgB,WAAW;QACX,eAAe;QACf,cAAc;QACd,kBAAkB;QAClB,2BAA2B,EAAA;;AAO3C;EACI;IAEQ,YAAY,EAAA;IAFpB;MAMgB,aAAa,EAAA;IAN7B;MAUgB,eAAe,EAAA,EAClB;;AAMjB;EACI;IACI,2BAA2B,EAAA;IAD/B;MAIQ,WAAW,EAAA;MAJnB;QAQgB,aAAa,EAAA;IAR7B;MAcQ,aAAa,EAAA,EAChB","sourcesContent":["#ge-header {\r\n    width: 100%;\r\n    grid-column: 2 / 4;\r\n    grid-row: 1;\r\n    padding: 0;\r\n    margin: 0;\r\n    display: grid;\r\n    grid-template-columns: auto 1fr;\r\n    grid-template-rows: 100%;\r\n    background: #333333;\r\n\r\n    .command-bar {\r\n        padding-left: 15px;   \r\n        grid-row: 1;\r\n        grid-column: 2;\r\n        display: grid;\r\n        width: 100%;\r\n        grid-template-columns: 74px 144px 1fr;\r\n        grid-template-rows: 100%;\r\n\r\n        .language-button {        \r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            color: white;\r\n            width: 144px;\r\n            font-size: 18px;\r\n            text-align: center;\r\n            display: grid;\r\n            align-content: center;\r\n            border-top-left-radius: 14px;\r\n            transform: scale(1);\r\n            user-select: none;\r\n\r\n            &.active {\r\n                width: 74px;\r\n                cursor: pointer;            \r\n                grid-column: 1;\r\n                margin-right: -5px;\r\n                transform: translateX(10px);\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n\r\n@media screen and (max-width: 1280px) {\r\n    #ge-header {\r\n        .logo-area {\r\n            width: 300px;\r\n                \r\n            .version {\r\n                .version-text {\r\n                    display: none;\r\n                }\r\n                \r\n                .version-number {\r\n                    font-size: 16px;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@media screen and (max-width: 1080px) {\r\n    #ge-header {\r\n        grid-template-columns: 100%;\r\n\r\n        .logo-area {\r\n            width: 100%;\r\n                \r\n            .version {\r\n                .version-text {\r\n                    display: none;\r\n                }\r\n            }\r\n        }\r\n        \r\n        .command-bar {  \r\n            display: none;\r\n        }\r\n    }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10177,16 +10250,23 @@ module.exports = exports;
 /*!****************************************************************************************************************************************************************************************************************************!*\
   !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
   \****************************************************************************************************************************************************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js */ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
-var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
-exports = ___CSS_LOADER_API_IMPORT___(false);
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-exports.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr auto;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container.with-hints {\n    height: 380px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n  .color-picker-container .color-picker-warning {\n    color: black;\n    font-size: 11px;\n    padding: 4px;\n    justify-self: left;\n    align-self: center;\n    grid-row: 6;\n    grid-column: 1; }\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ".color-picker-container {\n  width: 320px;\n  height: 300px;\n  background-color: white;\n  display: grid;\n  grid-template-columns: 100%;\n  grid-template-rows: 50% 50px 60px 40px 1fr auto;\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal;\n  font-size: 14px; }\n  .color-picker-container.with-hints {\n    height: 380px; }\n  .color-picker-container .color-picker-saturation {\n    grid-row: 1;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: 100%;\n    position: relative;\n    cursor: pointer; }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-white {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to right, #fff, rgba(255, 255, 255, 0));\n      background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-black {\n      grid-row: 1;\n      grid-column: 1;\n      background: -webkit-linear-gradient(to top, #000, rgba(0, 0, 0, 0));\n      background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }\n    .color-picker-container .color-picker-saturation .color-picker-saturation-cursor {\n      pointer-events: none;\n      width: 4px;\n      height: 4px;\n      box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 1px 2px rgba(0, 0, 0, 0.4);\n      border-radius: 50%;\n      transform: translate(-2px, -2px);\n      position: absolute; }\n  .color-picker-container .color-picker-hue {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 24% 76%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hue .color-picker-hue-color {\n      grid-row: 1;\n      grid-column: 1;\n      align-self: center;\n      justify-self: center;\n      width: 30px;\n      height: 30px;\n      border-radius: 15px;\n      border: 1px solid black; }\n    .color-picker-container .color-picker-hue .color-picker-hue-slider {\n      grid-row: 1;\n      grid-column: 2;\n      align-self: center;\n      height: 16px;\n      position: relative;\n      cursor: pointer;\n      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\n      background: -webkit-linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }\n      .color-picker-container .color-picker-hue .color-picker-hue-slider .color-picker-hue-cursor {\n        pointer-events: none;\n        width: 8px;\n        height: 18px;\n        transform: translate(-4px, -2px);\n        background-color: #f8f8f8;\n        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\n        position: absolute; }\n  .color-picker-container .color-picker-component {\n    display: grid;\n    margin: 5px;\n    grid-template-columns: 100%;\n    grid-template-rows: 50% 50%; }\n    .color-picker-container .color-picker-component .color-picker-component-value {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-bottom: 4px; }\n      .color-picker-container .color-picker-component .color-picker-component-value input {\n        width: 50px; }\n    .color-picker-container .color-picker-component .color-picker-component-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 2;\n      grid-column: 1;\n      color: black; }\n  .color-picker-container .color-picker-rgb {\n    grid-row: 3;\n    grid-column: 1;\n    display: grid;\n    margin: 10px;\n    grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\n    grid-template-rows: 100%; }\n  .color-picker-container .red {\n    grid-row: 1;\n    grid-column: 1; }\n  .color-picker-container .green {\n    grid-row: 1;\n    grid-column: 3; }\n  .color-picker-container .blue {\n    grid-row: 1;\n    grid-column: 5; }\n  .color-picker-container .alpha {\n    grid-row: 1;\n    grid-column: 7; }\n    .color-picker-container .alpha.grayed {\n      opacity: 0.5; }\n  .color-picker-container .color-picker-hex {\n    grid-row: 4;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: 20% 80%;\n    grid-template-rows: 100%; }\n    .color-picker-container .color-picker-hex .color-picker-hex-label {\n      justify-self: center;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 1;\n      margin-left: 10px;\n      color: black; }\n    .color-picker-container .color-picker-hex .color-picker-hex-value {\n      justify-self: left;\n      align-self: center;\n      grid-row: 1;\n      grid-column: 2;\n      margin-left: 10px;\n      margin-right: 10px; }\n      .color-picker-container .color-picker-hex .color-picker-hex-value input {\n        width: 70px; }\n  .color-picker-container .color-picker-warning {\n    color: black;\n    font-size: 11px;\n    padding: 4px;\n    justify-self: left;\n    align-self: center;\n    grid-row: 6;\n    grid-column: 1; }\n", "",{"version":3,"sources":["webpack://./sharedUiComponents/colorPicker/colorPicker.scss"],"names":[],"mappings":"AAAA;EACI,YAAY;EACZ,aAAa;EACb,uBAAuB;EACvB,aAAa;EACb,2BAA2B;EAC3B,+CAA+C;EAC/C,mCAAmC;EACnC,mBAAmB;EACnB,eAAe,EAAA;EATnB;IAYQ,aAAa,EAAA;EAZrB;IAgBQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,2BAA2B;IAC3B,wBAAwB;IACxB,kBAAkB;IAClB,eAAe,EAAA;IAtBvB;MAyBY,WAAW;MACX,cAAc;MAEd,2EAAwE;MACxE,mEAAgE,EAAA;IA7B5E;MAiCY,WAAW;MACX,cAAc;MAEd,mEAAgE;MAChE,2DAAwD,EAAA;IArCpE;MAyCY,oBAAoB;MACpB,UAAU;MACV,WAAW;MACX,kGAA0F;MAC1F,kBAAkB;MAClB,gCAAgC;MAChC,kBAAkB,EAAA;EA/C9B;IAoDQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,YAAY;IACZ,8BAA8B;IAC9B,wBAAwB,EAAA;IAzDhC;MA4DY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,oBAAoB;MACpB,WAAW;MACX,YAAY;MACZ,mBAAmB;MACnB,uBAAuB,EAAA;IAnEnC;MAuEY,WAAW;MACX,cAAc;MACd,kBAAkB;MAClB,YAAY;MACZ,kBAAkB;MAClB,eAAe;MAEf,2GACqD;MACrD,mHAC2D,EAAA;MAjFvE;QAoFgB,oBAAoB;QACpB,UAAU;QACV,YAAY;QACZ,gCAAgC;QAChC,yBAAoC;QACpC,2CAA2C;QAC3C,kBAAkB,EAAA;EA1FlC;IAgGQ,aAAa;IACb,WAAW;IACX,2BAA2B;IAC3B,2BAA2B,EAAA;IAnGnC;MAsGY,oBAAoB;MACpB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,kBAAkB,EAAA;MA1G9B;QA6GgB,WAAW,EAAA;IA7G3B;MAkHY,oBAAoB;MACpB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,YAAW,EAAA;EAtHvB;IA2HQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,YAAY;IACZ,wDAAwD;IACxD,wBAAwB,EAAA;EAhIhC;IAoIQ,WAAW;IACX,cAAc,EAAA;EArItB;IAyIQ,WAAW;IACX,cAAc,EAAA;EA1ItB;IA8IQ,WAAW;IACX,cAAc,EAAA;EA/ItB;IAmJQ,WAAW;IACX,cAAc,EAAA;IApJtB;MAuJY,YAAY,EAAA;EAvJxB;IA4JQ,WAAW;IACX,cAAc;IACd,aAAa;IACb,8BAA8B;IAC9B,wBAAwB,EAAA;IAhKhC;MAmKY,oBAAoB;MACpB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,YAAW,EAAA;IAxKvB;MA4KY,kBAAkB;MAClB,kBAAkB;MAClB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,kBAAkB,EAAA;MAjL9B;QAoLgB,WAAW,EAAA;EApL3B;IA0LQ,YAAY;IACZ,eAAe;IACf,YAAY;IACZ,kBAAkB;IAClB,kBAAkB;IAClB,WAAW;IACX,cAAc,EAAA","sourcesContent":[".color-picker-container {\r\n    width: 320px;\r\n    height: 300px;\r\n    background-color: white;\r\n    display: grid;    \r\n    grid-template-columns: 100%;\r\n    grid-template-rows: 50% 50px 60px 40px 1fr auto;\r\n    font-family: \"acumin-pro-condensed\";\r\n    font-weight: normal;   \r\n    font-size: 14px;\r\n\r\n    &.with-hints {        \r\n        height: 380px;\r\n    }\r\n    \r\n    .color-picker-saturation {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n        cursor: pointer;\r\n    \r\n        .color-picker-saturation-white {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            background: -webkit-linear-gradient(to right, #fff, rgba(255,255,255,0));\r\n            background: linear-gradient(to right, #fff, rgba(255,255,255,0));\r\n        }\r\n\r\n        .color-picker-saturation-black {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            background: -webkit-linear-gradient(to top, #000, rgba(0,0,0,0));\r\n            background: linear-gradient(to top, #000, rgba(0,0,0,0));\r\n        }\r\n\r\n        .color-picker-saturation-cursor {\r\n            pointer-events: none;\r\n            width: 4px;\r\n            height: 4px;\r\n            box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3), 0 0 1px 2px rgba(0,0,0,.4);\r\n            border-radius: 50%;\r\n            transform: translate(-2px, -2px);\r\n            position: absolute;\r\n        }\r\n    }\r\n\r\n    .color-picker-hue {\r\n        grid-row: 2;\r\n        grid-column: 1;\r\n        display: grid;\r\n        margin: 10px;\r\n        grid-template-columns: 24% 76%;\r\n        grid-template-rows: 100%;\r\n\r\n        .color-picker-hue-color {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            align-self: center;\r\n            justify-self: center;\r\n            width: 30px;\r\n            height: 30px;\r\n            border-radius: 15px;\r\n            border: 1px solid black;\r\n        }\r\n\r\n        .color-picker-hue-slider {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            align-self: center;\r\n            height: 16px;\r\n            position: relative;\r\n            cursor: pointer;\r\n            \r\n            background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0\r\n                    33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);\r\n            background: -webkit-linear-gradient(to right, #f00 0%, #ff0\r\n                17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);                \r\n\r\n            .color-picker-hue-cursor {\r\n                pointer-events: none;\r\n                width: 8px;\r\n                height: 18px;\r\n                transform: translate(-4px, -2px);\r\n                background-color: rgb(248, 248, 248);\r\n                box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);\r\n                position: absolute;\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker-component {\r\n        display: grid;\r\n        margin: 5px;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: 50% 50%;\r\n\r\n        .color-picker-component-value {\r\n            justify-self: center;\r\n            align-self: center;\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-bottom: 4px;\r\n\r\n            input {\r\n                width: 50px;\r\n            }\r\n        }\r\n\r\n        .color-picker-component-label {\r\n            justify-self: center;\r\n            align-self: center;\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            color:black;\r\n        }\r\n    }\r\n\r\n    .color-picker-rgb {\r\n        grid-row: 3;\r\n        grid-column: 1;\r\n        display: grid;\r\n        margin: 10px;\r\n        grid-template-columns: 20% 6.66% 20% 6.66% 20% 6.66% 20%;\r\n        grid-template-rows: 100%;\r\n    }\r\n\r\n    .red {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }\r\n\r\n    .green {\r\n        grid-row: 1;\r\n        grid-column: 3;\r\n    }\r\n\r\n    .blue {\r\n        grid-row: 1;\r\n        grid-column: 5;\r\n    }\r\n\r\n    .alpha {\r\n        grid-row: 1;\r\n        grid-column: 7;\r\n\r\n        &.grayed {\r\n            opacity: 0.5;\r\n        }\r\n    }\r\n\r\n    .color-picker-hex {\r\n        grid-row: 4;\r\n        grid-column: 1;\r\n        display: grid;       \r\n        grid-template-columns: 20% 80%;\r\n        grid-template-rows: 100%;\r\n\r\n        .color-picker-hex-label {\r\n            justify-self: center;\r\n            align-self: center;\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-left: 10px;\r\n            color:black;\r\n        }\r\n\r\n        .color-picker-hex-value {\r\n            justify-self: left;\r\n            align-self: center;\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            margin-left: 10px;\r\n            margin-right: 10px;\r\n\r\n            input {\r\n                width: 70px;\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker-warning {\r\n        color: black;\r\n        font-size: 11px;\r\n        padding: 4px;\r\n        justify-self: left;\r\n        align-self: center;\r\n        grid-row: 6;\r\n        grid-column: 1;\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
-module.exports = exports;
+/* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -10207,27 +10287,27 @@ module.exports = exports;
 */
 // css base code, injected by the css-loader
 // eslint-disable-next-line func-names
-module.exports = function (useSourceMap) {
+module.exports = function (cssWithMappingToString) {
   var list = []; // return the list of modules as css string
 
   list.toString = function toString() {
     return this.map(function (item) {
-      var content = cssWithMappingToString(item, useSourceMap);
+      var content = cssWithMappingToString(item);
 
       if (item[2]) {
         return "@media ".concat(item[2], " {").concat(content, "}");
       }
 
       return content;
-    }).join('');
+    }).join("");
   }; // import a list of modules into the list
   // eslint-disable-next-line func-names
 
 
   list.i = function (modules, mediaQuery, dedupe) {
-    if (typeof modules === 'string') {
+    if (typeof modules === "string") {
       // eslint-disable-next-line no-param-reassign
-      modules = [[null, modules, '']];
+      modules = [[null, modules, ""]];
     }
 
     var alreadyImportedModules = {};
@@ -10266,33 +10346,52 @@ module.exports = function (useSourceMap) {
   return list;
 };
 
-function cssWithMappingToString(item, useSourceMap) {
-  var content = item[1] || ''; // eslint-disable-next-line prefer-destructuring
+/***/ }),
 
-  var cssMapping = item[3];
+/***/ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js":
+/*!*******************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/cssWithMappingToString.js ***!
+  \*******************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr && (typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]); if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+module.exports = function cssWithMappingToString(item) {
+  var _item = _slicedToArray(item, 4),
+      content = _item[1],
+      cssMapping = _item[3];
 
   if (!cssMapping) {
     return content;
   }
 
-  if (useSourceMap && typeof btoa === 'function') {
-    var sourceMapping = toComment(cssMapping);
+  if (typeof btoa === "function") {
+    // eslint-disable-next-line no-undef
+    var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(cssMapping))));
+    var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
+    var sourceMapping = "/*# ".concat(data, " */");
     var sourceURLs = cssMapping.sources.map(function (source) {
-      return "/*# sourceURL=".concat(cssMapping.sourceRoot || '').concat(source, " */");
+      return "/*# sourceURL=".concat(cssMapping.sourceRoot || "").concat(source, " */");
     });
-    return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+    return [content].concat(sourceURLs).concat([sourceMapping]).join("\n");
   }
 
-  return [content].join('\n');
-} // Adapted from convert-source-map (MIT)
-
-
-function toComment(sourceMap) {
-  // eslint-disable-next-line no-undef
-  var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
-  var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
-  return "/*# ".concat(data, " */");
-}
+  return [content].join("\n");
+};
 
 /***/ }),
 
@@ -42235,6 +42334,57 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "../../sharedUiComponents/imgs/fillColorIcon.svg":
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/sharedUiComponents/imgs/fillColorIcon.svg ***!
+  \**********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M7.31,16.54v4.1a2,2,0,0,0,2,2H21.42a2,2,0,0,0,2-2V11.78a2,2,0,0,0-2-2H14.21L15.42,11h6a.8.8,0,0,1,.8.81v8.86a.8.8,0,0,1-.8.81H9.33a.81.81,0,0,1-.81-.81V17.75Z' style='fill:%23333'/%3E%3Cpath d='M10.54,8a.6.6,0,1,1,1.2,0V9a1.57,1.57,0,0,1,1,.46l2.85,2.85a1.61,1.61,0,0,1,0,2.28L12.17,18a1.61,1.61,0,0,1-2.28,0L7,15.13a1.61,1.61,0,0,1,0-2.28l3.42-3.42.08-.07Zm0,3.62v-.5L8.21,13.4h6.64a.34.34,0,0,0-.12-.26l-2.85-2.85a.34.34,0,0,0-.14-.09v1.37a.6.6,0,1,1-1.2,0Zm-2.32,3,2.52,2.52a.42.42,0,0,0,.57,0l2.53-2.52Z' style='fill:%23333'/%3E%3Cpath d='M14.57,17.32a2.76,2.76,0,0,1,.27-1.12,5.33,5.33,0,0,1,.54-.91c.2-.27.39-.49.53-.65l.24-.26h0a.6.6,0,0,1,.86,0l.24.27a6,6,0,0,1,.53.65,5.33,5.33,0,0,1,.54.91,2.76,2.76,0,0,1,.28,1.12,2,2,0,1,1-4,0ZM16.37,16a4.15,4.15,0,0,0-.43.72,1.57,1.57,0,0,0-.17.61.81.81,0,1,0,1.62,0,1.57,1.57,0,0,0-.17-.61,4.15,4.15,0,0,0-.43-.72l-.21-.28Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs sync recursive ^\\.\\/cursor_rotate.*\\.svg$":
+/*!******************************************************!*\
+  !*** ../public/imgs sync ^\.\/cursor_rotate.*\.svg$ ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var map = {
+	"./cursor_rotate0.svg": "../public/imgs/cursor_rotate0.svg",
+	"./cursor_rotate1.svg": "../public/imgs/cursor_rotate1.svg",
+	"./cursor_rotate2.svg": "../public/imgs/cursor_rotate2.svg",
+	"./cursor_rotate3.svg": "../public/imgs/cursor_rotate3.svg",
+	"./cursor_rotate4.svg": "../public/imgs/cursor_rotate4.svg",
+	"./cursor_rotate5.svg": "../public/imgs/cursor_rotate5.svg",
+	"./cursor_rotate6.svg": "../public/imgs/cursor_rotate6.svg",
+	"./cursor_rotate7.svg": "../public/imgs/cursor_rotate7.svg"
+};
+
+
+function webpackContext(req) {
+	var id = webpackContextResolve(req);
+	return __webpack_require__(id);
+}
+function webpackContextResolve(req) {
+	if(!__webpack_require__.o(map, req)) {
+		var e = new Error("Cannot find module '" + req + "'");
+		e.code = 'MODULE_NOT_FOUND';
+		throw e;
+	}
+	return map[req];
+}
+webpackContext.keys = function webpackContextKeys() {
+	return Object.keys(map);
+};
+webpackContext.resolve = webpackContextResolve;
+module.exports = webpackContext;
+webpackContext.id = "../public/imgs sync recursive ^\\.\\/cursor_rotate.*\\.svg$";
+
+/***/ }),
+
 /***/ "../public/imgs/adtIcon.svg":
 /*!**********************************!*\
   !*** ../public/imgs/adtIcon.svg ***!
@@ -42243,17 +42393,6 @@ module.exports = g;
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25.29,26.51a.41.41,0,0,1-.41.41H15.12a.41.41,0,0,1-.41-.41v-13a.41.41,0,0,1,.41-.41H20v3.66a1.63,1.63,0,0,0,1.63,1.63h3.66ZM21.22,14l3.16,3.16H21.63a.41.41,0,0,1-.41-.41ZM26,17.08l-4.75-4.74-.07-.06L21,12.13l-.1-.05-.18-.1a1.72,1.72,0,0,0-.51-.11H15.12a1.63,1.63,0,0,0-1.63,1.63v13a1.63,1.63,0,0,0,1.63,1.63h9.76a1.63,1.63,0,0,0,1.63-1.63V18.23A1.65,1.65,0,0,0,26,17.08Z' style='fill:%23333'/%3E%3C/svg%3E"
-
-/***/ }),
-
-/***/ "../public/imgs/artboardColorIcon.svg":
-/*!********************************************!*\
-  !*** ../public/imgs/artboardColorIcon.svg ***!
-  \********************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M12.31,21.54v4.1a2,2,0,0,0,2,2H26.42a2,2,0,0,0,2-2V16.78a2,2,0,0,0-2-2H19.21L20.42,16h6a.8.8,0,0,1,.8.81v8.86a.8.8,0,0,1-.8.81H14.33a.81.81,0,0,1-.81-.81V22.75Z' style='fill:%23333'/%3E%3Cpath d='M15.54,13a.6.6,0,1,1,1.2,0v1a1.57,1.57,0,0,1,1,.46l2.85,2.85a1.61,1.61,0,0,1,0,2.28L17.17,23a1.61,1.61,0,0,1-2.28,0L12,20.13a1.61,1.61,0,0,1,0-2.28l3.42-3.42.08-.07Zm0,3.62v-.5L13.21,18.4h6.64a.34.34,0,0,0-.12-.26l-2.85-2.85a.34.34,0,0,0-.14-.09v1.37a.6.6,0,1,1-1.2,0Zm-2.32,3,2.52,2.52a.42.42,0,0,0,.57,0l2.53-2.52Z' style='fill:%23333'/%3E%3Cpath d='M19.57,22.32a2.76,2.76,0,0,1,.27-1.12,5.33,5.33,0,0,1,.54-.91c.2-.27.39-.49.53-.65l.24-.26h0a.6.6,0,0,1,.86,0l.24.27a6,6,0,0,1,.53.65,5.33,5.33,0,0,1,.54.91,2.76,2.76,0,0,1,.28,1.12,2,2,0,1,1-4,0ZM21.37,21a4.15,4.15,0,0,0-.43.72,1.57,1.57,0,0,0-.17.61.81.81,0,1,0,1.62,0,1.57,1.57,0,0,0-.17-.61,4.15,4.15,0,0,0-.43-.72l-.21-.28Z' style='fill:%23333'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42367,6 +42506,138 @@ module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/
 
 /***/ }),
 
+/***/ "../public/imgs/cursor_rotate0.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate0.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M18.91,12.11l-.66-.66a8.14,8.14,0,0,0-11.5,0l-.66.66L4.68,10.7,3.39,15.51l4.82-1.29L6.8,12.81l.65-.65a7.16,7.16,0,0,1,10.1,0l.65.65-1.41,1.41,4.82,1.29L20.32,10.7Z'/%3E%3Cpath class='cls-1' d='M12.5,9.07a8.13,8.13,0,0,1,5.75,2.38l.66.66,1.41-1.41,1.29,4.81-4.82-1.29,1.41-1.41-.65-.65a7.15,7.15,0,0,0-10.1,0l-.65.65,1.41,1.41L3.39,15.51,4.68,10.7l1.41,1.41.66-.66A8.13,8.13,0,0,1,12.5,9.07m0-1a9.08,9.08,0,0,0-6.41,2.62l-.7-.7L4.16,8.77l-.44,1.67L2.43,15.25,2,16.93l1.67-.45,4.82-1.29,1.67-.45L8.91,13.52l-.7-.71a6.16,6.16,0,0,1,8.58,0l-.71.71-1.22,1.22,1.67.45,4.82,1.29,1.67.45-.45-1.68-1.29-4.81-.44-1.67L19.61,10l-.7.7A9.08,9.08,0,0,0,12.5,8.07Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate1.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate1.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M18.33,15.74v-.93a8.15,8.15,0,0,0-8.14-8.14H9.26v-2L5,7.17l4.31,2.5v-2h.93a7.14,7.14,0,0,1,7.14,7.14v.93h-2l2.5,4.31,2.49-4.31Z'/%3E%3Cpath class='cls-1' d='M9.26,4.68v2h.93a8.15,8.15,0,0,1,8.14,8.14v.93h2l-2.49,4.31-2.5-4.31h2v-.93a7.14,7.14,0,0,0-7.14-7.14H9.26v2L5,7.17,9.26,4.68m1-1.73-1.5.86L4.45,6.31,3,7.17,4.45,8l4.31,2.49,1.5.87V8.67a6.15,6.15,0,0,1,6.07,6.07H13.6l.87,1.5L17,20.55l.87,1.5.86-1.5,2.5-4.31.86-1.5H19.33a9.16,9.16,0,0,0-9.07-9.07V3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate2.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate2.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M12.89,18.91l.66-.66a8.14,8.14,0,0,0,0-11.5l-.66-.66L14.3,4.68,9.49,3.39l1.29,4.82L12.19,6.8l.65.65a7.16,7.16,0,0,1,0,10.1l-.65.65-1.41-1.41L9.49,21.61l4.81-1.29Z'/%3E%3Cpath class='cls-1' d='M9.49,3.39,14.3,4.68,12.89,6.09l.66.66a8.14,8.14,0,0,1,0,11.5l-.66.66,1.41,1.41L9.49,21.61l1.29-4.82,1.41,1.41.65-.65a7.16,7.16,0,0,0,0-10.1l-.65-.65L10.78,8.21,9.49,3.39M8.07,2l.45,1.67L9.81,8.47l.45,1.67,1.22-1.23.71-.7a6.16,6.16,0,0,1,0,8.58l-.71-.7-1.22-1.23-.45,1.67L8.52,21.35,8.07,23l1.68-.45,4.81-1.29,1.67-.44L15,19.61l-.7-.7a9.15,9.15,0,0,0,0-12.82l.7-.7,1.22-1.23-1.67-.44L9.75,2.43,8.07,2Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate3.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate3.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M9.26,18.33h.93a8.15,8.15,0,0,0,8.14-8.14V9.26h2L17.83,5l-2.5,4.31h2v.93a7.14,7.14,0,0,1-7.14,7.14H9.26v-2L5,17.83l4.31,2.49Z'/%3E%3Cpath class='cls-1' d='M17.83,5l2.49,4.31h-2v.93a8.15,8.15,0,0,1-8.14,8.14H9.26v2L5,17.83l4.31-2.5v2h.93a7.14,7.14,0,0,0,7.14-7.14V9.26h-2L17.83,5m0-2L17,4.45,14.47,8.76l-.87,1.5h2.73a6.15,6.15,0,0,1-6.07,6.07V13.6l-1.5.87L4.45,17,3,17.83l1.5.86,4.31,2.5,1.5.86V19.33a9.16,9.16,0,0,0,9.07-9.07h2.72l-.86-1.5-2.5-4.31L17.83,3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate4.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate4.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M6.09,12.89l.66.66a8.14,8.14,0,0,0,11.5,0l.66-.66,1.41,1.41,1.29-4.81-4.82,1.29,1.41,1.41-.65.65a7.16,7.16,0,0,1-10.1,0l-.65-.65,1.41-1.41L3.39,9.49,4.68,14.3Z'/%3E%3Cpath class='cls-1' d='M21.61,9.49,20.32,14.3l-1.41-1.41-.66.66a8.14,8.14,0,0,1-11.5,0l-.66-.66L4.68,14.3,3.39,9.49l4.82,1.29L6.8,12.19l.65.65a7.15,7.15,0,0,0,10.1,0l.65-.65-1.41-1.41,4.82-1.29M23,8.07l-1.67.45L16.53,9.81l-1.67.45,1.23,1.22.7.71a6.16,6.16,0,0,1-8.58,0l.7-.71,1.23-1.22L8.47,9.81,3.65,8.52,2,8.07l.45,1.68,1.29,4.81.44,1.67L5.39,15l.7-.7a9.15,9.15,0,0,0,12.82,0l.7.7,1.23,1.22.44-1.67,1.29-4.81L23,8.07Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate5.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate5.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M6.67,9.26v.93a8.15,8.15,0,0,0,8.14,8.14h.93v2l4.31-2.49-4.31-2.5v2h-.93a7.14,7.14,0,0,1-7.14-7.14V9.26h2L7.17,5,4.68,9.26Z'/%3E%3Cpath class='cls-1' d='M7.17,5l2.5,4.31h-2v.93a7.14,7.14,0,0,0,7.14,7.14h.93v-2l4.31,2.5-4.31,2.49v-2h-.93a8.15,8.15,0,0,1-8.14-8.14V9.26h-2L7.17,5m0-2-.86,1.5L3.81,8.76,3,10.26H5.67a9.16,9.16,0,0,0,9.07,9.07v2.72l1.5-.86,4.31-2.5,1.5-.86L20.55,17l-4.31-2.49-1.5-.87v2.73a6.15,6.15,0,0,1-6.07-6.07H11.4l-.87-1.5L8,4.45,7.17,3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate6.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate6.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M12.11,6.09l-.66.66a8.14,8.14,0,0,0,0,11.5l.66.66L10.7,20.32l4.81,1.29-1.29-4.82L12.81,18.2l-.65-.65a7.16,7.16,0,0,1,0-10.1l.65-.65,1.41,1.41,1.29-4.82L10.7,4.68Z'/%3E%3Cpath class='cls-1' d='M15.51,3.39,14.22,8.21,12.81,6.8l-.65.65a7.16,7.16,0,0,0,0,10.1l.65.65,1.41-1.41,1.29,4.82L10.7,20.32l1.41-1.41-.66-.66a8.14,8.14,0,0,1,0-11.5l.66-.66L10.7,4.68l4.81-1.29M16.93,2l-1.68.45L10.44,3.72l-1.67.44L10,5.39l.7.7a9.15,9.15,0,0,0,0,12.82l-.7.7L8.77,20.84l1.67.44,4.81,1.29,1.68.45-.45-1.67-1.29-4.82-.45-1.67-1.22,1.23-.71.7a6.16,6.16,0,0,1,0-8.58l.71.7,1.22,1.23.45-1.67,1.29-4.82L16.93,2Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_rotate7.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/cursor_rotate7.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath d='M15.74,6.67h-.93a8.15,8.15,0,0,0-8.14,8.14v.93h-2l2.49,4.31,2.5-4.31h-2v-.93a7.14,7.14,0,0,1,7.14-7.14h.93v2l4.31-2.5L15.74,4.68Z'/%3E%3Cpath class='cls-1' d='M15.74,4.68l4.31,2.49-4.31,2.5v-2h-.93a7.14,7.14,0,0,0-7.14,7.14v.93h2l-2.5,4.31L4.68,15.74h2v-.93a8.15,8.15,0,0,1,8.14-8.14h.93v-2M14.74,3V5.67a9.16,9.16,0,0,0-9.07,9.07H3l.86,1.5,2.5,4.31.86,1.5L8,20.55l2.49-4.31.87-1.5H8.67a6.15,6.15,0,0,1,6.07-6.07V11.4l1.5-.87L20.55,8l1.5-.87-1.5-.86-4.31-2.5L14.74,3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleDiagonalLeft.svg":
+/*!***************************************************!*\
+  !*** ../public/imgs/cursor_scaleDiagonalLeft.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='7.51 11.04 6.22 6.22 11.04 7.51 9.63 8.92 16.08 15.37 17.48 13.96 18.77 18.77 13.96 17.48 15.37 16.08 8.92 9.63 7.51 11.04'/%3E%3Cpath class='cls-1' d='M6.22,6.22,11,7.51,9.63,8.92l6.45,6.45L17.49,14l1.29,4.82L14,17.49l1.41-1.41L8.92,9.63,7.51,11,6.22,6.22M4.81,4.81l.45,1.67L6.55,11.3,7,13l1.22-1.22.7-.7,5,5-.7.7L12,18l1.67.45,4.82,1.29,1.67.45-.45-1.67L18.45,13.7,18,12l-1.22,1.22-.7.7-5-5,.7-.7L13,7,11.3,6.55,6.48,5.26,4.81,4.81Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleDiagonalRight.svg":
+/*!****************************************************!*\
+  !*** ../public/imgs/cursor_scaleDiagonalRight.svg ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='17.48 11.04 18.77 6.22 13.96 7.51 15.37 8.92 8.92 15.37 7.51 13.96 6.22 18.77 11.04 17.48 9.63 16.08 16.08 9.63 17.48 11.04'/%3E%3Cpath class='cls-1' d='M18.78,6.22,17.49,11,16.08,9.63,9.63,16.08,11,17.49,6.22,18.78,7.51,14l1.41,1.41,6.45-6.45L14,7.51l4.82-1.29m1.41-1.41-1.67.45L13.7,6.55,12,7l1.22,1.22.7.7-5,5-.7-.7L7,12,6.55,13.7,5.26,18.52l-.45,1.67,1.67-.45,4.82-1.29L13,18l-1.22-1.22-.7-.7,5-5,.7.7L18,13l.45-1.67,1.29-4.82.45-1.67Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleHorizontal.svg":
+/*!*************************************************!*\
+  !*** ../public/imgs/cursor_scaleHorizontal.svg ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='7.94 10.01 3.63 12.5 7.94 14.99 7.94 13 17.06 13 17.06 14.99 21.38 12.5 17.06 10.01 17.06 12 7.94 12 7.94 10.01'/%3E%3Cpath class='cls-1' d='M7.94,10v2h9.12V10l4.31,2.49L17.06,15V13H7.94v2L3.63,12.5,7.94,10m1-1.74-1.5.87L3.13,11.63l-1.5.87,1.5.87,4.31,2.49,1.5.87V14h7.12v2.73l1.5-.87,4.31-2.49,1.5-.87-1.5-.87L17.56,9.14l-1.5-.87V11H8.94V8.27Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/cursor_scaleVertical.svg":
+/*!***********************************************!*\
+  !*** ../public/imgs/cursor_scaleVertical.svg ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 25 25' width='25' height='25'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpolygon points='14.99 7.94 12.5 3.63 10.01 7.94 12 7.94 12 17.06 10.01 17.06 12.5 21.38 14.99 17.06 13 17.06 13 7.94 14.99 7.94'/%3E%3Cpath class='cls-1' d='M12.5,3.63,15,7.94H13v9.12h2L12.5,21.37,10,17.06h2V7.94H10L12.5,3.63m0-2-.87,1.5L9.14,7.44l-.87,1.5H11v7.12H8.27l.87,1.5,2.49,4.31.87,1.5.87-1.5,2.49-4.31.87-1.5H14V8.94h2.73l-.87-1.5L13.37,3.13l-.87-1.5Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "../public/imgs/displaygridIcon.svg":
 /*!******************************************!*\
   !*** ../public/imgs/displaygridIcon.svg ***!
@@ -42419,6 +42690,17 @@ module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='30' viewBox='0 0 15 30'%3E%3Cpath d='M7.1,16.63,5.1,14a.5.5,0,0,1,.4-.8h4a.5.5,0,0,1,.4.8l-2,2.66A.5.5,0,0,1,7.1,16.63Z' style='fill:%238e8e8e'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/gizmoPivotIcon.svg":
+/*!*****************************************!*\
+  !*** ../public/imgs/gizmoPivotIcon.svg ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ccircle class='cls-1' cx='15' cy='15' r='8.98'/%3E%3Cpath d='M15,6.9A8.1,8.1,0,1,0,23.1,15,8.1,8.1,0,0,0,15,6.9Zm6.86,7.49H15.63V8.14A6.89,6.89,0,0,1,21.86,14.39ZM14.41,8.14v6.25H8.14A6.89,6.89,0,0,1,14.41,8.14ZM8.14,15.61h6.27v6.25A6.89,6.89,0,0,1,8.14,15.61Zm7.49,6.25V15.61h6.23A6.89,6.89,0,0,1,15.63,21.86Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42484,7 +42766,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M27.6,19.73a1.85,1.85,0,0,0-2.63,0l-4.81,4.81a2.22,2.22,0,0,0-.58,1l-.37,1.49a.89.89,0,0,0,1.08,1.07l1.49-.37a2.23,2.23,0,0,0,1-.58l4.81-4.81A1.85,1.85,0,0,0,27.6,19.73Z' style='fill:%23fff'/%3E%3Cpath d='M18.82,20.52a.62.62,0,0,1,.79.06l1.7,1.66.86-.86-1.7-1.67-.11-.1a1.83,1.83,0,0,0-2.46.1l-4.74,4.64a1.28,1.28,0,0,1-.09-.48V14.5a1.43,1.43,0,0,1,1.43-1.43h9.37A1.43,1.43,0,0,1,25.3,14.5v4.06a2.56,2.56,0,0,1,1.22-.18V14.5a2.65,2.65,0,0,0-2.65-2.65H14.5a2.65,2.65,0,0,0-2.65,2.65v9.37a2.65,2.65,0,0,0,2.65,2.65h4l.29-1.16,0-.06H14.5a1.51,1.51,0,0,1-.48-.08l4.74-4.64Z' style='fill:%23fff'/%3E%3Cpath d='M20,16.54a1.84,1.84,0,1,0,1.83-1.84A1.83,1.83,0,0,0,20,16.54Zm2.45,0a.62.62,0,0,1-1.23,0,.62.62,0,1,1,1.23,0Z' style='fill:%23fff'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M23.86,11.86a2.65,2.65,0,0,1,2.65,2.65v9.36a2.65,2.65,0,0,1-2.65,2.65H14.5a2.65,2.65,0,0,1-2.65-2.65V14.51a2.65,2.65,0,0,1,2.65-2.65Zm.47,13.36-4.72-4.63a.62.62,0,0,0-.79-.06l-.07.06L14,25.22a1.4,1.4,0,0,0,.47.08h9.36a1.4,1.4,0,0,0,.47-.08l-4.72-4.63Zm-.47-12.13H14.5a1.42,1.42,0,0,0-1.43,1.42v9.36a1.33,1.33,0,0,0,.09.49l4.74-4.65a1.84,1.84,0,0,1,2.46-.09l.1.09,4.74,4.65a1.33,1.33,0,0,0,.09-.49V14.51A1.42,1.42,0,0,0,23.86,13.09Zm-2,1.62A1.84,1.84,0,1,1,20,16.55,1.83,1.83,0,0,1,21.83,14.71Zm0,1.22a.61.61,0,0,0-.61.62.61.61,0,0,0,1.22,0A.61.61,0,0,0,21.83,15.93Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42495,7 +42777,18 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M27.6,19.73a1.85,1.85,0,0,0-2.63,0l-4.81,4.81a2.22,2.22,0,0,0-.58,1l-.37,1.49a.89.89,0,0,0,1.08,1.07l1.49-.37a2.23,2.23,0,0,0,1-.58l4.81-4.81A1.85,1.85,0,0,0,27.6,19.73Z'/%3E%3Cpath class='cls-1' d='M18.82,20.52a.62.62,0,0,1,.79.06l1.7,1.66.86-.86-1.7-1.67-.11-.1a1.83,1.83,0,0,0-2.46.1l-4.74,4.64a1.28,1.28,0,0,1-.09-.48V14.5a1.43,1.43,0,0,1,1.43-1.43h9.37A1.43,1.43,0,0,1,25.3,14.5v4.06a2.56,2.56,0,0,1,1.22-.18V14.5a2.65,2.65,0,0,0-2.65-2.65H14.5a2.65,2.65,0,0,0-2.65,2.65v9.37a2.65,2.65,0,0,0,2.65,2.65h4l.29-1.16,0-.06H14.5a1.51,1.51,0,0,1-.48-.08l4.74-4.64Z'/%3E%3Cpath class='cls-1' d='M20,16.54a1.84,1.84,0,1,0,1.83-1.84A1.83,1.83,0,0,0,20,16.54Zm2.45,0a.62.62,0,0,1-1.23,0,.62.62,0,1,1,1.23,0Z'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M23.86,11.86a2.65,2.65,0,0,1,2.65,2.65v9.36a2.65,2.65,0,0,1-2.65,2.65H14.5a2.65,2.65,0,0,1-2.65-2.65V14.51a2.65,2.65,0,0,1,2.65-2.65Zm.47,13.36-4.72-4.63a.62.62,0,0,0-.79-.06l-.07.06L14,25.22a1.4,1.4,0,0,0,.47.08h9.36a1.4,1.4,0,0,0,.47-.08l-4.72-4.63Zm-.47-12.13H14.5a1.42,1.42,0,0,0-1.43,1.42v9.36a1.33,1.33,0,0,0,.09.49l4.74-4.65a1.84,1.84,0,0,1,2.46-.09l.1.09,4.74,4.65a1.33,1.33,0,0,0,.09-.49V14.51A1.42,1.42,0,0,0,23.86,13.09Zm-2,1.62A1.84,1.84,0,1,1,20,16.55,1.83,1.83,0,0,1,21.83,14.71Zm0,1.22a.61.61,0,0,0-.61.62.61.61,0,0,0,1.22,0A.61.61,0,0,0,21.83,15.93Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "../public/imgs/imageSliderIcon.svg":
+/*!******************************************!*\
+  !*** ../public/imgs/imageSliderIcon.svg ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M26.06,14.34H13.94A3.64,3.64,0,0,0,10.3,18V22a3.64,3.64,0,0,0,3.64,3.63H26.06A3.64,3.64,0,0,0,29.7,22V18A3.64,3.64,0,0,0,26.06,14.34Zm0,10.11H13.94a2.42,2.42,0,0,1-.81-.15l1.41-1.39a3.24,3.24,0,0,0,1.45.36A3.28,3.28,0,0,0,19.26,20a3.18,3.18,0,0,0-.35-1.43l.64-.63a.54.54,0,0,1,.74,0L27,24.26A2.43,2.43,0,0,1,26.06,24.45ZM14,20a2,2,0,1,1,2,2A2,2,0,0,1,14,20Zm14.52,2a2.41,2.41,0,0,1-.41,1.34l-6.84-6.44a1.91,1.91,0,0,0-2.67,0l-.53.52a3.22,3.22,0,0,0-2-.75A3.28,3.28,0,0,0,12.72,20a3.23,3.23,0,0,0,.73,2L12,23.47A2.4,2.4,0,0,1,11.51,22V18a2.43,2.43,0,0,1,2.43-2.42H26.06A2.43,2.43,0,0,1,28.49,18Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42595,17 +42888,6 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,11a.61.61,0,0,1,.61.61v2.83h2.83a.61.61,0,0,1,0,1.22H15.61v2.83a.61.61,0,0,1-1.22,0V15.61H11.56a.61.61,0,1,1,0-1.22h2.83V11.56A.61.61,0,0,1,15,11Z' style='fill:%23333'/%3E%3Cpath d='M7.71,10.34a2.63,2.63,0,0,1,2.63-2.63h9.32a2.63,2.63,0,0,1,2.63,2.63v9.32a2.63,2.63,0,0,1-2.63,2.63H10.34a2.63,2.63,0,0,1-2.63-2.63Zm2.63-1.41a1.41,1.41,0,0,0-1.41,1.41v9.32a1.41,1.41,0,0,0,1.41,1.41h9.32a1.41,1.41,0,0,0,1.41-1.41V10.34a1.41,1.41,0,0,0-1.41-1.41Z' style='fill:%23333'/%3E%3C/svg%3E"
-
-/***/ }),
-
-/***/ "../public/imgs/moveIcon.svg":
-/*!***********************************!*\
-  !*** ../public/imgs/moveIcon.svg ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M22.64,15.2a.61.61,0,0,1-.85,0L20.6,14v3a.6.6,0,1,1-1.2,0V14L18.21,15.2a.61.61,0,0,1-.85,0,.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0l2.21,2.21A.6.6,0,0,1,22.64,15.2Z' style='fill:%23fff'/%3E%3Cpath d='M15.2,21.79a.61.61,0,0,1,0,.85.6.6,0,0,1-.86,0l-2.21-2.21a.6.6,0,0,1,0-.86l2.21-2.21a.6.6,0,0,1,.86,0,.61.61,0,0,1,0,.85L14,19.4h3a.6.6,0,1,1,0,1.2H14Z' style='fill:%23fff'/%3E%3Cpath d='M24.8,22.64a.61.61,0,0,1,0-.85L26,20.6H23a.6.6,0,1,1,0-1.2h3L24.8,18.21a.61.61,0,0,1,0-.85.6.6,0,0,1,.86,0l2.21,2.21a.6.6,0,0,1,0,.86l-2.21,2.21A.6.6,0,0,1,24.8,22.64Z' style='fill:%23fff'/%3E%3Cpath d='M22.64,24.8a.61.61,0,0,0-.85,0L20.6,26V23a.6.6,0,1,0-1.2,0v3L18.21,24.8a.61.61,0,0,0-.85,0,.6.6,0,0,0,0,.86l2.21,2.21a.6.6,0,0,0,.86,0l2.21-2.21A.6.6,0,0,0,22.64,24.8Z' style='fill:%23fff'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -42836,7 +43118,6 @@ var zoomIcon = __webpack_require__(/*! ../../public/imgs/zoomIcon.svg */ "../pub
 var guidesIcon = __webpack_require__(/*! ../../public/imgs/guidesIcon.svg */ "../public/imgs/guidesIcon.svg");
 var logoIcon = __webpack_require__(/*! ../../public/imgs/babylonLogo.svg */ "../public/imgs/babylonLogo.svg");
 var canvasFitIcon = __webpack_require__(/*! ../../public/imgs/canvasFitIcon.svg */ "../public/imgs/canvasFitIcon.svg");
-var moveIcon = __webpack_require__(/*! ../../public/imgs/moveIcon.svg */ "../public/imgs/moveIcon.svg");
 __webpack_require__(/*! ../scss/commandBar.scss */ "./scss/commandBar.scss");
 var CommandBarComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommandBarComponent, _super);
@@ -42845,33 +43126,22 @@ var CommandBarComponent = /** @class */ (function (_super) {
         _this._panning = false;
         _this._zooming = false;
         _this._selecting = true;
-        _this._moving = false;
         props.globalState.onPanObservable.add(function () {
             _this._panning = !_this._panning;
             _this._zooming = false;
             _this._selecting = false;
-            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onSelectionButtonObservable.add(function () {
             _this._selecting = !_this._selecting;
             _this._panning = false;
             _this._zooming = false;
-            _this._moving = false;
             _this.forceUpdate();
         });
         props.globalState.onZoomObservable.add(function () {
             _this._zooming = !_this._zooming;
             _this._panning = false;
             _this._selecting = false;
-            _this._moving = false;
-            _this.forceUpdate();
-        });
-        props.globalState.onMoveObservable.add(function () {
-            _this._zooming = false;
-            _this._panning = false;
-            _this._selecting = false;
-            _this._moving = !_this._moving;
             _this.forceUpdate();
         });
         props.globalState.onOutlinesObservable.add(function () {
@@ -42923,6 +43193,32 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             },
                         },
                         {
+                            label: "Copy Selected",
+                            onClick: function () {
+                                _this.props.globalState.workbench.copyToClipboard();
+                            },
+                        },
+                        {
+                            label: "Paste",
+                            onClick: function () {
+                                _this.props.globalState.workbench.pasteFromClipboard();
+                            }
+                        },
+                        {
+                            label: "Delete Selected",
+                            onClick: function () {
+                                _this.props.globalState.workbench.selectedGuiNodes.forEach(function (guiNode) {
+                                    var _a;
+                                    if (guiNode !== _this.props.globalState.guiTexture.getChildren()[0]) {
+                                        _this.props.globalState.guiTexture.removeControl(guiNode);
+                                        (_a = _this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(guiNode);
+                                        guiNode.dispose();
+                                    }
+                                });
+                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                            },
+                        },
+                        {
                             label: "Help",
                             onClick: function () {
                                 window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
@@ -42938,10 +43234,6 @@ var CommandBarComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () {
                         if (!_this._selecting)
                             _this.props.globalState.onSelectionButtonObservable.notifyObservers();
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Move", icon: moveIcon, shortcut: "M", isActive: this._moving, onClick: function () {
-                        if (!_this._moving)
-                            _this.props.globalState.onMoveObservable.notifyObservers();
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () {
                         if (!_this._panning)
@@ -42988,14 +43280,14 @@ var CommandButtonComponent = /** @class */ (function (_super) {
     }
     CommandButtonComponent.prototype.render = function () {
         var divClassName = this.props.altStyle ?
-            "command-button-alt" + (this.props.disabled ? "-disabled" : "") + (this.props.isActive ? "-" : "") :
+            "command-button-alt".concat(this.props.disabled ? "-disabled" : "").concat(this.props.isActive ? "-" : "") :
             "command-button ";
         var iconClassName = "command-button-icon ";
         if (this.props.isActive) {
             divClassName += "active";
             iconClassName += "active";
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: divClassName, onClick: this.props.onClick, title: this.props.tooltip + " " + (this.props.shortcut ? " (" + this.props.shortcut + ")" : "") },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: divClassName, onClick: this.props.onClick, title: "".concat(this.props.tooltip, " ").concat(this.props.shortcut ? " (" + this.props.shortcut + ")" : "") },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: iconClassName },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: this.props.isActive ? "active" : "" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "command-label" }, this.props.tooltip),
@@ -43294,7 +43586,7 @@ var ButtonPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "CLIP CONTENT", iconLabel: "Clip Content", icon: clipContentsIcon, target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -43352,7 +43644,7 @@ var CheckboxPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "CHECKBOX", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check size ratio", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: checkbox, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Checked", icon: fillColorIcon, label: "", target: checkbox, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Checked", icon: fillColorIcon, label: "CHECKED", target: checkbox, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return CheckboxPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43422,9 +43714,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
-/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 
 
 
@@ -43458,14 +43749,13 @@ var hAlignRightIcon = __webpack_require__(/*! ../../../../sharedUiComponents/img
 var vAlignCenterIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg */ "./sharedUiComponents/imgs/vAlignCenterIcon.svg");
 var vAlignTopIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignTopIcon.svg */ "./sharedUiComponents/imgs/vAlignTopIcon.svg");
 var vAlignBottomIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignBottomIcon.svg */ "./sharedUiComponents/imgs/vAlignBottomIcon.svg");
+var descendantsOnlyPaddingIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg */ "./sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg");
 var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonControlPropertyGridComponent, _super);
     function CommonControlPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._width = _this.props.control.width;
         _this._height = _this.props.control.height;
-        _this._responsive = false;
-        _this._responsive = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_8__["DataStorage"].ReadBoolean("Responsive", true);
         return _this;
     }
     CommonControlPropertyGridComponent.prototype._updateAlignment = function (alignment, value) {
@@ -43480,8 +43770,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     };
     CommonControlPropertyGridComponent.prototype._checkAndUpdateValues = function (propertyName, value) {
         var _a, _b;
-        //check if it contains either a px or a % sign
-        var percentage = this._responsive;
+        // checking the previous value unit to see what it was.
+        var vau = this.props.control["_" + propertyName];
+        var percentage = vau.isPercentage;
+        // now checking if the new string contains either a px or a % sign in case we need to change the unit.
         var negative = value.charAt(0) === "-";
         if (value.charAt(value.length - 1) === "%") {
             percentage = true;
@@ -43500,6 +43792,12 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
         newValue += percentage ? "%" : "px";
         this.props.control[propertyName] = newValue;
         this.forceUpdate();
+    };
+    CommonControlPropertyGridComponent.prototype._markChildrenAsDirty = function () {
+        if (this.props.control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"])
+            this.props.control._children.forEach(function (child) {
+                child._markAsDirty();
+            });
     };
     CommonControlPropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -43533,12 +43831,15 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM);
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, delayInput: true, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, delayInput: true, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: this, propertyName: "_width", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: this, delayInput: true, propertyName: "_width", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         if (control.typeName === "Image") {
                             control.autoScale = false;
+                        }
+                        else if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
+                            control.adaptWidthToChildren = false;
                         }
                         else if (_this.props.control.typeName === "ColorPicker") {
                             if (newValue === "0" || newValue === "-") {
@@ -43548,9 +43849,12 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._width = newValue;
                         _this._checkAndUpdateValues("width", _this._width.toString());
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", target: this, propertyName: "_height", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", target: this, delayInput: true, propertyName: "_height", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
                         if (control.typeName === "Image") {
                             control.autoScale = false;
+                        }
+                        else if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
+                            control.adaptHeightToChildren = false;
                         }
                         else if (_this.props.control.typeName === "ColorPicker") {
                             if (newValue === "0" || newValue === "-") {
@@ -43561,15 +43865,17 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._checkAndUpdateValues("height", _this._height.toString());
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Vertical Margins", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: control, propertyName: "paddingBottom", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingBottom", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: control, propertyName: "paddingTop", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingTop", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Padding", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: control, propertyName: "paddingBottom", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingBottom", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: control, propertyName: "paddingTop", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingTop", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: control, propertyName: "paddingLeft", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingLeft", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: control, propertyName: "paddingRight", onChange: function (newValue) { return _this._checkAndUpdateValues("paddingRight", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: control, propertyName: "paddingLeft", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingLeft", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: control, delayInput: true, propertyName: "paddingRight", onChange: function (newValue) { _this._checkAndUpdateValues("paddingRight", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-shot" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_9__["CheckBoxLineComponent"], { iconLabel: "Padding does not affect the parameters of this control, only the descendants of this control.", icon: descendantsOnlyPaddingIcon, label: "", target: control, propertyName: "descendentsOnlyPadding", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "TRANSFORMATION", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Trasnsform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Transform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -43578,14 +43884,15 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "APPEARANCE", value: " ", color: "grey" }),
             (control.color !== undefined && control.typeName !== "Image" &&
-                control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            control.background !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            control.background !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { lockObject: this.props.lockObject, iconLabel: "Alpha", icon: alphaIcon, label: "", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset X", icon: shadowOffsetXIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset Y", icon: shadowOffsetYIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Blur", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-short" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Blur", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"] || control.typeName === "TextBlock") && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "FONT STYLE", value: " ", color: "grey" }),
@@ -43727,7 +44034,7 @@ var EllipsePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: ellipse, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "ELLIPSE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "", target: ellipse, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "CLIP CONTENT", target: ellipse, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: ellipse, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return EllipsePropertyGridComponent;
@@ -43788,9 +44095,9 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     GridPropertyGridComponent.prototype.renderRows = function () {
         var _this = this;
         return (this._rowDefinitions.map(function (rd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "r" + i, className: _this._removingRow && i === _this._rowEditFlags.length - 1 ? "ge-grid-remove" : _this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid" },
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "r".concat(i), className: _this._removingRow && i === _this._rowEditFlags.length - 1 ? "ge-grid-remove" : _this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-grid-divider" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "rText" + i, label: "", icon: gridColumnIconDark, iconLabel: "Row " + i, value: rd, numbersOnly: true, onChange: function (newValue) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "rText".concat(i), label: "", icon: gridColumnIconDark, iconLabel: "Row ".concat(i), value: rd, numbersOnly: true, onChange: function (newValue) {
                             _this._rowDefinitions[i] = newValue;
                             _this._rowEditFlags[i] = true;
                             _this._editedRow = true;
@@ -43798,7 +44105,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                             _this._rowChild = false;
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "[" + i + "]", value: "", color: "grey" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "[".concat(i, "]"), value: "", color: "grey" }),
                     _this._removingRow && i === _this._rowEditFlags.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { icon: deleteGridElementDark, label: " ", value: " ", color: "grey" }),
                     _this._rowEditFlags[i] &&
@@ -43834,9 +44141,9 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     GridPropertyGridComponent.prototype.renderColumns = function () {
         var _this = this;
         return (this._columnDefinitions.map(function (cd, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "c" + i, className: _this._removingColumn && i === _this._columnEditFlags.length - 1 ? "ge-grid-remove" : _this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid" },
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: "c".concat(i), className: _this._removingColumn && i === _this._columnEditFlags.length - 1 ? "ge-grid-remove" : _this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-grid-divider" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "ctext" + i, label: "", icon: gridRowIconDark, iconLabel: "Column " + i, value: cd, numbersOnly: true, onChange: function (newValue) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: _this.props.lockObject, key: "ctext".concat(i), label: "", icon: gridRowIconDark, iconLabel: "Column ".concat(i), value: cd, numbersOnly: true, onChange: function (newValue) {
                             _this._columnDefinitions[i] = newValue;
                             _this._columnEditFlags[i] = true;
                             _this._editedColumn = true;
@@ -43844,7 +44151,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
                             _this._columnChild = false;
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "[" + i + "]", value: "", color: "grey" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "[".concat(i, "]"), value: "", color: "grey" }),
                     _this._removingColumn && i === _this._columnEditFlags.length - 1 &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { icon: deleteGridElementDark, label: " ", value: " ", color: "grey" }),
                     _this._columnEditFlags[i] &&
@@ -44149,17 +44456,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sliderPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx");
 
 
 
 
 
 
-
+var thumbImageLinkIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/thumbImageLinkIcon.svg */ "./sharedUiComponents/imgs/thumbImageLinkIcon.svg");
+var valueBarImageLinkIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/valueBarImageLinkIcon.svg */ "./sharedUiComponents/imgs/valueBarImageLinkIcon.svg");
+var sliderBackgroundImageIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sliderBackgroundImageIcon.svg */ "./sharedUiComponents/imgs/sliderBackgroundImageIcon.svg");
 var ImageBasedSliderPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImageBasedSliderPropertyGridComponent, _super);
     function ImageBasedSliderPropertyGridComponent(props) {
@@ -44170,15 +44478,11 @@ var ImageBasedSliderPropertyGridComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: imageBasedSlider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "IMAGE BASE SLIDER", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Display thumb", target: imageBasedSlider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Vertical", target: imageBasedSlider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Thumb clamped", target: imageBasedSlider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Bar offset", target: imageBasedSlider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Thumb width", target: imageBasedSlider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Minimum", target: imageBasedSlider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Maximum", target: imageBasedSlider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Value", target: imageBasedSlider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "IMAGE LINKS", value: " ", color: "grey" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: thumbImageLinkIcon, lockObject: this.props.lockObject, iconLabel: "Thumb Image Link", target: imageBasedSlider.thumbImage, label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: valueBarImageLinkIcon, lockObject: this.props.lockObject, iconLabel: "Value Bar Image Link", target: imageBasedSlider.valueBarImage, label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: sliderBackgroundImageIcon, lockObject: this.props.lockObject, iconLabel: "Background Image Link", target: imageBasedSlider.backgroundImage, label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["SliderPropertyGridComponent"], { slider: imageBasedSlider, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ImageBasedSliderPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44217,8 +44521,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var stretchFillIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/stretchFillIcon.svg */ "./sharedUiComponents/imgs/stretchFillIcon.svg");
+var imageLinkIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/imageLinkIcon.svg */ "./sharedUiComponents/imgs/imageLinkIcon.svg");
+var cropIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/cropIcon.svg */ "./sharedUiComponents/imgs/cropIcon.svg");
+var cellIDIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/cellIDIcon.svg */ "./sharedUiComponents/imgs/cellIDIcon.svg");
+var autoResizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/autoResizeIcon.svg */ "./sharedUiComponents/imgs/autoResizeIcon.svg");
 var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
-var positionIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/verticalMarginIcon.svg */ "./sharedUiComponents/imgs/verticalMarginIcon.svg");
 var ImagePropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImagePropertyGridComponent, _super);
     function ImagePropertyGridComponent(props) {
@@ -44238,18 +44546,27 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: image, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "IMAGE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { iconLabel: "Source", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: image, propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { iconLabel: "Source", icon: imageLinkIcon, lockObject: this.props.lockObject, label: "", target: image, propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Source Position", icon: positionIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Crop", icon: cropIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "T", target: image, propertyName: "sourceTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Source Size", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: image, propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "H", target: image, propertyName: "sourceHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Autoscale", icon: sizeIcon, label: "", target: image, propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { iconLabel: "Stretch", icon: sizeIcon, label: "", options: stretchOptions, target: image, propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "R", target: image, icon: cropIcon, iconLabel: "Crop", propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "B", target: image, propertyName: "sourceHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Autoscale", icon: autoResizeIcon, label: "AUTOSCALE", target: image, propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { iconLabel: "Stretch", icon: stretchFillIcon, label: "", options: stretchOptions, target: image, propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+            image.stretch === babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NINE_PATCH && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Slice", icon: cropIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sliceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { image.populateNinePatchSlicesFromImage = false; _this.forceUpdate(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "R", target: image, propertyName: "sliceRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { image.populateNinePatchSlicesFromImage = false; _this.forceUpdate(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "T", target: image, icon: cropIcon, iconLabel: "Slice", propertyName: "sliceTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { image.populateNinePatchSlicesFromImage = false; _this.forceUpdate(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "B", target: image, propertyName: "sliceBottom", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { image.populateNinePatchSlicesFromImage = false; _this.forceUpdate(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "populateNinePatchSlicesFromImage", icon: autoResizeIcon, label: "SLICE FROM IMAGE", target: image, propertyName: "populateNinePatchSlicesFromImage", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onValueChanged: function () { _this.forceUpdate(); image._markAsDirty(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "ANIMATION SHEET", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Id", icon: sizeIcon, lockObject: this.props.lockObject, label: "", isInteger: true, target: image, propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-short" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Id", icon: cellIDIcon, lockObject: this.props.lockObject, label: "", isInteger: true, target: image, propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: image, propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "H", target: image, propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -44313,10 +44630,10 @@ var InputTextPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Max width", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "maxWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Highlight color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "textHighlightColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Highligher opacity", icon: alphaIcon, label: "", minimum: 0, maximum: 1, step: 0.01, target: inputText, propertyName: "highligherOpacity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "On focus select all", icon: verticalMarginIcon, label: "", target: inputText, propertyName: "onFocusSelectAll", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "On focus select all", icon: verticalMarginIcon, label: "ON FOCUS SELECT ALL", target: inputText, propertyName: "onFocusSelectAll", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Focused background", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "focusedBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Margin", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "margin", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Auto stretch width", icon: sizeIcon, label: "", target: inputText, propertyName: "autoStretchWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Auto stretch width", icon: sizeIcon, label: "AUTO STRETCH", target: inputText, propertyName: "autoStretchWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { iconLabel: "Thickness", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Placeholder text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "placeholderText", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Placeholder color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "placeholderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
@@ -44435,7 +44752,7 @@ var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check Size Ratio", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Group", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "group", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Is Checked", icon: checkboxIcon, label: "", target: radioButton, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Is Checked", icon: checkboxIcon, label: "CHECKED", target: radioButton, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return RadioButtonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44481,7 +44798,7 @@ var RectanglePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "CLIP CONTENT", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -44549,6 +44866,43 @@ var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/propertyTab/propertyGrids/gui/sliderGenericPropertyGridComponent.tsx":
+/*!*****************************************************************************************!*\
+  !*** ./components/propertyTab/propertyGrids/gui/sliderGenericPropertyGridComponent.tsx ***!
+  \*****************************************************************************************/
+/*! exports provided: SliderGenericPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SliderGenericPropertyGridComponent", function() { return SliderGenericPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
+/* harmony import */ var _sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./sliderPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx");
+
+
+
+
+var SliderGenericPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderGenericPropertyGridComponent, _super);
+    function SliderGenericPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SliderGenericPropertyGridComponent.prototype.render = function () {
+        var slider = this.props.slider;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["SliderPropertyGridComponent"], { slider: slider, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return SliderGenericPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx":
 /*!**********************************************************************************!*\
   !*** ./components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx ***!
@@ -44562,12 +44916,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 
 
 
@@ -44575,13 +44928,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-var sizeIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sizeIcon.svg */ "./sharedUiComponents/imgs/sizeIcon.svg");
-var scaleIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/scaleIcon.svg */ "./sharedUiComponents/imgs/scaleIcon.svg");
-var horizontalMarginIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg */ "./sharedUiComponents/imgs/horizontalMarginIcon.svg");
 var colorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/colorIcon.svg */ "./sharedUiComponents/imgs/colorIcon.svg");
-var vAlignCenterIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/vAlignCenterIcon.svg */ "./sharedUiComponents/imgs/vAlignCenterIcon.svg");
-var clipContentsIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/clipContentsIcon.svg */ "./sharedUiComponents/imgs/clipContentsIcon.svg");
+var verticalSliderIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/verticalSliderIcon.svg */ "./sharedUiComponents/imgs/verticalSliderIcon.svg");
+var sliderValueIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sliderValueIcon.svg */ "./sharedUiComponents/imgs/sliderValueIcon.svg");
+var sliderValueMaximumIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sliderValueMaximumIcon.svg */ "./sharedUiComponents/imgs/sliderValueMaximumIcon.svg");
+var sliderValueMinimumIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/sliderValueMinimumIcon.svg */ "./sharedUiComponents/imgs/sliderValueMinimumIcon.svg");
+var thumbWidthIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/thumbWidthIcon.svg */ "./sharedUiComponents/imgs/thumbWidthIcon.svg");
+var clampSliderValueIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/clampSliderValueIcon.svg */ "./sharedUiComponents/imgs/clampSliderValueIcon.svg");
+var showThumbIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/showThumbIcon.svg */ "./sharedUiComponents/imgs/showThumbIcon.svg");
+var barOffsetIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/barOffsetIcon.svg */ "./sharedUiComponents/imgs/barOffsetIcon.svg");
+var thumbCircleIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/thumbCircleIcon.svg */ "./sharedUiComponents/imgs/thumbCircleIcon.svg");
 var SliderPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderPropertyGridComponent, _super);
     function SliderPropertyGridComponent(props) {
@@ -44590,19 +44946,21 @@ var SliderPropertyGridComponent = /** @class */ (function (_super) {
     SliderPropertyGridComponent.prototype.render = function () {
         var slider = this.props.slider;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "SLIDER", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_7__["Color3LineComponent"], { iconLabel: "Border color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Display thumb", icon: clipContentsIcon, label: "", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Thumb circle", icon: clipContentsIcon, label: "", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: vAlignCenterIcon, label: "", target: slider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Thumb clamped", icon: clipContentsIcon, label: "", target: slider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { iconLabel: "Bar offset", icon: clipContentsIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { iconLabel: "Thumb width", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Minimum", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Maximum", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Value", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "SLIDER", value: " ", color: "grey" }),
+            slider.typeName === "Slider" && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Color3LineComponent"], { iconLabel: "Border color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Display thumb", icon: showThumbIcon, label: "DISPLAY THUMB", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Thumb circle", icon: thumbCircleIcon, label: "THUMB CIRCLE", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Thumb clamped", icon: clampSliderValueIcon, label: "THUMB CLAMPED", target: slider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalSliderIcon, label: "VERTICAL", target: slider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Thumb width", icon: thumbWidthIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Bar offset", icon: barOffsetIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Minimum", icon: sliderValueMinimumIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Maximum", icon: sliderValueMaximumIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-short" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Value", icon: sliderValueIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return SliderPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44627,6 +44985,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+
 
 
 
@@ -44645,8 +45005,9 @@ var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: stackPanel, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "STACKPANEL", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Clip children", icon: clipContentsIcon, label: "", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalMarginIcon, label: "", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Clip children", icon: clipContentsIcon, label: "CLIP CHILDREN", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalMarginIcon, label: "VERTICAL", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "", icon: verticalMarginIcon, iconLabel: "spacing", target: stackPanel, propertyName: "spacing", defaultValue: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return stackPanel._markAsDirty(); } })));
     };
     return StackPanelPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44707,7 +45068,7 @@ var TextBlockPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "TEXTBLOCK", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { iconLabel: "Resize to fit", icon: fontFamilyIcon, label: "", target: textBlock, propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { iconLabel: "Resize to fit", icon: fontFamilyIcon, label: "RESIZE TO FIT", target: textBlock, propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { iconLabel: "Wrapping", icon: fontFamilyIcon, label: "", options: wrappingOptions, target: textBlock, propertyName: "textWrapping", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Line spacing", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "lineSpacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
@@ -44772,7 +45133,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedUiComponents/stringTools */ "./sharedUiComponents/stringTools.ts");
 /* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
-/* harmony import */ var _propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./propertyGrids/gui/sliderPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_gui_sliderGenericPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./propertyGrids/gui/sliderGenericPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/sliderGenericPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./propertyGrids/gui/linePropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/linePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./propertyGrids/gui/radioButtonPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/radioButtonPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./propertyGrids/gui/textBlockPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/textBlockPropertyGridComponent.tsx");
@@ -44837,7 +45198,7 @@ __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/property
 var adtIcon = __webpack_require__(/*! ../../../public/imgs/adtIcon.svg */ "../public/imgs/adtIcon.svg");
 var responsiveIcon = __webpack_require__(/*! ../../../public/imgs/responsiveIcon.svg */ "../public/imgs/responsiveIcon.svg");
 var canvasSizeIcon = __webpack_require__(/*! ../../../public/imgs/canvasSizeIcon.svg */ "../public/imgs/canvasSizeIcon.svg");
-var artboardColorIcon = __webpack_require__(/*! ../../../public/imgs/artboardColorIcon.svg */ "../public/imgs/artboardColorIcon.svg");
+var artboardColorIcon = __webpack_require__(/*! ../../../../sharedUiComponents/imgs/fillColorIcon.svg */ "../../sharedUiComponents/imgs/fillColorIcon.svg");
 var rectangleIcon = __webpack_require__(/*! ../../../public/imgs/rectangleIconDark.svg */ "../public/imgs/rectangleIconDark.svg");
 var ellipseIcon = __webpack_require__(/*! ../../../public/imgs/ellipseIconDark.svg */ "../public/imgs/ellipseIconDark.svg");
 var gridIcon = __webpack_require__(/*! ../../../public/imgs/gridIconDark.svg */ "../public/imgs/gridIconDark.svg");
@@ -44866,7 +45227,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 _sharedUiComponents_stringTools__WEBPACK_IMPORTED_MODULE_7__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, json, "guiTexture.json");
             }
             catch (error) {
-                alert("Unable to save your GUI");
+                _this.props.globalState.hostWindow.alert("Unable to save your GUI");
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].Error("Unable to save your GUI");
             }
         };
         _this.saveToSnippetServerHelper = function (content, adt) {
@@ -44885,7 +45247,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             if (windowAsAny.Playground && oldId) {
                                 windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                     regex: new RegExp(oldId, "g"),
-                                    replace: "parseFromSnippetAsync(\"" + adt.snippetId,
+                                    replace: "parseFromSnippetAsync(\"".concat(adt.snippetId, ")"),
                                 });
                             }
                             resolve(adt.snippetId);
@@ -44919,24 +45281,24 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 savePromise(content, adt)
                     .then(function (snippetId) {
                     adt.snippetId = snippetId;
-                    var alertMessage = "GUI saved with ID:  " + adt.snippetId;
-                    if (navigator.clipboard) {
-                        navigator.clipboard
+                    var alertMessage = "GUI saved with ID:  ".concat(adt.snippetId);
+                    if (_this.props.globalState.hostWindow.navigator.clipboard) {
+                        _this.props.globalState.hostWindow.navigator.clipboard
                             .writeText(adt.snippetId)
                             .then(function () {
-                            alert(alertMessage + ". The ID was copied to your clipboard.");
+                            _this.props.globalState.hostWindow.alert("".concat(alertMessage, ". The ID was copied to your clipboard."));
                         })
                             .catch(function (err) {
-                            alert(alertMessage);
+                            _this.props.globalState.hostWindow.alert(alertMessage);
                         });
                     }
                     else {
-                        alert(alertMessage);
+                        _this.props.globalState.hostWindow.alert(alertMessage);
                     }
                     _this.props.globalState.onBuiltObservable.notifyObservers();
                 })
                     .catch(function (err) {
-                    alert(err);
+                    _this.props.globalState.hostWindow.alert(err);
                 });
                 this.forceUpdate();
                 return [2 /*return*/];
@@ -45003,7 +45365,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         }
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
-        var snippedId = window.prompt("Please enter the snippet ID to use");
+        var snippedId = this.props.globalState.hostWindow.prompt("Please enter the snippet ID to use");
         if (!snippedId) {
             return;
         }
@@ -45032,7 +45394,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
             case "Slider": {
                 var slider = this.state.currentNode;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderGenericPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderGenericPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ImageBasedSlider": {
                 var imageBasedSlider = this.state.currentNode;
@@ -45195,19 +45557,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: this.state.currentNode, propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
                 this.renderProperties(),
-                ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject })),
-                this.state.currentNode !== this.props.globalState.guiTexture.getChildren()[0] && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "DELETE ELEMENT", onClick: function () {
-                            var _a;
-                            (_a = _this.state.currentNode) === null || _a === void 0 ? void 0 : _a.dispose();
-                            _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "COPY ELEMENT", onClick: function () {
-                            if (_this.state.currentNode) {
-                                _this.props.globalState.workbench.CopyGUIControl(_this.state.currentNode);
-                            }
-                        } })))));
+                ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject }))));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -45317,9 +45667,9 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         var control = this.props.control;
-        var name = (control.name || "No name") + " [" + control.getClassName() + "]";
+        var name = "".concat(control.name || "No name", " [").concat(control.getClassName(), "]");
         if (((_a = control.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "Grid") {
-            name += " [" + control.parent.getChildCellInfo(this.props.control) + "]";
+            name += " [".concat(control.parent.getChildCellInfo(this.props.control), "]");
         }
         var draggingSelf = this.props.globalState.draggedControl === control;
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "controlTools" },
@@ -46041,16 +46391,2291 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./diagram/workbench.tsx":
-/*!*******************************!*\
-  !*** ./diagram/workbench.tsx ***!
-  \*******************************/
-/*! exports provided: isFramePortData, ConstraintDirection, WorkbenchComponent */
+/***/ "./diagram/GUIEditorNodeMaterial.ts":
+/*!******************************************!*\
+  !*** ./diagram/GUIEditorNodeMaterial.ts ***!
+  \******************************************/
+/*! exports provided: GUIEditorNodeMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFramePortData", function() { return isFramePortData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUIEditorNodeMaterial", function() { return GUIEditorNodeMaterial; });
+var GUIEditorNodeMaterial = {
+    "tags": null,
+    "ignoreAlpha": false,
+    "maxSimultaneousLights": 4,
+    "mode": 0,
+    "id": "node",
+    "name": "node",
+    "checkReadyOnEveryCall": false,
+    "checkReadyOnlyOnce": false,
+    "state": "",
+    "alpha": 1,
+    "backFaceCulling": true,
+    "cullBackFaces": true,
+    "sideOrientation": 1,
+    "alphaMode": 2,
+    "_needDepthPrePass": false,
+    "disableDepthWrite": false,
+    "disableColorWrite": false,
+    "forceDepthWrite": false,
+    "depthFunction": 0,
+    "separateCullingPass": false,
+    "fogEnabled": true,
+    "pointSize": 1,
+    "zOffset": 0,
+    "zOffsetUnits": 0,
+    "pointsCloud": false,
+    "fillMode": 0,
+    "editorData": {
+        "locations": [
+            {
+                "blockId": 211,
+                "x": -1460,
+                "y": -100
+            },
+            {
+                "blockId": 212,
+                "x": -1740,
+                "y": -100
+            },
+            {
+                "blockId": 213,
+                "x": -2000,
+                "y": -160
+            },
+            {
+                "blockId": 214,
+                "x": -2260,
+                "y": -180
+            },
+            {
+                "blockId": 215,
+                "x": -2240,
+                "y": -80
+            },
+            {
+                "blockId": 216,
+                "x": -2000,
+                "y": -20
+            },
+            {
+                "blockId": 217,
+                "x": 3380,
+                "y": 740
+            },
+            {
+                "blockId": 218,
+                "x": 2720,
+                "y": 540
+            },
+            {
+                "blockId": 219,
+                "x": 2960,
+                "y": 200
+            },
+            {
+                "blockId": 220,
+                "x": 2400,
+                "y": 320
+            },
+            {
+                "blockId": 221,
+                "x": 2080,
+                "y": 320
+            },
+            {
+                "blockId": 222,
+                "x": 1600,
+                "y": 560
+            },
+            {
+                "blockId": 223,
+                "x": 1320,
+                "y": 500
+            },
+            {
+                "blockId": 224,
+                "x": 1080,
+                "y": 420
+            },
+            {
+                "blockId": 225,
+                "x": 820,
+                "y": 520
+            },
+            {
+                "blockId": 226,
+                "x": 540,
+                "y": 520
+            },
+            {
+                "blockId": 227,
+                "x": 280,
+                "y": 520
+            },
+            {
+                "blockId": 228,
+                "x": -60,
+                "y": 440
+            },
+            {
+                "blockId": 229,
+                "x": -340,
+                "y": 420
+            },
+            {
+                "blockId": 230,
+                "x": -620,
+                "y": 340
+            },
+            {
+                "blockId": 231,
+                "x": -880,
+                "y": 340
+            },
+            {
+                "blockId": 232,
+                "x": -1160,
+                "y": 160
+            },
+            {
+                "blockId": 233,
+                "x": -1480,
+                "y": 260
+            },
+            {
+                "blockId": 234,
+                "x": -1160,
+                "y": 460
+            },
+            {
+                "blockId": 235,
+                "x": -880,
+                "y": 480
+            },
+            {
+                "blockId": 236,
+                "x": -60,
+                "y": 700
+            },
+            {
+                "blockId": 237,
+                "x": -340,
+                "y": 700
+            },
+            {
+                "blockId": 238,
+                "x": -620,
+                "y": 700
+            },
+            {
+                "blockId": 239,
+                "x": -300,
+                "y": 920
+            },
+            {
+                "blockId": 240,
+                "x": 540,
+                "y": 420
+            },
+            {
+                "blockId": 241,
+                "x": 820,
+                "y": 660
+            },
+            {
+                "blockId": 242,
+                "x": 540,
+                "y": 660
+            },
+            {
+                "blockId": 243,
+                "x": 280,
+                "y": 660
+            },
+            {
+                "blockId": 244,
+                "x": 1340,
+                "y": 660
+            },
+            {
+                "blockId": 245,
+                "x": 1080,
+                "y": 800
+            },
+            {
+                "blockId": 246,
+                "x": 2160,
+                "y": 160
+            },
+            {
+                "blockId": 247,
+                "x": 2280,
+                "y": 1000
+            },
+            {
+                "blockId": 248,
+                "x": 2040,
+                "y": 780
+            },
+            {
+                "blockId": 249,
+                "x": 2860,
+                "y": 840
+            }
+        ],
+        "frames": [
+            {
+                "x": 1920,
+                "y": 80,
+                "width": 1859.67,
+                "height": 1260,
+                "color": [
+                    0.2823529411764706,
+                    0.2823529411764706,
+                    0.2823529411764706
+                ],
+                "name": "Checkered",
+                "isCollapsed": false,
+                "blocks": [
+                    221,
+                    246,
+                    220,
+                    219,
+                    248,
+                    247,
+                    218,
+                    249,
+                    217
+                ]
+            }
+        ],
+        "x": 155.3919960630531,
+        "y": 164.5512292933413,
+        "zoom": 0.2532192552683995
+    },
+    "customType": "BABYLON.NodeMaterial",
+    "outputNodes": [
+        211,
+        217
+    ],
+    "blocks": [
+        {
+            "customType": "BABYLON.VertexOutputBlock",
+            "id": 211,
+            "name": "VertexOutput",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [
+                {
+                    "name": "vector",
+                    "inputName": "vector",
+                    "targetBlockId": 212,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "customType": "BABYLON.TransformBlock",
+            "id": 212,
+            "name": "WorldPos * ViewProjectionTransform",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [
+                {
+                    "name": "vector",
+                    "inputName": "vector",
+                    "targetBlockId": 213,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "transform",
+                    "inputName": "transform",
+                    "targetBlockId": 216,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                },
+                {
+                    "name": "xyz"
+                }
+            ],
+            "complementZ": 0,
+            "complementW": 1
+        },
+        {
+            "customType": "BABYLON.TransformBlock",
+            "id": 213,
+            "name": "WorldPos",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [
+                {
+                    "name": "vector",
+                    "inputName": "vector",
+                    "targetBlockId": 214,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "transform",
+                    "inputName": "transform",
+                    "targetBlockId": 215,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                },
+                {
+                    "name": "xyz"
+                }
+            ],
+            "complementZ": 0,
+            "complementW": 1
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 214,
+            "name": "position",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 8,
+            "mode": 1,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 215,
+            "name": "World",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 128,
+            "mode": 0,
+            "systemValue": 1,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 216,
+            "name": "ViewProjection",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 128,
+            "mode": 0,
+            "systemValue": 4,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false
+        },
+        {
+            "customType": "BABYLON.FragmentOutputBlock",
+            "id": 217,
+            "name": "FragmentOutput",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 2,
+            "inputs": [
+                {
+                    "name": "rgba",
+                    "displayName": "rgba"
+                },
+                {
+                    "name": "rgb",
+                    "displayName": "rgb",
+                    "inputName": "rgb",
+                    "targetBlockId": 218,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "a",
+                    "displayName": "a",
+                    "inputName": "a",
+                    "targetBlockId": 249,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [],
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false
+        },
+        {
+            "customType": "BABYLON.LerpBlock",
+            "id": 218,
+            "name": "Lerp",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "displayName": "left",
+                    "inputName": "left",
+                    "targetBlockId": 219,
+                    "targetConnectionName": "rgb",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "displayName": "right",
+                    "inputName": "right",
+                    "targetBlockId": 247,
+                    "targetConnectionName": "rgb",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "gradient",
+                    "displayName": "gradient",
+                    "inputName": "gradient",
+                    "targetBlockId": 247,
+                    "targetConnectionName": "a",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output",
+                    "displayName": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.ColorSplitterBlock",
+            "id": 219,
+            "name": "ColorSplitter",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "rgba",
+                    "displayName": "rgba",
+                    "inputName": "rgba",
+                    "targetBlockId": 220,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "rgb ",
+                    "displayName": "rgb ",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": 3
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "rgb",
+                    "displayName": "rgb"
+                },
+                {
+                    "name": "r",
+                    "displayName": "r"
+                },
+                {
+                    "name": "g",
+                    "displayName": "g"
+                },
+                {
+                    "name": "b",
+                    "displayName": "b"
+                },
+                {
+                    "name": "a",
+                    "displayName": "a"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.MaxBlock",
+            "id": 220,
+            "name": "Max",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "displayName": "left",
+                    "inputName": "left",
+                    "targetBlockId": 221,
+                    "targetConnectionName": "rgba",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "displayName": "right",
+                    "inputName": "right",
+                    "targetBlockId": 246,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output",
+                    "displayName": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.ColorMergerBlock",
+            "id": 221,
+            "name": "ColorMerger",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "rgb ",
+                    "displayName": "rgb "
+                },
+                {
+                    "name": "r",
+                    "displayName": "r",
+                    "inputName": "r",
+                    "targetBlockId": 222,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": 0
+                },
+                {
+                    "name": "g",
+                    "displayName": "g",
+                    "inputName": "g",
+                    "targetBlockId": 222,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": 1
+                },
+                {
+                    "name": "b",
+                    "displayName": "b",
+                    "inputName": "b",
+                    "targetBlockId": 222,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": 2
+                },
+                {
+                    "name": "a",
+                    "displayName": "a"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "rgba",
+                    "displayName": "rgba"
+                },
+                {
+                    "name": "rgb",
+                    "displayName": "rgb"
+                }
+            ],
+            "rSwizzle": "r",
+            "gSwizzle": "g",
+            "bSwizzle": "b",
+            "aSwizzle": "a"
+        },
+        {
+            "customType": "BABYLON.MaxBlock",
+            "id": 222,
+            "name": "Max",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 223,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 244,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.MultiplyBlock",
+            "id": 223,
+            "name": "Multiply",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 224,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 241,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.OneMinusBlock",
+            "id": 224,
+            "name": "One minus",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "input",
+                    "inputName": "input",
+                    "targetBlockId": 225,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.ModBlock",
+            "id": 225,
+            "name": "Mod",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 226,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 240,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.TrigonometryBlock",
+            "id": 226,
+            "name": "Round",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "input",
+                    "inputName": "input",
+                    "targetBlockId": 227,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "operation": 5
+        },
+        {
+            "customType": "BABYLON.MultiplyBlock",
+            "id": 227,
+            "name": "Multiply",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 228,
+                    "targetConnectionName": "x",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 236,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.VectorSplitterBlock",
+            "id": 228,
+            "name": "VectorSplitter",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "xyzw"
+                },
+                {
+                    "name": "xyz "
+                },
+                {
+                    "name": "xy ",
+                    "inputName": "xy ",
+                    "targetBlockId": 229,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "xyz"
+                },
+                {
+                    "name": "xy"
+                },
+                {
+                    "name": "zw"
+                },
+                {
+                    "name": "x"
+                },
+                {
+                    "name": "y"
+                },
+                {
+                    "name": "z"
+                },
+                {
+                    "name": "w"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.AddBlock",
+            "id": 229,
+            "name": "Add",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 230,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 235,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.MultiplyBlock",
+            "id": 230,
+            "name": "Multiply",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 231,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 235,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.DivideBlock",
+            "id": 231,
+            "name": "Divide",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 232,
+                    "targetConnectionName": "xy",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 234,
+                    "targetConnectionName": "xy",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.VectorMergerBlock",
+            "id": 232,
+            "name": "VectorMerger",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "xyzw "
+                },
+                {
+                    "name": "xyz "
+                },
+                {
+                    "name": "xy "
+                },
+                {
+                    "name": "zw "
+                },
+                {
+                    "name": "x",
+                    "inputName": "x",
+                    "targetBlockId": 233,
+                    "targetConnectionName": "x",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "y",
+                    "inputName": "y",
+                    "targetBlockId": 233,
+                    "targetConnectionName": "y",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "z"
+                },
+                {
+                    "name": "w"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "xyzw"
+                },
+                {
+                    "name": "xyz"
+                },
+                {
+                    "name": "xy"
+                },
+                {
+                    "name": "zw"
+                }
+            ],
+            "xSwizzle": "x",
+            "ySwizzle": "y",
+            "zSwizzle": "z",
+            "wSwizzle": "w"
+        },
+        {
+            "customType": "BABYLON.VectorSplitterBlock",
+            "id": 233,
+            "name": "VectorSplitter",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "xyzw",
+                    "inputName": "xyzw",
+                    "targetBlockId": 212,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "xyz ",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "xy "
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "xyz"
+                },
+                {
+                    "name": "xy"
+                },
+                {
+                    "name": "zw"
+                },
+                {
+                    "name": "x"
+                },
+                {
+                    "name": "y"
+                },
+                {
+                    "name": "z"
+                },
+                {
+                    "name": "w"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.VectorMergerBlock",
+            "id": 234,
+            "name": "VectorMerger",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "xyzw "
+                },
+                {
+                    "name": "xyz "
+                },
+                {
+                    "name": "xy "
+                },
+                {
+                    "name": "zw "
+                },
+                {
+                    "name": "x",
+                    "inputName": "x",
+                    "targetBlockId": 233,
+                    "targetConnectionName": "w",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "y",
+                    "inputName": "y",
+                    "targetBlockId": 233,
+                    "targetConnectionName": "w",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "z"
+                },
+                {
+                    "name": "w"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "xyzw"
+                },
+                {
+                    "name": "xyz"
+                },
+                {
+                    "name": "xy"
+                },
+                {
+                    "name": "zw"
+                }
+            ],
+            "xSwizzle": "x",
+            "ySwizzle": "y",
+            "zSwizzle": "z",
+            "wSwizzle": "w"
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 235,
+            "name": "Vector2",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 4,
+            "mode": 0,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false,
+            "valueType": "BABYLON.Vector2",
+            "value": [
+                0.5,
+                0.5
+            ]
+        },
+        {
+            "customType": "BABYLON.MultiplyBlock",
+            "id": 236,
+            "name": "Multiply",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 237,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 239,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.DivideBlock",
+            "id": 237,
+            "name": "Divide",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 238,
+                    "targetConnectionName": "x",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 238,
+                    "targetConnectionName": "y",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.ScreenSizeBlock",
+            "id": 238,
+            "name": "ScreenSize",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 2,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "xy"
+                },
+                {
+                    "name": "x"
+                },
+                {
+                    "name": "y"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 239,
+            "name": "resolution",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 1,
+            "mode": 0,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false,
+            "valueType": "number",
+            "value": 100
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 240,
+            "name": "Float",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 1,
+            "mode": 0,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false,
+            "valueType": "number",
+            "value": 2
+        },
+        {
+            "customType": "BABYLON.ModBlock",
+            "id": 241,
+            "name": "Mod",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 242,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 240,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.TrigonometryBlock",
+            "id": 242,
+            "name": "Round",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "input",
+                    "inputName": "input",
+                    "targetBlockId": 243,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "operation": 5
+        },
+        {
+            "customType": "BABYLON.MultiplyBlock",
+            "id": 243,
+            "name": "Multiply",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 228,
+                    "targetConnectionName": "y",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 239,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.MultiplyBlock",
+            "id": 244,
+            "name": "Multiply",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "inputName": "left",
+                    "targetBlockId": 225,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "inputName": "right",
+                    "targetBlockId": 245,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.OneMinusBlock",
+            "id": 245,
+            "name": "One minus",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "input",
+                    "inputName": "input",
+                    "targetBlockId": 241,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ]
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 246,
+            "name": "Color4",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 64,
+            "mode": 0,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false,
+            "valueType": "BABYLON.Color4",
+            "value": [
+                0.8862745098039215,
+                0.8862745098039215,
+                0.8862745098039215,
+                1
+            ]
+        },
+        {
+            "customType": "BABYLON.TextureBlock",
+            "id": 247,
+            "name": "Texture",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 3,
+            "inputs": [
+                {
+                    "name": "uv",
+                    "displayName": "uv",
+                    "inputName": "uv",
+                    "targetBlockId": 248,
+                    "targetConnectionName": "output",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "source",
+                    "displayName": "source"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "rgba",
+                    "displayName": "rgba"
+                },
+                {
+                    "name": "rgb",
+                    "displayName": "rgb"
+                },
+                {
+                    "name": "r",
+                    "displayName": "r"
+                },
+                {
+                    "name": "g",
+                    "displayName": "g"
+                },
+                {
+                    "name": "b",
+                    "displayName": "b"
+                },
+                {
+                    "name": "a",
+                    "displayName": "a"
+                },
+                {
+                    "name": "level",
+                    "displayName": "level"
+                }
+            ],
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false,
+            "fragmentOnly": false,
+            "disableLevelMultiplication": false
+        },
+        {
+            "customType": "BABYLON.InputBlock",
+            "id": 248,
+            "name": "uv",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 1,
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "output"
+                }
+            ],
+            "type": 4,
+            "mode": 1,
+            "animationType": 0,
+            "min": 0,
+            "max": 0,
+            "isBoolean": false,
+            "matrixMode": 0,
+            "isConstant": false,
+            "groupInInspector": "",
+            "convertToGammaSpace": false,
+            "convertToLinearSpace": false
+        },
+        {
+            "customType": "BABYLON.AddBlock",
+            "id": 249,
+            "name": "Add",
+            "comments": "",
+            "visibleInInspector": false,
+            "visibleOnFrame": false,
+            "target": 4,
+            "inputs": [
+                {
+                    "name": "left",
+                    "displayName": "left",
+                    "inputName": "left",
+                    "targetBlockId": 219,
+                    "targetConnectionName": "a",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                },
+                {
+                    "name": "right",
+                    "displayName": "right",
+                    "inputName": "right",
+                    "targetBlockId": 247,
+                    "targetConnectionName": "a",
+                    "isExposedOnFrame": true,
+                    "exposedPortPosition": -1
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "output",
+                    "displayName": "output"
+                }
+            ]
+        }
+    ]
+};
+
+
+/***/ }),
+
+/***/ "./diagram/guiGizmo.tsx":
+/*!******************************!*\
+  !*** ./diagram/guiGizmo.tsx ***!
+  \******************************/
+/*! exports provided: GuiGizmoComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuiGizmoComponent", function() { return GuiGizmoComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.axis */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
+var gizmoPivotIcon = __webpack_require__(/*! ../../public/imgs/gizmoPivotIcon.svg */ "../public/imgs/gizmoPivotIcon.svg");
+// which side of the bounding box are we on?
+var ScalePointPosition;
+(function (ScalePointPosition) {
+    ScalePointPosition[ScalePointPosition["Top"] = -1] = "Top";
+    ScalePointPosition[ScalePointPosition["Left"] = -1] = "Left";
+    ScalePointPosition[ScalePointPosition["Center"] = 0] = "Center";
+    ScalePointPosition[ScalePointPosition["Right"] = 1] = "Right";
+    ScalePointPosition[ScalePointPosition["Bottom"] = 1] = "Bottom";
+})(ScalePointPosition || (ScalePointPosition = {}));
+var Rect = /** @class */ (function () {
+    function Rect(left, top, right, bottom) {
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+    }
+    Object.defineProperty(Rect.prototype, "center", {
+        get: function () {
+            var topLeft = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](this.left, this.top);
+            return topLeft.addInPlace(new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](this.right, this.bottom).subtractInPlace(topLeft).multiplyByFloats(0.5, 0.5));
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Rect.prototype, "width", {
+        get: function () {
+            return this.right - this.left;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Rect.prototype, "height", {
+        get: function () {
+            return this.bottom - this.top;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return Rect;
+}());
+var roundFactor = 100;
+var round = function (value) { return Math.round(value * roundFactor) / roundFactor; };
+// this defines the lines that link the corners, making up the bounding box
+var lines = [
+    [0, 2],
+    [0, 6],
+    [2, 8],
+    [6, 8],
+];
+// load in custom cursor icons
+var cursorScaleDiagonaLeft = "url(\"".concat(__webpack_require__(/*! ../../public/imgs/cursor_scaleDiagonalLeft.svg */ "../public/imgs/cursor_scaleDiagonalLeft.svg"), "\") 12 12, nwse-resize");
+var cursorScaleDiagonalRight = "url(\"".concat(__webpack_require__(/*! ../../public/imgs/cursor_scaleDiagonalRight.svg */ "../public/imgs/cursor_scaleDiagonalRight.svg"), "\") 12 12, nesw-resize");
+var cursorScaleHorizontal = "url(\"".concat(__webpack_require__(/*! ../../public/imgs/cursor_scaleHorizontal.svg */ "../public/imgs/cursor_scaleHorizontal.svg"), "\") 12 12, pointer");
+var cursorScaleVertical = "url(\"".concat(__webpack_require__(/*! ../../public/imgs/cursor_scaleVertical.svg */ "../public/imgs/cursor_scaleVertical.svg"), "\") 12 12, ns-resize");
+var scalePointCursors = [cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft, cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft];
+var rotateCursors = [];
+for (var idx = 0; idx < 8; idx++) {
+    rotateCursors.push("url(\"".concat(__webpack_require__("../public/imgs sync recursive ^\\.\\/cursor_rotate.*\\.svg$")("./cursor_rotate".concat(idx, ".svg")), "\") 12 12, pointer"));
+}
+// used to calculate which cursor icon we should display for the scalepoints
+var defaultScalePointRotations = [
+    315, 0, 45,
+    270, 0, 90,
+    225, 180, 135,
+];
+var GuiGizmoComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuiGizmoComponent, _super);
+    function GuiGizmoComponent(props) {
+        var _this = _super.call(this, props) || this;
+        // used for scaling computations
+        _this._initH = 0;
+        _this._initW = 0;
+        _this._initX = 0;
+        _this._initY = 0;
+        _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
+        _this._onUp = function (evt) {
+            // cleanup on pointer up
+            _this.setState({ scalePointDragging: -1, isRotating: false });
+        };
+        _this._onMove = function () {
+            var scene = _this.props.globalState.workbench._scene;
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            if (_this.state.scalePointDragging !== -1) {
+                if (selectedGuiNodes.length === 1) {
+                    var node = selectedGuiNodes[0];
+                    var inRTT = _this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
+                    var inNodeSpace = _this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
+                    _this._dragLocalBounds(inNodeSpace);
+                    _this._updateNodeFromLocalBounds(node, _this.state.scalePointDragging);
+                    //convert to percentage
+                    if (_this._responsive) {
+                        _this.props.globalState.workbench.convertToPercentage(node, false);
+                    }
+                    _this.props.globalState.workbench._liveGuiTextureRerender = false;
+                    _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+                }
+            }
+            if (_this.state.isRotating) {
+                selectedGuiNodes.forEach(function (node, index) {
+                    var nodeRotationData = _this._rotation.nodeRotations[index];
+                    var angle = Math.atan2(scene.pointerY - _this._rotation.pivot.y, scene.pointerX - _this._rotation.pivot.x);
+                    node.rotation = nodeRotationData + (angle - _this._rotation.initialAngleToPivot);
+                });
+                _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
+        };
+        _this._beginDraggingScalePoint = function (scalePointIndex) {
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            _this.setState({ scalePointDragging: scalePointIndex });
+            if (selectedGuiNodes.length > 0) {
+                var node = selectedGuiNodes[0];
+                _this._localBounds = _this._computeLocalBounds(node);
+                _this._initW = node.widthInPixels;
+                _this._initH = node.heightInPixels;
+                _this._initY = node.topInPixels;
+                _this._initX = node.leftInPixels;
+            }
+        };
+        _this._beginRotate = function () {
+            var scene = _this.props.globalState.workbench._scene;
+            var selectedGuiNodes = _this.props.globalState.workbench.selectedGuiNodes;
+            var pivot;
+            if (selectedGuiNodes.length === 1) {
+                var node = selectedGuiNodes[0];
+                var nodeSpace = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](node.transformCenterX, node.transformCenterY);
+                var rtt = _this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
+                var canvas = _this._rttToCanvasSpace(rtt.x, rtt.y);
+                pivot = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](canvas.x, canvas.y);
+            }
+            else {
+                pivot = _this.state.canvasBounds.center;
+            }
+            var initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
+            var nodeRotations = [];
+            selectedGuiNodes.forEach(function (node) {
+                nodeRotations.push(node.rotation);
+            });
+            _this._rotation = {
+                pivot: pivot,
+                initialAngleToPivot: initialAngleToPivot,
+                nodeRotations: nodeRotations
+            };
+            _this.setState({ isRotating: true });
+        };
+        _this.props.globalState.guiGizmo = _this;
+        _this._responsive = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
+        _this._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity()];
+        var scalePoints = [];
+        for (var vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
+            for (var horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
+                var isPivot = horizontal === ScalePointPosition.Center && vertical === ScalePointPosition.Center;
+                scalePoints.push({ position: new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot: isPivot });
+            }
+        }
+        _this._localBounds = new Rect(0, 0, 0, 0);
+        _this.state = {
+            canvasBounds: new Rect(0, 0, 0, 0),
+            scalePoints: scalePoints,
+            scalePointDragging: -1,
+            isRotating: false
+        };
+        props.globalState.onSelectionChangedObservable.add(function (selection) {
+            _this.updateGizmo(true);
+        });
+        _this.props.globalState.onResponsiveChangeObservable.add(function (value) {
+            _this._responsive = value;
+        });
+        _this.props.globalState.onGizmoUpdateRequireObservable.add(function () {
+            _this.updateGizmo(true);
+        });
+        _this.updateGizmo(true);
+        return _this;
+    }
+    GuiGizmoComponent.prototype.componentDidMount = function () { };
+    /**
+     * Update the gizmo's positions
+     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+     */
+    GuiGizmoComponent.prototype.updateGizmo = function (force) {
+        var _this = this;
+        var selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
+        if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging !== -1)) {
+            // Calculating the offsets for each scale point.
+            var half_1 = 1 / 2;
+            var canvasBounds_1 = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
+            selectedGuiNodes.forEach(function (node) {
+                var localBounds = _this._computeLocalBounds(node);
+                _this.state.scalePoints.forEach(function (scalePoint) {
+                    var nodeSpace = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+                    switch (scalePoint.horizontalPosition) {
+                        case ScalePointPosition.Left:
+                            nodeSpace.x = localBounds.left;
+                            break;
+                        case ScalePointPosition.Center:
+                            nodeSpace.x = localBounds.center.x;
+                            break;
+                        case ScalePointPosition.Right:
+                            nodeSpace.x = localBounds.right;
+                            break;
+                    }
+                    switch (scalePoint.verticalPosition) {
+                        case ScalePointPosition.Top:
+                            nodeSpace.y = localBounds.top;
+                            break;
+                        case ScalePointPosition.Center:
+                            nodeSpace.y = localBounds.center.y;
+                            break;
+                        case ScalePointPosition.Bottom:
+                            nodeSpace.y = localBounds.bottom;
+                            break;
+                    }
+                    if (scalePoint.isPivot) {
+                        // Calculate the pivot point
+                        var pivotX = (node.transformCenterX - 0.5) * 2;
+                        var pivotY = (node.transformCenterY - 0.5) * 2;
+                        nodeSpace.x = node.widthInPixels * half_1 * pivotX;
+                        nodeSpace.y = node.heightInPixels * half_1 * pivotY;
+                    }
+                    var rtt = _this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
+                    var canvas = _this._rttToCanvasSpace(rtt.x, rtt.y);
+                    if (canvas.x < canvasBounds_1.left) {
+                        canvasBounds_1.left = canvas.x;
+                    }
+                    if (canvas.x > canvasBounds_1.right) {
+                        canvasBounds_1.right = canvas.x;
+                    }
+                    if (canvas.y < canvasBounds_1.top) {
+                        canvasBounds_1.top = canvas.y;
+                    }
+                    if (canvas.y > canvasBounds_1.bottom) {
+                        canvasBounds_1.bottom = canvas.y;
+                    }
+                    // if we have a single control selected, put scale points at its edges, and rotate based on the rotation of the control
+                    if (selectedGuiNodes.length === 1) {
+                        scalePoint.position.x = canvas.x;
+                        scalePoint.position.y = canvas.y;
+                        scalePoint.rotation = _this.getRotation(node) * (180 / Math.PI);
+                    }
+                });
+            });
+            // if we are in multiselect mode, use the bounds to determine the scale point locations, and set rotation = 0
+            if (selectedGuiNodes.length > 1) {
+                this.state.scalePoints.forEach(function (scalePoint) {
+                    switch (scalePoint.verticalPosition) {
+                        case ScalePointPosition.Top:
+                            scalePoint.position.y = canvasBounds_1.top;
+                            break;
+                        case ScalePointPosition.Center:
+                            scalePoint.position.y = canvasBounds_1.center.y;
+                            break;
+                        case ScalePointPosition.Bottom:
+                            scalePoint.position.y = canvasBounds_1.bottom;
+                            break;
+                    }
+                    switch (scalePoint.horizontalPosition) {
+                        case ScalePointPosition.Left:
+                            scalePoint.position.x = canvasBounds_1.left;
+                            break;
+                        case ScalePointPosition.Center:
+                            scalePoint.position.x = canvasBounds_1.center.x;
+                            break;
+                        case ScalePointPosition.Right:
+                            scalePoint.position.x = canvasBounds_1.right;
+                            break;
+                    }
+                    scalePoint.rotation = 0;
+                });
+            }
+            this.setState({
+                canvasBounds: canvasBounds_1,
+                scalePoints: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], this.state.scalePoints, true),
+            });
+        }
+        else {
+            this.forceUpdate();
+        }
+    };
+    GuiGizmoComponent.prototype._resetMatrixArray = function () {
+        this._matrixCache.forEach(function (matrix) {
+            babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].IdentityToRef(matrix);
+        });
+    };
+    /**
+     * This function calculates a local matrix for a node, including it's full transformation and pivot point
+     *
+     * @param node the node to calculate the matrix for
+     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+     * @returns a new matrix for the control
+     */
+    GuiGizmoComponent.prototype._getNodeMatrix = function (node, useStoredValues) {
+        var size = this.props.globalState.guiTexture.getSize();
+        // parent should always be defined, but stay safe
+        var parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
+        var parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        var x = 0;
+        var y = 0;
+        var width = useStoredValues ? this._initW : node.widthInPixels;
+        var height = useStoredValues ? this._initH : node.heightInPixels;
+        var left = useStoredValues ? this._initX : node.leftInPixels;
+        var top = useStoredValues ? this._initY : node.topInPixels;
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                x = -(parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                x = (parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_CENTER:
+                x = 0;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
+                y = -(parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                y = (parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_CENTER:
+                y = 0;
+                break;
+        }
+        this._resetMatrixArray();
+        var m2d = this._matrixCache[0];
+        var translateTo = this._matrixCache[1];
+        // as this is used later it needs to persist
+        var resultMatrix = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity();
+        // the pivot point around which the object transforms
+        var offsetX = width * node.transformCenterX - width / 2;
+        var offsetY = height * node.transformCenterY - height / 2;
+        // pivot changes this point's position! but only in legacy pivot mode
+        if (!node.descendantsOnlyPadding) {
+            // TODO - padding needs to also take scaling into account?
+            offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * 1) / 2;
+            offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
+        }
+        // Set the translation
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].TranslationToRef(x + left, y + top, translateTo);
+        // without parents scaling and rotation, calculate world matrix for each
+        var rotation = this.getRotation(node, true);
+        var scaling = this.getScale(node, true);
+        // COmpose doesn't actually translate, but creates a form of pivot in a specific position
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
+        // actually compose the matrix
+        resultMatrix.multiplyToRef(m2d, resultMatrix);
+        resultMatrix.multiplyToRef(translateTo, resultMatrix);
+        return resultMatrix;
+    };
+    /**
+     * Using the node's tree, calculate its world matrix and return it
+     * @param node the node to calculate the matrix for
+     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+     * @returns the world matrix for this node
+     */
+    GuiGizmoComponent.prototype._nodeToRTTWorldMatrix = function (node, useStoredValuesIfPossible) {
+        var _this = this;
+        var listOfNodes = [node];
+        var parent = node.parent;
+        var child = node;
+        while (parent) {
+            if (parent.typeName === "Grid") {
+                var cellInfo = parent.getChildCellInfo(child);
+                var cell = parent.cells[cellInfo];
+                listOfNodes.push(cell);
+            }
+            listOfNodes.push(parent);
+            child = parent;
+            parent = parent.parent;
+        }
+        this._resetMatrixArray();
+        var matrices = listOfNodes.map(function (node, index) { return _this._getNodeMatrix(node, index === 0 && _this.state.scalePointDragging !== -1 && useStoredValuesIfPossible); });
+        return matrices.reduce(function (acc, cur) {
+            acc.multiplyToRef(cur, acc);
+            return acc;
+        }, this._matrixCache[2]);
+    };
+    GuiGizmoComponent.prototype._nodeToRTTSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
+        worldMatrix.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    GuiGizmoComponent.prototype._rttToLocalNodeSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
+        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
+        var inv = this._matrixCache[3];
+        worldMatrix.invertToRef(inv);
+        inv.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    GuiGizmoComponent.prototype._rttToCanvasSpace = function (x, y) {
+        var tmpVec = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"](x, 0, -y);
+        // Get the final projection in view space
+        var camera = this.props.globalState.workbench._camera;
+        var scene = this.props.globalState.workbench._scene;
+        var engine = scene.getEngine();
+        // TODO - to ref
+        var projected = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Project(tmpVec, babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Matrix"].Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
+        // round to 1 decimal points
+        projected.x = round(projected.x);
+        projected.y = round(projected.y);
+        return projected;
+    };
+    GuiGizmoComponent.prototype._mousePointerToRTTSpace = function (node, x, y) {
+        var camera = this.props.globalState.workbench._camera;
+        var scene = this.props.globalState.workbench._scene;
+        var newPosition = this.props.globalState.workbench.getPosition(scene, camera, this._plane, x !== null && x !== void 0 ? x : scene.pointerX, y || scene.pointerY);
+        newPosition.z *= -1;
+        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](round(newPosition.x), round(newPosition.z));
+    };
+    /**
+     * Get the scaling of a specific GUI control
+     * @param node the node for which we are getting the scaling
+     * @param relative should we return only the relative scaling (relative to the parent)
+     * @returns an X,Y vector of the scaling
+     */
+    GuiGizmoComponent.prototype.getScale = function (node, relative) {
+        var x = node.scaleX;
+        var y = node.scaleY;
+        if (relative) {
+            return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
+        }
+        var parent = node.parent;
+        while (parent) {
+            x *= parent.scaleX;
+            y *= parent.scaleY;
+            parent = parent.parent;
+        }
+        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
+    };
+    GuiGizmoComponent.prototype.getRotation = function (node, relative) {
+        // Gets rotate of a control account for all of it's parents rotations
+        var rotation = node.rotation;
+        if (relative) {
+            return rotation;
+        }
+        var parent = node.parent;
+        while (parent) {
+            rotation += parent.rotation;
+            parent = parent.parent;
+        }
+        return rotation;
+    };
+    GuiGizmoComponent.prototype.onUp = function (evt) {
+        this._onUp(evt);
+    };
+    GuiGizmoComponent.prototype.onMove = function (evt) {
+        this._onMove();
+    };
+    GuiGizmoComponent.prototype._rotate = function (x, y, centerX, centerY, angle) {
+        return {
+            x: (x - centerX) * Math.cos(angle) - (y - centerY) * Math.sin(angle) + centerX,
+            y: (x - centerX) * Math.sin(angle) + (y - centerY) * Math.cos(angle) + centerY,
+        };
+    };
+    GuiGizmoComponent.prototype._computeLocalBounds = function (node) {
+        return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
+    };
+    GuiGizmoComponent.prototype._dragLocalBounds = function (toPosition) {
+        var scalePoint = this.state.scalePoints[this.state.scalePointDragging];
+        if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
+            this._localBounds.left = toPosition.x;
+        }
+        if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
+            this._localBounds.right = toPosition.x;
+        }
+        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
+            this._localBounds.top = toPosition.y;
+        }
+        if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+            this._localBounds.bottom = toPosition.y;
+        }
+    };
+    GuiGizmoComponent.prototype._updateNodeFromLocalBounds = function (node, scalePointIndex) {
+        var width = this._localBounds.right - this._localBounds.left;
+        var height = this._localBounds.bottom - this._localBounds.top;
+        var scalePoint = this.state.scalePoints[scalePointIndex];
+        var left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
+        var top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
+        // calculate the center point
+        var localRotation = this.getRotation(node, true);
+        var localScaling = this.getScale(node, true);
+        var absoluteCenter = this._localBounds.center;
+        var center = absoluteCenter.clone();
+        // move to pivot
+        center.multiplyInPlace(localScaling);
+        var cosRotation = Math.cos(localRotation);
+        var sinRotation = Math.sin(localRotation);
+        var cosRotation180 = Math.cos(localRotation + Math.PI);
+        var sinRotation180 = Math.sin(localRotation + Math.PI);
+        var widthDelta = (this._initW - width) * 0.5;
+        var heightDelta = (this._initH - height) * 0.5;
+        // alignment compensation
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
+                center.y += (left ? -widthDelta : absoluteCenter.x) * sinRotation;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                center.x += (left ? -widthDelta : absoluteCenter.x) * cosRotation;
+                center.y += (left ? widthDelta : -absoluteCenter.x) * sinRotation;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
+                center.y += (top ? -heightDelta : absoluteCenter.y) * cosRotation180;
+                center.x += (top ? -heightDelta : absoluteCenter.y) * sinRotation180;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                center.y += (top ? heightDelta : -absoluteCenter.y) * cosRotation180;
+                center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
+                break;
+        }
+        // rotate the center around 0,0
+        var rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
+        // round the values and set them
+        node.leftInPixels = round(this._initX + rotatedCenter.x);
+        node.topInPixels = round(this._initY + rotatedCenter.y);
+        node.widthInPixels = round(Math.max(10, width));
+        node.heightInPixels = round(Math.max(10, height));
+        if (node.typeName === "Image") {
+            node.autoScale = false;
+        }
+        else if (node.typeName === "TextBlock") {
+            node.resizeToFit = false;
+        }
+        if (this._responsive) {
+            this.props.globalState.workbench.convertToPercentage(node, true);
+        }
+    };
+    GuiGizmoComponent.prototype.render = function () {
+        var _this = this;
+        // don't render if we don't have anything selected, or if we're currently dragging
+        if (this.props.globalState.workbench.selectedGuiNodes.length === 0 || this.state.scalePointDragging !== -1)
+            return null;
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "gizmo" },
+            lines.map(function (line, index) {
+                var start = _this.state.scalePoints[line[0]];
+                var end = _this.state.scalePoints[line[1]];
+                // the vector between start and end
+                var delta = end.position.subtract(start.position);
+                var angle = Math.atan2(delta.y, delta.x);
+                var length = delta.length();
+                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "bounding-box-line", key: index, style: {
+                        left: "".concat(start.position.x + delta.x / 2, "px"),
+                        top: "".concat(start.position.y + delta.y / 2, "px"),
+                        width: "".concat(length, "px"),
+                        transform: "translate(-50%, -50%) rotate(".concat(angle, "rad)"),
+                    } }));
+            }),
+            this.state.scalePoints.map(function (scalePoint, index) {
+                var style = {
+                    left: "".concat(scalePoint.position.x, "px"),
+                    top: "".concat(scalePoint.position.y, "px"),
+                    transform: "translate(-50%, -50%) rotate(" + scalePoint.rotation + "deg)",
+                    pointerEvents: _this.state.scalePointDragging === -1 && !scalePoint.isPivot && !_this.state.isRotating ? "auto" : "none",
+                };
+                if (scalePoint.isPivot) {
+                    if (_this.props.globalState.workbench.selectedGuiNodes.length > 1) {
+                        return null;
+                    }
+                    return react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { className: "pivot-point", src: gizmoPivotIcon, style: style, key: index });
+                }
+                // compute which cursor icon to use on hover
+                var angleOfCursor = (defaultScalePointRotations[index] + scalePoint.rotation);
+                var angleAdjusted = angleOfCursor % (360);
+                if (angleAdjusted < 0)
+                    angleAdjusted += 360;
+                var increment = 45;
+                var cursorIndex = Math.round(angleAdjusted / increment) % 8;
+                var cursor = scalePointCursors[cursorIndex];
+                var scalePointContainerSize = 30; // .scale-point-container width/height in px
+                var rotateClickAreaSize = 20; // .rotate-click-area width/height
+                var rotateClickAreaOffset = 7; // how much to offset the invisible rotate click area from the center
+                var rotateClickAreaStyle = {
+                    top: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.verticalPosition,
+                    left: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.horizontalPosition,
+                    cursor: rotateCursors[cursorIndex]
+                };
+                var scaleClickAreaSize = 20; // .scale-click-area width/height
+                var scaleClickAreaOffset = 5; // how much to offset the invisible scale click area from the center
+                var scaleClickAreaStyle = {
+                    top: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.verticalPosition,
+                    left: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.horizontalPosition,
+                    cursor: cursor
+                };
+                return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { key: index, style: style, className: "scale-point-container" },
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "rotate-click-area", onPointerDown: function () { return _this._beginRotate(); }, style: rotateClickAreaStyle }),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-click-area", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
+                            _this._beginDraggingScalePoint(index);
+                        }, onPointerUp: _this._onUp, style: scaleClickAreaStyle }),
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-point", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
+                            _this._beginDraggingScalePoint(index);
+                        }, onPointerUp: _this._onUp, style: { cursor: cursor } })));
+            })));
+    };
+    return GuiGizmoComponent;
+}(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./diagram/workbench.tsx":
+/*!*******************************!*\
+  !*** ./diagram/workbench.tsx ***!
+  \*******************************/
+/*! exports provided: ConstraintDirection, WorkbenchComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConstraintDirection", function() { return ConstraintDirection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WorkbenchComponent", function() { return WorkbenchComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
@@ -46062,6 +48687,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../tools */ "./tools.ts");
+/* harmony import */ var _GUIEditorNodeMaterial__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GUIEditorNodeMaterial */ "./diagram/GUIEditorNodeMaterial.ts");
+
 
 
 
@@ -46085,13 +48712,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
-var isFramePortData = function (variableToCheck) {
-    if (variableToCheck) {
-        return variableToCheck !== undefined;
-    }
-    else
-        return false;
-};
 var ConstraintDirection;
 (function (ConstraintDirection) {
     ConstraintDirection[ConstraintDirection["NONE"] = 0] = "NONE";
@@ -46111,13 +48731,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._constraintDirection = ConstraintDirection.NONE;
         _this._forcePanning = false;
         _this._forceZooming = false;
-        _this._forceMoving = false;
         _this._forceSelecting = true;
         _this._outlines = false;
         _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
         _this._cameraMaxRadiasFactor = 16384; // 2^13
+        _this._mainSelection = null;
+        _this._selectionDepth = 0;
+        _this._doubleClick = null;
+        _this._lockMainSelection = false;
+        _this._liveGuiTextureRerender = true;
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
             _this._altKeyIsPressed = evt.altKey;
@@ -46131,7 +48755,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             if (evt.key === "Delete") {
                 if (!_this.props.globalState.lockObject.lock) {
                     _this._selectedGuiNodes.forEach(function (guiNode) {
+                        var _a;
                         if (guiNode !== _this.globalState.guiTexture.getChildren()[0]) {
+                            _this.props.globalState.guiTexture.removeControl(guiNode);
+                            (_a = _this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(guiNode);
                             guiNode.dispose();
                         }
                     });
@@ -46168,14 +48795,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.blurEvent = function () {
             _this._ctrlKeyIsPressed = false;
             _this._constraintDirection = ConstraintDirection.NONE;
+            _this.props.globalState.guiGizmo.onUp();
         };
         _this.isUp = true;
+        _this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this.changeSelectionHighlight(false);
                 _this._selectedGuiNodes = [];
                 _this._selectAll = false;
+                _this._mainSelection = null;
             }
             else {
                 if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"]) {
@@ -46192,6 +48822,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     else if (_this._selectedGuiNodes.length <= 1) {
                         _this.changeSelectionHighlight(false);
                         _this._selectedGuiNodes = [selection];
+                        if (!_this._lockMainSelection && selection != _this.props.globalState.guiTexture._rootContainer) {
+                            //incase the selection did not come from the canvas and mouse
+                            _this._mainSelection = selection;
+                        }
+                        _this._lockMainSelection = false;
                         _this._selectAll = false;
                     }
                     _this.changeSelectionHighlight(true);
@@ -46201,7 +48836,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         props.globalState.onPanObservable.add(function () {
             _this._forcePanning = !_this._forcePanning;
             _this._forceSelecting = false;
-            _this._forceMoving = false;
             _this._forceZooming = false;
             if (!_this._forcePanning) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
@@ -46212,40 +48846,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
             _this.artBoardBackground.isHitTestVisible = true;
         });
-        props.globalState.onMoveObservable.add(function () {
-            _this._forceMoving = !_this._forceMoving;
-            _this._forcePanning = false;
-            _this._forceZooming = false;
-            _this._forceSelecting = false;
-            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            if (!_this._forceSelecting) {
-                _this.updateHitTestForSelection(true);
-            }
-            if (!_this._forceMoving) {
-                _this.globalState.onSelectionButtonObservable.notifyObservers();
-            }
-            else {
-                _this._canvas.style.cursor = "move";
-            }
-            _this.artBoardBackground.isHitTestVisible = true;
-        });
         props.globalState.onSelectionButtonObservable.add(function () {
             _this._forceSelecting = !_this._forceSelecting;
             _this._forcePanning = false;
             _this._forceZooming = false;
-            _this._forceMoving = false;
             _this._canvas.style.cursor = "default";
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            if (_this._forceMoving) {
-                _this.updateHitTestForSelection(true);
-            }
             _this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
             _this._forcePanning = false;
             _this._forceSelecting = false;
-            _this._forceMoving = false;
             if (!_this._forceZooming) {
                 _this.globalState.onSelectionButtonObservable.notifyObservers();
             }
@@ -46278,6 +48890,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.hostDocument.addEventListener("keydown", _this.keyEvent, false);
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
         props.globalState.onWindowResizeObservable.add(function () {
+            _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             _this._engine.resize();
         });
         _this.props.globalState.workbench = _this;
@@ -46304,6 +48917,47 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    // given a control gets the parent up the tree selectionDepth times. Selection depth is altered as we go down the tree.
+    WorkbenchComponent.prototype._getParentWithDepth = function (control) {
+        --this._selectionDepth;
+        var parent = control;
+        for (var i = 0; i < this._selectionDepth; ++i) {
+            if (!parent.parent) {
+                break;
+            }
+            parent = parent.parent;
+        }
+        return parent;
+    };
+    //gets the higher parent of a given control.
+    WorkbenchComponent.prototype._getMaxParent = function (control, maxParent) {
+        var parent = control;
+        this._selectionDepth = 0;
+        while (parent.parent && parent.parent !== maxParent) {
+            parent = parent.parent;
+            ++this._selectionDepth;
+        }
+        return parent;
+    };
+    WorkbenchComponent.prototype.determineMouseSelection = function (selection) {
+        if (selection && this._selectedGuiNodes.length <= 1) {
+            // if we're still on the same main selection, got down the tree.
+            if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+                selection = this._getParentWithDepth(selection);
+            }
+            else { // get the start of our tree by getting our max parent and storing our main selected control
+                if (this._isMainSelectionParent(selection) && this._mainSelection) {
+                    selection = this._getParentWithDepth(selection);
+                }
+                else {
+                    selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
+                }
+                this._mainSelection = selection;
+            }
+        }
+        this._lockMainSelection = true;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
+    };
     WorkbenchComponent.prototype.updateHitTest = function (guiControl, value) {
         var _this = this;
         guiControl.isHitTestVisible = value;
@@ -46327,6 +48981,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
+        this._clipboard = [];
         if (this._selectAll) {
             var index_2 = 0;
             this.nodes.forEach(function (node) {
@@ -46365,10 +49020,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             var index_3 = 1;
             while (this.props.globalState.guiTexture.getDescendants(false).filter(
             //search if there are any copies
-            function (control) { return control.name === newControl.name + " Copy " + index_3; }).length) {
+            function (control) { return control.name === "".concat(newControl.name, " Copy ").concat(index_3); }).length) {
                 index_3++;
             }
-            newControl.name = newControl.name + " Copy " + index_3;
+            newControl.name = "".concat(newControl.name, " Copy ").concat(index_3);
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
         }
     };
@@ -46386,22 +49041,55 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.props.globalState.hostDocument.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument.defaultView.removeEventListener("blur", this.blurEvent);
+        if (this.props.globalState.liveGuiTexture) {
+            this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
+            this.props.globalState.guiTexture.onBeginRenderObservable.remove(this._guiRenderObserver);
+            this.props.globalState.guiTexture.getDescendants(false).forEach(function (control) {
+                if (!control.metadata || !control.metadata.guiEditor) {
+                    return;
+                }
+                control.onPointerUpObservable.remove(control.metadata.onPointerUp);
+                control.onPointerDownObservable.remove(control.metadata.onPointerDown);
+                control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
+                control.onPointerOutObservable.remove(control.metadata.onPointerOut);
+                control.onDisposeObservable.remove(control.metadata.onDispose);
+                control.highlightLineWidth = control.metadata.highlightLineWidth;
+                control.isHighlighted = control.metadata.isHighlighted;
+                control.metadata = control.metadata.metadata;
+            });
+        }
         this._engine.dispose();
     };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
+        var _a;
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.globalState.guiTexture.parseContent(serializationObject, true);
+        if (this.props.globalState.liveGuiTexture) {
+            (_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseContent(serializationObject, true);
+            this.synchronizeLiveGUI();
+        }
+        else {
+            this.globalState.guiTexture.parseContent(serializationObject, true);
+        }
         this.loadToEditor();
     };
-    WorkbenchComponent.prototype.loadFromSnippet = function (snippedId) {
+    WorkbenchComponent.prototype.loadFromSnippet = function (snippetId) {
+        var _a;
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
-                switch (_a.label) {
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippedId, true)];
+                        if (!this.props.globalState.liveGuiTexture) return [3 /*break*/, 2];
+                        return [4 /*yield*/, ((_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseFromSnippetAsync(snippetId, true))];
                     case 1:
-                        _a.sent();
+                        _b.sent();
+                        this.synchronizeLiveGUI();
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.globalState.guiTexture.parseFromSnippetAsync(snippetId, true)];
+                    case 3:
+                        _b.sent();
+                        _b.label = 4;
+                    case 4:
                         this.loadToEditor();
                         if (this.props.globalState.customLoad) {
                             this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(function (err) {
@@ -46418,8 +49106,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         var _this = this;
         var size = this.globalState.guiTexture.getSize();
         this.resizeGuiTexture(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height));
-        var children = this.globalState.guiTexture.getChildren();
-        children[0].children.forEach(function (guiElement) {
+        this.globalState.guiTexture.rootContainer.children.forEach(function (guiElement) {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
                 _this.artBoardBackground = guiElement;
                 return;
@@ -46439,11 +49126,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._selectedGuiNodes.forEach(function (node) {
             if (_this._outlines) {
                 node.isHighlighted = true;
-                node.highlightLineWidth = value ? 10 : 5;
+                node.highlightLineWidth = 5;
             }
             else {
-                node.isHighlighted = value;
-                node.highlightLineWidth = 10;
+                node.isHighlighted = value && node.typeName === "Grid";
+                node.highlightLineWidth = 5;
             }
         });
         this.updateHitTestForSelection(value);
@@ -46460,48 +49147,86 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
     };
     WorkbenchComponent.prototype.appendBlock = function (guiElement) {
+        if (this.globalState.liveGuiTexture) {
+            this.globalState.liveGuiTexture.addControl(guiElement);
+        }
         var newGuiNode = this.createNewGuiNode(guiElement);
         this.globalState.guiTexture.addControl(guiElement);
         return newGuiNode;
     };
+    //is the
+    WorkbenchComponent.prototype._isMainSelectionParent = function (control) {
+        do {
+            if (this._mainSelection === control) {
+                return true;
+            }
+            ;
+            control = (control === null || control === void 0 ? void 0 : control.parent) || null;
+        } while (control);
+        return false;
+    };
     WorkbenchComponent.prototype.createNewGuiNode = function (guiControl) {
         var _this = this;
-        guiControl.highlightLineWidth = 5;
-        guiControl.onPointerUpObservable.add(function (evt) {
+        var onPointerUp = guiControl.onPointerUpObservable.add(function (evt) {
             _this.clicked = false;
         });
-        guiControl.onPointerDownObservable.add(function (evt) {
+        var onPointerDown = guiControl.onPointerDownObservable.add(function (evt) {
             if (!_this.isUp || evt.buttonIndex > 0)
                 return;
             if (_this._forceSelecting) {
-                _this.isSelected(true, guiControl);
+                // if this is our first click and the clicked control is a child the of the main selected control.
+                if (!_this._doubleClick && _this._isMainSelectionParent(guiControl)) {
+                    _this._doubleClick = guiControl;
+                    window.setTimeout(function () {
+                        _this._doubleClick = null;
+                    }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"].DoubleClickDelay);
+                }
+                else { //function will either select our new main control or contrue down the tree.
+                    _this.determineMouseSelection(guiControl);
+                    _this._doubleClick = null;
+                }
                 _this.isUp = false;
             }
         });
-        guiControl.onPointerEnterObservable.add(function (evt) {
+        var onPointerEnter = guiControl.onPointerEnterObservable.add(function (evt) {
             if (_this._isOverGUINode.indexOf(guiControl) === -1) {
                 _this._isOverGUINode.push(guiControl);
             }
         });
-        guiControl.onPointerOutObservable.add(function (evt) {
+        var onPointerOut = guiControl.onPointerOutObservable.add(function (evt) {
             var index = _this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 _this._isOverGUINode.splice(index, 1);
             }
         });
-        guiControl.onDisposeObservable.add(function (evt) {
+        var onDispose = guiControl.onDisposeObservable.add(function (evt) {
             var index = _this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 _this._isOverGUINode.splice(index, 1);
             }
         });
-        if (guiControl instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
-            guiControl.children.forEach(function (child) {
-                _this.createNewGuiNode(child);
-            });
-        }
+        // use metadata to keep track of things we need to cleanup/restore when the gui editor closes
+        // also stores the old metadata
+        guiControl.metadata = {
+            guiEditor: true,
+            metadata: guiControl.metadata,
+            isHighlighted: guiControl.isHighlighted,
+            highlightLineWidth: guiControl.highlightLineWidth,
+            isReadOnly: guiControl.isReadOnly,
+            isHitTestVisible: guiControl.isHitTestVisible,
+            onPointerUp: onPointerUp,
+            onPointerDown: onPointerDown,
+            onPointerEnter: onPointerEnter,
+            onPointerOut: onPointerOut,
+            onDispose: onDispose
+        };
+        guiControl.highlightLineWidth = 5;
+        guiControl.isHighlighted = false;
         guiControl.isReadOnly = true;
         guiControl.isHitTestVisible = true;
+        guiControl.getDescendants(true).forEach(function (child) {
+            _this.createNewGuiNode(child);
+        });
         return guiControl;
     };
     WorkbenchComponent.prototype.parent = function (dropLocationControl) {
@@ -46566,7 +49291,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (draggedControl.width !== width || draggedControl.height !== height) {
             draggedControl.width = width;
             draggedControl.height = height;
-            alert("Warning: Parenting to stack panel will convert control to pixel value");
+            this.props.globalState.hostWindow.alert("Warning: Parenting to stack panel will convert control to pixel value");
         }
     };
     WorkbenchComponent.prototype._reorderGrid = function (grid, draggedControl, dropLocationControl) {
@@ -46601,6 +49326,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
         if (ignorClick === void 0) { ignorClick = false; }
+        this._liveGuiTextureRerender = false;
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
         if (this._setConstraintDirection) {
@@ -46629,35 +49355,41 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         guiControl.topInPixels += newY;
         //convert to percentage
         if (this._responsive) {
-            var ratioX = this._textureMesh.scaling.x;
-            var ratioY = this._textureMesh.scaling.z;
-            if (guiControl.parent) {
-                if (guiControl.parent.typeName === "Grid") {
-                    var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
-                    var cell = guiControl.parent.cells[cellInfo];
-                    ratioX = cell.widthInPixels;
-                    ratioY = cell.heightInPixels;
-                }
-                else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
-                    var thickness = guiControl.parent.thickness * 2;
-                    ratioX = guiControl.parent._currentMeasure.width - thickness;
-                    ratioY = guiControl.parent._currentMeasure.height - thickness;
-                }
-                else {
-                    ratioX = guiControl.parent._currentMeasure.width;
-                    ratioY = guiControl.parent._currentMeasure.height;
-                }
-            }
-            var left = (guiControl.leftInPixels * 100) / ratioX;
-            var top_1 = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.left = left.toFixed(2) + "%";
-            guiControl.top = top_1.toFixed(2) + "%";
+            this.convertToPercentage(guiControl, false);
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
     };
-    WorkbenchComponent.prototype.componentDidMount = function () {
-        this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+    WorkbenchComponent.prototype.convertToPercentage = function (guiControl, includeScale) {
+        var ratioX = this._textureMesh.scaling.x;
+        var ratioY = this._textureMesh.scaling.z;
+        if (guiControl.parent) {
+            if (guiControl.parent.typeName === "Grid") {
+                var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
+                var cell = guiControl.parent.cells[cellInfo];
+                ratioX = cell.widthInPixels;
+                ratioY = cell.heightInPixels;
+            }
+            else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                var thickness = guiControl.parent.thickness * 2;
+                ratioX = guiControl.parent._currentMeasure.width - thickness;
+                ratioY = guiControl.parent._currentMeasure.height - thickness;
+            }
+            else {
+                ratioX = guiControl.parent._currentMeasure.width;
+                ratioY = guiControl.parent._currentMeasure.height;
+            }
+        }
+        var left = (guiControl.leftInPixels * 100) / ratioX;
+        var top = (guiControl.topInPixels * 100) / ratioY;
+        guiControl.left = "".concat(left.toFixed(2), "%");
+        guiControl.top = "".concat(top.toFixed(2), "%");
+        if (includeScale) {
+            var width = (guiControl.widthInPixels * 100) / ratioX;
+            var height = (guiControl.heightInPixels * 100) / ratioY;
+            guiControl.width = "".concat(width.toFixed(2), "%");
+            guiControl.height = "".concat(height.toFixed(2), "%");
+        }
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
@@ -46700,7 +49432,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (pos === null && this._forceSelecting && !evt.button) {
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }
-        if (this._forceMoving) {
+        if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
         }
@@ -46714,65 +49446,90 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.isUp = true;
     };
     WorkbenchComponent.prototype.createGUICanvas = function () {
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var canvas, clearColor, light, textureSize, nodeMaterial, block;
-            var _this = this;
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        canvas = document.getElementById("workbench-canvas");
-                        this._canvas = canvas;
-                        // Associate a Babylon Engine to it.
-                        this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
-                        // Create our first scene.
-                        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
-                        clearColor = 204 / 255.0;
-                        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
-                        light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
-                        light.intensity = 0.9;
-                        textureSize = 1024;
-                        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
-                        this._textureMesh.scaling.x = textureSize;
-                        this._textureMesh.scaling.z = textureSize;
-                        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
-                        this._textureMesh.showBoundingBox = true;
-                        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
-                        this.artBoardBackground.width = "100%";
-                        this.artBoardBackground.height = "100%";
-                        this.artBoardBackground.background = "transparent";
-                        this.artBoardBackground.thickness = 0;
-                        this.globalState.guiTexture.addControl(this.artBoardBackground);
-                        nodeMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["NodeMaterial"]("NodeMaterial", this._scene);
-                        return [4 /*yield*/, nodeMaterial.loadAsync("GUIEditorNodeMaterial.json")];
-                    case 1:
-                        _a.sent();
-                        nodeMaterial.build(true);
-                        this._textureMesh.material = nodeMaterial;
-                        if (nodeMaterial) {
-                            block = nodeMaterial.getBlockByName("Texture");
-                            block.texture = this.globalState.guiTexture;
-                        }
-                        this.setCameraRadius();
-                        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
-                        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
-                        // This attaches the camera to the canvas
-                        this.addControls(this._scene, this._camera);
-                        this._scene.getEngine().onCanvasPointerOutObservable.clear();
-                        this._scene.doNotHandleCursors = true;
-                        // Watch for browser/canvas resize events
-                        window.addEventListener("resize", function () {
-                            _this._engine.resize();
-                        });
-                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
-                        this._engine.runRenderLoop(function () {
-                            _this._scene.render();
-                        });
-                        this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
-                        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-                        return [2 /*return*/];
-                }
-            });
+        var _this = this;
+        // Get the canvas element from the DOM.
+        var canvas = this._rootContainer.current;
+        this._canvas = canvas;
+        // Associate a Babylon Engine to it.
+        this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
+        // Create our first scene.
+        this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
+        var clearColor = 204 / 255.0;
+        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
+        var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
+        light.intensity = 0.9;
+        var textureSize = 1024;
+        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
+        this._textureMesh.scaling.x = textureSize;
+        this._textureMesh.scaling.z = textureSize;
+        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
+        this.globalState.guiTexture.rootContainer.clipChildren = false;
+        this.globalState.guiTexture.useInvalidateRectOptimization = false;
+        this.globalState.guiTexture.onEndRenderObservable.add(function () { return _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
+        this._textureMesh.showBoundingBox = true;
+        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
+        this.artBoardBackground.width = "100%";
+        this.artBoardBackground.height = "100%";
+        this.artBoardBackground.background = "transparent";
+        this.artBoardBackground.thickness = 0;
+        this.globalState.guiTexture.addControl(this.artBoardBackground);
+        this.synchronizeLiveGUI();
+        var nodeMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["NodeMaterial"]("NodeMaterial", this._scene);
+        nodeMaterial.loadFromSerialization(_GUIEditorNodeMaterial__WEBPACK_IMPORTED_MODULE_6__["GUIEditorNodeMaterial"]);
+        nodeMaterial.build(true);
+        this._textureMesh.material = nodeMaterial;
+        if (nodeMaterial) {
+            var block = nodeMaterial.getBlockByName("Texture");
+            block.texture = this.globalState.guiTexture;
+        }
+        this.setCameraRadius();
+        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
+        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
+        // This attaches the camera to the canvas
+        this.addControls(this._scene, this._camera);
+        this._scene.getEngine().onCanvasPointerOutObservable.clear();
+        this._scene.doNotHandleCursors = true;
+        // Watch for browser/canvas resize events
+        this.globalState.hostWindow.addEventListener("resize", function () {
+            _this._engine.resize();
         });
+        this._engine.resize();
+        // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
+        // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
+        // to prevent an infite loop, we flip a boolean flag
+        if (this.globalState.liveGuiTexture) {
+            this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(function () {
+                var _a;
+                if (_this._liveGuiTextureRerender) {
+                    (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
+                }
+                _this._liveGuiTextureRerender = true;
+            });
+            this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(function () {
+                var _a;
+                (_a = _this.globalState.guiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
+                _this._liveGuiTextureRerender = false;
+            });
+        }
+        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
+        this._engine.runRenderLoop(function () {
+            _this._scene.render();
+        });
+        this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
+        this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    };
+    // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
+    WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
+        var _this = this;
+        if (this.globalState.liveGuiTexture) {
+            this.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
+            this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(function (desc) {
+                var _a;
+                (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(desc);
+                _this.appendBlock(desc);
+            });
+            this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
+        }
     };
     //Add map-like controls to an ArcRotate camera
     WorkbenchComponent.prototype.addControls = function (scene, camera) {
@@ -46795,6 +49552,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 camera.target.addInPlace(inertialPanning);
                 inertialPanning.scaleInPlace(camera.inertia);
                 _this.zeroIfClose(inertialPanning);
+                _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             }
         };
         var wheelPrecisionFn = function () {
@@ -46830,6 +49588,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         scene.onPointerObservable.add(function (p, e) {
             _this._panning = false;
             removeObservers();
+            _this.props.globalState.guiGizmo.onUp();
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
@@ -46852,11 +49611,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 case "G":
                     _this.globalState.onOutlinesObservable.notifyObservers();
                     break;
-                case "m": //move
-                case "M":
-                    if (!_this._forceMoving)
-                        _this.globalState.onMoveObservable.notifyObservers();
-                    break;
                 case "f": //fit to window
                 case "F":
                     _this.globalState.onFitToWindowObservable.notifyObservers();
@@ -46865,6 +49619,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     break;
             }
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["KeyboardEventTypes"].KEYDOWN);
+        scene.onAfterRenderObservable.add(function () { if (_this._camera.inertialRadiusOffset != 0)
+            _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
         scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
@@ -46876,8 +49632,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
     };
     //Get pos on plane
-    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane) {
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
+    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane, x, y) {
+        if (x === void 0) { x = scene.pointerX; }
+        if (y === void 0) { y = scene.pointerY; }
+        var ray = scene.createPickingRay(x, y, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
         var distance = ray.intersectsPlane(plane);
         //not using this ray again, so modifying its vectors here is fine
         return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
@@ -46947,7 +49705,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); }, ref: this._rootContainer }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "workbench-canvas", onPointerMove: function (evt) {
+                if (_this.props.globalState.guiTexture) {
+                    _this.onMove(evt);
+                }
+                if (_this.props.globalState.guiGizmo) {
+                    _this.props.globalState.guiGizmo.onMove(evt);
+                }
+            }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) {
+                _this.onUp(evt);
+                _this.props.globalState.guiGizmo.onUp(evt);
+            }, ref: this._rootContainer }));
     };
     return WorkbenchComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47023,6 +49791,7 @@ var GlobalState = /** @class */ (function () {
         this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGuiNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
         this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -47041,6 +49810,7 @@ var GlobalState = /** @class */ (function () {
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
@@ -47093,15 +49863,13 @@ var GUIEditor = /** @class */ (function () {
      */
     GUIEditor.Show = function (options) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function () {
-            var popupWindow, hostElement, globalState, graphEditor, error_1, popupWindow;
+            var hostElement, popupWindow, globalState, graphEditor, error_1, popupWindow;
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this._CurrentState) {
-                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
-                            if (popupWindow) {
-                                popupWindow.close();
-                            }
+                        hostElement = options.hostElement;
+                        // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
+                        if (this._CurrentState && hostElement) {
                             if (options.currentSnippetToken) {
                                 try {
                                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
@@ -47112,11 +49880,17 @@ var GUIEditor = /** @class */ (function () {
                             }
                             return [2 /*return*/];
                         }
-                        hostElement = options.hostElement;
                         if (!hostElement) {
-                            hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1000, 800);
+                            popupWindow = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"]["gui-editor"];
+                            if (popupWindow) {
+                                popupWindow.close();
+                            }
+                            hostElement = _sharedUiComponents_lines_popup__WEBPACK_IMPORTED_MODULE_5__["Popup"].CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800);
                         }
                         globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();
+                        if (options.liveGuiTexture) {
+                            globalState.liveGuiTexture = options.liveGuiTexture;
+                        }
                         globalState.hostElement = hostElement;
                         globalState.hostDocument = hostElement.ownerDocument;
                         globalState.customSave = options.customSave;
@@ -47126,22 +49900,20 @@ var GUIEditor = /** @class */ (function () {
                             globalState: globalState,
                         });
                         react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](graphEditor, hostElement);
-                        if (!!globalState.guiTexture) return [3 /*break*/, 5];
-                        return [4 /*yield*/, globalState.workbench.createGUICanvas()];
+                        if (!!globalState.guiTexture) return [3 /*break*/, 4];
+                        globalState.workbench.createGUICanvas();
+                        if (!options.currentSnippetToken) return [3 /*break*/, 4];
+                        _a.label = 1;
                     case 1:
-                        _a.sent();
-                        if (!options.currentSnippetToken) return [3 /*break*/, 5];
-                        _a.label = 2;
-                    case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _a.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, globalState.workbench.loadFromSnippet(options.currentSnippetToken)];
-                    case 3:
+                    case 2:
                         _a.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
+                        return [3 /*break*/, 4];
+                    case 3:
                         error_1 = _a.sent();
-                        return [3 /*break*/, 5];
-                    case 5:
+                        return [3 /*break*/, 4];
+                    case 4:
                         if (options.customLoadObservable) {
                             options.customLoadObservable.add(function (data) {
                                 globalState.onResetRequiredObservable.notifyObservers();
@@ -47158,7 +49930,9 @@ var GUIEditor = /** @class */ (function () {
                                 }
                             };
                         }
-                        window.addEventListener("beforeunload", function () { });
+                        globalState.hostWindow.addEventListener("beforeunload", function () {
+                            globalState.onPopupClosedObservable.notifyObservers();
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -47771,8 +50545,8 @@ var ColorPicker = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-white" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-black" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-saturation-cursor", style: {
-                        top: -(hsv.b * 100) + 100 + "%",
-                        left: hsv.g * 100 + "%",
+                        top: "".concat(-(hsv.b * 100) + 100, "%"),
+                        left: "".concat(hsv.g * 100, "%"),
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-color", style: {
@@ -47780,7 +50554,7 @@ var ColorPicker = /** @class */ (function (_super) {
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-slider", ref: this._hueRef, onPointerMove: function (e) { return _this.onHuePointerMove(e); }, onPointerDown: function (e) { return _this.onHuePointerDown(e); }, onPointerUp: function (e) { return _this.onHuePointerUp(e); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-hue-cursor", style: {
-                            left: (hsv.r / 360.0) * 100 + "%",
+                            left: "".concat((hsv.r / 360.0) * 100, "%"),
                             border: "1px solid " + colorHexRef,
                         } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
@@ -47912,6 +50686,28 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/autoResizeIcon.svg":
+/*!****************************************************!*\
+  !*** ./sharedUiComponents/imgs/autoResizeIcon.svg ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M21.72,7.67h-5.3a.62.62,0,0,0-.61.61.61.61,0,0,0,.61.61h3.82L16,13.14a.62.62,0,0,0,.87.87l4.25-4.25v3.82a.61.61,0,0,0,.61.61.62.62,0,0,0,.61-.61V8.28A.62.62,0,0,0,21.72,7.67Z'/%3E%3Cpath class='cls-1' d='M21.72,15.81a.61.61,0,0,0-.61.62v3.25a1.43,1.43,0,0,1-1.43,1.43H15V17.24A2.24,2.24,0,0,0,12.76,15H8.89V10.32a1.43,1.43,0,0,1,1.43-1.43h3.25a.61.61,0,0,0,.62-.61.62.62,0,0,0-.62-.61H10.32a2.65,2.65,0,0,0-2.65,2.65v9.36a2.65,2.65,0,0,0,2.65,2.65h9.36a2.65,2.65,0,0,0,2.65-2.65V16.43A.62.62,0,0,0,21.72,15.81Zm-7.94,5.3H10.32a1.43,1.43,0,0,1-1.43-1.43V16.22h3.87a1,1,0,0,1,1,1Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/barOffsetIcon.svg":
+/*!***************************************************!*\
+  !*** ./sharedUiComponents/imgs/barOffsetIcon.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M9.15,12.42a1.42,1.42,0,0,0-1.41,1.42v2.32a1.42,1.42,0,0,0,1.41,1.42h11.7a1.42,1.42,0,0,0,1.41-1.42V13.84a1.42,1.42,0,0,0-1.41-1.42ZM9,13.84a.21.21,0,0,1,.2-.21h11.7a.21.21,0,0,1,.2.21v2.32a.21.21,0,0,1-.2.21H9.15a.21.21,0,0,1-.2-.21Zm7.66-5.49A.6.6,0,0,1,16,9H14a.61.61,0,0,1,0-1.21h2A.6.6,0,0,1,16.61,8.35ZM16,22.26a.61.61,0,0,0,0-1.21H14a.61.61,0,0,0,0,1.21ZM11,8.35a.61.61,0,0,0-.61-.61H10A2.21,2.21,0,0,0,7.74,10v.4a.61.61,0,1,0,1.21,0V10a1,1,0,0,1,1-1h.4A.6.6,0,0,0,11,8.35Zm8.67-.61a.61.61,0,1,0,0,1.21H20a1,1,0,0,1,1,1v.4a.61.61,0,1,0,1.21,0V10A2.21,2.21,0,0,0,20,7.74ZM11,21.65a.61.61,0,0,1-.61.61H10A2.21,2.21,0,0,1,7.74,20v-.4a.61.61,0,1,1,1.21,0V20a1,1,0,0,0,1,1h.4A.6.6,0,0,1,11,21.65Zm8.67.61a.61.61,0,1,1,0-1.21H20a1,1,0,0,0,1-1v-.4a.61.61,0,1,1,1.21,0V20A2.21,2.21,0,0,1,20,22.26Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/cancelGridElementDark.svg":
 /*!***********************************************************!*\
   !*** ./sharedUiComponents/imgs/cancelGridElementDark.svg ***!
@@ -47923,6 +50719,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/cellIDIcon.svg":
+/*!************************************************!*\
+  !*** ./sharedUiComponents/imgs/cellIDIcon.svg ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M14.11,11.39a.62.62,0,0,1,.48.71l-.18.89h2l.22-1.12a.61.61,0,0,1,.71-.48.6.6,0,0,1,.47.71l-.17.89h.79a.61.61,0,0,1,0,1.21h-1l-.33,1.6h1A.61.61,0,0,1,18,17h-1.2l-.22,1.13a.62.62,0,0,1-.71.47.61.61,0,0,1-.48-.71l.18-.89h-2l-.22,1.13a.61.61,0,0,1-.71.47.6.6,0,0,1-.47-.71l.17-.89h-.79a.61.61,0,0,1,0-1.21h1l.33-1.6H12A.61.61,0,0,1,12,13h1.2l.22-1.12A.62.62,0,0,1,14.11,11.39Zm-.26,4.41h2l.32-1.6h-2ZM7.76,10.37a2.61,2.61,0,0,1,2.61-2.61h9.26a2.61,2.61,0,0,1,2.61,2.61v9.26a2.61,2.61,0,0,1-2.61,2.61H10.37a2.61,2.61,0,0,1-2.61-2.61ZM10.37,9A1.4,1.4,0,0,0,9,10.37v9.26a1.4,1.4,0,0,0,1.4,1.4h9.26a1.4,1.4,0,0,0,1.4-1.4V10.37A1.4,1.4,0,0,0,19.63,9Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/checkboxIconDark.svg":
 /*!******************************************************!*\
   !*** ./sharedUiComponents/imgs/checkboxIconDark.svg ***!
@@ -47931,6 +50738,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M25,12.76A2.21,2.21,0,0,1,27.24,15V25A2.21,2.21,0,0,1,25,27.24H15A2.21,2.21,0,0,1,12.76,25V15A2.21,2.21,0,0,1,15,12.76ZM25,14H15a1,1,0,0,0-1,1V25a1,1,0,0,0,1,1H25a1,1,0,0,0,1-1V15A1,1,0,0,0,25,14Zm-6.64,8,5.21-5.2a.59.59,0,0,1,.85,0,.61.61,0,0,1,.06.78l-.06.07-5.63,5.63a.6.6,0,0,1-.79.06L18,23.24l-2.41-2.41a.61.61,0,0,1,0-.85.6.6,0,0,1,.79-.06l.06.06,2,2,5.21-5.2Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/clampSliderValueIcon.svg":
+/*!**********************************************************!*\
+  !*** ./sharedUiComponents/imgs/clampSliderValueIcon.svg ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23212121;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M17.87,12.15a.51.51,0,0,1,.71,0l2.5,2.5a.5.5,0,0,1,0,.71l-2.5,2.5a.5.5,0,0,1-.71-.71l1.65-1.64H16.16a.5.5,0,0,1-.5-.5.5.5,0,0,1,.5-.5h3.36l-1.65-1.65A.51.51,0,0,1,17.87,12.15Zm-10.45-3a.51.51,0,0,1,.5.44V20.37a.51.51,0,0,1-.5.51.5.5,0,0,1-.5-.44V9.63A.51.51,0,0,1,7.42,9.12Zm15.16,0a.5.5,0,0,1,.5.44V20.37a.51.51,0,0,1-1,.07V9.63A.51.51,0,0,1,22.58,9.12ZM12,12.86l-1.65,1.65h3.36a.5.5,0,0,1,.5.5.5.5,0,0,1-.5.5H10.38L12,17.15a.5.5,0,1,1-.71.71l-2.5-2.5a.51.51,0,0,1,0-.71l2.5-2.5a.5.5,0,1,1,.71.71Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -47978,6 +50796,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/cropIcon.svg":
+/*!**********************************************!*\
+  !*** ./sharedUiComponents/imgs/cropIcon.svg ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M22.43,19a.6.6,0,0,1,.09,1.2h-2.3v2.21a.6.6,0,0,1-.6.61.61.61,0,0,1-.6-.52v-2.3H12.39a2.61,2.61,0,0,1-2.61-2.46V11H7.56a.6.6,0,0,1-.08-1.2H9.77V7.57a.6.6,0,0,1,.6-.61.61.61,0,0,1,.6.52v2.3h0V11h0v6.63A1.4,1.4,0,0,0,12.27,19H22.43ZM11.78,9.78h5.83a2.62,2.62,0,0,1,2.61,2.46v6H19V12.39A1.4,1.4,0,0,0,17.73,11h-6Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/deleteGridElementDark.svg":
 /*!***********************************************************!*\
   !*** ./sharedUiComponents/imgs/deleteGridElementDark.svg ***!
@@ -47986,6 +50815,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,8.71a2,2,0,0,1,2,1.91v.11h3.26a.47.47,0,0,1,.06.93h-.56L19,19.75a1.7,1.7,0,0,1-1.59,1.53H12.71A1.71,1.71,0,0,1,11,19.85l0-.1-.79-8.09h-.5a.46.46,0,0,1-.46-.4V11.2a.46.46,0,0,1,.4-.46H13A2,2,0,0,1,15,8.71Zm3.85,2.95h-7.7l.79,8a.78.78,0,0,0,.69.7h4.66a.77.77,0,0,0,.76-.62v-.08Zm-2.76,1.71a.47.47,0,0,1,.46.4v4.41a.46.46,0,0,1-.92.06v-4.4A.47.47,0,0,1,16.09,13.37Zm-2.18,0a.46.46,0,0,1,.46.4v4.41a.47.47,0,0,1-.93.06v-4.4A.47.47,0,0,1,13.91,13.37ZM15,9.65a1.07,1.07,0,0,0-1.08,1v.09h2.18A1.08,1.08,0,0,0,15,9.65Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg":
+/*!****************************************************************!*\
+  !*** ./sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M23.11,9.32a2.23,2.23,0,0,1-2.23,2.24H9.12a2.24,2.24,0,0,1,0-4.47H20.88A2.23,2.23,0,0,1,23.11,9.32ZM21.49,15a2.23,2.23,0,0,1-2.23,2.23H10.74a2.23,2.23,0,0,1,0-4.46h8.52A2.23,2.23,0,0,1,21.49,15Zm-2.44,5.68a2.23,2.23,0,0,1-2.23,2.23H13.18a2.24,2.24,0,0,1,0-4.47h3.64A2.23,2.23,0,0,1,19.05,20.68ZM21.89,9.32a1,1,0,0,0-1-1H9.12a1,1,0,0,0,0,2H20.88A1,1,0,0,0,21.89,9.32ZM20.27,15a1,1,0,0,0-1-1H10.74a1,1,0,0,0,0,2h8.52A1,1,0,0,0,20.27,15Zm-2.43,5.68a1,1,0,0,0-1-1H13.18a1,1,0,1,0,0,2h3.64A1,1,0,0,0,17.84,20.68Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -48088,6 +50928,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/imageLinkIcon.svg":
+/*!***************************************************!*\
+  !*** ./sharedUiComponents/imgs/imageLinkIcon.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M12.78,11a.6.6,0,0,1,.09,1.2H11a2.82,2.82,0,0,0-.17,5.64h2a.61.61,0,0,1,.61.61.62.62,0,0,1-.52.6H11a4,4,0,0,1-.2-8.06h2ZM19,11a4,4,0,0,1,.2,8.06h-2a.6.6,0,0,1-.09-1.2H19a2.82,2.82,0,0,0,.17-5.64h-2a.61.61,0,0,1-.61-.61.62.62,0,0,1,.52-.6H19ZM11,14.4H19a.6.6,0,0,1,.08,1.2H11a.6.6,0,0,1-.08-1.2Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/positionIcon.svg":
 /*!**************************************************!*\
   !*** ./sharedUiComponents/imgs/positionIcon.svg ***!
@@ -48165,6 +51016,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/showThumbIcon.svg":
+/*!***************************************************!*\
+  !*** ./sharedUiComponents/imgs/showThumbIcon.svg ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M20.33,18.05v0a1.43,1.43,0,0,0,1.22.39v2.9a1.85,1.85,0,0,1-1.72,1.84H10.28a1.85,1.85,0,0,1-1.84-1.72v-3a1.42,1.42,0,0,0,1.12-.3l.11-.1v3.3a.62.62,0,0,0,.53.61h9.52a.62.62,0,0,0,.61-.53V18.05ZM9.08,12.51a.61.61,0,0,1,.06.8l-.06.07-1,1h3.1a.58.58,0,0,1,.54.62.59.59,0,0,1-.47.61H8.08l1,1a.61.61,0,0,1,.06.8l-.06.07a.62.62,0,0,1-.8.05l-.07-.05L6.27,15.54a.65.65,0,0,1,0-1.08l1.94-2A.62.62,0,0,1,9.08,12.51Zm11.84,0a.61.61,0,0,1,.8-.06l.07.06,1.94,1.94A.63.63,0,0,1,24,15a.67.67,0,0,1-.22.5l-.07,0-1.94,1.94-.07.06a.62.62,0,0,1-.72,0l-.08-.07-.06-.07a.6.6,0,0,1,0-.72l.06-.08,1-1H18.75a.59.59,0,0,1-.47-.61.58.58,0,0,1,.47-.61h3.17l-1-1-.06-.07A.61.61,0,0,1,20.92,12.51ZM19.72,6.8a1.85,1.85,0,0,1,1.84,1.72v3a1.44,1.44,0,0,0-1.12.31l-.11.1V8.64A.62.62,0,0,0,19.8,8H10.28a.62.62,0,0,0-.61.53v3.38h0a1.44,1.44,0,0,0-1.22-.4V8.64A1.85,1.85,0,0,1,10.16,6.8h9.56Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/sizeIcon.svg":
 /*!**********************************************!*\
   !*** ./sharedUiComponents/imgs/sizeIcon.svg ***!
@@ -48173,6 +51035,61 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M10,7a3,3,0,0,0-3,3v3.5a.5.5,0,0,0,1,0V10a2,2,0,0,1,2-2h3.5a.5.5,0,0,0,0-1Z' style='fill:%23333'/%3E%3Cpath d='M16.5,7a.5.5,0,0,0,0,1H20a2,2,0,0,1,2,2v3.5a.5.5,0,0,0,1,0V10a3,3,0,0,0-3-3Z' style='fill:%23333'/%3E%3Cpath d='M7.5,16a.5.5,0,0,1,.5.5V20a2,2,0,0,0,2,2h3.5a.5.5,0,0,1,0,1H10a3,3,0,0,1-3-3V16.5A.5.5,0,0,1,7.5,16Z' style='fill:%23333'/%3E%3Cpath d='M23,16.5a.5.5,0,0,0-1,0V20a2,2,0,0,1-2,2H16.5a.5.5,0,0,0,0,1H20a3,3,0,0,0,3-3Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/sliderBackgroundImageIcon.svg":
+/*!***************************************************************!*\
+  !*** ./sharedUiComponents/imgs/sliderBackgroundImageIcon.svg ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M15.81,11.77A1.82,1.82,0,1,0,17.63,10,1.81,1.81,0,0,0,15.81,11.77Zm1.82-.61a.61.61,0,1,1-.61.61A.61.61,0,0,1,17.63,11.16Z'/%3E%3Cpath class='cls-1' d='M21.06,9.34H18.43a2.55,2.55,0,0,1,1.45,1.21h1.18A2.43,2.43,0,0,1,23.49,13V17a2.43,2.43,0,0,1-2.43,2.42H20.9l-4.63-4.53-.1-.1a1.82,1.82,0,0,0-2.44.1L9.1,19.45H8.94A2.43,2.43,0,0,1,6.51,17V13a2.43,2.43,0,0,1,2.43-2.42h6.44a2.54,2.54,0,0,1,1.46-1.21H8.94A3.64,3.64,0,0,0,5.3,13V17a3.64,3.64,0,0,0,3.64,3.63H21.06A3.64,3.64,0,0,0,24.7,17V13A3.64,3.64,0,0,0,21.06,9.34Zm-6.48,6.45.06-.06a.61.61,0,0,1,.78.06l3.75,3.66H10.83Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/sliderValueIcon.svg":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/imgs/sliderValueIcon.svg ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M14.18,7.64A.61.61,0,0,0,13,7.41l-.82,4.36H8.33a.61.61,0,0,0,0,1.21h3.6l-.77,4H7.53a.61.61,0,1,0,0,1.21H11l-.79,4.13a.61.61,0,0,0,.49.71.6.6,0,0,0,.7-.48l.83-4.36H16.6l-.78,4.13a.61.61,0,1,0,1.19.23l.82-4.36h3.84a.61.61,0,0,0,0-1.21h-3.6l.77-4h3.64a.61.61,0,1,0,0-1.21H19.06l.78-4.12a.61.61,0,0,0-.49-.71.6.6,0,0,0-.7.48l-.83,4.35H13.4Zm-1,5.34h4.42l-.76,4H12.41Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/sliderValueMaximumIcon.svg":
+/*!************************************************************!*\
+  !*** ./sharedUiComponents/imgs/sliderValueMaximumIcon.svg ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M13.78,7.24a.61.61,0,0,0-.49-.71.6.6,0,0,0-.7.48l-.83,4.35H7.93a.62.62,0,0,0-.6.61.6.6,0,0,0,.6.61h3.6l-.76,4H7.12a.61.61,0,0,0,0,1.21h3.42L9.76,22a.61.61,0,1,0,1.19.22l.82-4.35h2.16a5.18,5.18,0,0,1,.45-1.21H12l.77-4h4.42l-.32,1.69a4.86,4.86,0,0,1,1.31-.4l.24-1.29h3.65a.61.61,0,0,0,0-1.21H18.65l.78-4.12A.61.61,0,0,0,18.24,7l-.82,4.35H13ZM19,14.6A4.44,4.44,0,1,1,14.6,19,4.44,4.44,0,0,1,19,14.6Zm.1,1.63-.07,0h-.13l-.07,0-.06,0,0,0-2,2,0,.06a.39.39,0,0,0,0,.46l0,.05.06,0a.43.43,0,0,0,.46,0l.06,0,1.32-1.33v4.35a.4.4,0,0,0,.33.32h.14a.4.4,0,0,0,.33-.32V17.59l1.33,1.33.06,0a.4.4,0,0,0,.56-.56l-.05-.06L19.29,16.3l0,0-.06,0Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/sliderValueMinimumIcon.svg":
+/*!************************************************************!*\
+  !*** ./sharedUiComponents/imgs/sliderValueMinimumIcon.svg ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M13.78,7.24a.61.61,0,0,0-.49-.71.6.6,0,0,0-.7.48l-.83,4.35H7.93a.62.62,0,0,0-.6.61.6.6,0,0,0,.6.61h3.6l-.76,4H7.12a.61.61,0,0,0,0,1.21h3.42L9.76,22a.61.61,0,1,0,1.19.22l.82-4.35h2.16a5.18,5.18,0,0,1,.45-1.21H12l.77-4h4.42l-.32,1.69a4.86,4.86,0,0,1,1.31-.4l.24-1.29h3.65a.61.61,0,0,0,0-1.21H18.65l.78-4.12A.61.61,0,0,0,18.24,7l-.82,4.35H13ZM14.6,19A4.44,4.44,0,1,1,19,23.48,4.44,4.44,0,0,1,14.6,19Zm4.59,2.8.06,0,0,0,2.05-2.05.05-.06a.4.4,0,0,0-.56-.56l-.06.05-1.33,1.33V16.14a.4.4,0,0,0-.33-.33H19a.4.4,0,0,0-.33.33v4.35l-1.32-1.33-.06-.05a.43.43,0,0,0-.46,0l-.06.05,0,.05a.39.39,0,0,0,0,.46l0,.06,2,2,0,0,.06,0,.07,0h.13l.07,0Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/stretchFillIcon.svg":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/imgs/stretchFillIcon.svg ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M11.77,12.93a.61.61,0,0,1,.06.86l-.54.61H13.6a.6.6,0,0,1,0,1.2H11.29l.54.61a.61.61,0,0,1-.92.8L9.5,15.4a.61.61,0,0,1,0-.8L10.91,13A.61.61,0,0,1,11.77,12.93Zm6.42.86a.61.61,0,1,1,.91-.8l1.41,1.61a.61.61,0,0,1,0,.8L19.1,17a.61.61,0,1,1-.91-.8l.53-.61H16.41a.6.6,0,0,1,0-1.2h2.31ZM6.93,10.36A1.82,1.82,0,0,1,8.75,8.55h12.5a1.81,1.81,0,0,1,1.81,1.81v9.28a1.81,1.81,0,0,1-1.81,1.81H8.75a1.82,1.82,0,0,1-1.82-1.81Zm1.82-.6a.6.6,0,0,0-.61.6v9.28a.6.6,0,0,0,.61.6h12.5a.6.6,0,0,0,.6-.6V10.36a.6.6,0,0,0-.6-.6Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -48195,6 +51112,39 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M15,6.94A8.06,8.06,0,1,1,6.94,15,8.06,8.06,0,0,1,15,6.94Zm0,1.21A6.85,6.85,0,1,0,21.85,15,6.84,6.84,0,0,0,15,8.15Zm3.43,6.25a.6.6,0,1,1,0,1.2H11.57a.6.6,0,0,1,0-1.2Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/thumbCircleIcon.svg":
+/*!*****************************************************!*\
+  !*** ./sharedUiComponents/imgs/thumbCircleIcon.svg ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M15,8.13A6.87,6.87,0,1,0,21.87,15,6.86,6.86,0,0,0,15,8.13ZM6.91,15A8.09,8.09,0,1,1,15,23.09,8.09,8.09,0,0,1,6.91,15Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/thumbImageLinkIcon.svg":
+/*!********************************************************!*\
+  !*** ./sharedUiComponents/imgs/thumbImageLinkIcon.svg ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M15,6.91A8.09,8.09,0,1,0,23.09,15,8.09,8.09,0,0,0,15,6.91Zm0,1.22A6.87,6.87,0,0,1,20.59,19l-4.32-4.23-.11-.09a1.8,1.8,0,0,0-2.43.09L9.41,19A6.87,6.87,0,0,1,15,8.13ZM10.2,19.91l4.38-4.29.07,0a.58.58,0,0,1,.77,0l4.38,4.29a6.86,6.86,0,0,1-9.6,0Z'/%3E%3Cpath class='cls-1' d='M17.62,13.44a1.81,1.81,0,1,0-1.82-1.81A1.81,1.81,0,0,0,17.62,13.44Zm0-2.41a.61.61,0,1,1-.61.6A.6.6,0,0,1,17.62,11Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/thumbWidthIcon.svg":
+/*!****************************************************!*\
+  !*** ./sharedUiComponents/imgs/thumbWidthIcon.svg ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M21.56,10.49a1.85,1.85,0,0,0-1.85-1.85H10.29a1.85,1.85,0,0,0-1.85,1.85v3.28a.62.62,0,0,0,.62.61.61.61,0,0,0,.61-.61V10.49a.62.62,0,0,1,.62-.62h9.42a.62.62,0,0,1,.62.62v3.28a.61.61,0,0,0,.61.61.62.62,0,0,0,.62-.61Zm-2.28,5.72a.61.61,0,0,1,.8-.06l.07.06,1.94,1.94a.65.65,0,0,1,.06,1l-.06,0-1.94,1.94-.07.06a.62.62,0,0,1-.72,0l-.08-.06-.06-.07a.63.63,0,0,1,0-.73l.07-.07,1-1H17.1a.63.63,0,0,1,0-1.22h3.18l-1-1L19.22,17A.61.61,0,0,1,19.28,16.21Zm-8.56,0a.61.61,0,0,1,.06.8l-.06.07-1,1h3.1a.58.58,0,0,1,.54.61.59.59,0,0,1-.46.61H9.72l1,1a.61.61,0,0,1,.06.8l-.06.07a.61.61,0,0,1-.8.06l-.07-.06L7.91,19.24a.66.66,0,0,1,0-1.09l1.94-1.94A.62.62,0,0,1,10.72,16.21Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -48231,6 +51181,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 /***/ }),
 
+/***/ "./sharedUiComponents/imgs/valueBarImageLinkIcon.svg":
+/*!***********************************************************!*\
+  !*** ./sharedUiComponents/imgs/valueBarImageLinkIcon.svg ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M17.62,10.54A1.81,1.81,0,1,0,15.8,8.73,1.81,1.81,0,0,0,17.62,10.54Zm0-2.41a.6.6,0,0,1,.6.6.61.61,0,1,1-1.21,0A.6.6,0,0,1,17.62,8.13Z'/%3E%3Cpath class='cls-1' d='M21.75,18.58H8.25a2.25,2.25,0,0,0,0,4.5h13.5a2.25,2.25,0,0,0,0-4.5Zm0,3H8.25a.75.75,0,0,1,0-1.5h13.5a.75.75,0,0,1,0,1.5Z'/%3E%3Cpath class='cls-1' d='M7.22,17.38H22.55a.5.5,0,0,0,.44-.5.51.51,0,0,0-.51-.5H20.87l-4.6-4.51-.11-.09a1.8,1.8,0,0,0-2.43.09l-4.6,4.51h-2a.51.51,0,0,0-.43.5A.5.5,0,0,0,7.22,17.38Zm7.36-4.66.07-.06a.59.59,0,0,1,.77.06l3.73,3.65h-8.3Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./sharedUiComponents/imgs/valueChangedGridDark.svg":
 /*!**********************************************************!*\
   !*** ./sharedUiComponents/imgs/valueChangedGridDark.svg ***!
@@ -48250,6 +51211,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M21.63,9a.6.6,0,0,0,0-1.2H8.37a.6.6,0,0,0,0,1.2Z' style='fill:%23333'/%3E%3Cpath d='M21.63,22.23a.6.6,0,0,0,0-1.2H8.37a.6.6,0,0,0,0,1.2Z' style='fill:%23333'/%3E%3Cpath d='M10.78,11.79a1.41,1.41,0,0,0-1.41,1.4v3.62a1.41,1.41,0,0,0,1.41,1.4h8.44a1.41,1.41,0,0,0,1.41-1.4V13.19a1.41,1.41,0,0,0-1.41-1.4Zm-.2,1.4a.2.2,0,0,1,.2-.2h8.44a.2.2,0,0,1,.2.2v3.62a.2.2,0,0,1-.2.2H10.78a.2.2,0,0,1-.2-.2Z' style='fill:%23333'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/imgs/verticalSliderIcon.svg":
+/*!********************************************************!*\
+  !*** ./sharedUiComponents/imgs/verticalSliderIcon.svg ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M18.08,6.79a1.85,1.85,0,0,1,1.85,1.85V21.36a1.85,1.85,0,0,1-1.85,1.85H11.92a1.85,1.85,0,0,1-1.85-1.85V8.64a1.85,1.85,0,0,1,1.85-1.85Zm0,1.23H11.92a.61.61,0,0,0-.61.62V21.36a.61.61,0,0,0,.61.62h6.16a.61.61,0,0,0,.61-.62V8.64A.61.61,0,0,0,18.08,8Zm-.8,8.18a.62.62,0,0,1,.07.8l-.06.07L15.44,19a.62.62,0,0,1-.81.06L14.56,19l-1.85-1.89a.61.61,0,0,1,.81-.92l.07.06L15,17.65l1.41-1.44A.62.62,0,0,1,17.28,16.2Zm-1.84-5.12L17.29,13a.64.64,0,0,1,0,.88.63.63,0,0,1-.87,0L15,12.39l-1.41,1.44a.62.62,0,1,1-.88-.87l1.85-1.88A.61.61,0,0,1,15.44,11.08Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -48299,6 +51271,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
@@ -48361,10 +51335,12 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBoxLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.iconLabel }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
+            this.props.label &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.iconLabel }, this.props.label),
+            this.props.faIcons && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { className: "cbx ".concat(this.props.disabled ? "disabled" : ""), icon: this.state.isSelected ? this.props.faIcons.enabled : this.props.faIcons.disabled, onClick: function () { return !_this.props.disabled && _this.onChange(); } }),
+            !this.props.faIcons && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl" + (!!this.props.disabled ? " disabled" : "") }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl".concat(!!this.props.disabled ? " disabled" : "") }))));
     };
     CheckBoxLineComponent._UniqueIdSeed = 0;
     return CheckBoxLineComponent;
@@ -48812,6 +51788,9 @@ var FloatLineComponent = /** @class */ (function (_super) {
                 }
             }
         }
+        else if (this.props.defaultValue != null) {
+            valueAsNumber = this.props.defaultValue;
+        }
         this._localChange = true;
         this.setState({ value: valueString });
         if (isNaN(valueAsNumber)) {
@@ -48841,7 +51820,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             valueAsNumber = parseFloat(this.state.value);
         }
         var className = this.props.smallUI ? "short" : "value";
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             !this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
                 this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 (!this.props.icon || this.props.label != "") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
@@ -48927,7 +51906,7 @@ var NumericInputComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, this.props.label + ": ")),
+            this.props.label && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label", title: this.props.label }, "".concat(this.props.label, ": "))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); }, onBlur: function () { return _this.onBlur(); } })));
     };
     NumericInputComponent.defaultProps = {
@@ -49296,7 +52275,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         this._localChange = true;
         var store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName];
         this.setState({ value: value });
-        if (this.props.propertyName) {
+        if (this.props.propertyName && !this.props.delayInput) {
             this.props.target[this.props.propertyName] = value;
         }
         this.raiseOnPropertyChanged(value, store);
@@ -49307,7 +52286,10 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             (!this.props.icon || (this.props.icon && this.props.label != "")) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () { return (_this.props.lockObject.lock = false); }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () {
+                        _this.props.lockObject.lock = false;
+                        _this.updateValue((_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "");
+                    }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
     };
     return TextInputLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -49611,6 +52593,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
 /* harmony import */ var _components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/sceneExplorer/sceneExplorerComponent */ "./components/sceneExplorer/sceneExplorerComponent.tsx");
 /* harmony import */ var _components_commandBarComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/commandBarComponent */ "./components/commandBarComponent.tsx");
+/* harmony import */ var _diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagram/guiGizmo */ "./diagram/guiGizmo.tsx");
+
 
 
 
@@ -49630,6 +52614,7 @@ var gridIcon = __webpack_require__(/*! ../public/imgs/gridIcon.svg */ "../public
 var stackPanelIcon = __webpack_require__(/*! ../public/imgs/stackPanelIcon.svg */ "../public/imgs/stackPanelIcon.svg");
 var textBoxIcon = __webpack_require__(/*! ../public/imgs/textBoxIcon.svg */ "../public/imgs/textBoxIcon.svg");
 var sliderIcon = __webpack_require__(/*! ../public/imgs/sliderIcon.svg */ "../public/imgs/sliderIcon.svg");
+var imageBasedSliderIcon = __webpack_require__(/*! ../public/imgs/imageSliderIcon.svg */ "../public/imgs/imageSliderIcon.svg");
 var buttonIcon = __webpack_require__(/*! ../public/imgs/buttonIcon.svg */ "../public/imgs/buttonIcon.svg");
 var passwordFieldIcon = __webpack_require__(/*! ../public/imgs/passwordFieldIcon.svg */ "../public/imgs/passwordFieldIcon.svg");
 var checkboxIcon = __webpack_require__(/*! ../public/imgs/checkboxIcon.svg */ "../public/imgs/checkboxIcon.svg");
@@ -49647,7 +52632,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._leftWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadNumber("LeftWidth", 200);
         _this._rightWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].ReadNumber("RightWidth", 300);
-        _this._toolBarIconSize = 55;
+        _this._toolBarIconSize = 40;
         _this.handlePopUp = function () {
             _this.setState({
                 showPreviewPopUp: true,
@@ -49746,11 +52731,6 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
         }
     };
-    WorkbenchEditor.prototype.componentWillUnmount = function () {
-        if (this.props.globalState.hostDocument) {
-            this.props.globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
-        }
-    };
     WorkbenchEditor.prototype.showWaitScreen = function () {
         var _a;
         (_a = this.props.globalState.hostDocument.querySelector(".wait-screen")) === null || _a === void 0 ? void 0 : _a.classList.remove("hidden");
@@ -49790,7 +52770,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         this.props.globalState.onWindowResizeObservable.notifyObservers();
     };
     WorkbenchEditor.prototype.buildColumnLayout = function () {
-        return this._leftWidth + "px 4px " + this._toolBarIconSize + "px calc(100% - " + (this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth) + "px) 4px " + this._rightWidth + "px";
+        return "".concat(this._leftWidth, "px 4px ").concat(this._toolBarIconSize, "px calc(100% - ").concat(this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth, "px) 4px ").concat(this._rightWidth, "px");
     };
     WorkbenchEditor.prototype.render = function () {
         var _this = this;
@@ -49809,8 +52789,16 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__["SceneExplorerComponent"], { globalState: this.props.globalState, noExpand: true }),
                 this.createToolbar(),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container", onDrop: function (event) {
+                        if (_this._draggedItem != null) {
+                            _this.onCreate(_this._draggedItem);
+                        }
+                        _this._draggedItem = null;
+                    }, onDragOver: function (event) {
+                        event.preventDefault();
+                    } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__["GuiGizmoComponent"], { globalState: this.props.globalState })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_2__["PropertyTabComponent"], { globalState: this.props.globalState })),
@@ -49928,6 +52916,13 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 },
             },
             {
+                label: "ImageBasedSlider",
+                icon: imageBasedSliderIcon,
+                onClick: function () {
+                    _this.onCreate("ImageBasedSlider");
+                },
+            },
+            {
                 label: "VirtualKeyboard",
                 icon: keyboardIcon,
                 onClick: function () {
@@ -49947,6 +52942,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_6__["GUINodeTools"].CreateControlFromString(value);
         var newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.props.globalState.guiGizmo.onUp();
         this.forceUpdate();
     };
     WorkbenchEditor.prototype.createToolbar = function () {
@@ -49955,7 +52951,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "toolbarGrab" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blackLine" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-content sub1" }, this._items.map(function (m) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label" + (m.isActive ? " active" : ""), key: m.label, onClick: function () {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label" + (m.isActive ? " active" : ""), key: m.label, onDragStart: function (evt) { _this._draggedItem = m.label; }, onClick: function () {
                             if (!m.onClick) {
                                 _this.forceUpdate();
                                 return;
@@ -49965,8 +52961,8 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                             }
                         }, title: m.label },
                         !m.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-label-text" }, (m.isActive ? "> " : "") + m.label),
-                        m.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon }))),
+                        m.icon && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "toolbar-icon", draggable: true },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: m.icon, width: "40px", height: "40px" }))),
                         m.onCheck && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkBox", className: "toolbar-label-check", onChange: function (evt) {
                                 _this.forceUpdate();
                                 m.onCheck(evt.target.checked);

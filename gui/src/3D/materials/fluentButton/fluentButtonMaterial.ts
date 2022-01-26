@@ -554,7 +554,7 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FluentButtonMaterial";
         return serializationObject;
     }

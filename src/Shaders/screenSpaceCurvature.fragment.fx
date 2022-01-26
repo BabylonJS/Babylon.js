@@ -23,10 +23,10 @@ float curvature_soft_clamp(float curvature, float control)
 
 float calculate_curvature(ivec2 texel, float ridge, float valley)
 {
-    vec2 normal_up    = texelFetchOffset(normalSampler, texel, 0, ivec2(0,  CURVATURE_OFFSET)).rb;
-    vec2 normal_down  = texelFetchOffset(normalSampler, texel, 0, ivec2(0, -CURVATURE_OFFSET)).rb;
-    vec2 normal_left  = texelFetchOffset(normalSampler, texel, 0, ivec2(-CURVATURE_OFFSET, 0)).rb;
-    vec2 normal_right = texelFetchOffset(normalSampler, texel, 0, ivec2( CURVATURE_OFFSET, 0)).rb;
+    vec2 normal_up    = texelFetch(normalSampler, texel + ivec2(0,  CURVATURE_OFFSET), 0).rb;
+    vec2 normal_down  = texelFetch(normalSampler, texel + ivec2(0, -CURVATURE_OFFSET), 0).rb;
+    vec2 normal_left  = texelFetch(normalSampler, texel + ivec2(-CURVATURE_OFFSET, 0), 0).rb;
+    vec2 normal_right = texelFetch(normalSampler, texel + ivec2( CURVATURE_OFFSET, 0), 0).rb;
 
     float normal_diff = ((normal_up.g - normal_down.g) + (normal_right.r - normal_left.r));
 
@@ -35,6 +35,9 @@ float calculate_curvature(ivec2 texel, float ridge, float valley)
 
     return 2.0 * curvature_soft_clamp(normal_diff, ridge);
 }
+
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
 
 void main(void) 
 {

@@ -429,7 +429,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MRDLBackplateMaterial";
         return serializationObject;
     }

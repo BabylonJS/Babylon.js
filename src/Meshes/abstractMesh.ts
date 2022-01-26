@@ -102,6 +102,7 @@ class _InternalAbstractMeshDataInfo {
     public _positions: Nullable<Vector3[]> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
+    public _enableDistantPicking = false;
 }
 
 /**
@@ -189,6 +190,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     // Internal data
     /** @hidden */
     public _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
+
+    /** @hidden */
+    public _waitingMaterialId: Nullable<string> = null;
 
     /**
      * The culling strategy to use to check whether the mesh must be rendered or not.
@@ -583,16 +587,23 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsMiscDirty();
     }
 
+    /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+    public get enableDistantPicking(): boolean {
+        return this._internalAbstractMeshDataInfo._enableDistantPicking;
+    }
+    public set enableDistantPicking(value: boolean) {
+        this._internalAbstractMeshDataInfo._enableDistantPicking = value;
+    }
+
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes selection (true by default) */
     public useOctreeForRenderingSelection = true;
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes picking (true by default) */
     public useOctreeForPicking = true;
     /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
     public useOctreeForCollisions = true;
-
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
-     * @see https://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
+     * @see https://doc.babylonjs.com/divingDeeper/cameras/layerMasksAndMultiCam
      */
     public get layerMask(): number {
         return this._internalAbstractMeshDataInfo._layerMask;
@@ -1013,14 +1024,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
      /**
      * Resets the draw wrappers cache for all submeshes of this abstract mesh
+     * @param passId If provided, releases only the draw wrapper corresponding to this render pass id
      */
-    public resetDrawCache(): void {
+    public resetDrawCache(passId?: number): void {
         if (!this.subMeshes) {
              return;
         }
 
         for (const subMesh of this.subMeshes) {
-            subMesh.resetDrawCache();
+            subMesh.resetDrawCache(passId);
         }
     }
 
@@ -1684,7 +1696,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.indexStart + subMesh.indexCount,
             subMesh.verticesStart,
             !!subMesh.getMaterial(),
-            this
+            this,
+            this._shouldConvertRHS()
         );
         return this;
     }
@@ -1705,6 +1718,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             this._collideForSubMesh(subMesh, transformMatrix, collider);
         }
         return this;
+    }
+
+    /** @hidden */
+    public _shouldConvertRHS() {
+        return false;
     }
 
     /** @hidden */

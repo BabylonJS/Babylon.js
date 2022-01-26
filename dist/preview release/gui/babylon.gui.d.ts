@@ -36,11 +36,10 @@ declare module BABYLON.GUI {
      * Class used to specific a value and its associated unit
      */
     export class ValueAndUnit {
-        /** defines the unit to store */
-        unit: number;
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed: boolean;
         private _value;
+        private _unit;
         private _originalUnit;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
@@ -48,9 +47,13 @@ declare module BABYLON.GUI {
          */
         ignoreAdaptiveScaling: boolean;
         /**
+         * BABYLON.Observable event triggered each time the value or unit changes
+         */
+        onChangedObservable: BABYLON.Observable<void>;
+        /**
          * Creates a new ValueAndUnit
          * @param value defines the value to store
-         * @param unit defines the unit to store
+         * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
          * @param negativeValueAllowed defines a boolean indicating if the value can be negative
          */
         constructor(value: number, 
@@ -62,8 +65,19 @@ declare module BABYLON.GUI {
         get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
         get isPixel(): boolean;
-        /** Gets direct internal value */
+        /**
+         * Gets value (without units)
+         * @deprecated use value property instead
+         */
         get internalValue(): number;
+        /** Gets value (without units) */
+        get value(): number;
+        /** Sets value (without units) */
+        set value(value: number);
+        /** Gets units (without value) */
+        get unit(): number;
+        /** Sets units (without value) */
+        set unit(value: number);
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -72,7 +86,7 @@ declare module BABYLON.GUI {
          */
         getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number;
         /**
-         * Update the current value and unit. This should be done cautiously as the GUi won't be marked as dirty with this function.
+         * Update the current value and unit.
          * @param value defines the value to store
          * @param unit defines the unit to store
          * @returns the current ValueAndUnit
@@ -94,7 +108,7 @@ declare module BABYLON.GUI {
         /**
          * Store a value parsed from a string
          * @param source defines the source string
-         * @returns true if the value was successfully parsed
+         * @returns true if the value was successfully parsed and updated
          */
         fromString(source: string | number): boolean;
         private static _Regex;
@@ -222,6 +236,11 @@ declare module BABYLON.GUI {
          * @returns a new matrix
          */
         static Identity(): Matrix2D;
+        /**
+         * Creates an identity matrix and stores it in a target matrix
+         * @param result defines the target matrix
+         */
+        static IdentityToRef(result: Matrix2D): void;
         /**
          * Creates a translation matrix and stores it in a target matrix
          * @param x defines the x coordinate of the translation
@@ -724,9 +743,10 @@ declare module BABYLON.GUI {
          * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
          * @param scene defines the hosting scene
          * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+         * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number): AdvancedDynamicTexture;
+        static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
     }
 }
 declare module BABYLON.GUI {
@@ -750,6 +770,8 @@ declare module BABYLON.GUI {
         parent: BABYLON.Nullable<Container>;
         /** @hidden */
         _currentMeasure: Measure;
+        /** @hidden */
+        _tempPaddingMeasure: Measure;
         private _fontFamily;
         private _fontStyle;
         private _fontWeight;
@@ -782,6 +804,7 @@ declare module BABYLON.GUI {
         _prevCurrentMeasureTransformedIntoGlobalSpace: Measure;
         /** @hidden */
         protected _cachedParentMeasure: Measure;
+        private _descendantsOnlyPadding;
         private _paddingLeft;
         private _paddingRight;
         private _paddingTop;
@@ -842,6 +865,10 @@ declare module BABYLON.GUI {
          */
         get isReadOnly(): boolean;
         set isReadOnly(value: boolean);
+        /**
+         * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+         */
+        get transformedMeasure(): Measure;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -1085,6 +1112,12 @@ declare module BABYLON.GUI {
          */
         get linkedMesh(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
+         * Gets or sets a value indicating the padding should work like in CSS.
+         * Basically, it will add the padding amount on each side of the parent control for its children.
+         */
+        get descendantsOnlyPadding(): boolean;
+        set descendantsOnlyPadding(value: boolean);
+        /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -1096,6 +1129,8 @@ declare module BABYLON.GUI {
          */
         get paddingLeftInPixels(): number;
         set paddingLeftInPixels(value: number);
+        /** @hidden */
+        get _paddingLeftInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1108,6 +1143,8 @@ declare module BABYLON.GUI {
          */
         get paddingRightInPixels(): number;
         set paddingRightInPixels(value: number);
+        /** @hidden */
+        get _paddingRightInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1120,6 +1157,8 @@ declare module BABYLON.GUI {
          */
         get paddingTopInPixels(): number;
         set paddingTopInPixels(value: number);
+        /** @hidden */
+        get _paddingTopInPixels(): number;
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1132,6 +1171,8 @@ declare module BABYLON.GUI {
          */
         get paddingBottomInPixels(): number;
         set paddingBottomInPixels(value: number);
+        /** @hidden */
+        get _paddingBottomInPixels(): number;
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1219,6 +1260,15 @@ declare module BABYLON.GUI {
          * @returns the ascendant or null if not found
          */
         getAscendantOfClass(className: string): BABYLON.Nullable<Control>;
+        /**
+         * Mark control element as dirty
+         * @param force force non visible elements to be marked too
+         */
+        markAsDirty(force: false): void;
+        /**
+         * Mark the element and its children as dirty
+         */
+        markAllAsDirty(): void;
         /** @hidden */
         _resetFontCache(): void;
         /**
@@ -1600,7 +1650,11 @@ declare module BABYLON.GUI {
         /**
          * Ellipsize the text, i.e. shrink with trailing … when text is larger than Control.width.
          */
-        Ellipsis = 2
+        Ellipsis = 2,
+        /**
+         * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
+         */
+        WordWrapEllipsis = 3
     }
     /**
      * Class used to create text block control
@@ -1733,11 +1787,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
-        protected _breakLines(refWidth: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _breakLines(refWidth: number, refHeight: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
+        protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _renderLines(context: BABYLON.ICanvasRenderingContext): void;
+        private _computeHeightForLinesOf;
         /**
          * Given a width constraint applied on the text block, find the expected height
          * @returns expected height
@@ -1993,6 +2049,13 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         /**
+        * Serializes the current button
+        * @param serializationObject defines the JSON serialized object
+        */
+        serialize(serializationObject: any): void;
+        /** @hidden */
+        _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
+        /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
          * @param text defines the text of the button
@@ -2034,13 +2097,19 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        private _spacing;
         /**
-         * Gets or sets a boolean indicating that layou warnings should be ignored
+         * Gets or sets a boolean indicating that layout warnings should be ignored
          */
         ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         get isVertical(): boolean;
         set isVertical(value: boolean);
+        /**
+         * Gets or sets the spacing (in pixels) between each child.
+         */
+        get spacing(): number;
+        set spacing(value: number);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
@@ -2404,7 +2473,9 @@ declare module BABYLON.GUI {
     export class Grid extends Container {
         name?: string | undefined;
         private _rowDefinitions;
+        private _rowDefinitionObservers;
         private _columnDefinitions;
+        private _columnDefinitionObservers;
         private _cells;
         private _childControls;
         /**
@@ -2517,9 +2588,9 @@ declare module BABYLON.GUI {
         /** Releases associated resources */
         dispose(): void;
         /**
-     * Serializes the current control
-     * @param serializationObject defined the JSON serialized object
-     */
+         * Serializes the current control
+         * @param serializationObject defined the JSON serialized object
+         */
         serialize(serializationObject: any): void;
         /** @hidden */
         _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture): void;
@@ -3903,6 +3974,7 @@ declare module BABYLON.GUI {
         private _rootContainer;
         private _pointerObserver;
         private _pointerOutObserver;
+        private _customControlScaling;
         /** @hidden */
         _lastPickedControl: Control3D;
         /** @hidden */
@@ -3913,6 +3985,7 @@ declare module BABYLON.GUI {
         _lastControlDown: {
             [pointerId: number]: Control3D;
         };
+        protected static MRTK_REALISTIC_SCALING: number;
         /**
          * BABYLON.Observable raised when the point picked by the pointer events changed
          */
@@ -3933,6 +4006,14 @@ declare module BABYLON.GUI {
         get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
         get utilityLayer(): BABYLON.Nullable<BABYLON.UtilityLayerRenderer>;
+        /** Gets the scaling for all UI elements owned by this manager */
+        get controlScaling(): number;
+        /** Sets the scaling adjustment for all UI elements owned by this manager */
+        set controlScaling(newScale: number);
+        /** Gets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        get useRealisticScaling(): boolean;
+        /** Sets if controls attached to this manager are realistically sized, based on the fact that 1 unit length is 1 meter */
+        set useRealisticScaling(newValue: boolean);
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -4019,6 +4100,13 @@ declare module BABYLON.GUI {
         private _collisionMesh;
         private _collidableFrontDirection;
         protected _isNearPressed: boolean;
+        private _isToggleButton;
+        private _toggleState;
+        private _toggleButtonCallback;
+        /**
+         * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
+         */
+        onToggleObservable: BABYLON.Observable<boolean>;
         /**
          * Creates a new touchable button
          * @param name defines the control name
@@ -4039,6 +4127,19 @@ declare module BABYLON.GUI {
          * @param collisionMesh the new collision mesh for the button
          */
         set collisionMesh(collisionMesh: BABYLON.Mesh);
+        /**
+         * Setter for if this TouchButton3D should be treated as a toggle button
+         * @param value If this TouchHolographicButton should act like a toggle button
+         */
+        set isToggleButton(value: boolean);
+        get isToggleButton(): boolean;
+        /**
+         * A public entrypoint to set the toggle state of the TouchHolographicButton. Only works if 'isToggleButton' is true
+         * @param newState The new state to set the TouchHolographicButton's toggle state to
+         */
+        set isToggled(newState: boolean);
+        get isToggled(): boolean;
+        protected _onToggle(newState: boolean): void;
         private _isInteractionInFrontOfButton;
         protected _getInteractionHeight(interactionPos: BABYLON.Vector3, basePos: BABYLON.Vector3): number;
         /** @hidden */
@@ -4065,6 +4166,8 @@ declare module BABYLON.GUI {
         private _enterCount;
         private _downPointerIds;
         private _isVisible;
+        /** @hidden */
+        _isScaledByManager: boolean;
         /** Gets or sets the control position in world space */
         get position(): BABYLON.Vector3;
         set position(value: BABYLON.Vector3);
@@ -4706,6 +4809,8 @@ declare module BABYLON.GUI {
         private _pointerHoverObserver;
         private _frontPlateDepth;
         private _backPlateDepth;
+        private _backplateColor;
+        private _backplateToggledColor;
         private _tooltipFade;
         private _tooltipTextBlock;
         private _tooltipTexture;
@@ -4736,7 +4841,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the back material used by this button
          */
-        get backMaterial(): BABYLON.StandardMaterial;
+        get backMaterial(): FluentMaterial;
         /**
          * Gets the front material used by this button
          */
@@ -4765,6 +4870,7 @@ declare module BABYLON.GUI {
         private _createBackMaterial;
         private _createFrontMaterial;
         private _createPlateMaterial;
+        protected _onToggle(newState: boolean): void;
         protected _affectMaterial(mesh: BABYLON.Mesh): void;
         /**
          * Releases all associated resources
@@ -5456,7 +5562,6 @@ declare module BABYLON.GUI {
          */
         private static PIN_ICON_FILENAME;
         private _pinButton;
-        private _pinMaterial;
         private _dragObserver;
         private _defaultBehavior;
         /**
@@ -6458,36 +6563,6 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
         protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-    }
-}
-declare module BABYLON.GUI {
-    /**
-     * Class used as base class for touch-enabled toggleable buttons
-     */
-    export class TouchToggleButton3D extends TouchButton3D {
-        private _isPressed;
-        /**
-         * An event triggered when the button is toggled on
-         */
-        onToggleOnObservable: BABYLON.Observable<BABYLON.Vector3>;
-        /**
-         * An event triggered when the button is toggled off
-         */
-        onToggleOffObservable: BABYLON.Observable<BABYLON.Vector3>;
-        /**
-         * Creates a new button
-         * @param name defines the control name
-         * @param collisionMesh defines the mesh to track near interactions with
-         */
-        constructor(name?: string, collisionMesh?: BABYLON.Mesh);
-        private _onToggle;
-        protected _getTypeName(): string;
-        protected _createNode(scene: BABYLON.Scene): BABYLON.TransformNode;
-        protected _affectMaterial(mesh: BABYLON.AbstractMesh): void;
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON.GUI {

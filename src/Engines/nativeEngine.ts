@@ -10,7 +10,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
 import { DataBuffer } from '../Buffers/dataBuffer';
 import { Tools } from "../Misc/tools";
-import { Observer } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
@@ -33,6 +33,42 @@ import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces
 import { UnsupportedTextureError } from "./errors";
 
 declare const _native: INative;
+
+const onNativeObjectInitialized = new Observable<INative>();
+if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
+    let __native: INative;
+    Object.defineProperty(self, "_native", {
+        get: () => __native,
+        set: (value: INative) => {
+            __native = value;
+            if (__native) {
+                onNativeObjectInitialized.notifyObservers(__native);
+            }
+        }
+    });
+}
+
+/**
+ * Returns _native only after it has been defined by BabylonNative.
+ * @hidden
+ */
+export function AcquireNativeObjectAsync(): Promise<INative> {
+    return new Promise((resolve) => {
+        if (typeof _native === 'undefined') {
+            onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
+        } else {
+            resolve(_native);
+        }
+    });
+}
+
+/**
+ * Registers a constructor on the _native object. See NativeXRFrame for an example.
+ * @hidden
+ */
+export async function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type) {
+    (await AcquireNativeObjectAsync() as any)[typeName] = constructor;
+}
 
 class NativePipelineContext implements IPipelineContext {
     // TODO: async should be true?
@@ -811,6 +847,7 @@ export class NativeEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: false,
             supportSRGBBuffers: true,
+            supportTransformFeedbacks: false
         };
 
         this._features = {
@@ -1281,7 +1318,7 @@ export class NativeEngine extends Engine {
             width: this.getRenderWidth(),
             x: 0,
             y: 0,
-            toJSON: () => {}
+            toJSON: () => { }
         };
         return rect;
     }
@@ -1756,7 +1793,6 @@ export class NativeEngine extends Engine {
         }
 
         return this.setFloatArray(uniform, new Float32Array(array));
-        return true;
     }
 
     public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
@@ -1764,8 +1800,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this.setFloatArray2(uniform, new Float32Array(array));
-        return true;
+        return this.setFloatArray2(uniform, new Float32Array(array));
     }
 
     public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
@@ -1773,8 +1808,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this.setFloatArray3(uniform, new Float32Array(array));
-        return true;
+        return this.setFloatArray3(uniform, new Float32Array(array));
     }
 
     public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
@@ -1782,8 +1816,7 @@ export class NativeEngine extends Engine {
             return false;
         }
 
-        this.setFloatArray4(uniform, new Float32Array(array));
-        return true;
+        return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
     public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
@@ -1994,6 +2027,34 @@ export class NativeEngine extends Engine {
         }
 
         this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        let texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
+
+        texture.format = format;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = texture.baseWidth;
+        texture.height = texture.baseHeight;
+        texture._compression = compression;
+        texture.type = textureType;
+        texture.is2DArray = true;
+        texture.is3D = false;
+        texture.depth = depth;
+
+        if (texture._hardwareTexture) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._setTextureSampling(webGLTexture, filter);
+        }
+
         return texture;
     }
 

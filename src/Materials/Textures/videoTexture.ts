@@ -41,7 +41,7 @@ export interface VideoTextureSettings {
 /**
  * If you want to display a video in your scene, this is the special texture for that.
  * This special texture works similar to other textures, with the exception of a few parameters.
- * @see https://doc.babylonjs.com/how_to/video_texture
+ * @see https://doc.babylonjs.com/divingDeeper/materials/using/videoTexture
  */
 export class VideoTexture extends Texture {
     /**
@@ -427,7 +427,8 @@ export class VideoTexture extends Texture {
                 video.srcObject = stream;
             } else {
                 window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-                video.src = (window.URL && window.URL.createObjectURL(stream));
+                // older API. See https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL#using_object_urls_for_media_streams
+                video.src = (window.URL && window.URL.createObjectURL(stream as any));
             }
         }
 

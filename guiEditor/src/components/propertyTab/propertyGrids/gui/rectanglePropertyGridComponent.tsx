@@ -34,7 +34,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                 <CheckBoxLineComponent
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
-                    label=""
+                    label="CLIP CONTENT"
                     target={rectangle}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

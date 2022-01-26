@@ -639,7 +639,7 @@ var OBJFileLoader = /** @class */ (function () {
                         resolve();
                     }
                     catch (e) {
-                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error processing MTL file: '" + fileToLoad + "'");
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error processing MTL file: '".concat(fileToLoad, "'"));
                         if (_this._loadingOptions.materialLoadingFailsSilently) {
                             resolve();
                         }
@@ -648,7 +648,7 @@ var OBJFileLoader = /** @class */ (function () {
                         }
                     }
                 }, function (pathOfFile, exception) {
-                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error downloading MTL file: '" + fileToLoad + "'");
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error downloading MTL file: '".concat(fileToLoad, "'"));
                     if (_this._loadingOptions.materialLoadingFailsSilently) {
                         resolve();
                     }

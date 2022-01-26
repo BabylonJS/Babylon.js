@@ -52,7 +52,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 <CheckBoxLineComponent
                     iconLabel={"Resize to fit"}
                     icon={fontFamilyIcon}
-                    label=""
+                    label="RESIZE TO FIT"
                     target={textBlock}
                     propertyName="resizeToFit"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

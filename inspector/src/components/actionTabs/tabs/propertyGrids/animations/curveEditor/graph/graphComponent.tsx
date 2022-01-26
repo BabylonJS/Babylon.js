@@ -21,7 +21,7 @@ interface IGraphComponentState {}
 
 export class GraphComponent extends React.Component<IGraphComponentProps, IGraphComponentState> {
     private readonly _MinScale = 0.5;
-    private readonly _MaxScale = 4;
+    private readonly _MaxScale = 5;
     private readonly _GraphAbsoluteWidth = 788;
     private readonly _GraphAbsoluteHeight = 357;
 
@@ -48,6 +48,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
+    private _selectionMade: boolean;
 
     private _selectionStartX: number;
     private _selectionStartY: number;
@@ -166,7 +167,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 if (Math.floor(currentFrame - leftKey?.frame) === 0) {
                     // Key already exists, update it
                     leftKey.value = value;
-                } else if (Math.floor(rightKey.frame - currentFrame) === 0) {
+                } else if (Math.floor(rightKey?.frame - currentFrame) === 0) {
                     // Key already exists, update it
                     rightKey.value = value;
                 } else {
@@ -175,9 +176,10 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                     let newKey: IAnimationKey = {
                         frame: currentFrame,
                         value: value,
+                        lockedTangent: true
                     };
-
-                    if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                    
+                    if (leftKey?.outTangent !== undefined && rightKey?.inTangent !== undefined) {
                         let derivative: Nullable<any> = null;
                         const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
                         const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
@@ -248,7 +250,6 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                             newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                         }
                     }
-
                     keys.splice(indexToAdd + 1, 0, newKey);
                 }
 
@@ -1070,6 +1071,9 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 style.top = `${localY}px`;
                 style.height = `${this._selectionStartY - localY}px`;
             }
+            if (localX !== this._selectionStartX || localY !== this._selectionStartY) {
+                this._selectionMade = true;
+            }
 
             this.props.context.onSelectionRectangleMoved.notifyObservers(this._selectionRectangle.current!.getBoundingClientRect());
 
@@ -1093,9 +1097,11 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
         this._selectionRectangle.current!.style.visibility = "hidden";
 
-        if (!this._inSelectionMode) {
+        if (!this._inSelectionMode || !this._selectionMade) {
             this.props.context.clearSelection();
         }
+
+        this._selectionMade = false;
     }
 
     private _onWheel(evt: React.WheelEvent) {

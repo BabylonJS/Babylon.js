@@ -85,49 +85,62 @@ export class MSCTranscoder extends Transcoder {
         return this._getMSCBasisTranscoder().then(() => {
             const basisModule = this._mscBasisModule;
 
-            const transcoder = src === sourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
-            const texFormat = src === sourceTextureFormat.UASTC4x4 ? basisModule.TextureFormat.UASTC4x4 : basisModule.TextureFormat.ETC1S;
-
-            const imageInfo = new basisModule.ImageInfo(texFormat, width, height, level);
-
-            const targetFormat = basisModule.TranscodeTarget[transcodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same than the property names used in TranscodeTarget!
-
-            if (!basisModule.isFormatSupported(targetFormat, texFormat)) {
-                throw new Error(`MSCTranscoder: Transcoding from "${sourceTextureFormat[src]}" to "${transcodeTarget[dst]}" not supported by current transcoder build.`);
-            }
-
+            let transcoder: any;
+            let imageInfo: any;
             let result: any;
+            let textureData: any = null;
 
-            if (src === sourceTextureFormat.ETC1S) {
-                const sgd = ktx2Reader.supercompressionGlobalData;
+            try {
+                transcoder = src === sourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
+                const texFormat = src === sourceTextureFormat.UASTC4x4 ? basisModule.TextureFormat.UASTC4x4 : basisModule.TextureFormat.ETC1S;
 
-                transcoder.decodePalettes(sgd.endpointCount, sgd.endpointsData, sgd.selectorCount, sgd.selectorsData);
-                transcoder.decodeTables(sgd.tablesData);
+                imageInfo = new basisModule.ImageInfo(texFormat, width, height, level);
 
-                imageInfo.flags = imageDesc!.imageFlags;
-                imageInfo.rgbByteOffset = 0;
-                imageInfo.rgbByteLength = imageDesc!.rgbSliceByteLength;
-                imageInfo.alphaByteOffset = imageDesc!.alphaSliceByteOffset > 0 ? imageDesc!.rgbSliceByteLength : 0;
-                imageInfo.alphaByteLength = imageDesc!.alphaSliceByteLength;
+                const targetFormat = basisModule.TranscodeTarget[transcodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same as the property names used in TranscodeTarget!
 
-                result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, isVideo);
-            } else {
-                imageInfo.flags = 0;
-                imageInfo.rgbByteOffset = 0;
-                imageInfo.rgbByteLength = uncompressedByteLength;
-                imageInfo.alphaByteOffset = 0;
-                imageInfo.alphaByteLength = 0;
+                if (!basisModule.isFormatSupported(targetFormat, texFormat)) {
+                    throw new Error(`MSCTranscoder: Transcoding from "${sourceTextureFormat[src]}" to "${transcodeTarget[dst]}" not supported by current transcoder build.`);
+                }
 
-                result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, ktx2Reader.hasAlpha, isVideo);
+                if (src === sourceTextureFormat.ETC1S) {
+                    const sgd = ktx2Reader.supercompressionGlobalData;
+
+                    transcoder.decodePalettes(sgd.endpointCount, sgd.endpointsData, sgd.selectorCount, sgd.selectorsData);
+                    transcoder.decodeTables(sgd.tablesData);
+
+                    imageInfo.flags = imageDesc!.imageFlags;
+                    imageInfo.rgbByteOffset = 0;
+                    imageInfo.rgbByteLength = imageDesc!.rgbSliceByteLength;
+                    imageInfo.alphaByteOffset = imageDesc!.alphaSliceByteOffset > 0 ? imageDesc!.rgbSliceByteLength : 0;
+                    imageInfo.alphaByteLength = imageDesc!.alphaSliceByteLength;
+
+                    result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, isVideo);
+                } else {
+                    imageInfo.flags = 0;
+                    imageInfo.rgbByteOffset = 0;
+                    imageInfo.rgbByteLength = uncompressedByteLength;
+                    imageInfo.alphaByteOffset = 0;
+                    imageInfo.alphaByteLength = 0;
+
+                    result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, ktx2Reader.hasAlpha, isVideo);
+                }
+            }
+            finally {
+                if (transcoder) {
+                    transcoder.delete();
+                }
+
+                if (imageInfo) {
+                    imageInfo.delete();
+                }
+
+                if (result && result.transcodedImage) {
+                    textureData = result.transcodedImage.get_typed_memory_view().slice();
+                    result.transcodedImage.delete();
+                }
             }
 
-            if (result && result.transcodedImage !== undefined) {
-                const textureData = result.transcodedImage.get_typed_memory_view().slice();
-                result.transcodedImage.delete();
-                return textureData;
-            }
-
-            return null;
+            return textureData;
         });
     }
 }

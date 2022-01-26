@@ -63,15 +63,17 @@ async function getRenderData(canvas, engine) {
             var renderData = await engine.readPixels(0, 0, width, height);
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
-            for (var i = 0; i < halfHeight; i++) {
-                for (var j = 0; j < numberOfChannelsByLine; j++) {
-                    var currentCell = j + i * numberOfChannelsByLine;
-                    var targetLine = height - i - 1;
-                    var targetCell = j + targetLine * numberOfChannelsByLine;
+            if (!engine.isWebGPU) {
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
 
-                    var temp = renderData[currentCell];
-                    renderData[currentCell] = renderData[targetCell];
-                    renderData[targetCell] = temp;
+                        var temp = renderData[currentCell];
+                        renderData[currentCell] = renderData[targetCell];
+                        renderData[targetCell] = temp;
+                    }
                 }
             }
             if (engine.isWebGPU) {
@@ -165,6 +167,8 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
     engine._deltaTime = 0;
     engine._fps = 60;
     engine._performanceMonitor = new BABYLON.PerformanceMonitor();
+
+    BABYLON.UnregisterAllMaterialPlugins();
 
     if (resultCanvas.parentElement) {
         resultCanvas.parentElement.setAttribute("result", testRes);
@@ -504,12 +508,14 @@ function init(_engineName, useReverseDepthBuffer, useNonCompatibilityMode) {
         const options = {
             deviceDescriptor: {
                 requiredFeatures: [
-                    "texture-compression-bc",
-                    "timestamp-query",
-                    "pipeline-statistics-query",
-                    "depth-clamping",
+                    "depth-clip-control",
                     "depth24unorm-stencil8",
-                    "depth32float-stencil8"
+                    "depth32float-stencil8",
+                    "texture-compression-bc",
+                    "texture-compression-etc2",
+                    "texture-compression-astc",
+                    "timestamp-query",
+                    "indirect-first-instance",
                 ]
             },
             antialiasing: false,
@@ -525,7 +531,7 @@ function init(_engineName, useReverseDepthBuffer, useNonCompatibilityMode) {
             engine.initAsync(glslangOptions, twgslOptions).then(() => resolve());
         });
     } else {
-        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false });
+        engine = new BABYLON.Engine(canvas, false, { useHighPrecisionFloats: true, disableWebGL2Support: engineName === "webgl1" ? true : false, forceSRGBBufferSupportState: true });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
         engine.useReverseDepthBuffer = forceUseReverseDepthBuffer;

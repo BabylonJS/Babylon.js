@@ -24,6 +24,7 @@ import { Viewport } from "babylonjs/Maths/math.viewport";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IPointerEvent, IWheelEvent } from "babylonjs/Events/deviceInputEvents";
+import { RandomGUID } from "babylonjs/Misc/guid";
 
 /**
  * Class used to create texture to support 2D GUI elements
@@ -594,7 +595,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** @hidden */
     public _getGlobalViewport(): Viewport {
         var size = this.getSize();
-        return this._fullscreenViewport.toGlobal(size.width, size.height);
+        const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
+
+        const targetX = Math.round(globalViewPort.width * (1 / this.rootContainer.scaleX));
+        const targetY = Math.round(globalViewPort.height * (1 / this.rootContainer.scaleY));
+
+        globalViewPort.x += (globalViewPort.width - targetX) / 2;
+        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+
+        globalViewPort.width = targetX;
+        globalViewPort.height = targetY;
+
+        return globalViewPort;
     }
     /**
      * Get screen coordinates for a vector3
@@ -799,8 +811,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
-            let camera = scene.cameraToUseForPointers || scene.activeCamera;
-            let engine = scene.getEngine();
+            const camera = scene.cameraToUseForPointers || scene.activeCamera;
+            const engine = scene.getEngine();
+            const originalCameraToUseForPointers = scene.cameraToUseForPointers;
 
             if (!camera) {
                 tempViewport.x = 0;
@@ -808,7 +821,30 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 tempViewport.width = engine.getRenderWidth();
                 tempViewport.height = engine.getRenderHeight();
             } else {
-                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                if (camera.rigCameras.length) {
+                    // rig camera - we need to find the camera to use for this event
+                    let rigViewport = new Viewport(0, 0, 1, 1);
+                    camera.rigCameras.forEach((rigCamera) => {
+                        // generate the viewport of this camera
+                        rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
+                        let x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport.x;
+                        let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
+                        // check if the pointer is in the camera's viewport
+                        if (x < 0 || y < 0 || x > rigViewport.width || y > rigViewport.height) {
+                            // out of viewport - don't use this camera
+                            return;
+                        }
+                        // set the camera to use for pointers until this pointer loop is over
+                        scene.cameraToUseForPointers = rigCamera;
+                        // set the viewport
+                        tempViewport.x = rigViewport.x;
+                        tempViewport.y = rigViewport.y;
+                        tempViewport.width = rigViewport.width;
+                        tempViewport.height = rigViewport.height;
+                    });
+                } else {
+                    camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+                }
             }
 
             let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
@@ -821,6 +857,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             }
+            // if overridden by a rig camera - reset back to the original value
+            scene.cameraToUseForPointers = originalCameraToUseForPointers;
         });
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
@@ -1112,8 +1150,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false, invertY?: boolean): AdvancedDynamicTexture {
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
-        var material = new StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
+        // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
+        const uniqueId = RandomGUID();
+        var result = new AdvancedDynamicTexture(`AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`, width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+        var material = new StandardMaterial(`AdvancedDynamicTextureMaterial for ${mesh.name} [${uniqueId}]`, mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
         material.specularColor = Color3.Black();
@@ -1154,15 +1194,24 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
      * @param scene defines the hosting scene
      * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
+     * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
+    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE, adaptiveScaling: boolean = false): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
-        var layer = new Layer(name + "_layer", null, scene, !foreground);
+        const resultScene = result.getScene();
+        var layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+
+        if (adaptiveScaling && resultScene) {
+            const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
+            result._rootContainer.scaleX = newScale;
+            result._rootContainer.scaleY = newScale;
+        }
+
         // Attach
         result.attach();
         return result;

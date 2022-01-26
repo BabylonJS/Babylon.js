@@ -247,19 +247,22 @@ export class WebXRCamera extends FreeCamera {
                 this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
             }
 
-            // Update viewport
-            if (this._xrSessionManager.session.renderState.baseLayer) {
-                var viewport = this._xrSessionManager.session.renderState.baseLayer.getViewport(view);
-                var width = this._xrSessionManager.session.renderState.baseLayer.framebufferWidth;
-                var height = this._xrSessionManager.session.renderState.baseLayer.framebufferHeight;
-                currentRig.viewport.width = viewport.width / width;
-                currentRig.viewport.height = viewport.height / height;
-                currentRig.viewport.x = viewport.x / width;
-                currentRig.viewport.y = viewport.y / height;
-            }
+            let renderTargetTexture = this._xrSessionManager.getRenderTargetTextureForView(view);
+            this._renderingMultiview = renderTargetTexture?._texture?.isMultiview || false;
+            if (this._renderingMultiview) {
+                // For multiview, the render target texture is the same per-view (just the slice index is different),
+                // so we only need to set the output render target once for the rig parent.
+                if (i == 0) {
+                    this._xrSessionManager.trySetViewportForView(this.viewport, view);
+                    this.outputRenderTarget = renderTargetTexture;
+                }
+            } else {
+                // Update viewport
+                this._xrSessionManager.trySetViewportForView(currentRig.viewport, view);
 
-            // Set cameras to render to the session's render target
-            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForEye(view.eye);
+                // Set cameras to render to the session's render target
+                currentRig.outputRenderTarget = renderTargetTexture || this._xrSessionManager.getRenderTargetTextureForView(view);
+            }
         });
     }
 

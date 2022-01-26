@@ -88,7 +88,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 <CheckBoxLineComponent
                     iconLabel={"On focus select all"}
                     icon={verticalMarginIcon}
-                    label=""
+                    label="ON FOCUS SELECT ALL"
                     target={inputText}
                     propertyName="onFocusSelectAll"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -114,7 +114,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 <CheckBoxLineComponent
                     iconLabel={"Auto stretch width"}
                     icon={sizeIcon}
-                    label=""
+                    label="AUTO STRETCH"
                     target={inputText}
                     propertyName="autoStretchWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

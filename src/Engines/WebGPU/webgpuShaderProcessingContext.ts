@@ -95,6 +95,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
         "Light31": { binding: { groupIndex: -1, bindingIndex: -1 } },
         "Material": { binding: { groupIndex: -1, bindingIndex: -1 } },
         "Mesh":     { binding: { groupIndex: -1, bindingIndex: -1 } },
+        "Internals": { binding: { groupIndex: -1, bindingIndex: -1 } },
     };
 
     protected static _KnownUBOs: { [key: string]: WebGPUBufferDescription } = {
@@ -135,6 +136,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
 
         "Material": { binding: { groupIndex: 2, bindingIndex: 0 } },
         "Mesh":     { binding: { groupIndex: 2, bindingIndex: 1 } },
+        "Internals": { binding: { groupIndex: 2, bindingIndex: 2 } },
     };
 
     public static get KnownUBOs() {

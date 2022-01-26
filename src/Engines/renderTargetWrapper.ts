@@ -178,7 +178,7 @@ export class RenderTargetWrapper {
      * @param format format of the depth texture
      * @returns the depth/stencil created texture
      */
-    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1, format: number = Constants.TEXTUREFORMAT_DEPTH16): InternalTexture {
+    public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false, samples: number = 1, format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT): InternalTexture {
         this._depthStencilTexture?.dispose();
 
         this._depthStencilTextureWithStencil = generateStencil;
@@ -215,8 +215,8 @@ export class RenderTargetWrapper {
     }
 
     /** @hidden */
-    public _swapAndDie(target: Nullable<InternalTexture>): void {
-        if (target && this.texture) {
+    public _swapAndDie(target: InternalTexture): void {
+        if (this.texture) {
             this.texture._swapAndDie(target);
         }
         this._textures = null;

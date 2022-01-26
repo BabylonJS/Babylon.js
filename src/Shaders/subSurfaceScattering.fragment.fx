@@ -141,6 +141,9 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
     }
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) 
 {
 	vec4 irradianceAndDiffusionProfile  = texture2D(irradianceSampler, vUV);

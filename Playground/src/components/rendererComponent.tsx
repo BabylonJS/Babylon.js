@@ -5,7 +5,8 @@ import { Nullable } from "babylonjs/types";
 import { Scene } from "babylonjs/scene";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { WebGPUEngine } from "babylonjs";
+import { WebGPUEngine } from "babylonjs/Engines/webgpuEngine";
+import { UnregisterAllMaterialPlugins } from "babylonjs/Materials/materialPluginManager";
 
 require("../scss/rendering.scss");
 
@@ -102,6 +103,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private async _compileAndRunAsync() {
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
+
+        // Check to make sure this function exists before calling as this function doesn't exist with older versions.
+        if (UnregisterAllMaterialPlugins) {
+            UnregisterAllMaterialPlugins();
+        }
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
@@ -255,6 +261,32 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     window.engine = await asyncEngineCreation();`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
+                globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {
+                    engine.runRenderLoop(() => {
+                        if (!this._scene || !this._engine) {
+                            return;
+                        }
+
+                        if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
+                            if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+                                this._engine.resize();
+                            }
+                        }
+
+                        if (this._scene.activeCamera || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
+                            this._scene.render();
+                        }
+
+                        // Update FPS if camera is not a webxr camera
+                        if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
+                            if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
+                                this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
+                            }
+                        }
+                    });
+                };
+                code += "\r\nstartRenderLoop(engine, canvas);";
+
                 if (this.props.globalState.language === "JS") {
                     code += "\r\n" + "window.scene = " + createSceneFunction + "();";
                 } else {
@@ -315,29 +347,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._scene = globalObject.scene as Scene;
             }
 
-            this._engine.runRenderLoop(() => {
-                if (!this._scene || !this._engine) {
-                    return;
-                }
-
-                if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
-                    if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                        this._engine.resize();
-                    }
-                }
-
-                if (this._scene.activeCamera || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
-                    this._scene.render();
-                }
-
-                // Update FPS if camera is not a webxr camera
-                if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
-                    if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
-                        this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
-                    }
-                }
-            });
-
             if (checkSceneCount && this._engine.scenes.length === 0) {
                 this.props.globalState.onErrorObservable.notifyObservers({
                     message: "You must at least create a scene.",
@@ -366,7 +375,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
-            console.error(err);
+            console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }
     }

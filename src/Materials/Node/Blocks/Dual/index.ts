@@ -6,3 +6,4 @@ export * from "./reflectionTextureBlock";
 export * from "./currentScreenBlock";
 export * from "./sceneDepthBlock";
 export * from "./imageSourceBlock";
+export * from "./clipPlanesBlock";

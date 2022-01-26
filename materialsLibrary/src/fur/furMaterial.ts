@@ -455,7 +455,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FurMaterial";
 
         if (this._meshes) {
