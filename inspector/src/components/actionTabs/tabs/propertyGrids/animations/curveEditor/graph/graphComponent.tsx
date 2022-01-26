@@ -1030,6 +1030,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             return;
         }
 
+        evt.preventDefault();
+
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
