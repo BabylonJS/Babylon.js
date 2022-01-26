@@ -1317,7 +1317,7 @@ export class NativeEngine extends Engine {
             width: this.getRenderWidth(),
             x: 0,
             y: 0,
-            toJSON: () => {}
+            toJSON: () => { }
         };
         return rect;
     }
@@ -2046,11 +2046,10 @@ export class NativeEngine extends Engine {
         texture.is3D = false;
         texture.depth = depth;
 
-        if (texture._hardwareTexture) 
-        {
+        if (texture._hardwareTexture) {
             var webGLTexture = texture._hardwareTexture.underlyingResource;
             this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
-        
+
             var filter = this._getNativeSamplingMode(samplingMode);
             this._setTextureSampling(webGLTexture, filter);
         }
