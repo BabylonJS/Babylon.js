@@ -576,6 +576,10 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          */
         private _scenes;
         /**
+         * Stores all the generated glTF cameras
+         */
+        private _cameras;
+        /**
          * Stores all the generated mesh information, each containing a set of primitives to render in glTF
          */
         private _meshes;
@@ -813,6 +817,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setNodeTransformation;
+        private setCameraTransformation;
         private getVertexBufferFromMesh;
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
@@ -1938,6 +1943,10 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _scenes;
         /**
+         * Stores all the generated glTF cameras
+         */
+        private _cameras;
+        /**
          * Stores all the generated mesh information, each containing a set of primitives to render in glTF
          */
         private _meshes;
@@ -2175,6 +2184,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setNodeTransformation;
+        private setCameraTransformation;
         private getVertexBufferFromMesh;
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
