@@ -1054,6 +1054,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             const height = serializedObject.height;
             if (typeof width === "number" && typeof height === "number" && width >= 0 && height >= 0) {
                 this.scaleTo(width, height);
+            } else {
+                // scales the GUI to a default size if none was available in the serialized content
+                this.scaleTo(1920, 1080);
             }
         }
     }
