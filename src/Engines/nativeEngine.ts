@@ -1317,7 +1317,7 @@ export class NativeEngine extends Engine {
             width: this.getRenderWidth(),
             x: 0,
             y: 0,
-            toJSON: () => {}
+            toJSON: () => { }
         };
         return rect;
     }
@@ -2026,6 +2026,34 @@ export class NativeEngine extends Engine {
         }
 
         this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        let texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
+
+        texture.format = format;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = texture.baseWidth;
+        texture.height = texture.baseHeight;
+        texture._compression = compression;
+        texture.type = textureType;
+        texture.is2DArray = true;
+        texture.is3D = false;
+        texture.depth = depth;
+
+        if (texture._hardwareTexture) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._setTextureSampling(webGLTexture, filter);
+        }
+
         return texture;
     }
 
