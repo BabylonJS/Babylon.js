@@ -66,6 +66,9 @@ enum ControllerOrbAnimationState {
     TOUCH
 }
 
+/**
+ * Where should the near interaction mesh be attached to when using a motion controller for near interaction 
+ */
 export enum WebXRNearControllerMode {
     /**
      * Motion controllers will not support near interaction
@@ -355,7 +358,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         // Don't always break to allow for animation fallthrough on rare cases of multi-transitions
         if (newState > controllerData.currentAnimationState) {
-            switch(controllerData.currentAnimationState) {
+            switch (controllerData.currentAnimationState) {
                 case ControllerOrbAnimationState.DEHYDRATED: {
                     controllerData.hydrateCollisionMeshFunction(true);
                     if (newState === ControllerOrbAnimationState.HOVER) {
@@ -371,7 +374,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             }
         }
         else {
-            switch(controllerData.currentAnimationState) {
+            switch (controllerData.currentAnimationState) {
                 case ControllerOrbAnimationState.TOUCH: {
                     controllerData.touchCollisionMeshFunction(false);
                     if (newState === ControllerOrbAnimationState.HOVER) {
@@ -401,7 +404,6 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         controllerData.grabRay.origin.copyFrom(position);
         orientation.toEulerAnglesToRef(TmpVectors.Vector3[0]);
         controllerData.grabRay.direction.copyFrom(TmpVectors.Vector3[0]);
-
 
         if (this._options.nearInteractionControllerMode === WebXRNearControllerMode.CENTERED_IN_FRONT && !(controllerData.xrController?.inputSource.hand)) {
             // offset the touch point in the direction the transform is facing
