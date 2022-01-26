@@ -268,13 +268,13 @@ export class FluentButtonMaterial extends PushMaterial {
 
     private _blobTexture: Texture;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_ADD;
         this.disableDepthWrite = true;
         this.backFaceCulling = false;
 
-        this._blobTexture = new Texture(FluentButtonMaterial.BLOB_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._blobTexture = new Texture(FluentButtonMaterial.BLOB_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public needAlphaBlending(): boolean {

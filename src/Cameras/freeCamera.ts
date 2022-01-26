@@ -253,7 +253,7 @@ export class FreeCamera extends TargetCamera {
      * @param scene Define the scene the camera belongs to
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
-    constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
         this.inputs = new FreeCameraInputsManager(this);
         this.inputs.addKeyboard().addMouse();

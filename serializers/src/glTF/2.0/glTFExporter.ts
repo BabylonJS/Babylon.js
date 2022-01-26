@@ -288,10 +288,14 @@ export class _Exporter {
      * @param babylonScene Babylon scene object
      * @param options Options to modify the behavior of the exporter
      */
-    public constructor(babylonScene: Scene, options?: IExportOptions) {
+    public constructor(babylonScene?: Nullable<Scene>, options?: IExportOptions) {
         this._glTF = {
             asset: { generator: "BabylonJS", version: "2.0" }
         };
+        babylonScene = babylonScene || Engine.LastCreatedScene
+        if (!babylonScene) {
+            return;
+        }
         this._babylonScene = babylonScene;
         this._bufferViews = [];
         this._accessors = [];
@@ -1871,7 +1875,7 @@ export class _Exporter {
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
      */
-    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }>  {
+    private createNodeMapAndAnimationsAsync(babylonScene: Scene, nodes: Node[], binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
         let promiseChain = Promise.resolve();
         const nodeMap: { [key: number]: number } = {};
         let nodeIndex: number;

@@ -772,9 +772,13 @@ export class Material implements IAnimatable {
      * @param scene defines the scene to reference
      * @param doNotAdd specifies if the material should be added to the scene
      */
-    constructor(name: string, scene: Scene, doNotAdd?: boolean) {
+    constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean) {
         this.name = name;
-        this._scene = scene || EngineStore.LastCreatedScene;
+        const setScene = scene || EngineStore.LastCreatedScene;
+        if(!setScene) {
+            return;
+        }
+        this._scene = setScene;
         this._dirtyCallbacks = {};
 
         this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);

@@ -45,7 +45,11 @@ export class SoundTrack {
      * @param scene Define the scene the sound track belongs to
      * @param options
      */
-    constructor(scene: Scene, options: ISoundTrackOptions = {}) {
+    constructor(scene?: Nullable<Scene>, options: ISoundTrackOptions = {}) {
+        scene = scene || Engine.LastCreatedScene
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         this.soundCollection = new Array();
         this._options = options;

@@ -490,7 +490,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * in order to make a correct use of the texture.
      * @param sceneOrEngine Define the scene or engine the texture belongs to
      */
-    constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
+    constructor(sceneOrEngine?: Nullable<Scene | ThinEngine>) {
         super(null);
 
         if (sceneOrEngine) {

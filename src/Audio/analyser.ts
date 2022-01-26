@@ -49,7 +49,11 @@ export class Analyser {
      * Creates a new analyser
      * @param scene defines hosting scene
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
+        scene = scene || Engine.LastCreatedScene
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         if (!Engine.audioEngine) {
             Tools.Warn("No audio engine initialized, failed to create an audio analyser");

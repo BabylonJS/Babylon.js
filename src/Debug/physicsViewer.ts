@@ -44,8 +44,11 @@ export class PhysicsViewer {
      * Creates a new PhysicsViewer
      * @param scene defines the hosting scene
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Scene) {
         this._scene = scene || EngineStore.LastCreatedScene;
+        if (!this._scene) {
+            return;
+        }
         let physicEngine = this._scene.getPhysicsEngine();
 
         if (physicEngine) {

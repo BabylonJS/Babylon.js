@@ -87,7 +87,7 @@ export class HandleMaterial extends ShaderMaterial {
      * @param name Name of the material
      * @param scene Scene
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene, "handle", {
             attributes: ["position"],
             uniforms: ["worldViewProjection", "color", "scale", "positionOffset"],

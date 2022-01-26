@@ -107,7 +107,7 @@ export class GridMaterial extends PushMaterial {
      * @param name The name given to the material in order to identify it afterwards.
      * @param scene The scene the material is used in.
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 
