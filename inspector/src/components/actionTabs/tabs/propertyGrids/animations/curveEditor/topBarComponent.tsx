@@ -56,7 +56,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
             const numKeys = this.props.context.activeKeyPoints?.length || 0;
             const numAnims = new Set(this.props.context.activeKeyPoints?.map(keyPointComponent => keyPointComponent.props.curve.animation.uniqueId)).size;
             
-            const frameControlEnabled = numKeys > 0 && numAnims > 1;
+            const frameControlEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
             const valueControlEnabled = numKeys > 0;
             
             this.setState({ keyFrameValue: "", keyValue: "", frameControlEnabled, valueControlEnabled });

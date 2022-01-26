@@ -21,7 +21,7 @@ interface IGraphComponentState {}
 
 export class GraphComponent extends React.Component<IGraphComponentProps, IGraphComponentState> {
     private readonly _MinScale = 0.5;
-    private readonly _MaxScale = 4;
+    private readonly _MaxScale = 5;
     private readonly _GraphAbsoluteWidth = 788;
     private readonly _GraphAbsoluteHeight = 357;
 
