@@ -129,9 +129,13 @@ export class ActionManager extends AbstractActionManager {
      * Creates a new action manager
      * @param scene defines the hosting scene
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
         super();
-        this._scene = scene || EngineStore.LastCreatedScene;
+        scene = scene || EngineStore.LastCreatedScene
+        if (!scene) {
+            return;
+        }
+        this._scene = scene;
 
         scene.actionManagers.push(this);
     }

@@ -14,6 +14,7 @@ import { Nullable } from './types';
 import { Node } from './node';
 import { Observer } from "./Misc/observable";
 import { ThinEngine } from "./Engines/thinEngine";
+import { Engine } from "./Engines/engine";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -56,8 +57,12 @@ export class AssetContainer extends AbstractScene {
      * Instantiates an AssetContainer.
      * @param scene The scene the AssetContainer belongs to.
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
         super();
+        scene = scene || Engine.LastCreatedScene
+        if (!scene) {
+            return;
+        }
         this.scene = scene;
         this["sounds"] = [];
         this["effectLayers"] = [];
