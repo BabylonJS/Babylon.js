@@ -673,6 +673,10 @@ declare module INSPECTOR {
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: BABYLON.Observable<void>;
         onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
+        initialGraphSize?: {
+            width: number;
+            height: number;
+        };
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -682,6 +686,10 @@ declare module INSPECTOR {
         layoutObservable: BABYLON.Observable<IPerfLayoutSize>;
         returnToLiveObservable: BABYLON.Observable<void>;
         performanceCollector: BABYLON.PerformanceViewerCollector;
+        initialGraphSize?: {
+            width: number;
+            height: number;
+        };
     }
     export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps>;
 }
@@ -1182,6 +1190,7 @@ declare module INSPECTOR {
         activeFrame: number;
         fromKey: number;
         toKey: number;
+        useExistingPlayRange: boolean;
         forwardAnimation: boolean;
         isPlaying: boolean;
         clipLength: number;
