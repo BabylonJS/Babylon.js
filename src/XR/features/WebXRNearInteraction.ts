@@ -20,7 +20,7 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
-import { Material } from "../../Materials/Material";
+import { Material } from "../../Materials/material";
 import { Animation } from "../../Animations/animation";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 // side effects
