@@ -548,7 +548,7 @@ export class BaseParticleSystem {
 
     /** @hidden */
     public _isSubEmitter = false;
-    
+
     /** @hidden */
     public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
@@ -567,7 +567,6 @@ export class BaseParticleSystem {
         this._billboardMode = value;
         this._reset();
     }
-
 
     /** @hidden */
     public _isBillboardBased = true;
