@@ -2923,49 +2923,18 @@ var MSFT_lod = /** @class */ (function () {
             var firstPromise;
             var nodeLODs = _this._getLODs(extensionContext, node, _this._loader.gltf.nodes, extension.ids);
             _this._loader.logOpen("".concat(extensionContext));
-            var transformNodes = [];
-            for (var indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
-                transformNodes.push(null);
-            }
             var _loop_3 = function (indexLOD) {
                 var nodeLOD = nodeLODs[indexLOD];
                 if (indexLOD !== 0) {
                     _this._nodeIndexLOD = indexLOD;
                     _this._nodeSignalLODs[indexLOD] = _this._nodeSignalLODs[indexLOD] || new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Deferred"]();
                 }
-                var assignChild = function (babylonTransformNode, index) {
-                    var _a, _b, _c;
+                var assignWrap = function (babylonTransformNode) {
+                    assign(babylonTransformNode);
                     babylonTransformNode.setEnabled(false);
-                    transformNodes[index] = babylonTransformNode;
-                    var fullArray = true;
-                    for (var i = 0; i < transformNodes.length; i++) {
-                        if (!transformNodes[i]) {
-                            fullArray = false;
-                        }
-                    }
-                    var lod0 = transformNodes[transformNodes.length - 1];
-                    if (fullArray && lod0 && _this._isMesh(lod0)) {
-                        var screenCoverages = (_c = (_b = (_a = lod0.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b.extras) === null || _c === void 0 ? void 0 : _c.MSFT_screencoverage;
-                        if (screenCoverages && screenCoverages.length) {
-                            screenCoverages.reverse();
-                            lod0.useLODScreenCoverage = true;
-                            for (var i = 0; i < transformNodes.length - 1; i++) {
-                                var transformNode = transformNodes[i];
-                                if (transformNode && _this._isMesh(transformNode)) {
-                                    lod0.addLODLevel(screenCoverages[i + 1], transformNode);
-                                }
-                            }
-                            if (screenCoverages[0] > 0) {
-                                // Adding empty LOD
-                                lod0.addLODLevel(screenCoverages[0], null);
-                            }
-                        }
-                    }
                 };
-                var promise = _this._loader.loadNodeAsync("/nodes/".concat(nodeLOD.index), nodeLOD, function (node) { return assignChild(node, indexLOD); }).then(function (babylonMesh) {
-                    var _a, _b, _c;
-                    var screenCoverages = (_c = (_b = (_a = nodeLODs[nodeLODs.length - 1]._babylonTransformNode.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b.extras) === null || _c === void 0 ? void 0 : _c.MSFT_screencoverage;
-                    if (indexLOD !== 0 && !screenCoverages) {
+                var promise = _this._loader.loadNodeAsync("/nodes/".concat(nodeLOD.index), nodeLOD, assignWrap).then(function (babylonMesh) {
+                    if (indexLOD !== 0) {
                         // TODO: should not rely on _babylonTransformNode
                         var previousNodeLOD = nodeLODs[indexLOD - 1];
                         if (previousNodeLOD._babylonTransformNode) {
@@ -2973,7 +2942,6 @@ var MSFT_lod = /** @class */ (function () {
                             delete previousNodeLOD._babylonTransformNode;
                         }
                     }
-                    assign(babylonMesh);
                     babylonMesh.setEnabled(true);
                     return babylonMesh;
                 });
@@ -3009,13 +2977,11 @@ var MSFT_lod = /** @class */ (function () {
                 if (indexLOD !== 0) {
                     _this._materialIndexLOD = indexLOD;
                 }
-                var promise = _this._loader
-                    ._loadMaterialAsync("/materials/".concat(materialLOD.index), materialLOD, babylonMesh, babylonDrawMode, function (babylonMaterial) {
+                var promise = _this._loader._loadMaterialAsync("/materials/".concat(materialLOD.index), materialLOD, babylonMesh, babylonDrawMode, function (babylonMaterial) {
                     if (indexLOD === 0) {
                         assign(babylonMaterial);
                     }
-                })
-                    .then(function (babylonMaterial) {
+                }).then(function (babylonMaterial) {
                     if (indexLOD !== 0) {
                         assign(babylonMaterial);
                         // TODO: should not rely on _data
@@ -3099,9 +3065,6 @@ var MSFT_lod = /** @class */ (function () {
             }
         }
         return null;
-    };
-    MSFT_lod.prototype._isMesh = function (mesh) {
-        return !!mesh.addLODLevel;
     };
     MSFT_lod.prototype._loadBufferLOD = function (bufferLODs, indexLOD) {
         var bufferLOD = bufferLODs[indexLOD];

@@ -189,8 +189,10 @@ export class KhronosTextureContainer2 {
                         worker.addEventListener("error", onError);
                         worker.addEventListener("message", onMessage);
 
-                        // note: we can't transfer the ownership of data.buffer because if using a fallback texture the data.buffer buffer will be used by the current thread
-                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps, options }/*, [data.buffer]*/);
+                        const dataCopy = new Uint8Array(data.byteLength);
+                        dataCopy.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+
+                        worker.postMessage({ action: "decode", data: dataCopy, caps: compressedTexturesCaps, options }, [dataCopy.buffer]);
                     });
                 });
             });

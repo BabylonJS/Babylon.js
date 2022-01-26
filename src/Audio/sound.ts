@@ -273,6 +273,7 @@ export class Sound {
                                     (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
                                     url.indexOf(".wav", url.length - 4) !== -1 ||
                                     url.indexOf(".m4a", url.length - 4) !== -1 ||
+                                    url.indexOf(".mp4", url.length - 4) !== -1 ||
                                     url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
                                     // Loading sound
@@ -469,6 +470,7 @@ export class Sound {
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
             this._offset = options.offset ?? undefined;
+            this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {

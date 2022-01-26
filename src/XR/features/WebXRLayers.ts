@@ -3,7 +3,6 @@ import { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Nullable } from "../../types";
 import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
-import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { WebXRLayerType, WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { Viewport } from "../../Maths/math.viewport";
@@ -19,6 +18,7 @@ export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
         public getHeight: () => number,
         public readonly layer: XRCompositionLayer,
         public readonly layerType: WebXRLayerType,
+        public readonly isMultiview: boolean,
         public createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider) {
         super(
             getWidth,
@@ -35,7 +35,6 @@ export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
  */
 class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     protected _lastSubImages = new Map<XREye, XRWebGLSubImage>();
-    private _glContext: WebGLRenderingContext;
     private _compositionLayer: XRCompositionLayer;
 
     constructor(
@@ -43,24 +42,22 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
         protected readonly _xrWebGLBinding: XRWebGLBinding,
         public readonly layerWrapper: WebXRCompositionLayerWrapper) {
         super(_xrSessionManager.scene, layerWrapper);
-        this._glContext = this._xrSessionManager.scene.getEngine()._gl;
         this._compositionLayer = layerWrapper.layer;
     }
 
     protected _getRenderTargetForSubImage(subImage: XRWebGLSubImage, eye: XREye) {
         const lastSubImage = this._lastSubImages.get(eye);
-        const subImageIndex = eye == 'left' ? 0 : 1;
-        if (!this._renderTargetTextures[subImageIndex] ||
+        const eyeIndex = eye == 'left' ? 0 : 1;
+        if (!this._renderTargetTextures[eyeIndex] ||
             lastSubImage?.textureWidth !== subImage.textureWidth ||
             lastSubImage?.textureHeight != subImage.textureHeight) {
-            const colorTexture = new WebGLHardwareTexture(subImage.colorTexture, this._glContext);
-            const depthStencilTexture = new WebGLHardwareTexture(subImage.depthStencilTexture, this._glContext);
-            this._renderTargetTextures[subImageIndex] = this._createRenderTargetTexture(
+            this._renderTargetTextures[eyeIndex] = this._createRenderTargetTexture(
                 subImage.textureWidth,
                 subImage.textureHeight,
                 null,
-                colorTexture,
-                depthStencilTexture);
+                subImage.colorTexture,
+                subImage.depthStencilTexture,
+                this.layerWrapper.isMultiview);
 
             this._framebufferDimensions = {
                 framebufferWidth: subImage.textureWidth,
@@ -70,7 +67,7 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
 
         this._lastSubImages.set(eye, subImage);
 
-        return this._renderTargetTextures[subImageIndex];
+        return this._renderTargetTextures[eyeIndex];
     }
 
     private _getSubImageForEye(eye: XREye): Nullable<XRWebGLSubImage> {
@@ -120,12 +117,14 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
     constructor(
         public readonly layer: XRProjectionLayer,
+        isMultiview: boolean,
         xrGLBinding: XRWebGLBinding) {
         super(
             () => layer.textureWidth,
             () => layer.textureHeight,
             layer,
             'XRProjectionLayer',
+            isMultiview,
             (sessionManager) => new WebXRProjectionLayerRenderTargetTextureProvider(sessionManager, xrGLBinding, this));
     }
 }
@@ -177,9 +176,20 @@ const defaultXRWebGLLayerInit: XRWebGLLayerInit = {
 const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
     textureType: "texture",
     colorFormat: 0x1908, /* WebGLRenderingContext.RGBA */
-    depthFormat: 0x1902, /* WebGLRenderingContext.DEPTH_COMPONENT */
+    depthFormat: 0x88F0, /* WebGLRenderingContext.DEPTH24_STENCIL8 */
     scaleFactor: 1.0,
 };
+
+/**
+ * Configuration options of the layers feature
+ */
+export interface IWebXRLayersOptions {
+    /**
+     * Whether to try initializing the base projection layer as a multiview render target, if multiview is supported.
+     * Defaults to false.
+     */
+    preferMultiviewOnInit?: boolean;
+}
 
 /**
  * Exposes the WebXR Layers API.
@@ -203,7 +213,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
 
-    constructor(_xrSessionManager: WebXRSessionManager) {
+    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRLayersOptions = {}) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "layers";
     }
@@ -219,10 +229,17 @@ export class WebXRLayers extends WebXRAbstractFeature {
             return false;
         }
 
-        this._glContext = this._xrSessionManager.scene.getEngine()._gl;
+        const engine = this._xrSessionManager.scene.getEngine();
+        this._glContext = engine._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers = [];
-        this.addXRSessionLayer(this.createProjectionLayer());
+
+        const projectionLayerInit = { ...defaultXRProjectionLayerInit };
+        const projectionLayerMultiview = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
+        if (projectionLayerMultiview) {
+            projectionLayerInit.textureType = 'texture-array';
+        }
+        this.addXRSessionLayer(this.createProjectionLayer(projectionLayerInit, projectionLayerMultiview));
 
         return true;
     }
@@ -247,12 +264,22 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     /**
      * Creates a new XRProjectionLayer.
-     * @param params an object providing configuration options for the new XRProjectionLayer
+     * @param params an object providing configuration options for the new XRProjectionLayer.
+     * @param multiview whether the projection layer should render with multiview.
      * @returns the projection layer
      */
-    public createProjectionLayer(params = defaultXRProjectionLayerInit): WebXRProjectionLayerWrapper {
+    public createProjectionLayer(params = defaultXRProjectionLayerInit, multiview = false): WebXRProjectionLayerWrapper {
+        if (multiview && params.textureType !== 'texture-array') {
+            throw new Error("Projection layers can only be made multiview if they use texture arrays. Set the textureType parameter to 'texture-array'.");
+        }
+
+        // TODO (rgerd): Support RTT's that are bound to sub-images in the texture array.
+        if (!multiview && params.textureType === 'texture-array') {
+            throw new Error("We currently only support multiview rendering when the textureType parameter is set to 'texture-array'.");
+        }
+
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
-        return new WebXRProjectionLayerWrapper(projLayer, this._xrWebGLBinding);
+        return new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
     }
 
     /**
@@ -303,7 +330,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
 WebXRFeaturesManager.AddWebXRFeature(
     WebXRLayers.Name,
     (xrSessionManager, options) => {
-        return () => new WebXRLayers(xrSessionManager);
+        return () => new WebXRLayers(xrSessionManager, options);
     },
     WebXRLayers.Version,
     false

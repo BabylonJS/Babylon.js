@@ -94,7 +94,6 @@
 - Added support for more uv sets to glTF loader. ([bghgary](https://github.com/bghgary))
 - Added support for `KHR_materials_volume` for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for custom timeout in `WebRequest`. ([jamidwyer](https://github.com/jamidwyer/))
-- Improved support for `MSFT_lod`, now LOD levels are loaded and accurately displayed according to screen coverage ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added support for direct loading [base64 data URLs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for all loader ([CoPrez](https://github.com/CoPrez))
 - Added `DO_NOT_ALTER_FILE_COORDINATES` flag to STL loader ([AlbertoPa](https://github.com/AlbertoPa))
 - Added support for pure geometry files to OBJ loader ([Deltakosh](https://github.com/deltakosh))
@@ -134,6 +133,7 @@
 - Add option to decompose the `newWorldMatrix` when passed into `TransformNode.freezeWorldMatrix`. ([bghgary](https://github.com/bghgary))
 - Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 - Added support for morph targets to the mesh `BoundingInfo` refresh. ([EricBeetsOfficial-Opuscope](https://github.com/EricBeetsOfficial-Opuscope))
+- Added support for screen coverage in addition to distance for LOds. ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Inspector
 
@@ -153,6 +153,8 @@
 - Deselect keys with right-click on ACE ([carolhmj](https://github.com/carolhmj))
 - Let users edit multiple ACE key frame/values at the same time ([carolhmj](https://github.com/carolhmj))
 - Set default tangents for new keys on ACE and fix their behavior ([carolhmj](https://github.com/carolhmj))
+- Let the playhead move past the last animation key on ACE ([carolhmj](https://github.com/carolhmj))
+- Improve zooming on ACE ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
@@ -171,6 +173,7 @@
 - Added support for parallax / parallax occlusion to the `PerturbNormal` block ([Popov72](https://github.com/Popov72))
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Added support for custom blocks ([BlakeOne](https://github.com/BlakeOne), [Popov72](https://github.com/Popov72))
+- Added a `ClipPlanes` block to support scene clip planes ([Popov72](https://github.com/Popov72))
 
 ### GUI
 
@@ -247,6 +250,7 @@
 - Introduced a new opt-in property to `Gui3DManager`, `useRealisticScaling`, that will automatically scale 3D GUI components like buttons to MRTK standards for better sizing in XR experiences. ([rickfromwork](https://github.com/rickfromwork))
 - Add `NativeXRPlugin` and `NativeXRFrame` to improve XR performance on BabylonNative ([rgerd](https://github.com/rgerd))
 - Reset XR Camera's orientation when entering an AR session for consistent experience ([RaananW](https://github.com/RaananW))
+- Enable multiview rendering to `XRProjectionLayer` with texture type "texture-array" ([#10767](https://github.com/BabylonJS/Babylon.js/issues/10767)) ([rgerd](https://github.com/rgerd))
 
 ### Gizmos
 
@@ -278,9 +282,11 @@
 - glTF serializer now supports `KHR_materials_clearcoat` ([drigax](https://github.com/drigax))
 - Fixed bug where characters that didn't fit into a single UTF-16 code point were not correctly encoded in .glb exports ([darraghjburke](https://github.com/darraghjburke))
 - Serialize and parse now use unique IDs for materials, so duplicate names won't cause problems. Still supports parsing id for back compat ([darraghjburke](https://github.com/darraghjburke))
+- glTF exporter now supports camera export ([daoshengmu](https://github.com/daoshengmu))
 
 ## Bugs
 
+- Fix `WaterMaterial`’s constructor to use `this.getScene()` instead of `scene` parameter ([BlakeOne](https://github.com/BlakeOne))
 - Add missing param `point` to the callback function's type for the methods `registerOnPhysicsCollide` and `unregisterOnPhysicsCollide` of the `PhysicsImpostor` class. ([BlakeOne](https://github.com/BlakeOne))
 - Fix serialization and parsing of `textBlock` and `image` for `Button` class ([BlakeOne](https://github.com/BlakeOne))
 - Fix for `AdvancedTimer` ignoring `timeout` option ([BlakeOne](https://github.com/BlakeOne))
@@ -394,6 +400,8 @@
 - Fix camera collisions for right-handed scenes ([carolhmj](https://github.com/carolhmj))
 - Add a null check when setting `imageSrc` on HolographicSlate([carolhmj](https://github.com/carolhmj))
 - Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
+- Fix memory leak and incorrect data copy in KTX2 ([bghgary](https://github.com/bghgary))
+- Fix keypoint selection in ACE ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 

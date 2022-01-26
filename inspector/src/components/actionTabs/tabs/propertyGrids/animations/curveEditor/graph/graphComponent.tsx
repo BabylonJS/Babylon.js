@@ -21,7 +21,7 @@ interface IGraphComponentState {}
 
 export class GraphComponent extends React.Component<IGraphComponentProps, IGraphComponentState> {
     private readonly _MinScale = 0.5;
-    private readonly _MaxScale = 4;
+    private readonly _MaxScale = 5;
     private readonly _GraphAbsoluteWidth = 788;
     private readonly _GraphAbsoluteHeight = 357;
 
@@ -167,7 +167,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 if (Math.floor(currentFrame - leftKey?.frame) === 0) {
                     // Key already exists, update it
                     leftKey.value = value;
-                } else if (Math.floor(rightKey.frame - currentFrame) === 0) {
+                } else if (Math.floor(rightKey?.frame - currentFrame) === 0) {
                     // Key already exists, update it
                     rightKey.value = value;
                 } else {
@@ -178,8 +178,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                         value: value,
                         lockedTangent: true
                     };
-
-                    if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                    
+                    if (leftKey?.outTangent !== undefined && rightKey?.inTangent !== undefined) {
                         let derivative: Nullable<any> = null;
                         const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
                         const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
@@ -250,7 +250,6 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                             newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                         }
                     }
-
                     keys.splice(indexToAdd + 1, 0, newKey);
                 }
 

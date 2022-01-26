@@ -24364,6 +24364,7 @@ declare module BABYLON {
      * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
      */
     export class MultiviewRenderTarget extends RenderTargetTexture {
+        set samples(value: number);
         /**
          * Creates a multiview render target
          * @param scene scene used with the render target
@@ -24413,6 +24414,11 @@ declare module BABYLON {
              * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
              */
             _multiviewTexture: Nullable<RenderTargetTexture>;
+            /**
+             * @hidden
+             * For WebXR cameras that are rendering to multiview texture arrays.
+             */
+            _renderingMultiview: boolean;
             /**
              * @hidden
              * ensures the multiview texture of the camera exists and has the specified width/height
@@ -51298,6 +51304,7 @@ declare module BABYLON {
          * @returns the current scene
          */
         unfreezeActiveMeshes(): Scene;
+        private _executeActiveContainerCleanup;
         private _evaluateActiveMeshes;
         private _activeMesh;
         /**
@@ -54884,8 +54891,10 @@ declare module BABYLON {
             framebufferWidth: number;
             framebufferHeight: number;
         }>;
+        private _engine;
         constructor(_scene: Scene, layerWrapper: WebXRLayerWrapper);
-        protected _createRenderTargetTexture(width: number, height: number, framebuffer: Nullable<WebGLFramebuffer>, colorTexture?: WebGLHardwareTexture, depthStencilTexture?: WebGLHardwareTexture): RenderTargetTexture;
+        private _createInternalTexture;
+        protected _createRenderTargetTexture(width: number, height: number, framebuffer: Nullable<WebGLFramebuffer>, colorTexture?: WebGLTexture, depthStencilTexture?: WebGLTexture, multiview?: boolean): RenderTargetTexture;
         protected _destroyRenderTargetTexture(renderTargetTexture: RenderTargetTexture): void;
         getFramebufferDimensions(): Nullable<{
             framebufferWidth: number;
@@ -61154,6 +61163,23 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Where should the near interaction mesh be attached to when using a motion controller for near interaction
+     */
+    export enum WebXRNearControllerMode {
+        /**
+         * Motion controllers will not support near interaction
+         */
+        DISABLED = 0,
+        /**
+         * The interaction point for motion controllers will be inside of them
+         */
+        CENTERED_ON_CONTROLLER = 1,
+        /**
+         * The interaction point for motion controllers will be in front of the controller
+         */
+        CENTERED_IN_FRONT = 2
+    }
+    /**
      * Options interface for the near interaction module
      */
     export interface IWebXRNearInteractionOptions {
@@ -61187,6 +61213,14 @@ declare module BABYLON {
          * Far interaction feature to toggle when near interaction takes precedence
          */
         farInteractionFeature?: WebXRControllerPointerSelection;
+        /**
+         * Near interaction mode for motion controllers
+         */
+        nearInteractionControllerMode?: WebXRNearControllerMode;
+        /**
+         * Optional material for the motion controller orb, if enabled
+         */
+        motionControllerOrbMaterial?: Material;
     }
     /**
      * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
@@ -61194,6 +61228,7 @@ declare module BABYLON {
     export class WebXRNearInteraction extends WebXRAbstractFeature {
         private readonly _options;
         private static _idCounter;
+        private _tmpRay;
         private _attachController;
         private _controllers;
         private _scene;
@@ -61271,18 +61306,23 @@ declare module BABYLON {
          */
         private _nearInteractionPredicate;
         private _controllerAvailablePredicate;
+        private _handleTransitionAnimation;
         private readonly _hoverRadius;
         private readonly _pickRadius;
         private readonly _nearGrabLengthScale;
-        private _indexTipQuaternion;
-        private _indexTipOrientationVector;
+        private _processTouchPoint;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private get _utilityLayerScene();
         private _generateVisualCue;
         private _isControllerReadyForNearInteraction;
         private _attachNearInteractionMode;
         private _detachController;
-        private _generateNewHandTipMesh;
+        private readonly _hoverSize;
+        private readonly _touchSize;
+        private readonly _hydrateTransitionSize;
+        private readonly _touchHoverTransitionSize;
+        private readonly _hoverTouchTransitionSize;
+        private _generateNewTouchPointMesh;
         private _pickWithSphere;
         /**
          * Picks a mesh with a sphere
@@ -77368,6 +77408,37 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to implement clip planes
+     */
+    export class ClipPlanesBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ClipPlanesBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the worldPosition input component
+         */
+        get worldPosition(): NodeMaterialConnectionPoint;
+        get target(): NodeMaterialBlockTargets;
+        set target(value: NodeMaterialBlockTargets);
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add 2 vectors
      */
     export class AddBlock extends NodeMaterialBlock {
@@ -90786,8 +90857,9 @@ declare module BABYLON {
         getHeight: () => number;
         readonly layer: XRCompositionLayer;
         readonly layerType: WebXRLayerType;
+        readonly isMultiview: boolean;
         createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider;
-        constructor(getWidth: () => number, getHeight: () => number, layer: XRCompositionLayer, layerType: WebXRLayerType, createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider);
+        constructor(getWidth: () => number, getHeight: () => number, layer: XRCompositionLayer, layerType: WebXRLayerType, isMultiview: boolean, createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider);
     }
     /**
      * Wraps xr projection layers.
@@ -90795,12 +90867,23 @@ declare module BABYLON {
      */
     export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
         readonly layer: XRProjectionLayer;
-        constructor(layer: XRProjectionLayer, xrGLBinding: XRWebGLBinding);
+        constructor(layer: XRProjectionLayer, isMultiview: boolean, xrGLBinding: XRWebGLBinding);
+    }
+    /**
+     * Configuration options of the layers feature
+     */
+    export interface IWebXRLayersOptions {
+        /**
+         * Whether to try initializing the base projection layer as a multiview render target, if multiview is supported.
+         * Defaults to false.
+         */
+        preferMultiviewOnInit?: boolean;
     }
     /**
      * Exposes the WebXR Layers API.
      */
     export class WebXRLayers extends WebXRAbstractFeature {
+        private readonly _options;
         /**
          * The module's name
          */
@@ -90817,7 +90900,7 @@ declare module BABYLON {
         private _existingLayers;
         private _glContext;
         private _xrWebGLBinding;
-        constructor(_xrSessionManager: WebXRSessionManager);
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRLayersOptions);
         /**
          * Attach this feature.
          * Will usually be called by the features manager.
@@ -90834,10 +90917,11 @@ declare module BABYLON {
         createXRWebGLLayer(params?: XRWebGLLayerInit): WebXRWebGLLayerWrapper;
         /**
          * Creates a new XRProjectionLayer.
-         * @param params an object providing configuration options for the new XRProjectionLayer
+         * @param params an object providing configuration options for the new XRProjectionLayer.
+         * @param multiview whether the projection layer should render with multiview.
          * @returns the projection layer
          */
-        createProjectionLayer(params?: XRProjectionLayerInit): WebXRProjectionLayerWrapper;
+        createProjectionLayer(params?: XRProjectionLayerInit, multiview?: boolean): WebXRProjectionLayerWrapper;
         /**
          * Add a new layer to the already-existing list of layers
          * @param wrappedLayer the new layer to add to the existing ones

@@ -162,7 +162,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
         TwirlBlock: "Apply a twirl rotation",
-        ElbowBlock: "Passthrough block mostly used to organize your graph"
+        ElbowBlock: "Passthrough block mostly used to organize your graph",
+        ClipPlanesBlock: "A node that add clip planes support",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -399,7 +400,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FrontFacingBlock",
             ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
-            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock", "ClipPlanesBlock"],
             Particle: [
                 "ParticleBlendMultiplyBlock",
                 "ParticleColorBlock",
