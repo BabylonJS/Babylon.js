@@ -1,8 +1,7 @@
 import { BaseError } from "../Misc/baseError";
 
 /**
- * @ignore
- * Application error to support additional information when loading a file
+ * Application error to indicate unsupported texture.
  */
 export class UnsupportedTextureError extends BaseError {
 
@@ -12,5 +11,8 @@ export class UnsupportedTextureError extends BaseError {
      */
     constructor(message: string) {
         super(message);
+
+        this.name = "UnsupportedTextureError";
+        BaseError._setPrototypeOf(this, UnsupportedTextureError.prototype);
     }
 }

@@ -1,8 +1,7 @@
 import { BaseError } from "../Misc/baseError";
 
 /**
- * @ignore
- * Application error to support additional information when loading a file
+ * Application error to indicate invalid mesh positions.
  */
 export class MeshInvalidOrEmptyPositionsError extends BaseError {
 
@@ -12,5 +11,8 @@ export class MeshInvalidOrEmptyPositionsError extends BaseError {
      */
     constructor(message: string) {
         super(message);
+
+        this.name = "MeshInvalidOrEmptyPositionsError";
+        BaseError._setPrototypeOf(this, MeshInvalidOrEmptyPositionsError.prototype);
     }
 }

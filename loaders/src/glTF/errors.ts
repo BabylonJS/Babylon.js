@@ -1,8 +1,7 @@
 import { BaseError } from "babylonjs/Misc/baseError";
 
 /**
- * @ignore
- * Application error to support additional information when loading a file
+ * Application error when unexpected magic number is found.
  */
 export class GlTFLoaderUnexpectedMagicError extends BaseError {
 
@@ -12,5 +11,8 @@ export class GlTFLoaderUnexpectedMagicError extends BaseError {
      */
     constructor(message: string) {
         super(message);
+
+        this.name = "GlTFLoaderUnexpectedMagicError";
+        BaseError._setPrototypeOf(this, GlTFLoaderUnexpectedMagicError.prototype);
     }
 }
