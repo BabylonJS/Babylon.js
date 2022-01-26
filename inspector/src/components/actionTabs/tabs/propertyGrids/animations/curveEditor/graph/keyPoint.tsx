@@ -436,6 +436,8 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             this.props.context.activeKeyPoints = [];
         }
 
+        evt.preventDefault();
+
         this._select(evt.nativeEvent.ctrlKey);
 
         this.props.context.onActiveKeyPointChanged.notifyObservers();

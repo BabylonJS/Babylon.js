@@ -402,6 +402,7 @@
 - Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
 - Fix memory leak and incorrect data copy in KTX2 ([bghgary](https://github.com/bghgary))
 - Fix keypoint selection in ACE ([carolhmj](https://github.com/carolhmj))
+- Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
