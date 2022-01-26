@@ -501,7 +501,8 @@ export class Container extends Control {
             return false;
         }
 
-        if (!super.contains(x, y)) {
+        // if clipChildren is off, we should still pass picking events to children even if we don't contain the pointer
+        if (!super.contains(x, y) && this.clipChildren) {
             return false;
         }
 
@@ -514,6 +515,10 @@ export class Container extends Control {
                 }
                 return true;
             }
+        }
+
+        if (!super.contains(x, y)) {
+            return false;
         }
 
         if (!this.isHitTestVisible) {

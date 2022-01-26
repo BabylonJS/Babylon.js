@@ -41,7 +41,6 @@ import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPrope
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
 import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
@@ -123,7 +122,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
-            this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
+            // this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
             this.forceUpdate();
         });
 
@@ -152,15 +151,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save(saveCallback: () => void) {
+        const adt = this.props.globalState.guiTexture;
         //removing the art board background from the adt.
-        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+        // adt.removeControl(this.props.globalState.workbench.artBoardBackground);
+        this.props.globalState.workbench.removeEditorTransformation();
         saveCallback();
         //readding the art board at the front of the list so it will be the first thing rendered.
-        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
-            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
-        } else {
-            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
-        }
+        // if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
+        //     this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+        // } else {
+        //     this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+        // }
     }
 
     saveLocally = () => {
@@ -250,11 +251,37 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     }
 
-    renderProperties() {
-        const className = this.state.currentNode?.getClassName();
+    renderNode(node: Control) {
+        return <>
+        <div id="header">
+            <img id="logo" src={this.renderControlIcon(node)} />
+            <div id="title">
+                <TextInputLineComponent
+                    noUnderline={true}
+                    lockObject={this._lockObject}
+                    label=""
+                    target={node}
+                    propertyName="name"
+                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                />
+            </div>
+        </div>
+        {this.renderProperties(node)}
+        {node?.parent?.typeName === "Grid" && (
+            <ParentingPropertyGridComponent
+                control={node}
+                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                lockObject={this._lockObject}
+            ></ParentingPropertyGridComponent>
+        )}
+        </>;
+    }
+
+    renderProperties(node: Control) {
+        const className = node.getClassName();
         switch (className) {
             case "TextBlock": {
-                const textBlock = this.state.currentNode as TextBlock;
+                const textBlock = node as TextBlock;
                 return (
                     <TextBlockPropertyGridComponent
                         textBlock={textBlock}
@@ -264,7 +291,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "InputText": {
-                const inputText = this.state.currentNode as InputText;
+                const inputText = node as InputText;
                 return (
                     <InputTextPropertyGridComponent
                         inputText={inputText}
@@ -274,7 +301,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "ColorPicker": {
-                const colorPicker = this.state.currentNode as ColorPicker;
+                const colorPicker = node as ColorPicker;
                 return (
                     <ColorPickerPropertyGridComponent
                         colorPicker={colorPicker}
@@ -284,17 +311,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Image": {
-                const image = this.state.currentNode as Image;
+                const image = node as Image;
                 return <ImagePropertyGridComponent image={image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Slider": {
-                const slider = this.state.currentNode as Slider;
+                const slider = node as Slider;
                 return (
                     <SliderGenericPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                 );
             }
             case "ImageBasedSlider": {
-                const imageBasedSlider = this.state.currentNode as ImageBasedSlider;
+                const imageBasedSlider = node as ImageBasedSlider;
                 return (
                     <ImageBasedSliderPropertyGridComponent
                         imageBasedSlider={imageBasedSlider}
@@ -304,7 +331,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Rectangle": {
-                const rectangle = this.state.currentNode as Rectangle;
+                const rectangle = node as Rectangle;
                 return (
                     <RectanglePropertyGridComponent
                         rectangle={rectangle}
@@ -314,7 +341,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "StackPanel": {
-                const stackPanel = this.state.currentNode as StackPanel;
+                const stackPanel = node as StackPanel;
                 return (
                     <StackPanelPropertyGridComponent
                         stackPanel={stackPanel}
@@ -324,11 +351,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Grid": {
-                const grid = this.state.currentNode as Grid;
+                const grid = node as Grid;
                 return <GridPropertyGridComponent grid={grid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "ScrollViewer": {
-                const scrollViewer = this.state.currentNode as ScrollViewer;
+                const scrollViewer = node as ScrollViewer;
                 return (
                     <ScrollViewerPropertyGridComponent
                         scrollViewer={scrollViewer}
@@ -338,7 +365,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Ellipse": {
-                const ellipse = this.state.currentNode as Ellipse;
+                const ellipse = node as Ellipse;
                 return (
                     <EllipsePropertyGridComponent
                         ellipse={ellipse}
@@ -348,7 +375,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Checkbox": {
-                const checkbox = this.state.currentNode as Checkbox;
+                const checkbox = node as Checkbox;
                 return (
                     <CheckboxPropertyGridComponent
                         checkbox={checkbox}
@@ -358,7 +385,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "RadioButton": {
-                const radioButton = this.state.currentNode as RadioButton;
+                const radioButton = node as RadioButton;
                 return (
                     <RadioButtonPropertyGridComponent
                         radioButton={radioButton}
@@ -368,11 +395,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Line": {
-                const line = this.state.currentNode as Line;
+                const line = node as Line;
                 return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "DisplayGrid": {
-                const displayGrid = this.state.currentNode as DisplayGrid;
+                const displayGrid = node as DisplayGrid;
                 return (
                     <DisplayGridPropertyGridComponent
                         displayGrid={displayGrid}
@@ -382,7 +409,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Button": {
-                const button = this.state.currentNode as Button;
+                const button = node as Button;
                 return (
                     <ButtonPropertyGridComponent
                         key="buttonMenu"
@@ -401,7 +428,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         if (className !== "") {
-            const control = this.state.currentNode as Control;
+            const control = node as Control;
             return (
                 <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
             );
@@ -409,8 +436,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return null;
     }
 
-    renderControlIcon() {
-        const className = this.state.currentNode?.getClassName();
+    renderControlIcon(node: Control) {
+        const className = node.getClassName();
         switch (className) {
             case "TextBlock": {
                 return textBoxIcon;
@@ -463,6 +490,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case "Button": {
                 return buttonIcon;
             }
+            case "Container": {
+                return rectangleIcon;
+            }
         }
         return adtIcon;
     }
@@ -470,18 +500,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     render() {
         if (this.props.globalState.guiTexture == undefined) return null;
         const _sizeValues = [
-            new Vector2(1920, 1080),
-            new Vector2(1366, 768),
-            new Vector2(1280, 800),
-            new Vector2(3840, 2160),
-            new Vector2(750, 1334),
-            new Vector2(1125, 2436),
-            new Vector2(1170, 2532),
-            new Vector2(1284, 2778),
-            new Vector2(1080, 2220),
-            new Vector2(1080, 2340),
-            new Vector2(1024, 1024),
-            new Vector2(2048, 2048),
+            {width: 1920, height: 1080},
+            {width: 1366, height: 768},
+            {width: 1280, height: 800},
+            {width: 3840, height: 2160},
+            {width: 750, height: 1334},
+            {width: 1125, height: 2436},
+            {width: 1170, height: 2532},
+            {width: 1284, height: 2778},
+            {width: 1080, height: 2220},
+            {width: 1080, height: 2340},
+            {width: 1024, height: 1024},
+            {width: 2048, height: 2048},
         ];
         const _sizeOptions = [
             { label: "Web (1920)", value: 0 },
@@ -498,9 +528,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Square (2048)", value: 11 },
         ];
 
-        const size = this.props.globalState.guiTexture.getSize();
-        let textureSize = new Vector2(size.width, size.height);
-        this._sizeOption = _sizeValues.findIndex((value) => value.x == textureSize.x && value.y == textureSize.y);
+        const size = {...this.props.globalState.workbench.guiSize};
+        this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
             DataStorage.WriteBoolean("Responsive", false);
@@ -509,27 +538,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
             return (
                 <div id="ge-propertyTab">
-                    <div id="header">
-                        <img id="logo" src={this.renderControlIcon()} />
-                        <div id="title">
-                            <TextInputLineComponent
-                                noUnderline={true}
-                                lockObject={this._lockObject}
-                                label=""
-                                target={this.state.currentNode}
-                                propertyName="name"
-                                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
-                            />
-                        </div>
-                    </div>
-                    {this.renderProperties()}
-                    {this.state.currentNode?.parent?.typeName === "Grid" && (
-                        <ParentingPropertyGridComponent
-                            control={this.state.currentNode}
-                            onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
-                            lockObject={this._lockObject}
-                        ></ParentingPropertyGridComponent>
-                    )}
+                    {this.renderNode(this.state.currentNode!)}
                 </div>
             );
         }
@@ -566,7 +575,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this._sizeOption = _sizeOptions.length;
                             if (value) {
                                 this._sizeOption = 0;
-                                this.props.globalState.workbench.resizeGuiTexture(_sizeValues[this._sizeOption]);
+                                this.props.globalState.workbench.guiSize = _sizeValues[this._sizeOption];
                             }
                             this.forceUpdate();
                         }}
@@ -584,8 +593,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this._sizeOption = value;
                                 if (this._sizeOption !== _sizeOptions.length) {
                                     const newSize = _sizeValues[this._sizeOption];
-
-                                    this.props.globalState.workbench.resizeGuiTexture(newSize);
+                                    this.props.globalState.workbench.guiSize = newSize;
                                 }
                                 this.forceUpdate();
                             }}
@@ -597,28 +605,28 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
                                 label="W"
-                                target={textureSize}
-                                propertyName="x"
+                                target={size}
+                                propertyName="width"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(newvalue, textureSize.y));
+                                        this.props.globalState.workbench.guiSize = {width: newvalue, height: size.height};
                                     }
                                 }}
                             ></FloatLineComponent>
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 label="H"
-                                target={textureSize}
-                                propertyName="y"
+                                target={size}
+                                propertyName="height"
                                 isInteger={true}
                                 min={1}
                                 max={MAX_TEXTURE_SIZE}
                                 onChange={(newvalue) => {
                                     if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.resizeGuiTexture(new Vector2(textureSize.x, newvalue));
+                                        this.props.globalState.workbench.guiSize = {width: size.width, height: newvalue};
                                     }
                                 }}
                             ></FloatLineComponent>
@@ -642,6 +650,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.props.globalState.onSnippetSaveObservable.notifyObservers();
                         }}
                     />
+                    <hr className="ge" />
+                    {this.renderNode(this.props.globalState.workbench.trueRootContainer)}
                 </div>
             </div>
         );
