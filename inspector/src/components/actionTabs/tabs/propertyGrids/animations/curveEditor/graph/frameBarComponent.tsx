@@ -4,6 +4,10 @@ import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { Observer } from "babylonjs/Misc/observable";
 
+// x distance between consecutive ticks on the frame
+const baseTickDistance = 25;
+const minTickDistance = 35;
+
 interface IFrameBarComponentProps {
     globalState: GlobalState;
     context: Context;
@@ -70,10 +74,10 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
         let minFrame = this.props.context.referenceMinFrame;
         let maxFrame = this.props.context.referenceMaxFrame;
 
-        let stepCounts = 20;
         let range = maxFrame - minFrame;
-        let offset = (range / stepCounts) | 0;
         let convertRatio = range / this._GraphAbsoluteWidth;
+        const dist = Math.max(baseTickDistance * this._viewScale, minTickDistance) ; // x distance between consecutive ticks
+        let offset = Math.floor(dist * convertRatio);
 
         let steps = [];
 
