@@ -175,6 +175,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 return;
                 break;
             case "Delete":
+            case "Backspace":
                 if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
                     this.state.selectedEntity.dispose();
                     this.forceUpdate();
