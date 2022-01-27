@@ -131,7 +131,7 @@ export class ActionManager extends AbstractActionManager {
      */
     constructor(scene?: Nullable<Scene>) {
         super();
-        scene = scene || EngineStore.LastCreatedScene
+        scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }

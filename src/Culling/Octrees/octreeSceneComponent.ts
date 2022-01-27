@@ -141,7 +141,7 @@ export class OctreeSceneComponent {
      * @param scene Defines the scene to register the component in
      */
     constructor(scene?: Scene) {
-        scene = scene || <Scene>EngineStore.LastCreatedScene
+        scene = scene || <Scene>EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }

@@ -25,8 +25,10 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
-import { MaterialPluginEvent,
-    MaterialPluginDisposed, MaterialPluginIsReadyForSubMesh, MaterialPluginGetDefineNames, MaterialPluginBindForSubMesh, MaterialPluginGetActiveTextures, MaterialPluginHasTexture, MaterialPluginGetAnimatables, MaterialPluginPrepareDefines, MaterialPluginPrepareEffect, MaterialPluginPrepareUniformBuffer, MaterialPluginCreated, MaterialPluginFillRenderTargetTextures, MaterialPluginHasRenderTargetTextures, MaterialPluginHardBindForSubMesh } from "./materialPluginEvent";
+import {
+    MaterialPluginEvent,
+    MaterialPluginDisposed, MaterialPluginIsReadyForSubMesh, MaterialPluginGetDefineNames, MaterialPluginBindForSubMesh, MaterialPluginGetActiveTextures, MaterialPluginHasTexture, MaterialPluginGetAnimatables, MaterialPluginPrepareDefines, MaterialPluginPrepareEffect, MaterialPluginPrepareUniformBuffer, MaterialPluginCreated, MaterialPluginFillRenderTargetTextures, MaterialPluginHasRenderTargetTextures, MaterialPluginHardBindForSubMesh
+} from "./materialPluginEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
@@ -598,8 +600,8 @@ export class Material implements IAnimatable {
     /**
      * Stores the z offset Units value
      */
-     @serialize()
-     public zOffsetUnits = 0;
+    @serialize()
+    public zOffsetUnits = 0;
 
     public get wireframe(): boolean {
         switch (this._fillMode) {
@@ -735,36 +737,36 @@ export class Material implements IAnimatable {
     public _uniformBufferLayoutBuilt = false;
 
     protected _eventInfo:
-            MaterialPluginCreated &
-            MaterialPluginDisposed &
-            MaterialPluginHasTexture &
-            MaterialPluginIsReadyForSubMesh &
-            MaterialPluginGetDefineNames &
-            MaterialPluginPrepareEffect &
-            MaterialPluginPrepareDefines &
-            MaterialPluginPrepareUniformBuffer &
-            MaterialPluginBindForSubMesh &
-            MaterialPluginGetAnimatables &
-            MaterialPluginGetActiveTextures &
-            MaterialPluginFillRenderTargetTextures &
-            MaterialPluginHasRenderTargetTextures &
-            MaterialPluginHardBindForSubMesh
-    = { } as any; // will be initialized before each event notification
+        MaterialPluginCreated &
+        MaterialPluginDisposed &
+        MaterialPluginHasTexture &
+        MaterialPluginIsReadyForSubMesh &
+        MaterialPluginGetDefineNames &
+        MaterialPluginPrepareEffect &
+        MaterialPluginPrepareDefines &
+        MaterialPluginPrepareUniformBuffer &
+        MaterialPluginBindForSubMesh &
+        MaterialPluginGetAnimatables &
+        MaterialPluginGetActiveTextures &
+        MaterialPluginFillRenderTargetTextures &
+        MaterialPluginHasRenderTargetTextures &
+        MaterialPluginHardBindForSubMesh
+        = {} as any; // will be initialized before each event notification
 
     /** @hidden */
-    public _callbackPluginEventGeneric: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void(0);
+    public _callbackPluginEventGeneric: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void (0);
     /** @hidden */
-    public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void(0);
+    public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void (0);
     /** @hidden */
-    public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void(0);
+    public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void (0);
     /** @hidden */
-    public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void(0);
+    public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void (0);
     /** @hidden */
-    public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void(0);
+    public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void (0);
     /** @hidden */
-    public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void(0);
+    public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void (0);
     /** @hidden */
-    public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void(0);
+    public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void (0);
 
     /**
      * Creates a material instance
@@ -775,7 +777,7 @@ export class Material implements IAnimatable {
     constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean) {
         this.name = name;
         const setScene = scene || EngineStore.LastCreatedScene;
-        if(!setScene) {
+        if (!setScene) {
             return;
         }
         this._scene = setScene;
@@ -1684,7 +1686,7 @@ export class Material implements IAnimatable {
         }
 
         var materialType = Tools.Instantiate(parsedMaterial.customType);
-        const material =  materialType.Parse(parsedMaterial, scene, rootUrl);
+        const material = materialType.Parse(parsedMaterial, scene, rootUrl);
         material._loadedUniqueId = parsedMaterial.uniqueId;
         return material;
     }
