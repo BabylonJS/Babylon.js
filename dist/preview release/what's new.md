@@ -162,6 +162,7 @@
 - Fixed squiggles not working for deprecated members ([sailro](https://github.com/sailro))
 - Removed legacy code for formatting deprecated members display ([sailro](https://github.com/sailro))
 - Fixed deprecated members info display ([sailro](https://github.com/sailro))
+- Added support for experimental/beta members ([sailro](https://github.com/sailro))
 
 ### NME
 
