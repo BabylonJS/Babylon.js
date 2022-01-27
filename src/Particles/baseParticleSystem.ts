@@ -549,11 +549,24 @@ export class BaseParticleSystem {
     /** @hidden */
     public _isSubEmitter = false;
 
+    /** @hidden */
+    public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
      * Gets or sets the billboard mode to use when isBillboardBased = true.
      * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
      */
-    public billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
+    public get billboardMode(): number {
+        return this._billboardMode;
+    }
+
+    public set billboardMode(value: number) {
+        if (this._billboardMode === value) {
+            return;
+        }
+
+        this._billboardMode = value;
+        this._reset();
+    }
 
     /** @hidden */
     public _isBillboardBased = true;

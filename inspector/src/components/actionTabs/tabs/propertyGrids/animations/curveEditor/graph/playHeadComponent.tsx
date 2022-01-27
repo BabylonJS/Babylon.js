@@ -116,6 +116,8 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     }
 
     private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        evt.preventDefault();
+
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
 

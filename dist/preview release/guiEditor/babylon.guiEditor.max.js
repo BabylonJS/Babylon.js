@@ -45942,6 +45942,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 return;
                 break;
             case "Delete":
+            case "Backspace":
                 if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
                     this.state.selectedEntity.dispose();
                     this.forceUpdate();
@@ -48752,7 +48753,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this._setConstraintDirection = false;
                 _this._constraintDirection = ConstraintDirection.NONE;
             }
-            if (evt.key === "Delete") {
+            if (evt.key === "Delete" || evt.key === "Backspace") {
                 if (!_this.props.globalState.lockObject.lock) {
                     _this._selectedGuiNodes.forEach(function (guiNode) {
                         var _a;
