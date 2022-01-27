@@ -292,7 +292,7 @@ export class _Exporter {
         this._glTF = {
             asset: { generator: "BabylonJS", version: "2.0" }
         };
-        babylonScene = babylonScene || Engine.LastCreatedScene
+        babylonScene = babylonScene || Engine.LastCreatedScene;
         if (!babylonScene) {
             return;
         }
