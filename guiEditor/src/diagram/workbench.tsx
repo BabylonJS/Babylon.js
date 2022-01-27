@@ -252,7 +252,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._constraintDirection = ConstraintDirection.NONE;
         }
 
-        if (evt.key === "Delete") {
+        if (evt.key === "Delete" || evt.key === "Backspace") {
             if (!this.props.globalState.lockObject.lock) {
                 this._selectedGuiNodes.forEach((guiNode) => {
                     if (guiNode !== this.globalState.guiTexture.getChildren()[0]) {
