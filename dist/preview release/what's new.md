@@ -159,6 +159,9 @@
 
 - Start render loop before creating scene to make stopping it more convenient ([BlakeOne](https://github.com/BlakeOne))
 - Added tooltips for menubar buttons ([darraghjburke](https://github.com/darraghjburke))
+- Fixed squiggles not working for deprecated members ([sailro](https://github.com/sailro))
+- Removed legacy code for formatting deprecated members display ([sailro](https://github.com/sailro))
+- Fixed deprecated members info display ([sailro](https://github.com/sailro))
 
 ### NME
 
