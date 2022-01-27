@@ -1018,23 +1018,6 @@ export class TransformNode extends Node {
         const useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
         const useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
 
-        // Billboarding based on camera position
-        if (useBillboardPath && camera && useBillboardPosition) {
-            this.lookAt(camera.position);
-
-            if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
-                this.rotation.x = 0;
-            }
-
-            if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) !== TransformNode.BILLBOARDMODE_Y) {
-                this.rotation.y = 0;
-            }
-
-            if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
-                this.rotation.z = 0;
-            }
-        }
-
         this._updateCache();
         let cache = this._cache;
         cache.pivotMatrixUpdated = false;
@@ -1170,6 +1153,56 @@ export class TransformNode extends Node {
                 Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, TmpVectors.Matrix[0]);
             }
             this._worldMatrix.setTranslationFromFloats(0, 0, 0);
+            this._worldMatrix.multiplyToRef(TmpVectors.Matrix[0], this._worldMatrix);
+
+            // Restore translation
+            this._worldMatrix.setTranslation(TmpVectors.Vector3[0]);
+        }
+        // Billboarding based on camera position
+        else if (useBillboardPath && camera && this.billboardMode && useBillboardPosition) {
+            const storedTranslation = TmpVectors.Vector3[0];
+            // Save translation
+            this._worldMatrix.getTranslationToRef(storedTranslation);
+
+            // Compute camera position in local space
+            const cameraPosition = camera.globalPosition;
+            this._worldMatrix.invertToRef(TmpVectors.Matrix[1]);
+            const camInObjSpace = TmpVectors.Vector3[1];
+            Vector3.TransformCoordinatesToRef(cameraPosition, TmpVectors.Matrix[1], camInObjSpace);
+            camInObjSpace.normalize();
+
+            // Find the lookAt info in local space
+            const yaw = -Math.atan2(camInObjSpace.z, camInObjSpace.x) + Math.PI / 2;
+            const len = Math.sqrt(camInObjSpace.x * camInObjSpace.x + camInObjSpace.z * camInObjSpace.z);
+            const pitch = -Math.atan2(camInObjSpace.y, len);
+            Quaternion.RotationYawPitchRollToRef(yaw, pitch, 0, TmpVectors.Quaternion[0]);
+
+            if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
+                let eulerAngles = TmpVectors.Vector3[1];
+                TmpVectors.Quaternion[0].toEulerAnglesToRef(eulerAngles);
+
+                if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) !== TransformNode.BILLBOARDMODE_X) {
+                    eulerAngles.x = 0;
+                }
+
+                if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) !== TransformNode.BILLBOARDMODE_Y) {
+                    eulerAngles.y = 0;
+                }
+
+                if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
+                    eulerAngles.z = 0;
+                }
+
+                Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, TmpVectors.Matrix[0]);
+            }
+            else {
+                Matrix.FromQuaternionToRef(TmpVectors.Quaternion[0], TmpVectors.Matrix[0]);
+            }
+
+            // Cancel translation
+            this._worldMatrix.setTranslationFromFloats(0, 0, 0);
+
+            // Rotate according to lookat (diff from local to lookat)
             this._worldMatrix.multiplyToRef(TmpVectors.Matrix[0], this._worldMatrix);
 
             // Restore translation
