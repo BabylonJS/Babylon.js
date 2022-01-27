@@ -46,7 +46,7 @@ export class SoundTrack {
      * @param options
      */
     constructor(scene?: Nullable<Scene>, options: ISoundTrackOptions = {}) {
-        scene = scene || Engine.LastCreatedScene
+        scene = scene || Engine.LastCreatedScene;
         if (!scene) {
             return;
         }

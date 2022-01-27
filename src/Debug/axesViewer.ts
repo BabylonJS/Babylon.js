@@ -53,7 +53,7 @@ export class AxesViewer {
      * @param zAxis defines the node hierarchy used to render the z-axis
      */
     constructor(scene?: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode) {
-        scene = scene || <Scene>EngineStore.LastCreatedScene
+        scene = scene || <Scene>EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }

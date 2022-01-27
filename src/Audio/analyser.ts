@@ -50,7 +50,7 @@ export class Analyser {
      * @param scene defines hosting scene
      */
     constructor(scene?: Nullable<Scene>) {
-        scene = scene || Engine.LastCreatedScene
+        scene = scene || Engine.LastCreatedScene;
         if (!scene) {
             return;
         }

@@ -106,7 +106,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
      * @param scene defines the current scene
      */
     constructor(scene?: Nullable<Scene>) {
-        scene = scene || EngineStore.LastCreatedScene
+        scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }

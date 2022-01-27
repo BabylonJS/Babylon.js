@@ -59,7 +59,7 @@ export class AssetContainer extends AbstractScene {
      */
     constructor(scene?: Nullable<Scene>) {
         super();
-        scene = scene || Engine.LastCreatedScene
+        scene = scene || Engine.LastCreatedScene;
         if (!scene) {
             return;
         }

@@ -304,7 +304,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
      * @param scene Defines the scene to register the component in
      */
     constructor(scene?: Nullable<Scene>) {
-        scene = scene || Engine.LastCreatedScene
+        scene = scene || Engine.LastCreatedScene;
         if (!scene) {
             return;
         }
