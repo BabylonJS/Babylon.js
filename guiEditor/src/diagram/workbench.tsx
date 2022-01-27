@@ -94,6 +94,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._visibleRegionContainer.heightInPixels = this._guiSize.height;
         this.globalState.onResizeObservable.notifyObservers(this._guiSize);
         this.globalState.onFitToWindowObservable.notifyObservers();
+        this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
     }
     private setScaleFactor(value: ISize) {
         this._adtScaleFactor = {...value};
