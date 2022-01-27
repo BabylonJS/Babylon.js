@@ -1,12 +1,9 @@
-import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
-import { Camera } from "babylonjs/Cameras/camera";
 import { Axis } from "babylonjs/Maths/math.axis";
 import { Plane } from "babylonjs/Maths/math.plane";
 import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { Scene } from "babylonjs/scene";
 import { GlobalState } from '../globalState';
 
 export class Rect {
@@ -84,8 +81,8 @@ export class CoordinateHelper {
      * @param useStoredValues should the stored (cached) values be used to calculate the matrix
      * @returns a new matrix for the control
      */
-     public static getNodeMatrix(node: Control, guiTexture: AdvancedDynamicTexture, storedValues?: Rect): Matrix2D {
-        const size = guiTexture.getSize();
+     public static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
+        const size = this.globalState.guiTexture.getSize();
         // parent should always be defined, but stay safe
         const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
         const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
@@ -156,7 +153,7 @@ export class CoordinateHelper {
      * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
      * @returns the world matrix for this node
      */
-     public static nodeToRTTWorldMatrix(node: Control, guiTexture: AdvancedDynamicTexture, storedValues?: Rect): Matrix2D {
+     public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D {
         const listOfNodes = [node];
         let parent = node.parent;
         let child = node;
@@ -171,15 +168,15 @@ export class CoordinateHelper {
             parent = parent.parent;
         }
         this.resetMatrixArray();
-        const matrices = listOfNodes.map((node, index) => this.getNodeMatrix(node, guiTexture, index === 0 ? storedValues : undefined));
+        const matrices = listOfNodes.map((node, index) => this.getNodeMatrix(node, index === 0 ? storedValues : undefined));
         return matrices.reduce((acc, cur) => {
             acc.multiplyToRef(cur, acc);
             return acc;
         }, this._matrixCache[2]);
     }
 
-    public static nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), guiTexture: AdvancedDynamicTexture, storedValues?: Rect) {
-        const worldMatrix = this.nodeToRTTWorldMatrix(node, guiTexture, storedValues);
+    public static nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect) {
+        const worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
         worldMatrix.transformCoordinates(x, y, reference);
         // round
         reference.x = round(reference.x);
@@ -187,8 +184,8 @@ export class CoordinateHelper {
         return reference;
     }
 
-    public static rttToLocalNodeSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), guiTexture: AdvancedDynamicTexture, storedValues?: Rect) {
-        const worldMatrix = this.nodeToRTTWorldMatrix(node, guiTexture, storedValues);
+    public static rttToLocalNodeSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect) {
+        const worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
         const inv = this._matrixCache[3];
         worldMatrix.invertToRef(inv);
         inv.transformCoordinates(x, y, reference);
@@ -198,7 +195,9 @@ export class CoordinateHelper {
         return reference;
     }
 
-    public static rttToCanvasSpace(x: number, y: number, camera: Camera, scene: Scene) {
+    public static rttToCanvasSpace(x: number, y: number) {
+        const camera = this.globalState.workbench._camera;
+        const scene = this.globalState.workbench._scene;
         const tmpVec = new Vector3(x, 0, -y);
 
         // Get the final projection in view space
@@ -223,10 +222,10 @@ export class CoordinateHelper {
 
     private static _plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
 
-    public static mousePointerToRTTSpace(node: Control, globalState: GlobalState, x?: number, y?: number) {
-        const camera = globalState.workbench._camera;
-        const scene = globalState.workbench._scene;
-        const newPosition = globalState.workbench.getPosition(scene, camera, this._plane, x ?? scene.pointerX, y || scene.pointerY);
+    public static mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
+        const camera = this.globalState.workbench._camera;
+        const scene = this.globalState.workbench._scene;
+        const newPosition = this.globalState.workbench.getPosition(scene, camera, this._plane, x ?? scene.pointerX, y || scene.pointerY);
         newPosition.z *= -1;
         return new Vector2(round(newPosition.x), round(newPosition.z));
     }

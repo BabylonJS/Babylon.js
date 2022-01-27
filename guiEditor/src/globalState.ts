@@ -11,6 +11,7 @@ import { Control } from "babylonjs-gui/2D/controls/control";
 import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GuiGizmoComponent } from "./diagram/guiGizmo";
 import { ISize } from "babylonjs/Maths/math";
+import { CoordinateHelper } from "./diagram/coordinateHelper";
 
 export enum DragOverLocation {
     ABOVE = 0,
@@ -79,5 +80,7 @@ export class GlobalState {
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
         let b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
+
+        CoordinateHelper.globalState = this;
     }
 }

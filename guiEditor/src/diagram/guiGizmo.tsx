@@ -164,8 +164,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         nodeSpace.x = node.widthInPixels * half * pivotX;
                         nodeSpace.y = node.heightInPixels * half * pivotY;
                     }
-                    const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, this.props.globalState.guiTexture);
-                    const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y, this.props.globalState.workbench._camera, this.props.globalState.workbench._scene);
+                    const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+                    const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
                     if (canvas.x < canvasBounds.left) {
                         canvasBounds.left = canvas.x;
                     }
@@ -242,8 +242,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         if (this.state.scalePointDragging !== -1) {
             if (selectedGuiNodes.length === 1) {
                 const node = selectedGuiNodes[0];
-                const inRTT = CoordinateHelper.mousePointerToRTTSpace(node, this.props.globalState, scene.pointerX, scene.pointerY);
-                const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this.props.globalState.guiTexture, this._storedValues);
+                const inRTT = CoordinateHelper.mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
+                const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
                 this._dragLocalBounds(inNodeSpace);
                 this._updateNodeFromLocalBounds(node, this.state.scalePointDragging);
                 //convert to percentage
@@ -365,8 +365,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         if (selectedGuiNodes.length === 1) {
             const node = selectedGuiNodes[0];
             const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
-            const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, this.props.globalState.guiTexture);
-            const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y, this.props.globalState.workbench._camera, this.props.globalState.workbench._scene);
+            const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+            const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
             pivot = new Vector2(canvas.x, canvas.y);
         } else {
             pivot = this.state.canvasBounds.center;
