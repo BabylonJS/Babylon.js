@@ -1174,7 +1174,7 @@ export class TransformNode extends Node {
             // Find the lookAt info in local space
             const yaw = -Math.atan2(camInObjSpace.z, camInObjSpace.x) + Math.PI / 2;
             const len = Math.sqrt(camInObjSpace.x * camInObjSpace.x + camInObjSpace.z * camInObjSpace.z);
-            const pitch = -Math.atan2(camInObjSpace.y, len);            
+            const pitch = -Math.atan2(camInObjSpace.y, len);
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, 0, TmpVectors.Quaternion[0]);
 
             if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
