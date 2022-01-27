@@ -553,7 +553,7 @@ class Playground {
     private _getCandidateCompletionSuffix(candidate: {tagName: string}) {
         switch(candidate.tagName) {
             case "deprecated":
-                return "⚠️";
+                return "";
             default:
                 return "🧪";
         }
