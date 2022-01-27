@@ -7,6 +7,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
@@ -26,7 +27,7 @@ export class Layer {
     /**
      * Define the texture the layer should display.
      */
-    public texture: Nullable<Texture>;
+    public texture: Nullable<BaseTexture>;
 
     /**
      * Is the layer in background or foreground.
