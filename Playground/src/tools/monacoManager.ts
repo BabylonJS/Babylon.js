@@ -202,7 +202,7 @@ class Playground {
 
         this._editor.onDidChangeModelContent(() => {
             let newCode = this._editor.getValue();
-            const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync());
+            const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync(), 500);
             if (this.globalState.currentCode !== newCode) {
                 this.globalState.currentCode = newCode;
                 this._isDirty = true;
