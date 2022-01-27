@@ -465,7 +465,6 @@ export class SubMesh implements ICullable {
 
         switch (material.fillMode) {
             case Constants.MATERIAL_PointListDrawMode:
-            case Constants.MATERIAL_LineListDrawMode:
             case Constants.MATERIAL_LineLoopDrawMode:
             case Constants.MATERIAL_LineStripDrawMode:
             case Constants.MATERIAL_TriangleFanDrawMode:
@@ -479,7 +478,7 @@ export class SubMesh implements ICullable {
         }
 
         // LineMesh first as it's also a Mesh...
-        if (this._mesh.getClassName() === "InstancedLinesMesh" || this._mesh.getClassName() === "LinesMesh") {
+        if (material.fillMode === Constants.MATERIAL_LineListDrawMode) {
             // Check if mesh is unindexed
             if (!indices.length) {
                 return this._intersectUnIndexedLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);
