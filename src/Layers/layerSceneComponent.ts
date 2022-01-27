@@ -5,6 +5,7 @@ import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
 import { Layer } from "./layer";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { AbstractScene } from '../abstractScene';
+import { EngineStore } from "../Engines/engineStore";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -36,10 +37,13 @@ export class LayerSceneComponent implements ISceneComponent {
      * Creates a new instance of the component for the given scene
      * @param scene Defines the scene to register the component in
      */
-    constructor(scene: Scene) {
-        this.scene = scene;
-        this._engine = scene.getEngine();
-        scene.layers = new Array<Layer>();
+    constructor(scene?: Scene) {
+        this.scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!this.scene) {
+            return;
+        }
+        this._engine = this.scene.getEngine();
+        this.scene.layers = new Array<Layer>();
     }
 
     /**

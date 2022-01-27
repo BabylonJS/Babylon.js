@@ -108,7 +108,7 @@ export class TargetCamera extends Camera {
      * @param scene Defines the scene the camera belongs to
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
-    constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
     }
 

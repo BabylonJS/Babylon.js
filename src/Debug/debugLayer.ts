@@ -2,6 +2,7 @@ import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 // declare INSPECTOR namespace for compilation issue
 declare var INSPECTOR: any;
@@ -178,8 +179,11 @@ export class DebugLayer {
      * @see https://doc.babylonjs.com/features/playground_debuglayer
      * @param scene Defines the scene to inspect
      */
-    constructor(scene: Scene) {
-        this._scene = scene;
+    constructor(scene?: Scene) {
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!this._scene) {
+            return;
+        }
         this._scene.onDisposeObservable.add(() => {
             // Debug layer
             if (this._scene._debugLayer) {

@@ -99,7 +99,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         let maxFrame = this.props.context.referenceMaxFrame;
 
         return Math.max(
-            Math.min(keys[keys.length - 1].frame, ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame),
+            ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame,
             keys[0].frame
         );
     }
@@ -116,6 +116,8 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     }
 
     private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        evt.preventDefault();
+
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
 

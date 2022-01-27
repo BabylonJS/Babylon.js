@@ -56,7 +56,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
       */
     public renderTargetTexture: Nullable<RenderTargetTexture> = null;
 
-    public constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions | undefined) {
+    public constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions | undefined) {
         super(name, size, count, scene, options);
 
         this.renderTargetTexture = renderTargetTexture;

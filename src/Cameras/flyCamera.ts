@@ -266,7 +266,7 @@ export class FlyCamera extends TargetCamera {
      * @param scene Define the scene the camera belongs to.
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active, if no other camera has been defined as active.
     */
-    constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
         this.inputs = new FlyCameraInputsManager(this);
         this.inputs.addKeyboard().addMouse();

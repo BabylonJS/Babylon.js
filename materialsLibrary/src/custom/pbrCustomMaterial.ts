@@ -188,7 +188,7 @@ export class PBRCustomMaterial extends PBRMaterial {
         return name;
     }
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.CustomParts = new ShaderAlebdoParts();
         this.customShaderNameResolve = this.Builder;

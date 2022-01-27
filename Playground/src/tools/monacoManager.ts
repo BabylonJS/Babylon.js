@@ -8,6 +8,7 @@ import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/lang
 import { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { CompilationError } from "../components/errorDisplayComponent";
+import { debounce } from "ts-debounce";
 
 declare type IStandaloneCodeEditor = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneCodeEditor;
 declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneEditorConstructionOptions;
@@ -201,9 +202,11 @@ class Playground {
 
         this._editor.onDidChangeModelContent(() => {
             let newCode = this._editor.getValue();
+            const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync(), 500);
             if (this.globalState.currentCode !== newCode) {
                 this.globalState.currentCode = newCode;
                 this._isDirty = true;
+                analyzeCodeDebounced();
             }
         });
 
@@ -460,6 +463,10 @@ class Playground {
             return;
         }
 
+        if (!this._deprecatedCandidates) {
+            return;
+        }
+
         const model = this._editor.getModel();
         if (!model) {
             return;
@@ -517,7 +524,7 @@ class Playground {
                         endLineNumber: match.range.endLineNumber,
                         startColumn: wordInfo.startColumn,
                         endColumn: wordInfo.endColumn,
-                        message: deprecatedInfo.text,
+                        message: this._getTagMessage(deprecatedInfo),
                         severity: monaco.MarkerSeverity.Warning,
                         source: source,
                     });
@@ -526,6 +533,19 @@ class Playground {
         }
 
         monaco.editor.setModelMarkers(model, source, markers);
+    }
+
+    private _getTagMessage(tag: any) {
+        if (tag?.text instanceof String)
+            return tag.text;
+
+        if (tag?.text instanceof Array)
+            return tag.text
+                .filter((i: { kind: string}) => i.kind === "text")
+                .map((i: { text: any; }) => i.text)
+                .join(', ');
+
+        return '';
     }
 
     // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
@@ -543,22 +563,8 @@ class Playground {
                 return result;
             }
 
+            // filter non public members
             const suggestions = result.suggestions.filter((item: any) => !item.label.startsWith("_"));
-
-            for (const suggestion of suggestions) {
-                if (owner._deprecatedCandidates.includes(suggestion.label)) {
-                    // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
-                    // @see setupDefinitionWorker
-                    const uri = suggestion.uri;
-                    const worker = await this._worker(uri);
-                    const model = monaco.editor.getModel(uri);
-                    const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label);
-
-                    if (owner._isDeprecatedEntry(details)) {
-                        suggestion.tags = [monaco.languages.CompletionItemTag.Deprecated];
-                    }
-                }
-            }
 
             // add our own templates when invoked without context
             if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {

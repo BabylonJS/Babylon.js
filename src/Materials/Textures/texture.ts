@@ -339,7 +339,7 @@ export class Texture extends BaseTexture {
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+    constructor(url: Nullable<string>, sceneOrEngine?: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
         super(sceneOrEngine);

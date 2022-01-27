@@ -33,7 +33,7 @@ export class GroundMesh extends Mesh {
     /** @hidden */
     public _maxZ: number;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 
