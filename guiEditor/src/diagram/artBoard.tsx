@@ -30,6 +30,7 @@ export class ArtBoardComponent extends React.Component<IArtBoardProps, IArtBoard
         this.setState({
             bounds: new Rect(topLeftCanvas.x, topLeftCanvas.y, bottomRightCanvas.x, bottomRightCanvas.y)
         })
+        console.log(this.state);
     }
 
 
