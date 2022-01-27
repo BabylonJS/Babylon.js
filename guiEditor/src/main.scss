@@ -106,6 +106,7 @@
     grid-template-columns: 100%;
     height: calc(100% - var(--blackBarHeight));
     overflow-y: auto;
+    z-index: 3;
 
     #propertyTab {
         grid-row: 1;

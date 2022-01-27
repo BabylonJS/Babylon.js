@@ -10,7 +10,6 @@ import { Color4 } from "babylonjs/Maths/math.color";
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { Axis } from "babylonjs/Maths/math.axis";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Plane } from "babylonjs/Maths/math.plane";
 import { PointerEventTypes, PointerInfo } from "babylonjs/Events/pointerEvents";
 import { EventState } from "babylonjs/Misc/observable";
@@ -39,12 +38,10 @@ export enum ConstraintDirection {
 }
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    // public artBoardBackground: Rectangle;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    public _textureMesh: Mesh;
     public _scene: Scene;
     private _selectedGuiNodes: Control[] = [];
     private _ctrlKeyIsPressed = false;
@@ -813,26 +810,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             let selected = false;
             this.selectedGuiNodes.forEach((element) => {
                 if (pos) {
-                    selected = this._onMove(element, new Vector2(pos.x, -pos.z), new Vector2(x, y), false) || selected;
+                    selected = this._onMove(element, new Vector2(pos.x, pos.y), new Vector2(x, y), false) || selected;
                 }
             });
 
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-            this._mouseStartPointY = pos ? pos.z * -1 : this._mouseStartPointY;
+            this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
         }
     }
 
     public getGroundPosition() {
-        var tex = this._textureMesh;
-        // Use a predicate to get position on the ground
-        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) {
-            return mesh == tex;
-        });
-        if (pickinfo?.hit) {
-            return pickinfo.pickedPoint;
-        }
-
-        return null;
+        return new Vector2(this._scene.pointerX / this._zoomFactor, this._scene.pointerY / this._zoomFactor);
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
@@ -850,7 +838,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-            this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+            this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
         }
     }
 
@@ -891,8 +879,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._visibleRegionContainer.heightInPixels = this.guiSize.height;
         this._panAndZoomContainer.addControl(this._visibleRegionContainer);
 
-        // this._textureMesh = CreateGround("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
-        
         const adt =
         this.globalState.guiTexture =
         this._visibleRegionContainer._host =
@@ -902,12 +888,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         adt.useInvalidateRectOptimization = false;
         this.trueRootContainer = adt.rootContainer;
         adt.onEndRenderObservable.add(() => this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers());
-        // this._textureMesh.showBoundingBox = true;
-        // this.artBoardBackground = new Rectangle("Art-Board-Background");
-        // this.artBoardBackground.width = "100%";
-        // this.artBoardBackground.height = "100%";
-        // this.artBoardBackground.background = "transparent";
-        // this.artBoardBackground.thickness = 0;
         this._scene.onPointerObservable.add(() => {
             // if we click in the scene and we don't hit any controls, deselect all
             this._scene.onAfterRenderObservable.addOnce(() => {
@@ -918,25 +898,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             })
         }, PointerEventTypes.POINTERUP);
 
-        // this.trueRootContainer.addControl(this.artBoardBackground);
-
         this.synchronizeLiveGUI();
-
-        // const nodeMaterial = new NodeMaterial("NodeMaterial", this._scene);
-        // nodeMaterial.loadFromSerialization(GUIEditorNodeMaterial);
-
-        // nodeMaterial.build(true);
-        // this._textureMesh.material = nodeMaterial;
-        // if (nodeMaterial) {
-        //     nodeMaterial.getInputBlocks().forEach(block => {
-        //         if (block.name === "clearColor") {
-        //             // set the clear color equal to the background of the canvas
-        //             block.value = new Color4(0.8,0.8,0.8,1.0);
-        //         }
-        //     })
-        //     const textureBlock = nodeMaterial.getBlockByName("Texture") as TextureBlock;
-        //     textureBlock.texture = this.globalState.guiTexture;
-        // }
 
         this.setScaleFactor(this._adtScaleFactor);
 
@@ -994,6 +956,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+        this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
     }
 
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
@@ -1039,8 +1002,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             camera.wheelPrecision = (1 / camera.radius) * 1000;
         };
 
-        const zoomFnScrollWheel = (p: PointerInfo, e: EventState) => {
-            const delta = this.zoomWheel(p, e, camera);
+        const zoomFnScrollWheel = (e: IWheelEvent) => {
+            const delta = this.zoomWheel(e, camera);
             this.zooming(1 + (delta / 1000), scene, camera, plane, inertialPanning);
         };
 
@@ -1104,9 +1067,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }, KeyboardEventTypes.KEYDOWN);
 
         scene.onAfterRenderObservable.add(() => { if (this._camera.inertialRadiusOffset != 0) this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers() });
-        scene.onPointerObservable.add(zoomFnScrollWheel, PointerEventTypes.POINTERWHEEL);
-        // scene.onPointerObservable.add((p) => console.log(p.type));
-        this._rootContainer.current?.addEventListener("wheel",  () => console.log('wheel'));
+        this._rootContainer.current?.addEventListener("wheel",  zoomFnScrollWheel);
         scene.onBeforeRenderObservable.add(inertialPanningFn);
         scene.onBeforeRenderObservable.add(wheelPrecisionFn);
         scene.onBeforeRenderObservable.add(() => {
@@ -1120,7 +1081,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 // this.props.globalState.guiTexture.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
                 // console.log(this._engine.getRenderWidth(), this._engine.getRenderHeight());
             // }
-            // console.log(this._panningOffset);
         })
 
         // stop context menu showing on canvas right click
@@ -1158,8 +1118,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //Get the wheel delta divided by the camera wheel precision
-    zoomWheel(p: PointerInfo, e: EventState, camera: ArcRotateCamera) {
-        const event = p.event as IWheelEvent;
+    zoomWheel(event: IWheelEvent, camera: ArcRotateCamera) {
 
         event.preventDefault();
         let delta = 0;
