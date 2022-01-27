@@ -553,7 +553,7 @@ class Playground {
     private _getCandidateCompletionSuffix(candidate: {tagName: string}) {
         switch(candidate.tagName) {
             case "deprecated":
-                return "";
+                return "⚠️";
             default:
                 return "🧪";
         }
@@ -593,8 +593,21 @@ class Playground {
             for (const suggestion of suggestions) {
                 const candidate = owner._tagCandidates.find(t => t.name === suggestion.label);
                 if (candidate) {
-                    const suffix = owner._getCandidateCompletionSuffix(candidate)
-                    suggestion.label = suggestion.label + suffix;
+                    // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                    // @see setupDefinitionWorker                    
+                    const uri = suggestion.uri;
+                    const worker = await this._worker(uri);
+                    const model = monaco.editor.getModel(uri);
+                    const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label);
+
+                    if (!details || !details.tags)
+                        continue;
+
+                    const tag = details.tags.find((t: {name: string}) => t.name === candidate.tagName);
+                    if (tag) {
+                        const suffix = owner._getCandidateCompletionSuffix(candidate)
+                        suggestion.label = suggestion.label + suffix;
+                    }
                 }
             }            
 
