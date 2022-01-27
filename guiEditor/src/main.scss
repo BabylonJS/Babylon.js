@@ -90,6 +90,7 @@
     background: #CCCCCC;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 
     .diagram {
         display: none;
@@ -106,7 +107,6 @@
     grid-template-columns: 100%;
     height: calc(100% - var(--blackBarHeight));
     overflow-y: auto;
-    z-index: 3;
 
     #propertyTab {
         grid-row: 1;
@@ -176,7 +176,6 @@
     display: grid;
     font-family: "acumin-pro-condensed";
     top:0;
-    z-index: 4;
 
     .dialog {
         align-self: center;
@@ -268,10 +267,9 @@
         background: transparent;
         position: absolute;
     }
-    z-index: 2;
 }
 #workbench-canvas {
-    z-index: 1;
+    position: relative;
 }
 .artboard {
     background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 
