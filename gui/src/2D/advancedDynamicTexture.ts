@@ -356,7 +356,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      */
-    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
+    constructor(name: string, width = 0, height = 0, scene?: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
         super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
         scene = this.getScene();
         if (!scene || !this._texture) {

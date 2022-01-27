@@ -12,6 +12,7 @@ import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnum
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { IDeviceEvent } from "../DeviceInput/InputDevices/inputInterfaces";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 
@@ -119,8 +120,11 @@ export class InputManager {
      * Creates a new InputManager
      * @param scene defines the hosting scene
      */
-    public constructor(scene: Scene) {
-        this._scene = scene;
+    constructor(scene?: Scene) {
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!this._scene) {
+            return;
+        }
     }
 
     /**

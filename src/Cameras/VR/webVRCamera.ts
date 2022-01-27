@@ -230,7 +230,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param scene The scene the camera belongs to
      * @param webVROptions a set of customizable options for the webVRCamera
      */
-    constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
+    constructor(name: string, position: Vector3, scene?: Scene, private webVROptions: WebVROptions = {}) {
         super(name, position, scene);
         this._cache.position = Vector3.Zero();
         if (webVROptions.defaultHeight) {
@@ -306,7 +306,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
          * This way, the right camera will be used as a parent, and the mesh will be rendered correctly.
          * Amazing!
          */
-        scene.onBeforeCameraRenderObservable.add((camera) => {
+        this.getScene().onBeforeCameraRenderObservable.add((camera) => {
             if (camera.parent === this && this.rigParenting) {
                 this._descendants = this.getDescendants(true, (n) => {
                     // don't take the cameras or the controllers!
@@ -320,7 +320,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             }
         });
 
-        scene.onAfterCameraRenderObservable.add((camera) => {
+        this.getScene().onAfterCameraRenderObservable.add((camera) => {
             if (camera.parent === this && this.rigParenting) {
                 this._descendants.forEach((node) => {
                     node.parent = this;

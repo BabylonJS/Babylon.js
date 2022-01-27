@@ -90,7 +90,7 @@ export interface IGlowLayerOptions {
     /**
      * Defines the blend mode used by the merge
      */
-     alphaBlendingMode?: number;
+    alphaBlendingMode?: number;
 }
 
 /**
@@ -181,7 +181,7 @@ export class GlowLayer extends EffectLayer {
      * @param scene The scene to use the layer in
      * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
      */
-    constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>) {
+    constructor(name: string, scene?: Scene, options?: Partial<IGlowLayerOptions>) {
         super(name, scene);
         this.neutralColor = new Color4(0, 0, 0, 1);
 

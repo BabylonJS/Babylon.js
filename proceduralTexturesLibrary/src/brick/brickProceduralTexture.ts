@@ -4,6 +4,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { Nullable } from "babylonjs/types";
 
 import "./brickProceduralTexture.fragment";
 
@@ -13,7 +14,7 @@ export class BrickProceduralTexture extends ProceduralTexture {
     private _jointColor = new Color3(0.72, 0.72, 0.72);
     private _brickColor = new Color3(0.77, 0.47, 0.40);
 
-    constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+    constructor(name: string, size: number, scene: Nullable<Scene> = null, fallbackTexture?: Texture, generateMipMaps?: boolean) {
         super(name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps);
         this.updateShaderUniforms();
     }

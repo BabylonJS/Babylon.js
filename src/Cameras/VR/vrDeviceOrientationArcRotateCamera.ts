@@ -29,7 +29,7 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
      * @param compensateDistortion defines if the camera needs to compensate the lens distortion
      * @param vrCameraMetrics defines the vr metrics associated to the camera
      */
-    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene?: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
         super(name, alpha, beta, radius, target, scene);
 
         vrCameraMetrics.compensateDistortion = compensateDistortion;
