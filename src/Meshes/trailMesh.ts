@@ -31,7 +31,7 @@ export class TrailMesh extends Mesh {
      * @param length Length of trailing mesh. Default is 60.
      * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(name: string, generator: TransformNode, scene: Scene, diameter: number = 1, length: number = 60, autoStart: boolean = true) {
+    constructor(name: string, generator: TransformNode, scene?: Scene, diameter: number = 1, length: number = 60, autoStart: boolean = true) {
         super(name, scene);
 
         this._running = false;

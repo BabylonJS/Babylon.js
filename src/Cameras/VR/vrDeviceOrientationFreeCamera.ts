@@ -24,7 +24,7 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
      * @param compensateDistortion defines if the camera needs to compensate the lens distortion
      * @param vrCameraMetrics defines the vr metrics associated to the camera
      */
-    constructor(name: string, position: Vector3, scene: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+    constructor(name: string, position: Vector3, scene?: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
         super(name, position, scene);
 
         vrCameraMetrics.compensateDistortion = compensateDistortion;

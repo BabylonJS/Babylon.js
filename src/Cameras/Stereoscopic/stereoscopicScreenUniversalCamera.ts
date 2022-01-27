@@ -44,7 +44,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * @param distanceToProjectionPlane defines distance between each color axis. The rig cameras will receive this as their negative z position!
      * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
      */
-    constructor(name: string, position: Vector3, scene: Scene, distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.065) {
+    constructor(name: string, position: Vector3, scene?: Scene, distanceToProjectionPlane: number = 1, distanceBetweenEyes: number = 0.065) {
         super(name, position, scene);
         this._distanceBetweenEyes = distanceBetweenEyes;
         this._distanceToProjectionPlane = distanceToProjectionPlane;

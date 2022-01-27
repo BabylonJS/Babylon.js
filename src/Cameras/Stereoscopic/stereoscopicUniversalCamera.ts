@@ -21,7 +21,7 @@ export class StereoscopicUniversalCamera extends UniversalCamera {
      * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
      * @param scene defines the hosting scene
      */
-    constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene) {
+    constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene) {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
         this.isStereoscopicSideBySide = isStereoscopicSideBySide;

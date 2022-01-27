@@ -16,6 +16,7 @@ import { Tags } from "../Misc/tags";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { AbstractScene } from "../abstractScene";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -132,12 +133,15 @@ export class Geometry implements IGetSetVerticesData {
      * @param updatable defines if geometry must be updatable (false by default)
      * @param mesh defines the mesh that will be associated with the geometry
      */
-    constructor(id: string, scene: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
+    constructor(id: string, scene?: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!this._scene) {
+            return;
+        }
         this.id = id;
-        this.uniqueId = scene.getUniqueId();
-        this._engine = scene.getEngine();
+        this.uniqueId = this._scene.getUniqueId();
+        this._engine = this._scene.getEngine();
         this._meshes = [];
-        this._scene = scene;
         //Init vertex buffer cache
         this._vertexBuffers = {};
         this._indices = [];

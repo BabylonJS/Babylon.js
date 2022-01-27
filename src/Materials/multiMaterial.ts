@@ -46,10 +46,10 @@ export class MultiMaterial extends Material {
      * @param name Define the name in the scene
      * @param scene Define the scene the material belongs to
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene, true);
 
-        scene.multiMaterials.push(this);
+        this.getScene().multiMaterials.push(this);
 
         this.subMaterials = new Array<Material>();
 

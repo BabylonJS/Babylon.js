@@ -21,7 +21,7 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
      * @param interaxialDistance defines distance between each color axis
      * @param scene defines the hosting scene
      */
-    constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene) {
+    constructor(name: string, position: Vector3, interaxialDistance: number, scene?: Scene) {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
         this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });

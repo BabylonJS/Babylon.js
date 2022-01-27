@@ -173,7 +173,7 @@ export class CustomMaterial extends StandardMaterial {
         return name;
     }
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.CustomParts = new ShaderSpecialParts();
         this.customShaderNameResolve = this.Builder;

@@ -7,6 +7,7 @@ import { Ray } from "../../Culling/ray";
 import { SceneComponentConstants } from "../../sceneComponent";
 
 import { Octree } from "./octree";
+import { EngineStore } from "../../Engines/engineStore";
 
 declare type Collider = import("../../Collisions/collider").Collider;
 
@@ -139,7 +140,11 @@ export class OctreeSceneComponent {
      * Creates a new instance of the component for the given scene
      * @param scene Defines the scene to register the component in
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Scene) {
+        scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this.scene = scene;
 
         this.scene.getActiveMeshCandidates = this.getActiveMeshCandidates.bind(this);

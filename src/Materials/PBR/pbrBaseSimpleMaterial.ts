@@ -127,7 +127,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      * @param name The material name
      * @param scene The scene the material will be use in.
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
 
         this._useAlphaFromAlbedoTexture = true;

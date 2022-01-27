@@ -5,6 +5,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { Nullable } from "babylonjs/types";
 
 import "./fireProceduralTexture.fragment";
 
@@ -15,7 +16,7 @@ export class FireProceduralTexture extends ProceduralTexture {
     private _fireColors: Color3[];
     private _alphaThreshold: number = 0.5;
 
-    constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+    constructor(name: string, size: number, scene: Nullable<Scene> = null, fallbackTexture?: Texture, generateMipMaps?: boolean) {
         super(name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps);
         this._fireColors = FireProceduralTexture.RedFireColors;
         this.updateShaderUniforms();
