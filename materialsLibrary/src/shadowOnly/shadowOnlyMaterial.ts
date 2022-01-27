@@ -46,7 +46,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     private _activeLight: IShadowLight;
     private _needAlphaBlending = true;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

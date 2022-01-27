@@ -158,10 +158,10 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         });
 
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add((rect1) => {
-            if (!this._svgHost.current) {
+            if (!this._keyPointSVG.current) {
                 return;
             }
-            const rect2 = this._svgHost.current.getBoundingClientRect();
+            const rect2 = this._keyPointSVG.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
             if (!this.props.context.activeKeyPoints) {
@@ -436,6 +436,8 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             this.props.context.activeKeyPoints = [];
         }
 
+        evt.preventDefault();
+
         this._select(evt.nativeEvent.ctrlKey);
 
         this.props.context.onActiveKeyPointChanged.notifyObservers();
@@ -565,9 +567,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             const isLockedTangent =
                 keys[this.props.keyId].lockedTangent &&
                 this.props.keyId !== 0 &&
-                this.props.keyId !== keys.length - 1 &&
-                keys[this.props.keyId].inTangent !== undefined &&
-                keys[this.props.keyId].outTangent !== undefined;
+                this.props.keyId !== keys.length - 1;
 
             let angleDiff = 0;
             let tmpVector = TmpVectors.Vector2[0];

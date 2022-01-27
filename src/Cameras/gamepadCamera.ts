@@ -21,7 +21,7 @@ export class GamepadCamera extends UniversalCamera {
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to
      */
-    constructor(name: string, position: Vector3, scene: Scene) {
+    constructor(name: string, position: Vector3, scene?: Scene) {
         super(name, position, scene);
     }
 

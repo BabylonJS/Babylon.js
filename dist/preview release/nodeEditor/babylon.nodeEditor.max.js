@@ -55039,6 +55039,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -55515,6 +55516,8 @@ var BlockTools = /** @class */ (function () {
                 return andBlock;
             case "ImageSourceBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ImageSourceBlock"]("ImageSource");
+            case "ClipPlanesBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ClipPlanesBlock"]("ClipPlanes");
         }
         return null;
     };
@@ -55961,7 +55964,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 "FrontFacingBlock",
             ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
-            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock", "ClipPlanesBlock"],
             Particle: [
                 "ParticleBlendMultiplyBlock",
                 "ParticleColorBlock",
@@ -56201,7 +56204,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
         TwirlBlock: "Apply a twirl rotation",
-        ElbowBlock: "Passthrough block mostly used to organize your graph"
+        ElbowBlock: "Passthrough block mostly used to organize your graph",
+        ClipPlanesBlock: "A node that add clip planes support",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

@@ -722,6 +722,10 @@ declare module "babylonjs-inspector/components/graph/canvasGraphComponent" {
         layoutObservable?: Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: Observable<void>;
         onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+        initialGraphSize?: {
+            width: number;
+            height: number;
+        };
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -736,6 +740,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/performanceViewer
         layoutObservable: Observable<IPerfLayoutSize>;
         returnToLiveObservable: Observable<void>;
         performanceCollector: PerformanceViewerCollector;
+        initialGraphSize?: {
+            width: number;
+            height: number;
+        };
     }
     export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps>;
 }
@@ -1296,6 +1304,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         activeFrame: number;
         fromKey: number;
         toKey: number;
+        useExistingPlayRange: boolean;
         forwardAnimation: boolean;
         isPlaying: boolean;
         clipLength: number;
@@ -5677,6 +5686,10 @@ declare module INSPECTOR {
         layoutObservable?: BABYLON.Observable<IPerfLayoutSize>;
         returnToPlayheadObservable?: BABYLON.Observable<void>;
         onVisibleRangeChangedObservable?: BABYLON.Observable<IVisibleRangeChangedObservableProps>;
+        initialGraphSize?: {
+            width: number;
+            height: number;
+        };
     }
     export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps>;
 }
@@ -5686,6 +5699,10 @@ declare module INSPECTOR {
         layoutObservable: BABYLON.Observable<IPerfLayoutSize>;
         returnToLiveObservable: BABYLON.Observable<void>;
         performanceCollector: BABYLON.PerformanceViewerCollector;
+        initialGraphSize?: {
+            width: number;
+            height: number;
+        };
     }
     export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps>;
 }
@@ -6186,6 +6203,7 @@ declare module INSPECTOR {
         activeFrame: number;
         fromKey: number;
         toKey: number;
+        useExistingPlayRange: boolean;
         forwardAnimation: boolean;
         isPlaying: boolean;
         clipLength: number;

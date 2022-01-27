@@ -25,7 +25,7 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
      * @param interaxialDistance defines distance between each color axis
      * @param scene defines the hosting scene
      */
-    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene) {
+    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene?: Scene) {
         super(name, alpha, beta, radius, target, scene);
         this.interaxialDistance = interaxialDistance;
         this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });

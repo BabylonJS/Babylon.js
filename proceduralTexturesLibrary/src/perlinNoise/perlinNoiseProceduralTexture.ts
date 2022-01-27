@@ -3,7 +3,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
-
+import { Nullable } from "babylonjs/types";
 import "./perlinNoiseProceduralTexture.fragment";
 
 export class PerlinNoiseProceduralTexture extends ProceduralTexture {
@@ -18,7 +18,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
 
     private _currentTranslation: number = 0;
 
-    constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+    constructor(name: string, size: number, scene: Nullable<Scene> = null, fallbackTexture?: Texture, generateMipMaps?: boolean) {
         super(name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps);
         this.updateShaderUniforms();
     }

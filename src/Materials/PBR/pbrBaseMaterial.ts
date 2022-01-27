@@ -887,7 +887,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param name The material name
      * @param scene The scene the material will be use in.
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
 
         this.brdf = new PBRBRDFConfiguration(this);
@@ -913,7 +913,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return this._renderTargets;
         };
 
-        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
     }
 

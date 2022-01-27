@@ -365,7 +365,7 @@ export class Camera extends Node {
      * @param scene Defines the scene the camera belongs too
      * @param setActiveOnSceneIfNoneActive Defines if the camera should be set as active after creation if no other camera have been defined in the scene
      */
-    constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene);
 
         this.getScene().addCamera(this);

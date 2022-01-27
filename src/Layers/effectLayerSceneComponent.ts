@@ -7,6 +7,7 @@ import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneCo
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
+import { EngineStore } from "../Engines/engineStore";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     if (parsedData.effectLayers) {
@@ -82,10 +83,13 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
      * Creates a new instance of the component for the given scene
      * @param scene Defines the scene to register the component in
      */
-    constructor(scene: Scene) {
-        this.scene = scene;
-        this._engine = scene.getEngine();
-        scene.effectLayers = new Array<EffectLayer>();
+    constructor(scene?: Scene) {
+        this.scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!this.scene) {
+            return;
+        }
+        this._engine = this.scene.getEngine();
+        this.scene.effectLayers = new Array<EffectLayer>();
     }
 
     /**

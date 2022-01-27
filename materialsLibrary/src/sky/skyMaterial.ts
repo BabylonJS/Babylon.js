@@ -132,7 +132,7 @@ export class SkyMaterial extends PushMaterial {
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

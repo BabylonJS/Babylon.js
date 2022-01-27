@@ -73,7 +73,7 @@ export class FireMaterial extends PushMaterial {
     private _scaledDiffuse = new Color3();
     private _lastTime: number = 0;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

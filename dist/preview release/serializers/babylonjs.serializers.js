@@ -2192,6 +2192,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2216,6 +2217,7 @@ var _Exporter = /** @class */ (function () {
         this._accessors = [];
         this._meshes = [];
         this._scenes = [];
+        this._cameras = [];
         this._nodes = [];
         this._images = [];
         this._materials = [];
@@ -2919,6 +2921,9 @@ var _Exporter = /** @class */ (function () {
             this._glTF.scenes = this._scenes;
             this._glTF.scene = 0;
         }
+        if (this._cameras && this._cameras.length) {
+            this._glTF.cameras = this._cameras;
+        }
         if (this._bufferViews && this._bufferViews.length) {
             this._glTF.bufferViews = this._bufferViews;
         }
@@ -3145,7 +3150,19 @@ var _Exporter = /** @class */ (function () {
         if (babylonTransformNode.rotationQuaternion) {
             rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
         }
-        if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
+        if (!babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].IsIdentity(rotationQuaternion)) {
+            if (convertToRightHandedSystem) {
+                _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
+            }
+            node.rotation = rotationQuaternion.normalize().asArray();
+        }
+    };
+    _Exporter.prototype.setCameraTransformation = function (node, babylonCamera, convertToRightHandedSystem) {
+        if (!babylonCamera.position.equalsToFloats(0, 0, 0)) {
+            node.translation = convertToRightHandedSystem ? _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
+        }
+        var rotationQuaternion = babylonCamera.absoluteRotation;
+        if (!babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
             }
@@ -3566,7 +3583,7 @@ var _Exporter = /** @class */ (function () {
         var glTFNodeIndex;
         var glTFNode;
         var directDescendents;
-        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes, true), babylonScene.meshes, true), babylonScene.lights, true);
+        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes, true), babylonScene.meshes, true), babylonScene.lights, true), babylonScene.cameras, true);
         var rootNodesToLeftHanded = [];
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};
@@ -3592,6 +3609,35 @@ var _Exporter = /** @class */ (function () {
                 });
             }
         });
+        // Export babylon cameras to glTFCamera
+        var cameraHash = new Map();
+        babylonScene.cameras.forEach(function (camera) {
+            var glTFCamera = {
+                type: camera.mode === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"].PERSPECTIVE_CAMERA ? "perspective" /* PERSPECTIVE */ : "orthographic" /* ORTHOGRAPHIC */
+            };
+            if (camera.name) {
+                glTFCamera.name = camera.name;
+            }
+            if (glTFCamera.type === "perspective" /* PERSPECTIVE */) {
+                glTFCamera.perspective = {
+                    aspectRatio: camera.getEngine().getAspectRatio(camera),
+                    yfov: camera._cache.fovMode === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"].FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera._cache.aspectRatio,
+                    znear: camera.minZ, zfar: camera.maxZ
+                };
+            }
+            else if (glTFCamera.type === "orthographic" /* ORTHOGRAPHIC */) {
+                var halfWidth = camera.orthoLeft && camera.orthoRight ?
+                    0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
+                var halfHeight = camera.orthoBottom && camera.orthoTop ?
+                    0.5 * (camera.orthoTop - camera.orthoBottom) : camera.getEngine().getRenderHeight() * 0.5;
+                glTFCamera.orthographic = {
+                    xmag: halfWidth, ymag: halfHeight,
+                    znear: camera.minZ, zfar: camera.maxZ
+                };
+            }
+            cameraHash.set(camera, _this._cameras.length);
+            _this._cameras.push(glTFCamera);
+        });
         var _a = this.getExportNodes(nodes), exportNodes = _a[0], exportMaterials = _a[1];
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(exportMaterials, "image/png" /* PNG */, true).then(function () {
             return _this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, binaryWriter).then(function (nodeMap) {
@@ -3614,6 +3660,9 @@ var _Exporter = /** @class */ (function () {
                                 else if (babylonNode.metadata.gltf) {
                                     glTFNode.extras = babylonNode.metadata.gltf.extras;
                                 }
+                            }
+                            if (babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"]) {
+                                glTFNode.camera = cameraHash.get(babylonNode);
                             }
                             if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
                                 if (_this._options.shouldExportNode && !_this._options.shouldExportNode(babylonNode)) {
@@ -3796,6 +3845,10 @@ var _Exporter = /** @class */ (function () {
                     }
                     return node;
                 });
+            }
+            else if (babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"]) {
+                _this.setCameraTransformation(node, babylonNode, convertToRightHandedSystem);
+                return node;
             }
             else {
                 return node;
