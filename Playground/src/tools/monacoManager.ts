@@ -18,7 +18,7 @@ declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs
 export class MonacoManager {
     private _editor: IStandaloneCodeEditor;
     private _definitionWorker: Worker;
-    private _deprecatedCandidates: string[];
+    private _tagCandidates: {name: string, tagName: string}[];
     private _hostElement: HTMLDivElement;
     private _templates: {
         label: string;
@@ -200,9 +200,9 @@ class Playground {
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
 
+        const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync(), 500);
         this._editor.onDidChangeModelContent(() => {
             let newCode = this._editor.getValue();
-            const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync(), 500);
             if (this.globalState.currentCode !== newCode) {
                 this.globalState.currentCode = newCode;
                 this._isDirty = true;
@@ -446,7 +446,7 @@ class Playground {
     protected _setupDefinitionWorker(libContent: string) {
         this._definitionWorker = new Worker("workers/definitionWorker.js");
         this._definitionWorker.addEventListener("message", ({ data }) => {
-            this._deprecatedCandidates = data.result;
+            this._tagCandidates = data.result;
             this._analyzeCodeAsync();
         });
         this._definitionWorker.postMessage({
@@ -454,8 +454,8 @@ class Playground {
         });
     }
 
-    // This will make sure that all members marked with a deprecated jsdoc attribute will be marked as such in Monaco UI
-    // We use a prefiltered list of deprecated candidates, because the effective call to getCompletionEntryDetails is slow.
+    // This will make sure that all members marked with an interesting jsdoc attribute will be marked as such in Monaco UI
+    // We use a prefiltered list of tag candidates, because the effective call to Monaco API can be slow.
     // @see setupDefinitionWorker
     private async _analyzeCodeAsync() {
         // if the definition worker is very fast, this can be called out of context. @see setupDefinitionWorker
@@ -463,7 +463,7 @@ class Playground {
             return;
         }
 
-        if (!this._deprecatedCandidates) {
+        if (!this._tagCandidates) {
             return;
         }
 
@@ -482,7 +482,7 @@ class Playground {
         }
 
         const languageService = await worker(uri);
-        const source = "[deprecated members]";
+        const source = "[Noteworthy babylon.js members]";
 
         monaco.editor.setModelMarkers(model, source, []);
         const markers: {
@@ -495,8 +495,11 @@ class Playground {
             source: string;
         }[] = [];
 
-        for (const candidate of this._deprecatedCandidates) {
-            const matches = model.findMatches(candidate, false, false, true, null, false);
+        for (const candidate of this._tagCandidates) {
+            const matches = model.findMatches(candidate.name, false, false, true, null, false);
+            if (!matches)
+                continue;
+
             for (const match of matches) {
                 const position = {
                     lineNumber: match.range.startLineNumber,
@@ -514,18 +517,21 @@ class Playground {
                     continue;
                 }
 
-                // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                // the following is time consuming on all suggestions, that's why we precompute tag candidate names in the definition worker to filter calls
                 // @see setupDefinitionWorker
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
-                if (this._isDeprecatedEntry(details)) {
-                    const deprecatedInfo = details.tags.find(this._isDeprecatedTag);
+                if (!details || !details.tags)
+                    continue;
+
+                const tag = details.tags.find((t: {name: string}) => t.name === candidate.tagName);
+                if (tag) {
                     markers.push({
                         startLineNumber: match.range.startLineNumber,
                         endLineNumber: match.range.endLineNumber,
                         startColumn: wordInfo.startColumn,
                         endColumn: wordInfo.endColumn,
-                        message: this._getTagMessage(deprecatedInfo),
-                        severity: monaco.MarkerSeverity.Warning,
+                        message: this._getTagMessage(tag),
+                        severity: this._getCandidateMarkerSeverity(candidate),
                         source: source,
                     });
                 }
@@ -533,6 +539,24 @@ class Playground {
         }
 
         monaco.editor.setModelMarkers(model, source, markers);
+    }
+
+    private _getCandidateMarkerSeverity(candidate: {tagName: string}) {
+        switch(candidate.tagName) {
+            case "deprecated":
+                return monaco.MarkerSeverity.Warning;
+            default:
+                return monaco.MarkerSeverity.Info;
+        }
+    }
+
+    private _getCandidateCompletionSuffix(candidate: {tagName: string}) {
+        switch(candidate.tagName) {
+            case "deprecated":
+                return "⚠️";
+            default:
+                return "🧪";
+        }
     }
 
     private _getTagMessage(tag: any) {
@@ -566,6 +590,14 @@ class Playground {
             // filter non public members
             const suggestions = result.suggestions.filter((item: any) => !item.label.startsWith("_"));
 
+            for (const suggestion of suggestions) {
+                const candidate = owner._tagCandidates.find(t => t.name === suggestion.label);
+                if (candidate) {
+                    const suffix = owner._getCandidateCompletionSuffix(candidate)
+                    suggestion.label = suggestion.label + suffix;
+                }
+            }            
+
             // add our own templates when invoked without context
             if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
                 let language = owner.globalState.language === "JS" ? "javascript" : "typescript";
@@ -579,21 +611,13 @@ class Playground {
             }
 
             // preserve incomplete flag or force it when the definition is not yet analyzed
-            const incomplete = (result.incomplete && result.incomplete == true) || owner._deprecatedCandidates.length == 0;
+            const incomplete = (result.incomplete && result.incomplete == true) || owner._tagCandidates.length == 0;
 
             return {
                 suggestions: JSON.parse(JSON.stringify(suggestions)),
                 incomplete: incomplete,
             };
         };
-    }
-
-    private _isDeprecatedEntry(details: any) {
-        return details && details.tags && details.tags.find(this._isDeprecatedTag);
-    }
-
-    private _isDeprecatedTag(tag: any) {
-        return tag && tag.name == "deprecated";
     }
 
     private async _getRunCode() {
