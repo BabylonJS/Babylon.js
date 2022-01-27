@@ -3,14 +3,13 @@ import { DragOverLocation, GlobalState } from "../globalState";
 import { Nullable } from "babylonjs/types";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
 import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
 import { Color4 } from "babylonjs/Maths/math.color";
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { Axis } from "babylonjs/Maths/math.axis";
-import { Plane } from "babylonjs/Maths/math.plane";
 import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
@@ -56,9 +55,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _isOverGUINode: Control[] = [];
     private _clipboard: Control[] = [];
     private _selectAll: boolean = false;
-    public _camera: ArcRotateCamera;
-    private _cameraRadias: number;
-    private _cameraMaxRadiasFactor = 16384; // 2^13
     private _pasted: boolean;
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
@@ -101,6 +97,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (adt._rootContainer != this._panAndZoomContainer) {
             adt._rootContainer = this._panAndZoomContainer;
             this._visibleRegionContainer.addControl(this._trueRootContainer);
+            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
+        }
+        if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
+            adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
         }
         this._trueRootContainer.clipContent = false;
         this._trueRootContainer.clipChildren = false;
@@ -111,8 +111,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (adt._rootContainer != this._trueRootContainer) {
             this._visibleRegionContainer.removeControl(this._trueRootContainer);
             adt._rootContainer = this._trueRootContainer;
-        }
-        if (adt.getSize().width !== this._guiSize.width || adt.getSize().height !== this._guiSize.height) {
+            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
         }
         this._trueRootContainer.clipContent = true;
         this._trueRootContainer.clipChildren = true;
@@ -360,12 +359,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.selectedGuiNodes.forEach((control) => {
             control.isHitTestVisible = value;
         });
-    }
-
-    private setCameraRadius() {
-        const size = this._guiSize;
-        this._cameraRadias = size.width > size.height ? size.width : size.height;
-        this._cameraRadias += this._cameraRadias - this._cameraRadias / 3;
     }
 
     public copyToClipboard() {
@@ -884,11 +877,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.synchronizeLiveGUI();
 
-        this.setCameraRadius();
-        this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
-        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
-        // This attaches the camera to the canvas
-        this.addControls(this._scene, this._camera);
+        new ArcRotateCamera("Camera", 0, 0, 0, Vector3.Zero(), this._scene);
+        // This attaches the mouse controls
+        this.addControls(this._scene);
 
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
         this._scene.doNotHandleCursors = true;
@@ -953,14 +944,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    //Add map-like controls to an ArcRotate camera
-    addControls(scene: Scene, camera: ArcRotateCamera) {
-        const wheelPrecisionFn = () => {
-            camera.wheelPrecision = (1 / camera.radius) * 1000;
-        };
+    //Add zoom and pan controls
+    addControls(scene: Scene) {
 
         const zoomFnScrollWheel = (e: IWheelEvent) => {
-            const delta = this.zoomWheel(e, camera);
+            const delta = this.zoomWheel(e);
             this.zooming(1 + (delta / 1000));
         };
 
@@ -1012,7 +1000,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             removeObservers();
             this.props.globalState.guiGizmo.onUp();            
         })
-        scene.onBeforeRenderObservable.add(wheelPrecisionFn);
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
             switch (k.event.key) {
@@ -1067,15 +1054,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
     }
 
-    //Get pos on plane
-    public getPosition(scene: Scene, camera: ArcRotateCamera, plane: Plane, x = scene.pointerX, y = scene.pointerY) {
-        const ray = scene.createPickingRay(x, y, Matrix.Identity(), camera, false);
-        const distance = ray.intersectsPlane(plane);
-
-        //not using this ray again, so modifying its vectors here is fine
-        return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : Vector3.Zero();
-    }
-
     //Return offsets for inertial panning given initial and current pointer positions
     panning() {
         const panningDelta = this.getScaledPointerPosition().subtract(this._initialPanningOffset).multiplyByFloats(1, -1);
@@ -1085,8 +1063,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
-    //Get the wheel delta divided by the camera wheel precision
-    zoomWheel(event: IWheelEvent, camera: ArcRotateCamera) {
+    //Get the wheel delta
+    zoomWheel(event: IWheelEvent) {
 
         event.preventDefault();
         let delta = 0;
@@ -1095,7 +1073,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else if (event.detail) {
             delta = -event.detail;
         }
-        delta /= camera.wheelPrecision;
         return delta;
     }
 

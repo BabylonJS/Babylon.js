@@ -151,17 +151,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save(saveCallback: () => void) {
-        const adt = this.props.globalState.guiTexture;
-        //removing the art board background from the adt.
-        // adt.removeControl(this.props.globalState.workbench.artBoardBackground);
         this.props.globalState.workbench.removeEditorTransformation();
+        const size = this.props.globalState.workbench.guiSize;
+        this.props.globalState.guiTexture.scaleTo(size.width, size.height);
         saveCallback();
-        //readding the art board at the front of the list so it will be the first thing rendered.
-        // if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
-        //     this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
-        // } else {
-        //     this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
-        // }
     }
 
     saveLocally = () => {
