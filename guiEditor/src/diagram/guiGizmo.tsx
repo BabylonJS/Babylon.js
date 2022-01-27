@@ -229,6 +229,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
     }
 
     private _onUp = (evt?: React.PointerEvent | PointerEvent) => {
+        // if left is still pressed, don't release
+        if (evt && (evt.buttons & 1)) {
+            return;
+        }
         // cleanup on pointer up
         this.setState({ scalePointDragging: -1, isRotating: false });
     };
@@ -456,8 +460,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                             className="scale-click-area"
                             draggable={true}
                             onDragStart={(evt) => evt.preventDefault()}
-                            onPointerDown={() => {
-                                this._beginDraggingScalePoint(index);
+                            onPointerDown={(event) => {
+                                // if left mouse button down
+                                if (event.buttons & 1) {
+                                    this._beginDraggingScalePoint(index);
+                                }
                             }}
                             onPointerUp={this._onUp}
                             style={scaleClickAreaStyle}
@@ -467,8 +474,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                                 className="scale-point"
                                 draggable={true}
                                 onDragStart={(evt) => evt.preventDefault()}
-                                onPointerDown={() => {
-                                    this._beginDraggingScalePoint(index);
+                                onPointerDown={(event) => {
+                                    if (event.buttons & 1) {
+                                        this._beginDraggingScalePoint(index);
+                                    }
                                 }}
                                 onPointerUp={this._onUp}
                                 style={{cursor}}

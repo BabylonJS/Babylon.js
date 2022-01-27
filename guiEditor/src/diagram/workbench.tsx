@@ -11,8 +11,7 @@ import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { Axis } from "babylonjs/Maths/math.axis";
 import { Plane } from "babylonjs/Maths/math.plane";
-import { PointerEventTypes, PointerInfo } from "babylonjs/Events/pointerEvents";
-import { EventState } from "babylonjs/Misc/observable";
+import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Container } from "babylonjs-gui/2D/controls/container";
@@ -79,10 +78,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _nextLiveGuiRender = -1;
     private _liveGuiRerenderDelay = 100;
     private _defaultGUISize: ISize = {width: 1024, height: 1024};
-    private _adtScaleFactor: ISize = {width: 5, height: 5};
-    private _initialPanningOffset: Nullable<Vector2> = new Vector2(0,0);
+    private _initialPanningOffset: Vector2 = new Vector2(0,0);
     private _panningOffset = new Vector2(0,0);
     private _zoomFactor = 1;
+    private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
     public get guiSize() {
         return this._guiSize;
@@ -96,17 +95,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.onFitToWindowObservable.notifyObservers();
         this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
     }
-    private setScaleFactor(value: ISize) {
-        this._adtScaleFactor = {...value};
-    }
 
     public applyEditorTransformation() {
         const adt = this.globalState.guiTexture;
         if (adt._rootContainer != this._panAndZoomContainer) {
             adt._rootContainer = this._panAndZoomContainer;
             this._visibleRegionContainer.addControl(this._trueRootContainer);
-        }
-        if (adt.getSize().width !== this._guiSize.width * this._adtScaleFactor.width || adt.getSize().height !== this._guiSize.height * this._adtScaleFactor.height) {
         }
         this._trueRootContainer.clipContent = false;
         this._trueRootContainer.clipChildren = false;
@@ -250,13 +244,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         props.globalState.onFitToWindowObservable.add(() => {
-            this.setCameraRadius();
-            for (let i = 0; i < 2; ++i) {
-                this._camera.alpha = -Math.PI / 2;
-                this._camera.beta = 0;
-                this._camera.radius = this._cameraRadias;
-                this._camera.target = Vector3.Zero();
-            }
+            this._panningOffset = new Vector2(0,0);
+            const xFactor =  this._engine.getRenderWidth() / this.guiSize.width;
+            const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
+            this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
         });
 
         props.globalState.onOutlinesObservable.add(() => {
@@ -563,7 +554,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
             this._anyControlClicked = true;
-            console.log(guiControl.name);
             if (!this.isUp || evt.buttonIndex > 0) return;
             if (this._forceSelecting) {
                 // if this is our first click and the clicked control is a child the of the main selected control.
@@ -803,7 +793,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     onMove(evt: React.PointerEvent) {
-        var pos = this.getGroundPosition();
+        var pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
             var x = this._mouseStartPointX;
@@ -820,8 +810,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    public getGroundPosition() {
-        return new Vector2(this._scene.pointerX / this._zoomFactor, this._scene.pointerY / this._zoomFactor);
+    private _screenToTexturePosition(screenPos: Vector2) {
+        const zoomVector = new Vector2(this._zoomFactor, this._zoomFactor);
+        return screenPos.divideInPlace(zoomVector).add(this._panningOffset);
+    }
+
+    private getScaledPointerPosition() {
+        return this._screenToTexturePosition(new Vector2(this._scene.pointerX, this._scene.pointerY));
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
@@ -833,10 +828,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return;
         }
 
-        var pos = this.getGroundPosition();
-        if (pos === null && this._forceSelecting && !evt.button) {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        }
+        var pos = this.getScaledPointerPosition();
         if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
@@ -889,19 +881,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         adt.useInvalidateRectOptimization = false;
         this.trueRootContainer = adt.rootContainer;
         adt.onEndRenderObservable.add(() => this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers());
-        this._scene.onPointerObservable.add(() => {
-            // if we click in the scene and we don't hit any controls, deselect all
-            this._scene.onAfterRenderObservable.addOnce(() => {
-                if (!this._anyControlClicked) {
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                }
-                this._anyControlClicked = false;
-            })
-        }, PointerEventTypes.POINTERUP);
 
         this.synchronizeLiveGUI();
-
-        this.setScaleFactor(this._adtScaleFactor);
 
         this.setCameraRadius();
         this._camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, this._cameraRadias, Vector3.Zero(), this._scene);
@@ -957,7 +938,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-        this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onFitToWindowObservable.notifyObservers();
     }
 
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
@@ -974,71 +955,64 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     //Add map-like controls to an ArcRotate camera
     addControls(scene: Scene, camera: ArcRotateCamera) {
-        camera.inertia = 0.7;
-        camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = this._cameraMaxRadiasFactor;
-        camera.upperBetaLimit = Math.PI / 2 - 0.1;
-        camera.angularSensibilityX = camera.angularSensibilityY = 500;
-
-        const plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
-
-        const inertialPanning = Vector3.Zero();
-
-        let initialPos = new Vector3(0, 0, 0);
-        const panningFn = () => {
-            const pos = this.getPosition(scene, camera, plane);
-            this.panning(pos, initialPos, 0, inertialPanning);
-        };
-
-        const inertialPanningFn = () => {
-            if (inertialPanning.x !== 0 || inertialPanning.y !== 0 || inertialPanning.z !== 0) {
-                camera.target.addInPlace(inertialPanning);
-                inertialPanning.scaleInPlace(camera.inertia);
-                this.zeroIfClose(inertialPanning);
-                this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
-            }
-        };
-
         const wheelPrecisionFn = () => {
             camera.wheelPrecision = (1 / camera.radius) * 1000;
         };
 
         const zoomFnScrollWheel = (e: IWheelEvent) => {
             const delta = this.zoomWheel(e, camera);
-            this.zooming(1 + (delta / 1000), scene, camera, plane, inertialPanning);
+            this.zooming(1 + (delta / 1000));
         };
 
-        const zoomFnMouse = (p: PointerInfo, e: EventState) => {
-            this.zooming(this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
-        };
+        const panningFn = () => this.panning();
+
+        const startPanning = () => {
+            this._scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
+            this._panning = true;
+            this._initialPanningOffset = this.getScaledPointerPosition();
+            this._panAndZoomContainer.getDescendants().forEach(desc => {
+                desc.isPointerBlocker = false;
+            })
+        }
+    
+        const endPanning = () => {
+            this._panning = false;
+            this._panAndZoomContainer.getDescendants().forEach(desc => {
+                desc.isPointerBlocker = true;
+            })
+        }
 
         const removeObservers = () => {
             scene.onPointerObservable.removeCallback(panningFn);
-            scene.onPointerObservable.removeCallback(zoomFnMouse);
         };
 
-        scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
+        this._rootContainer.current?.addEventListener("wheel",  zoomFnScrollWheel);
+        this._rootContainer.current?.addEventListener("pointerdown", (event) => {
+            console.log(event);
             removeObservers();
-            if (p.event.button !== 0 || this._forcePanning) {
-                initialPos = this.getPosition(scene, camera, plane);
-                this._initialPanningOffset = null;
-                scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
-                this._panning = true;
-                this._initialPanningOffset = new Vector2(initialPos.x, initialPos.z);
-            } else if (this._forceZooming) {
-                initialPos = this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(zoomFnMouse, PointerEventTypes.POINTERMOVE);
-                this._panning = false;
+            if (event.button !== 0 || this._forcePanning) {
+                startPanning();
             } else {
-                this._panning = false;
-            }
-        }, PointerEventTypes.POINTERDOWN);
+                if (this._forceZooming) {
+                    this.zooming(1.0 + (this._altKeyIsPressed ? -this._zoomModeIncrement : this._zoomModeIncrement));
+                }
+                endPanning();
+                    // if we click in the scene and we don't hit any controls, deselect all
+                this._scene.onAfterRenderObservable.addOnce(() => {
+                    if (!this._anyControlClicked) {
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }
+                    this._anyControlClicked = false;
 
-        scene.onPointerObservable.add((p: PointerInfo, e: EventState) => {
+                });
+            }
+        });
+        this._rootContainer.current?.addEventListener("pointerup", (event) => {
             this._panning = false;
             removeObservers();
-            this.props.globalState.guiGizmo.onUp();
-        }, PointerEventTypes.POINTERUP);
+            this.props.globalState.guiGizmo.onUp();            
+        })
+        scene.onBeforeRenderObservable.add(wheelPrecisionFn);
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
             switch (k.event.key) {
@@ -1067,21 +1041,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }, KeyboardEventTypes.KEYDOWN);
 
-        scene.onAfterRenderObservable.add(() => { if (this._camera.inertialRadiusOffset != 0) this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers() });
-        this._rootContainer.current?.addEventListener("wheel",  zoomFnScrollWheel);
-        scene.onBeforeRenderObservable.add(inertialPanningFn);
-        scene.onBeforeRenderObservable.add(wheelPrecisionFn);
         scene.onBeforeRenderObservable.add(() => {
-            // this._panAndZoomContainer.widthInPixels = this.guiSize.width * this._zoomFactor;
-            // this._panAndZoomContainer.heightInPixels = this.guiSize.height * this._zoomFactor;
-            this._panAndZoomContainer.scaleX = this._zoomFactor;
-            this._panAndZoomContainer.scaleY = this._zoomFactor;
-            this._panAndZoomContainer.leftInPixels = this._zoomFactor * this._panningOffset.x;
-            this._panAndZoomContainer.topInPixels = this._zoomFactor * -this._panningOffset.y;
-            // if (this.props.globalState.guiTexture.getSize().width !== this._engine.getRenderWidth()) {
-                // this.props.globalState.guiTexture.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
-                // console.log(this._engine.getRenderWidth(), this._engine.getRenderHeight());
-            // }
+            if (this._panAndZoomContainer.scaleX !== this._zoomFactor) {
+                this._panAndZoomContainer.scaleX = this._zoomFactor;
+                this._panAndZoomContainer.scaleY = this._zoomFactor;
+                this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+                this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            }
+            const left = this._zoomFactor * this._panningOffset.x;
+            const top = this._zoomFactor * -this._panningOffset.y;
+            if (this._panAndZoomContainer.leftInPixels !== left || this._panAndZoomContainer.topInPixels !== top) {
+                this._panAndZoomContainer.leftInPixels = left;
+                this._panAndZoomContainer.topInPixels = top;
+                this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+                this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            }
         })
 
         // stop context menu showing on canvas right click
@@ -1103,19 +1077,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //Return offsets for inertial panning given initial and current pointer positions
-    panning(newPos: Vector3, initialPos: Vector3, inertia: number, ref: Vector3) {
+    panning() {
+        const panningDelta = this.getScaledPointerPosition().subtract(this._initialPanningOffset).multiplyByFloats(1, -1);
+        this._panningOffset = this._panningOffset.add(panningDelta);
+        this._initialPanningOffset = this.getScaledPointerPosition();
         this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
-        this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
-        const directionToZoomLocation = initialPos.subtract(newPos);
-        const panningX = directionToZoomLocation.x * (1 - inertia) * 0.00001;
-        const panningZ = directionToZoomLocation.z * (1 - inertia) * 0.00001;
-        if (this._initialPanningOffset === null) {
-            this._initialPanningOffset = new Vector2(panningX, panningZ);
-        }
-        this._panningOffset = this._initialPanningOffset.subtract(new Vector2(panningX,panningZ));
-        console.log(panningX,panningZ);
-        // ref.copyFromFloats(panningX, 0, panningZ);
-        return ref;
+        this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
     //Get the wheel delta divided by the camera wheel precision
@@ -1133,39 +1100,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //Zoom to pointer position. Zoom amount determined by delta
-    zooming(delta: number, scene: Scene, camera: ArcRotateCamera, plane: Plane, ref: Vector3) {
-        let lr = camera.lowerRadiusLimit;
-        let ur = camera.upperRadiusLimit;
-        if (!lr || !ur) {
-            return;
-        }
-        if (camera.radius - lr < 1 && delta > 0) {
-            return;
-        } else if (ur - camera.radius < 1 && delta < 0) {
-            return;
-        }
-        const inertiaComp = 1 - camera.inertia;
-        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lr) {
-            delta = (camera.radius - lr) * inertiaComp - camera.inertialRadiusOffset;
-        } else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > ur) {
-            delta = (camera.radius - ur) * inertiaComp - camera.inertialRadiusOffset;
-        }
-
-        const zoomDistance = delta / inertiaComp;
-        const ratio = zoomDistance / camera.radius;
-        const vec = this.getPosition(scene, camera, plane);
-
-        const directionToZoomLocation = vec.subtract(camera.target);
-        const offset = directionToZoomLocation.scale(ratio);
-        offset.scaleInPlace(inertiaComp);
-        // ref.addInPlace(offset);
-
-        // camera.inertialRadiusOffset += delta;
-
+    zooming(delta: number) {
         this._zoomFactor *= delta;
-
-        this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
-        this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
     //Sets x y or z of passed in vector to zero if less than Epsilon

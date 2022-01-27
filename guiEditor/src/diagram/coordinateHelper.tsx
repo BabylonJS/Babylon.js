@@ -1,9 +1,7 @@
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
-import { Axis } from "babylonjs/Maths/math.axis";
-import { Plane } from "babylonjs/Maths/math.plane";
-import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { GlobalState } from '../globalState';
 
 export class Rect {
@@ -196,18 +194,14 @@ export class CoordinateHelper {
     }
 
     public static rttToCanvasSpace(x: number, y: number) {
-        const camera = this.globalState.workbench._camera;
-        const scene = this.globalState.workbench._scene;
-        const tmpVec = new Vector3(x, 0, -y);
+        const engine = this.globalState.workbench._scene.getEngine();
+        return new Vector2(x + engine.getRenderWidth() / 2, y + engine.getRenderHeight() / 2);
+    }
 
-        // Get the final projection in view space
+    public static mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
+        const scene = this.globalState.workbench._scene;
         const engine = scene.getEngine();
-        // TODO - to ref
-        const projected = Vector3.Project(tmpVec, Matrix.Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
-        // round to 1 decimal points
-        projected.x = round(projected.x);
-        projected.y = round(projected.y);
-        return projected;
+        return new Vector2((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY)- engine.getRenderHeight() / 2);
     }
 
     private static resetMatrixArray() {
@@ -218,15 +212,5 @@ export class CoordinateHelper {
 
     public static computeLocalBounds(node: Control) {
         return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
-    }
-
-    private static _plane = Plane.FromPositionAndNormal(Vector3.Zero(), Axis.Y);
-
-    public static mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
-        const camera = this.globalState.workbench._camera;
-        const scene = this.globalState.workbench._scene;
-        const newPosition = this.globalState.workbench.getPosition(scene, camera, this._plane, x ?? scene.pointerX, y || scene.pointerY);
-        newPosition.z *= -1;
-        return new Vector2(round(newPosition.x), round(newPosition.z));
     }
 } 
