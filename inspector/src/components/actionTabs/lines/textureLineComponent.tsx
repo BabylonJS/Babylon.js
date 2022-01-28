@@ -55,6 +55,13 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         var ratio = size.width / size.height;
         var width = this.props.width;
         var height = (width / ratio) | 1;
+        var engine = this.props.texture.getScene()?.getEngine();
+
+        if (engine && height > engine.getCaps().maxTextureSize) {
+            // the texture.width/texture.height ratio is too small, so use the real width/height dimensions of the texture instead of the canvas width/computed height
+            width = this.props.texture.getSize().width;
+            height = this.props.texture.getSize().height;
+        }
 
         try {
             const data = await TextureHelper.GetTextureDataAsync(texture, width, height, this.state.face, this.state.channels, this.props.globalState);
