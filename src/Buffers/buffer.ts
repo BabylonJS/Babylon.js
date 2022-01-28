@@ -173,7 +173,13 @@ export class Buffer {
 
         if (this._updatable) { // update buffer
             this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
-            this._data = null;
+            if (offset === 0 && vertexCount === undefined) {
+                // Keep the data if we easily can
+                this._data = data;
+            }
+            else {
+                this._data = null;
+            }
         }
     }
 

@@ -610,7 +610,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param name The friendly name of the material
      * @param scene The scene to add the material to
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
 
         // Setup the default processing configuration to the scene.

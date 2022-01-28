@@ -161,8 +161,12 @@ export class Sound {
      * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
      * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
      */
-    constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
+    constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
+        scene = scene || Engine.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         Sound._SceneComponentInitialization(scene);
 

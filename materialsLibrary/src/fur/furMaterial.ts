@@ -115,7 +115,7 @@ export class FurMaterial extends PushMaterial {
 
     private _furTime: number = 0;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

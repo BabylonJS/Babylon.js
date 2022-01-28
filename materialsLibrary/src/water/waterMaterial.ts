@@ -225,7 +225,7 @@ export class WaterMaterial extends PushMaterial {
     /**
     * Constructor
     */
-    constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
+    constructor(name: string, scene?: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
         super(name, scene);
 
         this._createRenderTargets(this.getScene(), renderTargetSize);

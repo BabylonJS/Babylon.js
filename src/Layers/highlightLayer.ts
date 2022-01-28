@@ -39,7 +39,7 @@ declare module "../abstractScene" {
 }
 
 AbstractScene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
-    for (var index = 0; index < this.effectLayers.length; index++) {
+    for (var index = 0; index < this.effectLayers?.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
             return (<any>this.effectLayers[index]) as HighlightLayer;
         }
@@ -264,7 +264,7 @@ export class HighlightLayer extends EffectLayer {
      * @param scene The scene to use the layer in
      * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
      */
-    constructor(public name: string, scene: Scene, options?: Partial<IHighlightLayerOptions>) {
+    constructor(public name: string, scene?: Scene, options?: Partial<IHighlightLayerOptions>) {
         super(name, scene);
         this.neutralColor = HighlightLayer.NeutralColor;
 

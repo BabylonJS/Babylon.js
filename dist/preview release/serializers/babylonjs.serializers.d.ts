@@ -640,7 +640,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param babylonScene Babylon scene object
          * @param options Options to modify the behavior of the exporter
          */
-        constructor(babylonScene: Scene, options?: IExportOptions);
+        constructor(babylonScene?: Nullable<Scene>, options?: IExportOptions);
         dispose(): void;
         /**
          * Registers a glTF exporter extension

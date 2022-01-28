@@ -13,6 +13,7 @@ import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangula
 import { Logger } from "../Misc/logger";
 import { AnimationGroup } from '../Animations/animationGroup';
 import { AssetContainer } from "../assetContainer";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -919,8 +920,8 @@ export class AssetsManager {
      * Creates a new AssetsManager
      * @param scene defines the scene to work on
      */
-    constructor(scene: Scene) {
-        this._scene = scene;
+    constructor(scene?: Scene) {
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
     }
 
     /**

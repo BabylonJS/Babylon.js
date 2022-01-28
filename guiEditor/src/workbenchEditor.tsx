@@ -11,6 +11,7 @@ import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorer
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GuiGizmoComponent } from "./diagram/guiGizmo";
 import { Nullable } from "babylonjs/types";
+import { ArtBoardComponent } from './diagram/artBoard';
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -263,6 +264,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         onDragOver={(event) => {
                             event.preventDefault();
                         }}>
+                        <ArtBoardComponent globalState={this.props.globalState}/>
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                         <GuiGizmoComponent globalState={this.props.globalState} />
                     </div>

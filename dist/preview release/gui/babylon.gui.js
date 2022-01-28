@@ -1611,6 +1611,10 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             if (typeof width === "number" && typeof height === "number" && width >= 0 && height >= 0) {
                 this.scaleTo(width, height);
             }
+            else {
+                // scales the GUI to a default size if none was available in the serialized content
+                this.scaleTo(1920, 1080);
+            }
         }
     };
     /**
@@ -4118,7 +4122,10 @@ var Container = /** @class */ (function (_super) {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
-        if (!_super.prototype.contains.call(this, x, y)) {
+        // checks if the picking position is within the container
+        var contains = _super.prototype.contains.call(this, x, y);
+        // if clipChildren is off, we should still pass picking events to children even if we don't contain the pointer
+        if (!contains && this.clipChildren) {
             return false;
         }
         // Checking backwards to pick closest first
@@ -4130,6 +4137,9 @@ var Container = /** @class */ (function (_super) {
                 }
                 return true;
             }
+        }
+        if (!contains) {
+            return false;
         }
         if (!this.isHitTestVisible) {
             return false;
@@ -22213,8 +22223,8 @@ var FluentBackplateMaterial = /** @class */ (function (_super) {
         _this._globalRightIndexTipPosition4 = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"].Zero();
         _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
         _this.backFaceCulling = false;
-        _this._blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentBackplateMaterial.BLOB_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
-        _this._iridescentMap = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentBackplateMaterial.IM_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        _this._blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentBackplateMaterial.BLOB_TEXTURE_URL, _this.getScene(), true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        _this._iridescentMap = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentBackplateMaterial.IM_TEXTURE_URL, _this.getScene(), true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
         return _this;
     }
     FluentBackplateMaterial.prototype.needAlphaBlending = function () {
@@ -22767,7 +22777,7 @@ var FluentButtonMaterial = /** @class */ (function (_super) {
         _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ADD;
         _this.disableDepthWrite = true;
         _this.backFaceCulling = false;
-        _this._blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentButtonMaterial.BLOB_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        _this._blobTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](FluentButtonMaterial.BLOB_TEXTURE_URL, _this.getScene(), true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
         return _this;
     }
     FluentButtonMaterial.prototype.needAlphaBlending = function () {
@@ -23613,7 +23623,7 @@ var MRDLBackplateMaterial = /** @class */ (function (_super) {
         _this.edgeLineGradientBlend = 0.5;
         _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
         _this.backFaceCulling = false;
-        _this._iridescentMapTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        _this._iridescentMapTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL, _this.getScene(), true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
         return _this;
     }
     MRDLBackplateMaterial.prototype.needAlphaBlending = function () {
@@ -24228,7 +24238,7 @@ var MRDLSliderBarMaterial = /** @class */ (function (_super) {
         _this.globalRightIndexMiddlePosition = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0.0, 0.0, 0.0, 1.0);
         _this.alphaMode = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_DISABLE;
         _this.backFaceCulling = false;
-        _this._blueGradientTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, scene, true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
+        _this._blueGradientTexture = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"](MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, _this.getScene(), true, false, babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE);
         return _this;
     }
     MRDLSliderBarMaterial.prototype.needAlphaBlending = function () {
